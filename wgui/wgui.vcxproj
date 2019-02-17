@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\wgui\fontmanager.h" />
+    <ClInclude Include="..\include\wgui\shaders\wishader.hpp" />
+    <ClInclude Include="..\include\wgui\shaders\wishader_colored.hpp" />
+    <ClInclude Include="..\include\wgui\shaders\wishader_coloredline.hpp" />
+    <ClInclude Include="..\include\wgui\shaders\wishader_text.hpp" />
+    <ClInclude Include="..\include\wgui\shaders\wishader_textured.hpp" />
+    <ClInclude Include="..\include\wgui\types\wiarrow.h" />
+    <ClInclude Include="..\include\wgui\types\wibutton.h" />
+    <ClInclude Include="..\include\wgui\types\wicircle.h" />
+    <ClInclude Include="..\include\wgui\types\widropdownmenu.h" />
+    <ClInclude Include="..\include\wgui\types\wiline.h" />
+    <ClInclude Include="..\include\wgui\types\wirect.h" />
+    <ClInclude Include="..\include\wgui\types\wiroot.h" />
+    <ClInclude Include="..\include\wgui\types\wiroundedbase.h" />
+    <ClInclude Include="..\include\wgui\types\wiscrollbar.h" />
+    <ClInclude Include="..\include\wgui\types\wishape.h" />
+    <ClInclude Include="..\include\wgui\types\witext.h" />
+    <ClInclude Include="..\include\wgui\types\witextentry.h" />
+    <ClInclude Include="..\include\wgui\types\witextentrybase.h" />
+    <ClInclude Include="..\include\wgui\types\witooltip.h" />
+    <ClInclude Include="..\include\wgui\wgui.h" />
+    <ClInclude Include="..\include\wgui\wguidefinitions.h" />
+    <ClInclude Include="..\include\wgui\wguifactories.h" />
+    <ClInclude Include="..\include\wgui\wianchor.hpp" />
+    <ClInclude Include="..\include\wgui\wibase.h" />
+    <ClInclude Include="..\include\wgui\wibufferbase.h" />
+    <ClInclude Include="..\include\wgui\wielementbufferdata.hpp" />
+    <ClInclude Include="..\include\wgui\wielementdata.hpp" />
+    <ClInclude Include="..\include\wgui\wihandle.h" />
+    <ClInclude Include="..\include\wgui\wiincludes.h" />
+    <ClInclude Include="..\include\wgui\wiskin.h" />
+    <ClInclude Include="..\src\stdafx_wgui.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\fontmanager.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\shaders\wishader.cpp" />
+    <ClCompile Include="..\src\shaders\wishader_colored.cpp" />
+    <ClCompile Include="..\src\shaders\wishader_coloredline.cpp" />
+    <ClCompile Include="..\src\shaders\wishader_text.cpp" />
+    <ClCompile Include="..\src\shaders\wishader_textured.cpp" />
+    <ClCompile Include="..\src\stdafx_wgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\types\wiarrow.cpp" />
+    <ClCompile Include="..\src\types\wibutton.cpp" />
+    <ClCompile Include="..\src\types\wicircle.cpp" />
+    <ClCompile Include="..\src\types\widropdownmenu.cpp" />
+    <ClCompile Include="..\src\types\wiline.cpp" />
+    <ClCompile Include="..\src\types\wirect.cpp" />
+    <ClCompile Include="..\src\types\wiroot.cpp" />
+    <ClCompile Include="..\src\types\wiroundedbase.cpp" />
+    <ClCompile Include="..\src\types\wiscrollbar.cpp" />
+    <ClCompile Include="..\src\types\wishape.cpp" />
+    <ClCompile Include="..\src\types\witext.cpp" />
+    <ClCompile Include="..\src\types\witextentry.cpp" />
+    <ClCompile Include="..\src\types\witextentrybase.cpp" />
+    <ClCompile Include="..\src\types\witooltip.cpp" />
+    <ClCompile Include="..\src\wgui.cpp" />
+    <ClCompile Include="..\src\wguifactories.cpp" />
+    <ClCompile Include="..\src\wianchor.cpp" />
+    <ClCompile Include="..\src\wibase.cpp" />
+    <ClCompile Include="..\src\wibufferbase.cpp" />
+    <ClCompile Include="..\src\wielementbufferdata.cpp" />
+    <ClCompile Include="..\src\wihandle.cpp" />
+    <ClCompile Include="..\src\wiskin.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{7E44F339-3A9F-48EB-BAB8-155499785F82}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>wgui</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)\src;$(SolutionDir)\include;$(SolutionDir)\..\VulkanSDK\Include;$(SolutionDir)\..\freetype\include;$(SolutionDir)\..\vfilesystem\include;$(SolutionDir)\..\datasystem\include;$(SolutionDir)\..\materialsystem\cmaterialsystem\include;$(SolutionDir)\..\materialsystem\materialsystem\include;$(SolutionDir)\..\gl\glfw\include;$(SolutionDir)\..\glfw\glfw;$(SolutionDir)\..\prosper\include;$(SolutionDir)\..\anvil\include;$(SolutionDir)\..\gl\glm;$(SolutionDir)\..\sharedutils\include;$(SolutionDir)\..\mathutil\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)\src;$(SolutionDir)\include;$(SolutionDir)\..\VulkanSDK\Include;$(SolutionDir)\..\freetype\include;$(SolutionDir)\..\vfilesystem\include;$(SolutionDir)\..\datasystem\include;$(SolutionDir)\..\materialsystem\cmaterialsystem\include;$(SolutionDir)\..\materialsystem\materialsystem\include;$(SolutionDir)\..\gl\glfw\include;$(SolutionDir)\..\glfw\glfw;$(SolutionDir)\..\prosper\include;$(SolutionDir)\..\anvil\include;$(SolutionDir)\..\gl\glm;$(SolutionDir)\..\sharedutils\include;$(SolutionDir)\..\mathutil\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)\src;$(SolutionDir)\include;$(SolutionDir)\..\VulkanSDK\Include;$(SolutionDir)\..\freetype\include;$(SolutionDir)\..\vfilesystem\include;$(SolutionDir)\..\datasystem\include;$(SolutionDir)\..\materialsystem\cmaterialsystem\include;$(SolutionDir)\..\materialsystem\materialsystem\include;$(SolutionDir)\..\gl\glfw\include;$(SolutionDir)\..\glfw\glfw;$(SolutionDir)\..\prosper\include;$(SolutionDir)\..\anvil\include;$(SolutionDir)\..\gl\glm;$(SolutionDir)\..\sharedutils\include;$(SolutionDir)\..\mathutil\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)\src;$(SolutionDir)\include;$(SolutionDir)\..\VulkanSDK\Include;$(SolutionDir)\..\freetype\include;$(SolutionDir)\..\vfilesystem\include;$(SolutionDir)\..\datasystem\include;$(SolutionDir)\..\materialsystem\cmaterialsystem\include;$(SolutionDir)\..\materialsystem\materialsystem\include;$(SolutionDir)\..\gl\glfw\include;$(SolutionDir)\..\glfw\glfw;$(SolutionDir)\..\prosper\include;$(SolutionDir)\..\anvil\include;$(SolutionDir)\..\gl\glm;$(SolutionDir)\..\sharedutils\include;$(SolutionDir)\..\mathutil\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\..\freetype\objs\vc2010\x64;$(SolutionDir)\..\materialsystem\x64\Release;$(SolutionDir)\..\prosper\x64\Release;$(SolutionDir)\..\anvil\build_x64\RelWithDebInfo;$(SolutionDir)\..\VulkanSDK\Lib;$(SolutionDir)\..\VulkanSDK\spirv-tools\build_x64\source\Release;$(SolutionDir)\..\VulkanSDK\spirv-tools\build_x64\source\opt\Release;$(SolutionDir)\..\VulkanSDK\glslang\build_x64\hlsl\Release;$(SolutionDir)\..\VulkanSDK\glslang\build_x64\SPIRV\Release;$(SolutionDir)\..\VulkanSDK\glslang\build_x64\OGLCompilersDLL\Release;$(SolutionDir)\..\VulkanSDK\glslang\External\spirv-tools\build_x64\source\opt\Release;$(SolutionDir)\..\glfw\x64\Release;$(SolutionDir)\..\mathutil\x64\Release;$(SolutionDir)\..\sharedutils\x64\Release;$(SolutionDir)\..\vfilesystem\x64\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_SILENCE_CXX17_SHARED_PTR_UNIQUE_DEPRECATION_WARNING;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>stdafx_wgui.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_SILENCE_CXX17_SHARED_PTR_UNIQUE_DEPRECATION_WARNING;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>stdafx_wgui.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_SILENCE_CXX17_SHARED_PTR_UNIQUE_DEPRECATION_WARNING;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>stdafx_wgui.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_SILENCE_CXX17_SHARED_PTR_UNIQUE_DEPRECATION_WARNING;GLM_FORCE_DEPTH_ZERO_TO_ONE;WGUI_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>stdafx_wgui.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)\x64\Release\$(ProjectName).dll" "$(SolutionDir)\..\weave\x64\Release\bin"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
