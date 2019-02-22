@@ -23,17 +23,6 @@
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <misc/memory_allocator.h>
 
-#pragma comment(lib,"vulkan-1.lib")
-#pragma comment(lib,"Anvil.lib")
-#pragma comment(lib,"prosper.lib")
-#pragma comment(lib,"glfw.lib")
-#pragma comment(lib,"mathutil.lib")
-#pragma comment(lib,"util.lib")
-#pragma comment(lib,"materialsystem.lib")
-#pragma comment(lib,"cmaterialsystem.lib")
-#pragma comment(lib,"freetype255.lib")
-#pragma comment(lib,"vfilesystem.lib")
-
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 WGUI &WGUI::Open(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager)
 {

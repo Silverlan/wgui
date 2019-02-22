@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <wrappers/buffer.h>
-#include <glfw_window.h>
+#include <iglfw/glfw_window.h>
 #include <prosper_context_object.hpp>
 #include <sharedutils/chronotime.h>
 
@@ -165,7 +165,7 @@ private:
 REGISTER_BASIC_ARITHMETIC_OPERATORS(WGUI::ElementBuffer);
 #pragma warning(pop)
 
-#include "wibase.h"
+#include <wgui/wibase.h>
 #include "wihandle.h"
 
 template<class TSkin>
