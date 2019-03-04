@@ -10,6 +10,7 @@
 #include <sharedutils/callback_handler.h>
 #include <mathutil/umath.h>
 #include "wgui/wihandle.h"
+#include "wgui/wiattachment.hpp"
 #include "wgui/wianchor.hpp"
 #include <algorithm>
 #include <chrono>
@@ -51,6 +52,26 @@ public:
 	friend WIHandle;
 	friend WGUI;
 public:
+	enum class StateFlags : uint32_t
+	{
+		None = 0u,
+		AcceptMouseInputBit = 1u,
+		AcceptKeyboardInputBit = AcceptMouseInputBit<<1u,
+		AcceptScrollInputBit = AcceptKeyboardInputBit<<1u,
+		MouseCheckEnabledBit = AcceptScrollInputBit<<1u,
+		AutoAlignToParentXBit = MouseCheckEnabledBit<<1u,
+		AutoAlignToParentYBit = AutoAlignToParentXBit<<1u,
+		AutoCenterToParentXBit = AutoAlignToParentYBit<<1u,
+		AutoCenterToParentYBit = AutoCenterToParentXBit<<1u,
+		TrapFocusBit = AutoCenterToParentYBit<<1u,
+		ShouldScissorBit = TrapFocusBit<<1u,
+		UpdateScheduledBit = ShouldScissorBit<<1u,
+		RemoveScheduledBit = UpdateScheduledBit<<1u,
+		SkinAppliedBit = RemoveScheduledBit<<1u,
+		ClickedBit = SkinAppliedBit<<1u,
+		ThinkIfInvisibleBit = ClickedBit<<1u
+	};
+
 	WIBase();
 	virtual ~WIBase();
 	GLFW::Cursor::Shape GetCursor() const;
@@ -88,7 +109,7 @@ public:
 	void CallOnRemove(CallbackHandle callback);
 	// Anything with a higher z-position will be drawn in front of everything with a lower one.
 	virtual void SetZPos(int zpos);
-	int GetZPos();
+	int GetZPos() const;
 	virtual void Think();
 	virtual bool HasFocus();
 	virtual void RequestFocus();
@@ -97,11 +118,11 @@ public:
 	virtual void OnFocusGained();
 	virtual void OnFocusKilled();
 	const util::PBoolProperty &GetVisibilityProperty() const;
-	bool IsVisible();
+	bool IsVisible() const;
 	virtual void SetVisible(bool b);
-	bool GetMouseInputEnabled();
-	bool GetKeyboardInputEnabled();
-	bool GetScrollInputEnabled();
+	bool GetMouseInputEnabled() const;
+	bool GetKeyboardInputEnabled() const;
+	bool GetScrollInputEnabled() const;
 	bool GetMouseMovementCheckEnabled();
 	virtual void SetMouseInputEnabled(bool b);
 	virtual void SetKeyboardInputEnabled(bool b);
@@ -122,7 +143,7 @@ public:
 	void SetY(int y);
 	void SetWidth(int w);
 	void SetHeight(int h);
-	Vector2i GetAbsolutePos();
+	Vector2i GetAbsolutePos() const;
 	void SetAbsolutePos(Vector2i pos);
 	std::vector<WIHandle> *GetChildren();
 	void GetChildren(const std::string &className,std::vector<WIHandle> &children);
@@ -131,7 +152,7 @@ public:
 	WIBase *GetChild(const std::string &className,unsigned int idx);
 	WIBase *FindChildByName(const std::string &name);
 	void FindChildrenByName(const std::string &name,std::vector<WIHandle> &children);
-	void GetPos(int *x,int *y);
+	void GetPos(int *x,int *y) const;
 	void SetPos(const Vector2i &pos);
 	virtual void SetPos(int x,int y);
 	const Color &GetColor() const;
@@ -167,10 +188,10 @@ public:
 	Mat4 GetTranslatedMatrix(int w,int h);
 	Mat4 GetScaledMatrix(int w,int h,Mat4 mat);
 	Mat4 GetScaledMatrix(int w,int h);
-	bool PosInBounds(int x,int y);
-	bool PosInBounds(Vector2i pos);
+	bool PosInBounds(int x,int y) const;
+	bool PosInBounds(Vector2i pos) const;
 	const util::PBoolProperty &GetMouseInBoundsProperty() const;
-	bool MouseInBounds();
+	bool MouseInBounds() const;
 	void ScheduleUpdate();
 	virtual void OnCursorEntered();
 	virtual void OnCursorExited();
@@ -188,7 +209,7 @@ public:
 	void InjectCharInput(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None);
 	void InjectScrollInput(Vector2 offset);
 
-	void GetMousePos(int *x,int *y);
+	void GetMousePos(int *x,int *y) const;
 	void Remove();
 	void RemoveSafely();
 	void RemoveOnRemoval(WIBase *other);
@@ -197,6 +218,8 @@ public:
 	bool IsFading();
 	bool IsFadingIn();
 	bool IsFadingOut();
+
+	void SetThinkIfInvisible(bool bThinkIfInvisible);
 
 	virtual std::string GetDebugInfo() const;
 
@@ -212,24 +235,36 @@ public:
 	const std::string &GetTooltip() const;
 	bool HasTooltip() const;
 
-	WIAnchor *GetAnchor(const std::string &name);
-	const WIAnchor *GetAnchor(const std::string &name) const;
-	WIAnchor *AddAnchor(const std::string &name,const Vector2 &position={});
-	void SetAnchorPos(const std::string &name,const Vector2 &position);
-	const Vector2 *GetAnchorPos(const std::string &name) const;
-	const Vector2i *GetAbsoluteAnchorPos(const std::string &name) const;
-	const util::PVector2iProperty *GetAnchorPosProperty(const std::string &name) const;
+	WIAttachment *GetAttachment(const std::string &name);
+	const WIAttachment *GetAttachment(const std::string &name) const;
+	WIAttachment *AddAttachment(const std::string &name,const Vector2 &position={});
+	void SetAttachmentPos(const std::string &name,const Vector2 &position);
+	const Vector2 *GetAttachmentPos(const std::string &name) const;
+	const Vector2i *GetAbsoluteAttachmentPos(const std::string &name) const;
+	const util::PVector2iProperty *GetAttachmentPosProperty(const std::string &name) const;
+
+	void SetAnchor(float left,float right,float top,float bottom);
+	void SetAnchorLeft(float f);
+	void SetAnchorRight(float f);
+	void SetAnchorTop(float f);
+	void SetAnchorBottom(float f);
+	bool GetAnchor(float &outLeft,float &outRight,float &outTop,float &outBottom) const;
+	bool HasAnchor() const;
+	std::pair<Vector2,Vector2> GetAnchorBounds() const;
 
 	// Handles
 	WIHandle GetHandle() const;
 protected:
+	void UpdateAnchorTransform();
+	StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 	std::array<std::shared_ptr<void>,4> m_userData;
 	WIHandle *m_handle = nullptr;
 	bool m_bExternalHandle = false;
 	std::string m_class = "WIBase";
 	std::string m_name;
 	std::string m_toolTip;
-	std::unordered_map<std::string,std::shared_ptr<WIAnchor>> m_achors = {};
+	std::optional<WIAnchor> m_anchor = {};
+	std::unordered_map<std::string,std::shared_ptr<WIAttachment>> m_attachments = {};
 	std::unique_ptr<WIFadeInfo> m_fade = nullptr;
 	struct
 	{
@@ -242,14 +277,6 @@ protected:
 	Mat4 m_mvpLast = umat::identity();
 	Vector4 m_colorLast = {0.f,0.f,0.f,1.f};
 	int m_zpos = -1;
-	bool m_bMouseInput = false;
-	bool m_bKeyboardInput = false;
-	bool m_bScrollInput = false;
-	bool m_bMouseCheckEnabled = false;
-	bool m_bAutoAlignToParentX = false;
-	bool m_bAutoAlignToParentY = false;
-	bool m_bAutoCenterToParentX = false;
-	bool m_bAutoCenterToParentY = false;
 	CallbackHandle m_cbAutoAlign = {};
 	CallbackHandle m_cbAutoCenterX = {};
 	CallbackHandle m_cbAutoCenterXOwn = {};
@@ -260,10 +287,6 @@ protected:
 	std::vector<WIHandle> m_children;
 	mutable WIHandle m_parent = {};
 	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent);
-	bool m_bTrapFocus = false;
-	bool m_bShouldScissor = true;
-	bool m_bUpdateScheduled = false;
-	bool m_bRemoveScheduled = false;
 	void UpdateChildOrder(WIBase *child=NULL);
 	template<class TElement>
 		WIHandle CreateChild();
@@ -273,8 +296,8 @@ protected:
 	void InitializeHandle(WIHandle *handle);
 	template<class THandle>
 		void InitializeHandle();
-	void CheckMouseInBounds();
-	void CheckChildMouseInBounds();
+	void UpdateMouseInBounds();
+	void UpdateChildrenMouseInBounds();
 	virtual void OnVisibilityChanged(bool bVisible);
 	void ApplySkin(WISkin *skin=nullptr);
 	void SetAutoAlignToParent(bool bX,bool bY,bool bReload);
@@ -284,6 +307,7 @@ protected:
 	virtual void OnChildRemoved(WIBase *child);
 	virtual void OnRemove();
 private:
+	WIBase *FindDeepestChild(const std::function<bool(const WIBase&)> &predInspect,const std::function<bool(const WIBase&)> &predValidCandidate);
 	util::PVector2iProperty m_pos = nullptr;
 	util::PVector2iProperty m_size = nullptr;
 	util::PColorProperty m_color = nullptr;
@@ -292,16 +316,15 @@ private:
 	util::PBoolProperty m_bHasFocus = nullptr;
 private:
 	std::vector<std::string> m_styleClasses;
-	bool m_bSkinApplied = false;
 	WISkin *m_skin = nullptr;
 	ChronoTimePoint m_clickStart;
-	bool m_bClicked = false;
 	static bool __wiJoystickCallback(GLFW::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
 	static bool __wiKeyCallback(GLFW::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
 	static bool __wiCharCallback(GLFW::Window &window,unsigned int c);
 	static bool __wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
 	static bool __wiScrollCallback(GLFW::Window &window,Vector2 offset);
 };
+REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)
 #pragma warning(pop)
 
 #include "wgui.h"

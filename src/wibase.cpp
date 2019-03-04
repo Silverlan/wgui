@@ -53,14 +53,20 @@ WIBase::WIBase()
 
 	//auto hThis = GetHandle();
 	m_pos->AddCallback([this](std::reference_wrapper<const Vector2i> oldPos,std::reference_wrapper<const Vector2i> pos) {
-		for(auto &pair : m_achors)
+		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
 		CallCallbacks<void>("SetPos");
 	});
 	m_size->AddCallback([this](std::reference_wrapper<const Vector2i> oldSize,std::reference_wrapper<const Vector2i> size) {
-		for(auto &pair : m_achors)
+		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
 		CallCallbacks<void>("SetSize");
+		for(auto &hChild : m_children)
+		{
+			if(hChild.IsValid() == false)
+				continue;
+			hChild->UpdateAnchorTransform();
+		}
 	});
 }
 WIBase::~WIBase()
@@ -85,8 +91,8 @@ WIBase::~WIBase()
 	}
 	m_fade = nullptr;
 }
-void WIBase::SetShouldScissor(bool b) {m_bShouldScissor = b;}
-bool WIBase::GetShouldScissor() const {return m_bShouldScissor;}
+void WIBase::SetShouldScissor(bool b) {umath::set_flag(m_stateFlags,StateFlags::ShouldScissorBit,b);}
+bool WIBase::GetShouldScissor() const {return umath::is_flag_set(m_stateFlags,StateFlags::ShouldScissorBit);}
 GLFW::Cursor::Shape WIBase::GetCursor() const {return m_cursor;}
 void WIBase::SetCursor(GLFW::Cursor::Shape cursor) {m_cursor = cursor;}
 void WIBase::RemoveSafely()
@@ -94,7 +100,7 @@ void WIBase::RemoveSafely()
 	SetVisible(false);
 	SetParent(nullptr);
 	WGUI::GetInstance().RemoveSafely(this);
-	m_bRemoveScheduled = true;
+	umath::set_flag(m_stateFlags,StateFlags::RemoveScheduledBit,true);
 }
 void WIBase::RemoveOnRemoval(WIBase *other)
 {
@@ -107,16 +113,16 @@ void WIBase::RemoveOnRemoval(WIBase *other)
 		hOther.get()->Remove();
 	}));
 }
-void WIBase::ScheduleUpdate() {m_bUpdateScheduled = true;}
+void WIBase::ScheduleUpdate() {umath::set_flag(m_stateFlags,StateFlags::UpdateScheduledBit,true);}
 void WIBase::SetAutoAlignToParent(bool bX,bool bY,bool bReload)
 {
-	if(bReload == false && bX == m_bAutoAlignToParentX && bY == m_bAutoAlignToParentY)
+	if(bReload == false && bX == umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentXBit) && bY == umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentYBit))
 		return;
-	m_bAutoAlignToParentX = bX;
-	m_bAutoAlignToParentY = bY;
+	umath::set_flag(m_stateFlags,StateFlags::AutoAlignToParentXBit,bX);
+	umath::set_flag(m_stateFlags,StateFlags::AutoAlignToParentYBit,bY);
 	if(m_cbAutoAlign.IsValid())
 		m_cbAutoAlign.Remove();
-	if(m_bAutoAlignToParentX == false && m_bAutoAlignToParentY == false)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentXBit) == false && umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentYBit) == false)
 		return;
 	auto *parent = GetParent();
 	if(parent == nullptr)
@@ -131,11 +137,11 @@ void WIBase::SetAutoAlignToParent(bool bX,bool bY,bool bReload)
 			return;
 		auto &pos = p->GetPos();
 		auto size = p->GetSize();
-		if((p->m_bAutoAlignToParentX == true && pos.x != 0) || (p->m_bAutoAlignToParentY == true && pos.y != 0))
+		if((umath::is_flag_set(p->m_stateFlags,StateFlags::AutoAlignToParentXBit) == true && pos.x != 0) || (umath::is_flag_set(p->m_stateFlags,StateFlags::AutoAlignToParentYBit) == true && pos.y != 0))
 			p->SetPos(0,0);
-		if(p->m_bAutoAlignToParentX == true)
+		if(umath::is_flag_set(p->m_stateFlags,StateFlags::AutoAlignToParentXBit) == true)
 			size.x = parent->GetWidth();
-		if(p->m_bAutoAlignToParentY == true)
+		if(umath::is_flag_set(p->m_stateFlags,StateFlags::AutoAlignToParentYBit) == true)
 			size.y = parent->GetHeight();
 		p->SetSize(size);
 	}));
@@ -143,13 +149,13 @@ void WIBase::SetAutoAlignToParent(bool bX,bool bY,bool bReload)
 }
 void WIBase::SetAutoCenterToParentX(bool b,bool bReload)
 {
-	if(b == m_bAutoCenterToParentX && (bReload == false || b == false))
+	if(b == umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentXBit) && (bReload == false || b == false))
 		return;
 	if(m_cbAutoCenterX.IsValid())
 		m_cbAutoCenterX.Remove();
 	if(m_cbAutoCenterXOwn.IsValid())
 		m_cbAutoCenterXOwn.Remove();
-	m_bAutoCenterToParentX = b;
+	umath::set_flag(m_stateFlags,StateFlags::AutoCenterToParentXBit,b);
 	if(b == false)
 		return;
 	WIBase *parent = GetParent();
@@ -168,13 +174,13 @@ void WIBase::SetAutoCenterToParentX(bool b,bool bReload)
 }
 void WIBase::SetAutoCenterToParentY(bool b,bool bReload)
 {
-	if(b == m_bAutoCenterToParentY && (bReload == false || b == false))
+	if(b == umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentYBit) && (bReload == false || b == false))
 		return;
 	if(m_cbAutoCenterY.IsValid())
 		m_cbAutoCenterY.Remove();
 	if(m_cbAutoCenterYOwn.IsValid())
 		m_cbAutoCenterYOwn.Remove();
-	m_bAutoCenterToParentY = b;
+	umath::set_flag(m_stateFlags,StateFlags::AutoCenterToParentYBit,b);
 	if(b == false)
 		return;
 	WIBase *parent = GetParent();
@@ -215,11 +221,11 @@ void WIBase::SetAutoAlignToParent(bool b) {SetAutoAlignToParent(b,b,false);}
 void WIBase::SetAutoCenterToParentX(bool b) {SetAutoCenterToParentX(b,false);}
 void WIBase::SetAutoCenterToParentY(bool b) {SetAutoCenterToParentY(b,false);}
 void WIBase::SetAutoCenterToParent(bool b) {SetAutoCenterToParentX(b);SetAutoCenterToParentY(b);}
-bool WIBase::GetAutoAlignToParentX() const {return m_bAutoAlignToParentX;}
-bool WIBase::GetAutoAlignToParentY() const {return m_bAutoAlignToParentY;}
+bool WIBase::GetAutoAlignToParentX() const {return umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentXBit);}
+bool WIBase::GetAutoAlignToParentY() const {return umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentYBit);}
 bool WIBase::GetAutoAlignToParent() const {return (GetAutoAlignToParentX() == true || GetAutoAlignToParentY() == true) ? true : false;}
-bool WIBase::GetMouseMovementCheckEnabled() {return m_bMouseCheckEnabled;}
-void WIBase::SetMouseMovementCheckEnabled(bool b) {m_bMouseCheckEnabled = b;}
+bool WIBase::GetMouseMovementCheckEnabled() {return umath::is_flag_set(m_stateFlags,StateFlags::MouseCheckEnabledBit);}
+void WIBase::SetMouseMovementCheckEnabled(bool b) {umath::set_flag(m_stateFlags,StateFlags::MouseCheckEnabledBit,b);}
 void WIBase::Initialize() {}
 void WIBase::InitializeHandle()
 {
@@ -240,9 +246,9 @@ void WIBase::SetUserData4(const std::shared_ptr<void> &userData) {m_userData.at(
 WIHandle WIBase::GetHandle() const {return *m_handle;}
 void WIBase::TrapFocus(bool b)
 {
-	if(m_bTrapFocus == b)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::TrapFocusBit) == b)
 		return;
-	m_bTrapFocus = b;
+	umath::set_flag(m_stateFlags,StateFlags::TrapFocusBit,b);
 	if(b == true)
 		m_focusTrapStack.push_back(this->GetHandle());
 	else
@@ -260,7 +266,7 @@ void WIBase::TrapFocus(bool b)
 		}
 	}
 }
-bool WIBase::IsFocusTrapped() {return m_bTrapFocus;}
+bool WIBase::IsFocusTrapped() {return umath::is_flag_set(m_stateFlags,StateFlags::TrapFocusBit);}
 std::string WIBase::GetClass() const {return m_class;}
 void WIBase::CallOnRemove(CallbackHandle callback) {AddCallback("OnRemove",callback);}
 void WIBase::SetZPos(int zpos)
@@ -336,14 +342,14 @@ void WIBase::SetX(int x) {SetPos(x,(*m_pos)->y);}
 void WIBase::SetY(int y) {SetPos((*m_pos)->x,y);}
 void WIBase::SetWidth(int w) {SetSize(w,(*m_size)->y);}
 void WIBase::SetHeight(int h) {SetSize((*m_size)->x,h);}
-int WIBase::GetZPos() {return m_zpos;}
+int WIBase::GetZPos() const {return m_zpos;}
 float WIBase::GetAlpha() const {return m_color->GetValue().a /255.f;}
 void WIBase::SetAlpha(float alpha)
 {
 	auto &col = GetColor();
 	*m_color = Color(col.r,col.g,col.b,alpha *255.f);
 }
-void WIBase::GetMousePos(int *x,int *y)
+void WIBase::GetMousePos(int *x,int *y) const
 {
 	auto &context = WGUI::GetInstance().GetContext();
 	auto &window = context.GetWindow();
@@ -466,17 +472,17 @@ void WIBase::OnFocusKilled()
 	CallCallbacks<void>("OnFocusKilled");
 }
 const util::PBoolProperty &WIBase::GetVisibilityProperty() const {return m_bVisible;}
-bool WIBase::IsVisible() {return (*m_bVisible && m_color->GetValue().a > 0.f) ? true : false;}
+bool WIBase::IsVisible() const {return (*m_bVisible && m_color->GetValue().a > 0.f) ? true : false;}
 void WIBase::OnVisibilityChanged(bool) {}
 void WIBase::SetVisible(bool b)
 {
-	if(*m_bVisible == b || m_bRemoveScheduled == true)
+	if(*m_bVisible == b || umath::is_flag_set(m_stateFlags,StateFlags::RemoveScheduledBit))
 		return;
 	*m_bVisible = b;
 	OnVisibilityChanged(b);
 	if(b == false)
 	{
-		CheckMouseInBounds();
+		UpdateMouseInBounds();
 		WIBase *el = WGUI::GetInstance().GetFocusedElement();
 		if(el != NULL && (el == this || el->IsDescendantOf(this)))
 		{
@@ -494,16 +500,16 @@ void WIBase::SetVisible(bool b)
 }
 void WIBase::Update()
 {
-	m_bUpdateScheduled = false;
+	umath::set_flag(m_stateFlags,StateFlags::UpdateScheduledBit,false);
 }
 const util::PVector2iProperty &WIBase::GetPosProperty() const {return m_pos;}
 const Vector2i &WIBase::GetPos() const {return *m_pos;}
-void WIBase::GetPos(int *x,int *y)
+void WIBase::GetPos(int *x,int *y) const
 {
 	*x = (*m_pos)->x;
 	*y = (*m_pos)->y;
 }
-Vector2i WIBase::GetAbsolutePos()
+Vector2i WIBase::GetAbsolutePos() const
 {
 	Vector2i pos = GetPos();
 	WIBase *parent = GetParent();
@@ -670,7 +676,7 @@ void WIBase::SetSkin(std::string skinName)
 }
 void WIBase::ResetSkin()
 {
-	if(m_bSkinApplied == true)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::SkinAppliedBit) == true)
 	{
 		if(m_skin != nullptr)
 			m_skin->Release(this);
@@ -680,7 +686,7 @@ void WIBase::ResetSkin()
 			if(skinCurrent != nullptr)
 				skinCurrent->Release(this);
 		}
-		m_bSkinApplied = false;
+		umath::set_flag(m_stateFlags,StateFlags::SkinAppliedBit,false);
 	}
 	m_skin = nullptr;
 	std::vector<WIHandle> *children = GetChildren();
@@ -693,9 +699,9 @@ void WIBase::ResetSkin()
 }
 void WIBase::ApplySkin(WISkin *skin)
 {
-	if(m_bSkinApplied == true)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::SkinAppliedBit) == true)
 		return;
-	m_bSkinApplied = true;
+	umath::set_flag(m_stateFlags,StateFlags::SkinAppliedBit,true);
 	if(m_skin != nullptr)
 		m_skin->Initialize(this);
 	else
@@ -712,21 +718,32 @@ void WIBase::ApplySkin(WISkin *skin)
 			hChild->ApplySkin((m_skin == nullptr) ? skin : m_skin);
 	}
 }
+void WIBase::SetThinkIfInvisible(bool bThinkIfInvisible) {umath::set_flag(m_stateFlags,StateFlags::ThinkIfInvisibleBit);}
 void WIBase::Think()
 {
-	if(m_bRemoveScheduled == true)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::RemoveScheduledBit) == true)
 		return;
-	if(*m_bVisible == false && m_fade == nullptr)
+	if(*m_bVisible == false && m_fade == nullptr && umath::is_flag_set(m_stateFlags,StateFlags::ThinkIfInvisibleBit) == false)
 		return;
-	if(m_bUpdateScheduled == true)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit) == true)
 		Update();
+	if(m_anchor.has_value() && m_anchor->initialized == false)
+	{
+		m_anchor->initialized = true;
+
+		auto anchorBounds = GetAnchorBounds();
+		m_anchor->pxOffsetLeft = GetLeft() -anchorBounds.first.x;
+		m_anchor->pxOffsetTop = GetTop() -anchorBounds.first.y;
+		m_anchor->pxOffsetRight = GetRight() -anchorBounds.second.x;
+		m_anchor->pxOffsetBottom = GetBottom() -anchorBounds.second.y;
+	}
 	ApplySkin();
 	if(*m_bHasFocus == true)
 	{
 		auto &context = WGUI::GetInstance().GetContext();
 		auto &window = context.GetWindow();
 		if(window.IsFocused())
-			CheckChildMouseInBounds();
+			UpdateChildrenMouseInBounds();
 	}
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
@@ -737,7 +754,7 @@ void WIBase::Think()
 				child->Think();
 		}
 	}
-	if(m_bMouseCheckEnabled == true)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::MouseCheckEnabledBit) == true)
 	{
 		int x,y;
 		GetMousePos(&x,&y);
@@ -871,53 +888,129 @@ std::string WIBase::GetDebugInfo() const {return "";}
 void WIBase::SetTooltip(const std::string &msg) {m_toolTip = msg;}
 const std::string &WIBase::GetTooltip() const {return m_toolTip;}
 bool WIBase::HasTooltip() const {return !m_toolTip.empty();}
-WIAnchor *WIBase::AddAnchor(const std::string &name,const Vector2 &position)
+WIAttachment *WIBase::AddAttachment(const std::string &name,const Vector2 &position)
 {
 	auto lname = name;
 	ustring::to_lower(lname);
-	auto it = m_achors.find(lname);
-	if(it == m_achors.end())
-		it = m_achors.insert(std::make_pair(lname,std::make_shared<WIAnchor>(*this))).first;
+	auto it = m_attachments.find(lname);
+	if(it == m_attachments.end())
+		it = m_attachments.insert(std::make_pair(lname,std::make_shared<WIAttachment>(*this))).first;
 	it->second->SetRelativePosition(position);
 	return it->second.get();
 }
-const WIAnchor *WIBase::GetAnchor(const std::string &name) const {return const_cast<WIBase*>(this)->GetAnchor(name);}
-WIAnchor *WIBase::GetAnchor(const std::string &name)
+const WIAttachment *WIBase::GetAttachment(const std::string &name) const {return const_cast<WIBase*>(this)->GetAttachment(name);}
+WIAttachment *WIBase::GetAttachment(const std::string &name)
 {
 	auto lname = name;
 	ustring::to_lower(lname);
-	auto it = m_achors.find(lname);
-	if(it == m_achors.end())
+	auto it = m_attachments.find(lname);
+	if(it == m_attachments.end())
 		return nullptr;
 	return it->second.get();
 }
-void WIBase::SetAnchorPos(const std::string &name,const Vector2 &position)
+void WIBase::SetAttachmentPos(const std::string &name,const Vector2 &position)
 {
-	auto *pAnchor = GetAnchor(name);
-	if(pAnchor == nullptr)
+	auto *pAttachment = GetAttachment(name);
+	if(pAttachment == nullptr)
 		return;
-	pAnchor->SetRelativePosition(position);
+	pAttachment->SetRelativePosition(position);
 }
-const Vector2 *WIBase::GetAnchorPos(const std::string &name) const
+const Vector2 *WIBase::GetAttachmentPos(const std::string &name) const
 {
-	auto *pAnchor = GetAnchor(name);
-	if(pAnchor == nullptr)
+	auto *pAttachment = GetAttachment(name);
+	if(pAttachment == nullptr)
 		return nullptr;
-	return &pAnchor->GetRelativePosition();
+	return &pAttachment->GetRelativePosition();
 }
-const Vector2i *WIBase::GetAbsoluteAnchorPos(const std::string &name) const
+const Vector2i *WIBase::GetAbsoluteAttachmentPos(const std::string &name) const
 {
-	auto *pAnchor = GetAnchor(name);
-	if(pAnchor == nullptr)
+	auto *pAttachment = GetAttachment(name);
+	if(pAttachment == nullptr)
 		return nullptr;
-	return &pAnchor->GetAbsPosProperty()->GetValue();
+	return &pAttachment->GetAbsPosProperty()->GetValue();
 }
-const util::PVector2iProperty *WIBase::GetAnchorPosProperty(const std::string &name) const
+const util::PVector2iProperty *WIBase::GetAttachmentPosProperty(const std::string &name) const
 {
-	auto *pAnchor = GetAnchor(name);
-	if(pAnchor == nullptr)
+	auto *pAttachment = GetAttachment(name);
+	if(pAttachment == nullptr)
 		return nullptr;
-	return &pAnchor->GetAbsPosProperty();
+	return &pAttachment->GetAbsPosProperty();
+}
+bool WIBase::HasAnchor() const {return m_anchor.has_value();}
+std::pair<Vector2,Vector2> WIBase::GetAnchorBounds() const
+{
+	auto *pParent = GetParent();
+	auto w = pParent ? pParent->GetWidth() : GetWidth();
+	auto h = pParent ? pParent->GetHeight() : GetHeight();
+	auto anchorMin = Vector2{m_anchor->left *w,m_anchor->top *h};
+	auto anchorMax = Vector2{m_anchor->right *w,m_anchor->bottom *h};
+	return {anchorMin,anchorMax};
+}
+void WIBase::SetAnchor(float left,float right,float top,float bottom)
+{
+	m_anchor = WIAnchor{};
+	m_anchor->left = left;
+	m_anchor->right = right;
+	m_anchor->top = top;
+	m_anchor->bottom = bottom;
+}
+void WIBase::SetAnchorLeft(float f)
+{
+	if(m_anchor.has_value() == false)
+		m_anchor = {};
+	m_anchor->initialized = false;
+	m_anchor->left = f;
+}
+void WIBase::SetAnchorRight(float f)
+{
+	if(m_anchor.has_value() == false)
+		m_anchor = {};
+	m_anchor->initialized = false;
+	m_anchor->right = f;
+}
+void WIBase::SetAnchorTop(float f)
+{
+	if(m_anchor.has_value() == false)
+		m_anchor = {};
+	m_anchor->initialized = false;
+	m_anchor->top = f;
+}
+void WIBase::SetAnchorBottom(float f)
+{
+	if(m_anchor.has_value() == false)
+		m_anchor = {};
+	m_anchor->initialized = false;
+	m_anchor->bottom = f;
+}
+bool WIBase::GetAnchor(float &outLeft,float &outRight,float &outTop,float &outBottom) const
+{
+	if(m_anchor.has_value() == false)
+	{
+		outLeft = 0.f;
+		outRight = 0.f;
+		outTop = 0.f;
+		outBottom = 0.f;
+		return false;
+	}
+	outLeft = m_anchor->left;
+	outRight = m_anchor->right;
+	outTop = m_anchor->top;
+	outBottom = m_anchor->bottom;
+	return true;
+}
+void WIBase::UpdateAnchorTransform()
+{
+	auto *pParent = GetParent();
+	if(pParent == nullptr || m_anchor.has_value() == false)
+		return;
+	auto szParent = pParent->GetSize();
+	auto anchorBounds = GetAnchorBounds();
+  
+	auto elMin = Vector2{anchorBounds.first.x +m_anchor->pxOffsetLeft,anchorBounds.first.y +m_anchor->pxOffsetTop};
+	auto elMax = Vector2{anchorBounds.second.x +m_anchor->pxOffsetRight,anchorBounds.second.y +m_anchor->pxOffsetBottom};
+	auto sz = elMax -elMin;
+	SetPos(elMin);
+	SetSize(sz);
 }
 void WIBase::Remove()
 {
@@ -949,9 +1042,9 @@ void WIBase::SetParent(WIBase *base)
 		m_parent = WIHandle();
 		if(GetAutoAlignToParent() == true)
 			SetAutoAlignToParent(true,true);
-		if(m_bAutoCenterToParentX == true)
+		if(umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentXBit) == true)
 			SetAutoCenterToParentX(true,true);
-		if(m_bAutoCenterToParentY == true)
+		if(umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentYBit) == true)
 			SetAutoCenterToParentY(true,true);
 		return;
 	}
@@ -959,9 +1052,9 @@ void WIBase::SetParent(WIBase *base)
 	base->AddChild(this);
 	if(GetAutoAlignToParent() == true)
 		SetAutoAlignToParent(true,true);
-	if(m_bAutoCenterToParentX == true)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentXBit) == true)
 		SetAutoCenterToParentX(true,true);
-	if(m_bAutoCenterToParentY == true)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentYBit) == true)
 		SetAutoCenterToParentY(true,true);
 }
 WIBase *WIBase::GetParent() const
@@ -1014,11 +1107,11 @@ bool WIBase::HasChild(WIBase *child)
 }
 void WIBase::OnChildAdded(WIBase *child) {CallCallbacks<void,WIBase*>("OnChildAdded",child);}
 void WIBase::OnChildRemoved(WIBase *child) {CallCallbacks<void,WIBase*>("OnChildRemoved",child);}
-bool WIBase::PosInBounds(int x,int y)
+bool WIBase::PosInBounds(int x,int y) const
 {
 	return PosInBounds(Vector2i(x,y));
 }
-bool WIBase::PosInBounds(Vector2i pos)
+bool WIBase::PosInBounds(Vector2i pos) const
 {
 	pos -= GetAbsolutePos();
 	const Vector2i &size = GetSize();
@@ -1026,20 +1119,20 @@ bool WIBase::PosInBounds(Vector2i pos)
 }
 void WIBase::Resize() {SetSize(GetSize());}
 const util::PBoolProperty &WIBase::GetMouseInBoundsProperty() const {return m_bMouseInBounds;}
-bool WIBase::MouseInBounds()
+bool WIBase::MouseInBounds() const
 {
 	auto &context = WGUI::GetInstance().GetContext();
 	auto &window = context.GetWindow();
 	auto cursorPos = window.GetCursorPos();
 	return PosInBounds(static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y));
 }
-bool WIBase::GetMouseInputEnabled() {return m_bMouseInput;}
-bool WIBase::GetKeyboardInputEnabled() {return m_bKeyboardInput;}
-bool WIBase::GetScrollInputEnabled() {return m_bScrollInput;}
-void WIBase::CheckMouseInBounds()
+bool WIBase::GetMouseInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit);}
+bool WIBase::GetKeyboardInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptKeyboardInputBit);}
+bool WIBase::GetScrollInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptScrollInputBit);}
+void WIBase::UpdateMouseInBounds()
 {
 	bool old = *m_bMouseInBounds;
-	if(m_bMouseInput == false)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit) == false)
 		*m_bMouseInBounds = false;
 	else
 		*m_bMouseInBounds = MouseInBounds();
@@ -1049,15 +1142,15 @@ void WIBase::CheckMouseInBounds()
 		OnCursorEntered();
 	else OnCursorExited();
 }
-void WIBase::CheckChildMouseInBounds()
+void WIBase::UpdateChildrenMouseInBounds()
 {
-	if(m_bMouseInput == true)
-		CheckMouseInBounds();
+	if(umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit) == true)
+		UpdateMouseInBounds();
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIHandle &hChild = m_children[i];
 		if(hChild.IsValid() && hChild->IsVisible())
-			hChild->CheckChildMouseInBounds();
+			hChild->UpdateChildrenMouseInBounds();
 	}
 }
 void WIBase::OnCursorEntered()
@@ -1081,15 +1174,15 @@ void WIBase::OnCursorExited()
 }
 void WIBase::SetMouseInputEnabled(bool b)
 {
-	m_bMouseInput = b;
+	umath::set_flag(m_stateFlags,StateFlags::AcceptMouseInputBit,b);
 	if(b == false && *m_bMouseInBounds == true)
 	{
 		OnCursorExited();
 		*m_bMouseInBounds = false;
 	}
 }
-void WIBase::SetKeyboardInputEnabled(bool b) {m_bKeyboardInput = b;}
-void WIBase::SetScrollInputEnabled(bool b) {m_bScrollInput = b;}
+void WIBase::SetKeyboardInputEnabled(bool b) {umath::set_flag(m_stateFlags,StateFlags::AcceptKeyboardInputBit,b);}
+void WIBase::SetScrollInputEnabled(bool b) {umath::set_flag(m_stateFlags,StateFlags::AcceptScrollInputBit,b);}
 //#include <iostream>
 void WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
@@ -1099,12 +1192,12 @@ void WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::M
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now -m_clickStart);
 		if(duration.count() <= 300)
 		{
-			m_bClicked = false;
+			umath::set_flag(m_stateFlags,StateFlags::ClickedBit,false);
 			OnDoubleClick();
 		}
 		else
 		{
-			m_bClicked = true;
+			umath::set_flag(m_stateFlags,StateFlags::ClickedBit,true);
 			m_clickStart = std::chrono::high_resolution_clock::now();
 		}
 	}
@@ -1145,11 +1238,58 @@ void WIBase::ScrollCallback(Vector2 offset)
 	//std::cout<<"ScrollCallback: "<<xoffset<<","<<yoffset<<std::endl;
 }
 
-void WIBase::InjectMouseMoveInput(int32_t x,int32_t y) {OnCursorMoved(x,y);}
-void WIBase::InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) {MouseCallback(button,state,mods);}
+WIBase *WIBase::FindDeepestChild(const std::function<bool(const WIBase&)> &predInspect,const std::function<bool(const WIBase&)> &predValidCandidate)
+{
+	auto largestZPos = std::numeric_limits<int32_t>::lowest();
+	WIBase *r = nullptr;
+	if(predValidCandidate(*this))
+		r = this;
+	WIBase *childToInspect = nullptr;
+	for(auto &hChild : m_children)
+	{
+		if(hChild.IsValid() == false)
+			continue;
+		if(predInspect(*hChild.get()) == true && hChild.get()->GetZPos() > largestZPos)
+		{
+			childToInspect = hChild.get();
+			largestZPos = childToInspect->GetZPos();
+		}
+	}
+	if(childToInspect != nullptr)
+	{
+		auto *rChild = childToInspect->FindDeepestChild(predInspect,predValidCandidate);
+		if(rChild != nullptr)
+			r = rChild;
+	}
+	return r;
+}
+void WIBase::InjectMouseMoveInput(int32_t x,int32_t y)
+{
+	OnCursorMoved(x,y);
+	UpdateChildrenMouseInBounds();
+}
+void WIBase::InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+{
+	auto *el = FindDeepestChild([](const WIBase &el) {
+		return el.MouseInBounds();
+	},[](const WIBase &el) {
+		return el.GetMouseInputEnabled();
+	});
+	if(el != nullptr)
+		el->MouseCallback(button,state,mods);
+}
 void WIBase::InjectKeyboardInput(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods) {KeyboardCallback(key,scanCode,state,mods);}
 void WIBase::InjectCharInput(unsigned int c,GLFW::Modifier mods) {CharCallback(c,mods);}
-void WIBase::InjectScrollInput(Vector2 offset) {ScrollCallback(offset);}
+void WIBase::InjectScrollInput(Vector2 offset)
+{
+	auto *el = FindDeepestChild([](const WIBase &el) {
+		return el.MouseInBounds();
+	},[](const WIBase &el) {
+		return el.GetScrollInputEnabled();
+	});
+	if(el != nullptr)
+		el->ScrollCallback(offset);
+}
 
 std::vector<std::string> &WIBase::GetStyleClasses() {return m_styleClasses;}
 void WIBase::AddStyleClass(const std::string &className)

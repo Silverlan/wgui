@@ -6,21 +6,21 @@
 #define __WIANCHOR_HPP__
 
 #include "wguidefinitions.h"
-#include <sharedutils/property/util_property_vector.h>
+#include <cinttypes>
 
-class DLLWGUI WIAnchor
+struct DLLWGUI WIAnchor
 {
-public:
-	WIAnchor(WIBase &owner,const Vector2 &pos={});
-	void SetRelativePosition(const Vector2 &pos);
-	const Vector2 &GetRelativePosition() const;
+	float left = 0.f;
+	float right = 0.f;
+	float top = 0.f;
+	float bottom = 0.f;
 
-	void UpdateAbsolutePosition();
-	const util::PVector2iProperty &GetAbsPosProperty() const;
-private:
-	WIHandle m_hOwner = {};
-	Vector2 m_relativePosition = {};
-	util::PVector2iProperty m_absPosProperty = nullptr;
+	int32_t pxOffsetLeft = 0;
+	int32_t pxOffsetRight = 0;
+	int32_t pxOffsetTop = 0;
+	int32_t pxOffsetBottom = 0;
+
+	bool initialized = false;
 };
 
 #endif

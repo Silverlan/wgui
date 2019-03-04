@@ -3,12 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "stdafx_wgui.h"
-#include "wgui/wianchor.hpp"
+#include "wgui/wiattachment.hpp"
 
-WIAnchor::WIAnchor(WIBase &owner,const Vector2 &pos)
+WIAttachment::WIAttachment(WIBase &owner,const Vector2 &pos)
 	: m_hOwner{owner.GetHandle()},m_absPosProperty{util::Vector2iProperty::Create(pos)}
 {}
-void WIAnchor::UpdateAbsolutePosition()
+void WIAttachment::UpdateAbsolutePosition()
 {
 	if(m_hOwner.IsValid() == false)
 		return;
@@ -17,10 +17,10 @@ void WIAnchor::UpdateAbsolutePosition()
 	auto &sz = p->GetSize();
 	*m_absPosProperty = origin +Vector2i(sz.x *m_relativePosition.x,sz.y *m_relativePosition.y);
 }
-const Vector2 &WIAnchor::GetRelativePosition() const {return m_relativePosition;}
-void WIAnchor::SetRelativePosition(const Vector2 &pos)
+const Vector2 &WIAttachment::GetRelativePosition() const {return m_relativePosition;}
+void WIAttachment::SetRelativePosition(const Vector2 &pos)
 {
 	m_relativePosition = pos;
 	UpdateAbsolutePosition();
 }
-const util::PVector2iProperty &WIAnchor::GetAbsPosProperty() const {return m_absPosProperty;}
+const util::PVector2iProperty &WIAttachment::GetAbsPosProperty() const {return m_absPosProperty;}
