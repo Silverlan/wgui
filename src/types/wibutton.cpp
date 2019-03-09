@@ -43,7 +43,10 @@ std::string WIButton::GetText()
 }
 void WIButton::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
+	auto hThis = GetHandle();
 	WIBase::MouseCallback(button,state,mods);
+	if(hThis.IsValid() == false)
+		return;
 	if(button == GLFW::MouseButton::Left)
 	{
 		if(state == GLFW::KeyState::Press)

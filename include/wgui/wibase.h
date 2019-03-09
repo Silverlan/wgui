@@ -152,6 +152,8 @@ public:
 	WIBase *GetChild(const std::string &className,unsigned int idx);
 	WIBase *FindChildByName(const std::string &name);
 	void FindChildrenByName(const std::string &name,std::vector<WIHandle> &children);
+	WIBase *FindDescendantByName(const std::string &name);
+	void FindDescendantsByName(const std::string &name,std::vector<WIHandle> &children);
 	void GetPos(int *x,int *y) const;
 	void SetPos(const Vector2i &pos);
 	virtual void SetPos(int x,int y);

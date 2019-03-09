@@ -587,6 +587,31 @@ void WIBase::FindChildrenByName(const std::string &name,std::vector<WIHandle> &c
 			children.push_back(hChild);
 	}
 }
+WIBase *WIBase::FindDescendantByName(const std::string &name)
+{
+	if(ustring::compare(GetName(),name,false))
+		return this;
+	for(auto &hChild : m_children)
+	{
+		if(hChild.IsValid() == false)
+			continue;
+		auto *r = hChild->FindDescendantByName(name);
+		if(r != nullptr)
+			return r;
+	}
+	return nullptr;
+}
+void WIBase::FindDescendantsByName(const std::string &name,std::vector<WIHandle> &children)
+{
+	if(ustring::compare(GetName(),name,false))
+		children.push_back(GetHandle());
+	for(auto &hChild : m_children)
+	{
+		if(hChild.IsValid() == false)
+			continue;
+		hChild->FindDescendantsByName(name,children);
+	}
+}
 const Color &WIBase::GetColor() const {return *m_color;}
 const std::shared_ptr<util::ColorProperty> &WIBase::GetColorProperty() const {return m_color;}
 void WIBase::SetColor(const Vector4 &col) {SetColor(col.r,col.g,col.b,col.a);}
@@ -736,6 +761,7 @@ void WIBase::Think()
 		m_anchor->pxOffsetTop = GetTop() -anchorBounds.first.y;
 		m_anchor->pxOffsetRight = GetRight() -anchorBounds.second.x;
 		m_anchor->pxOffsetBottom = GetBottom() -anchorBounds.second.y;
+		UpdateAnchorTransform();
 	}
 	ApplySkin();
 	if(*m_bHasFocus == true)
@@ -1332,7 +1358,10 @@ bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton butt
 					if(it != __lastMouseGUIElements.end() && !it->second.IsValid())
 						__lastMouseGUIElements.erase(it);
 					if(p != NULL && gui != p && !p->MouseInBounds())
+					{
 						p->KillFocus(); // Make sure to kill the focus AFTER the mouse callback.
+						gui->RequestFocus();
+					}
 					return true;
 				}
 				else if(p != NULL && gui != p && !p->MouseInBounds())
