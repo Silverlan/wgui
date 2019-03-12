@@ -718,9 +718,14 @@ void WIText::InitializeTextBuffers()
 		if(bExistingBuffer == false)
 			m_textBufferInfo.glyphInfoBufferInfos.push_back({s_textBuffer->AllocateBuffer(),hash});
 		// Update existing buffer
+		auto &buf = m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx).buffer;
 		context.ScheduleRecordUpdateBuffer(
-			m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx).buffer,
+			buf,
 			0ull,glyphBoundsData.size() *sizeof(glyphBoundsData.front()),glyphBoundsData.data()
+		);
+		prosper::util::record_buffer_barrier(
+			**context.GetDrawCommandBuffer(),*buf,
+			Anvil::PipelineStageFlagBits::TRANSFER_BIT,Anvil::PipelineStageFlagBits::VERTEX_INPUT_BIT,Anvil::AccessFlagBits::TRANSFER_WRITE_BIT,Anvil::AccessFlagBits::INDEX_READ_BIT
 		);
 	}
 }
