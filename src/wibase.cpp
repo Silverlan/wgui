@@ -19,6 +19,7 @@
 
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 
+#pragma optimize("",off)
 std::deque<WIHandle> WIBase::m_focusTrapStack;
 float WIBase::RENDER_ALPHA = 1.f;
 
@@ -752,7 +753,7 @@ void WIBase::Think()
 		return;
 	if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit) == true)
 		Update();
-	if(m_anchor.has_value() && m_anchor->initialized == false)
+	/*if(m_anchor.has_value() && m_anchor->initialized == false)
 	{
 		m_anchor->initialized = true;
 
@@ -762,7 +763,7 @@ void WIBase::Think()
 		m_anchor->pxOffsetRight = GetRight() -anchorBounds.second.x;
 		m_anchor->pxOffsetBottom = GetBottom() -anchorBounds.second.y;
 		UpdateAnchorTransform();
-	}
+	}*/
 	ApplySkin();
 	if(*m_bHasFocus == true)
 	{
@@ -972,13 +973,25 @@ std::pair<Vector2,Vector2> WIBase::GetAnchorBounds() const
 	auto anchorMax = Vector2{m_anchor->right *w,m_anchor->bottom *h};
 	return {anchorMin,anchorMax};
 }
-void WIBase::SetAnchor(float left,float right,float top,float bottom)
+void WIBase::SetAnchor(float left,float top,float right,float bottom)
 {
 	m_anchor = WIAnchor{};
 	m_anchor->left = left;
 	m_anchor->right = right;
 	m_anchor->top = top;
 	m_anchor->bottom = bottom;
+
+	if(m_anchor.has_value() && m_anchor->initialized == false)
+	{
+		m_anchor->initialized = true;
+
+		auto anchorBounds = GetAnchorBounds();
+		m_anchor->pxOffsetLeft = GetLeft() -anchorBounds.first.x;
+		m_anchor->pxOffsetTop = GetTop() -anchorBounds.first.y;
+		m_anchor->pxOffsetRight = GetRight() -anchorBounds.second.x;
+		m_anchor->pxOffsetBottom = GetBottom() -anchorBounds.second.y;
+		UpdateAnchorTransform();
+	}
 }
 void WIBase::SetAnchorLeft(float f)
 {
@@ -1008,7 +1021,7 @@ void WIBase::SetAnchorBottom(float f)
 	m_anchor->initialized = false;
 	m_anchor->bottom = f;
 }
-bool WIBase::GetAnchor(float &outLeft,float &outRight,float &outTop,float &outBottom) const
+bool WIBase::GetAnchor(float &outLeft,float &outTop,float &outRight,float &outBottom) const
 {
 	if(m_anchor.has_value() == false)
 	{
@@ -1470,3 +1483,4 @@ bool WIBase::IsFadingOut()
 		return false;
 	return (m_fade->alphaTarget < GetAlpha()) ? true : false;
 }
+#pragma optimize("",on)

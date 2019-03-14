@@ -245,12 +245,12 @@ public:
 	const Vector2i *GetAbsoluteAttachmentPos(const std::string &name) const;
 	const util::PVector2iProperty *GetAttachmentPosProperty(const std::string &name) const;
 
-	void SetAnchor(float left,float right,float top,float bottom);
+	void SetAnchor(float left,float top,float right,float bottom);
 	void SetAnchorLeft(float f);
 	void SetAnchorRight(float f);
 	void SetAnchorTop(float f);
 	void SetAnchorBottom(float f);
-	bool GetAnchor(float &outLeft,float &outRight,float &outTop,float &outBottom) const;
+	bool GetAnchor(float &outLeft,float &outTop,float &outRight,float &outBottom) const;
 	bool HasAnchor() const;
 	std::pair<Vector2,Vector2> GetAnchorBounds() const;
 
