@@ -160,7 +160,7 @@ void WGUI::GetMousePos(int &x,int &y)
 	y = static_cast<int>(cursorPos.y);
 }
 
-void WGUI::SetHandleFactory(WIHandle *(*handleFactory)(WIBase*)) {m_handleFactory = handleFactory;}
+void WGUI::SetHandleFactory(const std::function<std::shared_ptr<WIHandle>(WIBase&)> &handleFactory) {m_handleFactory = handleFactory;}
 
 void WGUI::Think()
 {
@@ -215,6 +215,7 @@ WIBase *WGUI::GetBaseElement()
 
 bool WGUI::SetFocusedElement(WIBase *gui)
 {
+	auto *pPrevFocused = m_focused.get();
 	auto &context = GetContext();
 	auto &window = context.GetWindow();
 	if(gui != NULL && m_focused.IsValid())
@@ -233,37 +234,39 @@ bool WGUI::SetFocusedElement(WIBase *gui)
 	{
 		window.SetCursorInputMode(GLFW::CursorMode::Hidden);
 		m_focused = {};
+		if(m_onFocusChangedCallback != nullptr)
+			m_onFocusChangedCallback(pPrevFocused,m_focused.get());
 		return true;
 	}
 	window.SetCursorInputMode(GLFW::CursorMode::Normal);
 	m_focused = gui->GetHandle();
+	if(m_onFocusChangedCallback != nullptr)
+		m_onFocusChangedCallback(pPrevFocused,m_focused.get());
 	return true;
 }
 
 WIBase *WGUI::GetFocusedElement() {return m_focused.get();}
 
-void WGUI::RemoveSafely(WIBase *gui)
+void WGUI::RemoveSafely(WIBase &gui)
 {
-	if(gui == nullptr)
-		return;
-	m_removeQueue.push(gui->GetHandle());
+	m_removeQueue.push(gui.GetHandle());
 }
 
-void WGUI::Remove(WIBase *gui)
+void WGUI::Remove(WIBase &gui)
 {
-	if(gui == m_base.get())
+	if(&gui == m_base.get())
 		return;
-	auto hEl = gui->GetHandle();
+	auto hEl = gui.GetHandle();
 	if(m_removeCallback != NULL)
 		m_removeCallback(gui);
 	if(!hEl.IsValid())
 		return;
-	if(gui == GetFocusedElement())
+	if(&gui == GetFocusedElement())
 	{
-		gui->TrapFocus(false);
-		gui->KillFocus();
+		gui.TrapFocus(false);
+		gui.KillFocus();
 	}
-	delete gui;
+	delete &gui;
 }
 
 void WGUI::ClearSkin()
@@ -313,15 +316,9 @@ std::string WGUI::GetSkinName()
 	return m_skin->m_identifier;
 }
 
-void WGUI::SetCreateCallback(void(*callback)(WIBase*))
-{
-	m_createCallback = callback;
-}
-
-void WGUI::SetRemoveCallback(void(*callback)(WIBase*))
-{
-	m_removeCallback = callback;
-}
+void WGUI::SetCreateCallback(const std::function<void(WIBase&)> &onCreate) {m_createCallback = onCreate;}
+void WGUI::SetRemoveCallback(const std::function<void(WIBase&)> &onRemove) {m_removeCallback = onRemove;}
+void WGUI::SetFocusCallback(const std::function<void(WIBase*,WIBase*)> &onFocusChanged) {m_onFocusChangedCallback = onFocusChanged;}
 
 bool WGUI::HandleJoystickInput(GLFW::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state)
 {

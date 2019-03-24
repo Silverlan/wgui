@@ -85,10 +85,10 @@ public:
 	template<class TElement>
 		TElement *Create(WIBase *parent=nullptr);
 	template<class TElement>
-		void Setup(WIBase *el,WIBase *parent=nullptr);
+		void Setup(WIBase &el,WIBase *parent=nullptr);
 	WIBase *Create(std::string classname,WIBase *parent=nullptr);
-	void RemoveSafely(WIBase *gui);
-	void Remove(WIBase *gui);
+	void RemoveSafely(WIBase &gui);
+	void Remove(WIBase &gui);
 	WIBase *GetBaseElement();
 	WIBase *GetFocusedElement();
 	void Think();
@@ -98,9 +98,10 @@ public:
 	bool HandleKeyboardInput(GLFW::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
 	bool HandleCharInput(GLFW::Window &window,unsigned int c);
 	bool HandleScrollInput(GLFW::Window &window,Vector2 offset);
-	void SetHandleFactory(WIHandle *(*handleFactory)(WIBase*));
-	void SetCreateCallback(void(*callback)(WIBase*));
-	void SetRemoveCallback(void(*callback)(WIBase*));
+	void SetHandleFactory(const std::function<std::shared_ptr<WIHandle>(WIBase&)> &handleFactory);
+	void SetCreateCallback(const std::function<void(WIBase&)> &onCreate);
+	void SetRemoveCallback(const std::function<void(WIBase&)> &onRemove);
+	void SetFocusCallback(const std::function<void(WIBase*,WIBase*)> &onFocusChanged);
 	void GetMousePos(int &x,int &y);
 	template<class TSkin>
 		TSkin *RegisterSkin(std::string id,bool bReload=false);
@@ -141,12 +142,13 @@ private:
 	WIHandle m_base = {};
 	WIHandle m_focused = {};
 	std::queue<WIHandle> m_removeQueue;
-	WIHandle *(*m_handleFactory)(WIBase*) = nullptr;
+	std::function<std::shared_ptr<WIHandle>(WIBase&)> m_handleFactory = nullptr;
 	std::vector<std::unique_ptr<GLFW::Cursor>> m_cursors;
 	GLFW::Cursor::Shape m_cursor = GLFW::Cursor::Shape::Arrow;
 	GLFW::CursorHandle m_customCursor = {};
-	void (*m_createCallback)(WIBase*) = nullptr;
-	void (*m_removeCallback)(WIBase*) = nullptr;
+	std::function<void(WIBase&)> m_createCallback = nullptr;
+	std::function<void(WIBase&)> m_removeCallback = nullptr;
+	std::function<void(WIBase*,WIBase*)> m_onFocusChangedCallback = nullptr;
 	ChronoTime m_time = {};
 	double m_tLastThink = 0;
 	double m_tDelta = 0.f;
@@ -188,27 +190,27 @@ template<class TSkin>
 }
 
 template<class TElement>
-	void WGUI::Setup(WIBase *el,WIBase *parent)
+	void WGUI::Setup(WIBase &el,WIBase *parent)
 {
 	if(m_handleFactory != nullptr)
 	{
-		WIHandle *handle = m_handleFactory(el);
-		if(handle != nullptr)
-			el->InitializeHandle(handle);
+		auto handle = m_handleFactory(el);
+		if(handle != nullptr && handle->IsValid())
+			el.InitializeHandle(std::move(handle));
 		else
-			el->InitializeHandle();
+			el.InitializeHandle();
 	}
 	else
-		el->InitializeHandle();
+		el.InitializeHandle();
 	if(parent != nullptr)
-		el->SetParent(parent);
+		el.SetParent(parent);
 	else if(m_base.IsValid())
-		el->SetParent(m_base.get());
-	el->Initialize();
-	WGUIClassMap *map = GetWGUIClassMap();
+		el.SetParent(m_base.get());
+	el.Initialize();
+	auto *map = GetWGUIClassMap();
 	std::string classname;
 	if(map->GetClassName(typeid(TElement),&classname))
-		el->m_class = classname;
+		el.m_class = classname;
 	if(m_createCallback != nullptr)
 		m_createCallback(el);
 }
@@ -216,8 +218,8 @@ template<class TElement>
 template<class TElement>
 	TElement *WGUI::Create(WIBase *parent)
 {
-	TElement *el = new TElement;
-	Setup<TElement>(el,parent);
+	auto *el = new TElement;
+	Setup<TElement>(*el,parent);
 	return el;
 }
 

@@ -74,6 +74,8 @@ public:
 
 	WIBase();
 	virtual ~WIBase();
+	WIBase(const WIBase&)=delete;
+	WIBase &operator=(const WIBase&)=delete;
 	GLFW::Cursor::Shape GetCursor() const;
 	void SetCursor(GLFW::Cursor::Shape cursor);
 	void Resize();
@@ -246,6 +248,7 @@ public:
 	const util::PVector2iProperty *GetAttachmentPosProperty(const std::string &name) const;
 
 	void SetAnchor(float left,float top,float right,float bottom);
+	void SetAnchor(float left,float top,float right,float bottom,uint32_t refWidth,uint32_t refHeight);
 	void SetAnchorLeft(float f);
 	void SetAnchorRight(float f);
 	void SetAnchorTop(float f);
@@ -253,6 +256,7 @@ public:
 	bool GetAnchor(float &outLeft,float &outTop,float &outRight,float &outBottom) const;
 	bool HasAnchor() const;
 	std::pair<Vector2,Vector2> GetAnchorBounds() const;
+	std::pair<Vector2,Vector2> GetAnchorBounds(uint32_t refWidth,uint32_t refHeight) const;
 
 	// Handles
 	WIHandle GetHandle() const;
@@ -260,8 +264,7 @@ protected:
 	void UpdateAnchorTransform();
 	StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 	std::array<std::shared_ptr<void>,4> m_userData;
-	WIHandle *m_handle = nullptr;
-	bool m_bExternalHandle = false;
+	std::shared_ptr<WIHandle> m_handle = nullptr;
 	std::string m_class = "WIBase";
 	std::string m_name;
 	std::string m_toolTip;
@@ -295,7 +298,7 @@ protected:
 	virtual void InitializeHandle();
 	template<class TWrapper>
 		void InitializeWrapper();
-	void InitializeHandle(WIHandle *handle);
+	void InitializeHandle(std::shared_ptr<WIHandle> handle);
 	template<class THandle>
 		void InitializeHandle();
 	void UpdateMouseInBounds();
@@ -334,7 +337,7 @@ REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)
 template<class THandle>
 	void WIBase::InitializeHandle()
 {
-	m_handle = new THandle(new PtrWI(this));
+	m_handle = std::make_shared<THandle>(new PtrWI(this));
 }
 
 template<class TElement>

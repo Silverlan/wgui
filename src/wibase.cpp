@@ -83,8 +83,7 @@ WIBase::~WIBase()
 	if(m_cbAutoCenterYOwn.IsValid())
 		m_cbAutoCenterYOwn.Remove();
 	m_handle->Invalidate();
-	if(m_bExternalHandle == false)
-		delete m_handle;
+	m_handle = nullptr;
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		if(m_children[i].IsValid())
@@ -100,7 +99,7 @@ void WIBase::RemoveSafely()
 {
 	SetVisible(false);
 	SetParent(nullptr);
-	WGUI::GetInstance().RemoveSafely(this);
+	WGUI::GetInstance().RemoveSafely(*this);
 	umath::set_flag(m_stateFlags,StateFlags::RemoveScheduledBit,true);
 }
 void WIBase::RemoveOnRemoval(WIBase *other)
@@ -232,7 +231,7 @@ void WIBase::InitializeHandle()
 {
 	InitializeHandle<WIHandle>();
 }
-void WIBase::InitializeHandle(WIHandle *handle)
+void WIBase::InitializeHandle(std::shared_ptr<WIHandle> handle)
 {
 	m_handle = handle;
 }
@@ -964,16 +963,20 @@ const util::PVector2iProperty *WIBase::GetAttachmentPosProperty(const std::strin
 	return &pAttachment->GetAbsPosProperty();
 }
 bool WIBase::HasAnchor() const {return m_anchor.has_value();}
+std::pair<Vector2,Vector2> WIBase::GetAnchorBounds(uint32_t refWidth,uint32_t refHeight) const
+{
+	auto anchorMin = Vector2{m_anchor->left *refWidth,m_anchor->top *refHeight};
+	auto anchorMax = Vector2{m_anchor->right *refWidth,m_anchor->bottom *refHeight};
+	return {anchorMin,anchorMax};
+}
 std::pair<Vector2,Vector2> WIBase::GetAnchorBounds() const
 {
 	auto *pParent = GetParent();
 	auto w = pParent ? pParent->GetWidth() : GetWidth();
 	auto h = pParent ? pParent->GetHeight() : GetHeight();
-	auto anchorMin = Vector2{m_anchor->left *w,m_anchor->top *h};
-	auto anchorMax = Vector2{m_anchor->right *w,m_anchor->bottom *h};
-	return {anchorMin,anchorMax};
+	return GetAnchorBounds(w,h);
 }
-void WIBase::SetAnchor(float left,float top,float right,float bottom)
+void WIBase::SetAnchor(float left,float top,float right,float bottom,uint32_t refWidth,uint32_t refHeight)
 {
 	m_anchor = WIAnchor{};
 	m_anchor->left = left;
@@ -985,13 +988,20 @@ void WIBase::SetAnchor(float left,float top,float right,float bottom)
 	{
 		m_anchor->initialized = true;
 
-		auto anchorBounds = GetAnchorBounds();
+		auto anchorBounds = GetAnchorBounds(refWidth,refHeight);
 		m_anchor->pxOffsetLeft = GetLeft() -anchorBounds.first.x;
 		m_anchor->pxOffsetTop = GetTop() -anchorBounds.first.y;
 		m_anchor->pxOffsetRight = GetRight() -anchorBounds.second.x;
 		m_anchor->pxOffsetBottom = GetBottom() -anchorBounds.second.y;
 		UpdateAnchorTransform();
 	}
+}
+void WIBase::SetAnchor(float left,float top,float right,float bottom)
+{
+	auto *pParent = GetParent();
+	auto w = pParent ? pParent->GetWidth() : GetWidth();
+	auto h = pParent ? pParent->GetHeight() : GetHeight();
+	SetAnchor(left,top,right,bottom,w,h);
 }
 void WIBase::SetAnchorLeft(float f)
 {
@@ -1066,7 +1076,7 @@ void WIBase::Remove()
 	CallCallbacks<void>("OnRemove");
 	if(!hThis.IsValid())
 		return;
-	WGUI::GetInstance().Remove(this);
+	WGUI::GetInstance().Remove(*this);
 }
 void WIBase::OnRemove() {}
 void WIBase::SetParent(WIBase *base)
