@@ -229,8 +229,6 @@ void WITexturedShape::Update()
 	createInfo.size = m_uvs.size() *sizeof(Vector2);
 	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
 	m_uvBuffer = prosper::util::create_buffer(context.GetDevice(),createInfo,m_uvs.data());
-	if(m_uvBuffer == nullptr)
-		throw std::exception("");
 }
 void WITexturedShape::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
 {

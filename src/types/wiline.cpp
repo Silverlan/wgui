@@ -188,12 +188,12 @@ Vector2i &WILine::GetStartPos() {return *m_posStart;}
 void WILine::SetStartPos(Vector2i pos) {SetStartPos(pos.x,pos.y);}
 void WILine::SetStartPos(int x,int y)
 {
-	*m_posStart = {x,y};
+	*m_posStart = Vector2i{x,y};
 }
 
 Vector2i &WILine::GetEndPos() {return *m_posEnd;}
 void WILine::SetEndPos(Vector2i pos) {SetEndPos(pos.x,pos.y);}
 void WILine::SetEndPos(int x,int y)
 {
-	*m_posEnd = {x,y};
+	*m_posEnd = Vector2i{x,y};
 }

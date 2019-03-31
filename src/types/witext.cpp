@@ -17,6 +17,7 @@
 
 LINK_WGUI_TO_CLASS(WIText,WIText);
 
+#pragma optimize("",off)
 WIText::WIText()
 	: WIBase(),m_font(nullptr),m_breakHeight(0),m_wTexture(0),m_hTexture(0),
 	m_autoBreak(AutoBreak::NONE),m_renderTarget(nullptr),
@@ -717,6 +718,8 @@ void WIText::InitializeTextBuffers()
 		}
 		if(bExistingBuffer == false)
 			m_textBufferInfo.glyphInfoBufferInfos.push_back({s_textBuffer->AllocateBuffer(),hash});
+		else
+			m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx).subStringHash = hash;
 		// Update existing buffer
 		auto &buf = m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx).buffer;
 		context.ScheduleRecordUpdateBuffer(
@@ -883,3 +886,4 @@ void WIText::SetAutoBreakMode(AutoBreak b)
 	m_autoBreak = b;
 	SizeToContents();
 }
+#pragma optimize("",on)
