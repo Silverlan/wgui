@@ -68,12 +68,15 @@ link_external_library(prosper)
 link_external_library(vulkan)
 link_external_library(anvil)
 link_external_library(freetype)
+link_external_library(glslang)
 
 add_include_dir(glm)
+add_include_dir(anvil_build)
 
 set(DEFINITIONS
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
 	WGUI_DLL
+	ANVIL_VULKAN_CPP
 )
 
 ##### CONFIGURATION #####
