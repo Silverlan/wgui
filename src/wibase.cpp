@@ -19,7 +19,6 @@
 
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 
-#pragma optimize("",off)
 std::deque<WIHandle> WIBase::m_focusTrapStack;
 float WIBase::RENDER_ALPHA = 1.f;
 
@@ -1493,4 +1492,3 @@ bool WIBase::IsFadingOut()
 		return false;
 	return (m_fade->alphaTarget < GetAlpha()) ? true : false;
 }
-#pragma optimize("",on)

@@ -108,6 +108,7 @@ private:
 		{
 			std::shared_ptr<prosper::Buffer> buffer;
 			size_t subStringHash;
+			uint32_t numChars = 0u;
 		};
 		std::vector<SubBufferInfo> glyphInfoBufferInfos = {};
 		std::string subString = {};

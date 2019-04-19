@@ -17,7 +17,6 @@
 
 LINK_WGUI_TO_CLASS(WIText,WIText);
 
-#pragma optimize("",off)
 WIText::WIText()
 	: WIBase(),m_font(nullptr),m_breakHeight(0),m_wTexture(0),m_hTexture(0),
 	m_autoBreak(AutoBreak::NONE),m_renderTarget(nullptr),
@@ -717,17 +716,17 @@ void WIText::InitializeTextBuffers()
 			boundsInfo.index = glyphIndices.at(j);
 		}
 		if(bExistingBuffer == false)
-			m_textBufferInfo.glyphInfoBufferInfos.push_back({s_textBuffer->AllocateBuffer(),hash});
-		else
-			m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx).subStringHash = hash;
+			m_textBufferInfo.glyphInfoBufferInfos.push_back({s_textBuffer->AllocateBuffer()});
 		// Update existing buffer
-		auto &buf = m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx).buffer;
+		auto &bufInfo = m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx);
+		bufInfo.subStringHash = hash;
+		bufInfo.numChars = subStrInfo.first.size();
 		context.ScheduleRecordUpdateBuffer(
-			buf,
+			bufInfo.buffer,
 			0ull,glyphBoundsData.size() *sizeof(glyphBoundsData.front()),glyphBoundsData.data()
 		);
 		prosper::util::record_buffer_barrier(
-			**context.GetDrawCommandBuffer(),*buf,
+			**context.GetDrawCommandBuffer(),*bufInfo.buffer,
 			Anvil::PipelineStageFlagBits::TRANSFER_BIT,Anvil::PipelineStageFlagBits::VERTEX_INPUT_BIT,Anvil::AccessFlagBits::TRANSFER_WRITE_BIT,Anvil::AccessFlagBits::INDEX_READ_BIT
 		);
 	}
@@ -797,7 +796,7 @@ void WIText::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 			{
 				auto descSet = m_font->GetGlyphMapDescriptorSet();
 				for(auto &bufInfo : m_textBufferInfo.glyphInfoBufferInfos)
-					shader.Draw(*bufInfo.buffer,*descSet,pushConstants,m_textBufferInfo.numChars);
+					shader.Draw(*bufInfo.buffer,*descSet,pushConstants,bufInfo.numChars);
 				shader.EndDraw();
 			}
 		};
@@ -886,4 +885,3 @@ void WIText::SetAutoBreakMode(AutoBreak b)
 	m_autoBreak = b;
 	SizeToContents();
 }
-#pragma optimize("",on)
