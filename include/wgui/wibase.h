@@ -40,8 +40,6 @@ class WISkin;
 class WGUI;
 namespace util {class ColorProperty;};
 namespace prosper {class Buffer;};
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIBase
 	: public CallbackHandler
 {
@@ -330,7 +328,6 @@ private:
 	static bool __wiScrollCallback(GLFW::Window &window,Vector2 offset);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)
-#pragma warning(pop)
 
 #include "wgui.h"
 

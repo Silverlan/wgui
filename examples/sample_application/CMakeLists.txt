@@ -48,13 +48,11 @@ endfunction(link_external_library)
 
 ##### CONFIGURATION #####
 
-set(PROJ_NAME wgui)
+set(PROJ_NAME sample_application)
 
 project(${PROJ_NAME} CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-set(ENABLE_STATIC_LIBRARY_FLAG 0)
-# set(PRECOMPILED_HEADER "stdafx")
 
 link_external_library(sharedutils)
 link_external_library(mathutil)
@@ -69,25 +67,17 @@ link_external_library(vulkan)
 link_external_library(anvil)
 link_external_library(freetype)
 link_external_library(glslang)
+link_external_library(wgui)
 
 add_include_dir(glm)
 add_include_dir(anvil_build)
 
 set(DEFINITIONS
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
-	WGUI_DLL
 	ANVIL_VULKAN_CPP
 )
 
 ##### CONFIGURATION #####
-
-set(LIB_TYPE SHARED)
-if(ENABLE_STATIC_LIBRARY_FLAG MATCHES 1)
-	set(CONFIG_STATIC_LIBRARY 0 CACHE BOOL "Build as static library?")
-endif()
-if(DEFINED ${CONFIG_STATIC_LIBRARY} AND ${CONFIG_STATIC_LIBRARY})
-	set(LIB_TYPE STATIC)
-endif()
 
 foreach(def IN LISTS DEFINITIONS)
 	add_definitions(-D${def})
@@ -109,7 +99,7 @@ file(GLOB_RECURSE SRC_FILES
     "${CMAKE_CURRENT_LIST_DIR}/include/*.h"
     "${CMAKE_CURRENT_LIST_DIR}/include/*.hpp"
 )
-add_library(${PROJ_NAME} ${LIB_TYPE} ${SRC_FILES})
+add_executable(${PROJ_NAME} ${SRC_FILES})
 if(WIN32)
 	target_compile_options(${PROJ_NAME} PRIVATE /wd4251)
 	target_compile_options(${PROJ_NAME} PRIVATE /wd4996)
@@ -128,10 +118,4 @@ foreach(INCLUDE_PATH IN LISTS INCLUDE_DIRS)
 endforeach(INCLUDE_PATH)
 
 set(TARGET_PROPERTIES LINKER_LANGUAGE CXX)
-if(DEFINED PRECOMPILED_HEADER)
-	include(PrecompiledHeader.cmake)
-	add_precompiled_header(${PROJ_NAME} "src/${PRECOMPILED_HEADER}.h" c++17 FORCEINCLUDE)
-endif()
 set_target_properties(${PROJ_NAME} PROPERTIES ${TARGET_PROPERTIES})
-
-add_subdirectory(examples)

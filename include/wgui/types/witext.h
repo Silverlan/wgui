@@ -17,8 +17,6 @@ namespace prosper
 };
 
 class WGUIShaderText;
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIText
 	: public WIBase
 {
@@ -154,6 +152,5 @@ private:
 	void ScheduleRenderUpdate(bool bFull=false);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIText::Flags)
-#pragma warning(pop)
 
 #endif

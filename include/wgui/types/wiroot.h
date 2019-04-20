@@ -7,8 +7,6 @@
 
 #include "wgui/wibase.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIRoot
 	: public WIBase
 {
@@ -23,6 +21,5 @@ public:
 	virtual void Think() override;
 	void Setup();
 };
-#pragma warning(pop)
 
 #endif

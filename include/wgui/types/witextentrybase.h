@@ -8,8 +8,6 @@
 #include "wgui/wihandle.h"
 
 class WIText;
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WITextEntryBase
 	: public WIBase
 {
@@ -71,6 +69,5 @@ public:
 	void SetMaxLength(int length);
 	int GetMaxLength();
 };
-#pragma warning(pop)
 
 #endif

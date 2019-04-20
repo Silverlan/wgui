@@ -10,8 +10,6 @@
 
 class WGUI;
 class WIBase;
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WISkin
 {
 protected:
@@ -26,6 +24,5 @@ public:
 	virtual void Release(WIBase *el);
 	virtual void InitializeClass(WIBase *el,std::string &className);
 };
-#pragma warning(pop)
 
 #endif

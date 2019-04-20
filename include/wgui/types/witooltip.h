@@ -7,8 +7,6 @@
 
 #include "wgui/wibase.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WITooltip
 	: public WIBase
 {
@@ -20,6 +18,5 @@ public:
 	void SetText(const std::string &text);
 	const std::string &GetText() const;
 };
-#pragma warning(pop)
 
 #endif

@@ -8,8 +8,6 @@
 #include "wgui/wibufferbase.h"
 #include <sharedutils/property/util_property_vector.h>
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WILineBase
 {
 private:
@@ -57,6 +55,5 @@ public:
 	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;
 	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) override;
 };
-#pragma warning(pop)
 
 #endif

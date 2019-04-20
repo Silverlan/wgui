@@ -8,8 +8,6 @@
 #include "wgui/wguidefinitions.h"
 
 class WIShape;
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIRoundedBase
 {
 public:
@@ -39,6 +37,5 @@ public:
 	bool IsBottomLeftRound();
 	bool IsBottomRightRound();
 };
-#pragma warning(pop)
 
 #endif

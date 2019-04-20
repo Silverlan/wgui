@@ -9,8 +9,6 @@
 #include "wguidefinitions.h"
 #undef GetClassName
 class DLLWGUI WIBase;
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WGUIClassMap
 {
 private:
@@ -30,7 +28,6 @@ class DLLWGUI __reg_wgui_factory
 public:
 	__reg_wgui_factory(std::string name,const std::type_info &info,WIBase*(*fc)(void));
 };
-#pragma warning(pop)
 
 #define LINK_WGUI_TO_CLASS(localname,classname) \
 	static WIBase *CreateWGUI##classname() \

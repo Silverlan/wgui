@@ -7,8 +7,6 @@
 #include "wibase.h"
 #include "wibufferbase.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WICircle
 {
 protected:
@@ -34,6 +32,5 @@ public:
 	virtual void Render(int w,int h,Mat4 &mat) override;
 	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) override;
 };
-#pragma warning(pop)
 
 #endif

@@ -7,8 +7,6 @@
 
 #include "wishape.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIArrow
 	: public WIShape
 {
@@ -26,6 +24,5 @@ public:
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
 };
-#pragma warning(pop)
 
 #endif

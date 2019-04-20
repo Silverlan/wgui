@@ -8,8 +8,6 @@
 #include "wishader.hpp"
 #include "wgui/wielementdata.hpp"
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class FontInfo;
 namespace wgui
 {
@@ -82,6 +80,5 @@ namespace wgui
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 };
-#pragma warning(pop)
 
 #endif

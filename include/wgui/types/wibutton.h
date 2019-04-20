@@ -8,8 +8,6 @@
 #include "wgui/wibufferbase.h"
 #include "wgui/wihandle.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIButton
 	: public WIBase
 {
@@ -26,6 +24,5 @@ public:
 	virtual void MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual void SizeToContents() override;
 };
-#pragma warning(pop)
 
 #endif

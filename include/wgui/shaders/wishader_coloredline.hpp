@@ -7,8 +7,6 @@
 
 #include "wishader_colored.hpp"
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 namespace wgui
 {
 	struct ElementData;
@@ -26,6 +24,5 @@ namespace wgui
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 };
-#pragma warning(pop)
 
 #endif

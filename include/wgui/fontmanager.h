@@ -14,8 +14,6 @@
 
 class FontInfo;
 class FontManager;
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI GlyphInfo
 {
 private:
@@ -68,7 +66,7 @@ protected:
 	FontInfo()=default;
 	friend FontManager;
 private:
-	struct Face
+	struct DLLWGUI Face
 	{
 	private:
 		FT_Face m_ftFace = nullptr;
@@ -121,6 +119,5 @@ private:
 	static std::unordered_map<std::string,std::shared_ptr<FontInfo>> m_fonts;
 	static std::shared_ptr<const FontInfo> m_fontDefault;
 };
-#pragma warning(pop)
 
 #endif

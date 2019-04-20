@@ -10,8 +10,6 @@
 #include "wgui/wihandle.h"
 
 class DLLWGUI WIDropDownMenu;
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIDropDownMenuOption
 	: public WIBase
 {
@@ -90,6 +88,5 @@ public:
 	virtual void SetSize(int x,int y) override;
 	virtual void SetParent(WIBase *base) override;
 };
-#pragma warning(pop)
 
 #endif

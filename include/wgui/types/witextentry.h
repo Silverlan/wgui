@@ -8,8 +8,6 @@
 #include "wgui/wihandle.h"
 #include "wgui/types/witextentrybase.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WITextEntry
 	: public WIBase
 {
@@ -72,6 +70,5 @@ public:
 	const int32_t *GetMaxValue() const;
 	virtual bool IsNumeric() const override;
 };
-#pragma warning(pop)
 
 #endif

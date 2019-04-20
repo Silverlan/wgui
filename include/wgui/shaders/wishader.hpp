@@ -8,8 +8,6 @@
 #include "wgui/wguidefinitions.h"
 #include <shader/prosper_shader_rect.hpp>
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 namespace wgui
 {
 	class DLLWGUI Shader
@@ -29,6 +27,5 @@ namespace wgui
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 };
-#pragma warning(pop)
 
 #endif

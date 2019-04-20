@@ -10,8 +10,6 @@
 #include "wgui/wihandle.h"
 
 class DLLWGUI WIScrollBar;
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIScrollBarSlider
 	: public WIRect
 {
@@ -90,6 +88,5 @@ public:
 	virtual void MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual void SetSize(int x,int y) override;
 };
-#pragma warning(pop)
 
 #endif

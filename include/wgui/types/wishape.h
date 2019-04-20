@@ -10,8 +10,6 @@
 #include "wiline.h"
 #include <texturemanager/texture.h>
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIShape
 	: public WIBufferBase
 {
@@ -78,6 +76,5 @@ public:
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
 	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;
 };
-#pragma warning(pop)
 
 #endif

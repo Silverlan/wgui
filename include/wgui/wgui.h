@@ -12,6 +12,7 @@
 #include <materialmanager.h>
 #include <unordered_map>
 #include <algorithm>
+#include <queue>
 #include <wrappers/buffer.h>
 #include <iglfw/glfw_window.h>
 #include <prosper_context_object.hpp>
@@ -41,8 +42,7 @@ namespace wgui
 	class ShaderTextured;
 	class ShaderTexturedRect;
 };
-#pragma warning(push)
-#pragma warning(disable : 4251)
+
 class DLLWGUI WGUI
 	: public prosper::ContextObject
 {
@@ -165,7 +165,6 @@ private:
 	void ClearSkin();
 };
 REGISTER_BASIC_ARITHMETIC_OPERATORS(WGUI::ElementBuffer);
-#pragma warning(pop)
 
 #include <wgui/wibase.h>
 #include "wihandle.h"

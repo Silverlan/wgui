@@ -130,7 +130,6 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 	}
 	//FT_Select_Charmap(m_face,FT_ENCODING_UNICODE);
 	m_size = fontSize;
-	//OpenGL::SetPixelStorageMode(GL_UNPACK_ALIGNMENT,1); // TODO
 
 	auto numGlyphs = umath::to_integral(GlyphRange::Count) +1;
 	m_glyphs.resize(numGlyphs);
@@ -263,13 +262,7 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 		copyInfo.dstSubresource = Anvil::ImageSubresourceLayers{Anvil::ImageAspectFlagBits::COLOR_BIT,0u,0u,1u};
 		copyInfo.width = bounds.first;
 		copyInfo.height = bounds.second;
-		// Obsolete
-		/*
-		auto texImg = std::shared_ptr<prosper::Image>(prosper::util::create_image(dev,imgCreateInfo));
-		tmpGlyphImages.push_back(texImg);
 
-		prosper::util::record_copy_image(setupCmd->GetAnvilCommandBuffer(),copyInfo,glyphImage->GetAnvilImage(),texImg->GetAnvilImage());
-		*/
 		// Write glyph to font image map
 		auto xOffset = i *m_maxBitmapWidth;
 		uint32_t yOffset = 0;

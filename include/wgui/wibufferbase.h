@@ -14,8 +14,6 @@ namespace prosper
 {
 	class Shader;
 };
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIBufferBase
 	: public WIBase
 {
@@ -38,6 +36,5 @@ protected:
 	util::WeakHandle<prosper::Shader> m_shader = {};
 	util::WeakHandle<prosper::Shader> m_shaderCheap = {};
 };
-#pragma warning(pop)
 
 #endif

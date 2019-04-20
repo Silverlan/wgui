@@ -10,8 +10,6 @@
 #include "wgui/wihandle.h"
 #include <array>
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
 class DLLWGUI WIRect
 	: public WIShape
 {
@@ -66,6 +64,5 @@ public:
 	virtual void Update() override;
 	virtual void Initialize() override;
 };
-#pragma warning(pop)
 
 #endif
