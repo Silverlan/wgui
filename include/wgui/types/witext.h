@@ -107,14 +107,13 @@ private:
 			std::shared_ptr<prosper::Buffer> buffer;
 			size_t subStringHash;
 			uint32_t numChars = 0u;
+			uint32_t width = 0u;
+			uint32_t height = 0u;
+			float sx = 0.f;
+			float sy = 0.f;
 		};
 		std::vector<SubBufferInfo> glyphInfoBufferInfos = {};
 		std::string subString = {};
-		uint32_t width = 0u;
-		uint32_t height = 0u;
-		uint32_t numChars = 0u;
-		float sx = 0.f;
-		float sy = 0.f;
 	};
 	TextBufferInfo m_textBufferInfo = {};
 	util::WeakHandle<prosper::Shader> m_shader = {};
@@ -142,7 +141,7 @@ private:
 
 	void InitializeTextBuffers();
 	void UpdateRenderTexture();
-	void GetTextSize(int *w,int *h);
+	void GetTextSize(int *w,int *h,const std::string_view *inText=nullptr);
 	void RenderText();
 	void RenderText(Mat4 &mat);
 	void InitializeShadow(bool bReload=false);

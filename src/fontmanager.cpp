@@ -424,7 +424,7 @@ void FontManager::Close()
 	m_fonts.clear();
 	m_lib = {};
 }
-void FontManager::GetTextSize(const std::string &text,const FontInfo *font,int32_t *width,int32_t *height)
+void FontManager::GetTextSize(const std::string_view &text,const FontInfo *font,int32_t *width,int32_t *height)
 {
 	if(font == nullptr)
 	{
@@ -472,6 +472,14 @@ void FontManager::GetTextSize(const std::string &text,const FontInfo *font,int32
 		*height = static_cast<int32_t>(fHeight);
 }
 
-void FontManager::GetTextSize(const std::string &text,const std::string &font,int32_t *width,int32_t *height) {GetTextSize(text,GetFont(font).get(),width,height);}
-void FontManager::GetTextSize(char c,const FontInfo *font,int32_t *width,int32_t *height) {GetTextSize({c,'\0'},font,width,height);}
-void FontManager::GetTextSize(char c,const std::string &font,int32_t *width,int32_t *height) {GetTextSize({c,'\0'},font,width,height);}
+void FontManager::GetTextSize(const std::string_view &text,const std::string &font,int32_t *width,int32_t *height) {GetTextSize(text,GetFont(font).get(),width,height);}
+void FontManager::GetTextSize(char c,const FontInfo *font,int32_t *width,int32_t *height)
+{
+	std::string str{c,'\0'};
+	GetTextSize(str,font,width,height);
+}
+void FontManager::GetTextSize(char c,const std::string &font,int32_t *width,int32_t *height)
+{
+	std::string str{c,'\0'};
+	GetTextSize(str,font,width,height);
+}

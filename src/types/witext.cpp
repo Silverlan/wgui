@@ -14,6 +14,7 @@
 #include <prosper_command_buffer.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <sharedutils/property/util_property_color.hpp>
+#include <sharedutils/scope_guard.h>
 
 LINK_WGUI_TO_CLASS(WIText,WIText);
 
@@ -337,7 +338,7 @@ int WIText::GetTextHeight()
 	return numLines *h +(((numLines > 0) ? (numLines -1) : 0) *m_breakHeight);
 }
 
-void WIText::GetTextSize(int *w,int *h)
+void WIText::GetTextSize(int *w,int *h,const std::string_view *inText)
 {
 	if(m_font == nullptr)
 	{
@@ -346,17 +347,23 @@ void WIText::GetTextSize(int *w,int *h)
 		return;
 	}
 	int wText = 0;
-	for(unsigned int i=0;i<m_lines.size();i++)
+	if(inText == nullptr)
 	{
-		auto &line = m_lines[i];
-		int w;
-		FontManager::GetTextSize(line.c_str(),m_font.get(),&w);
-		if(w > wText)
-			wText = w;
+		for(unsigned int i=0;i<m_lines.size();i++)
+		{
+			auto &line = m_lines[i];
+			int w;
+			FontManager::GetTextSize(line,m_font.get(),&w);
+			if(w > wText)
+				wText = w;
+		}
+		int hText = m_font->GetMaxGlyphSize();//m_font->GetSize();
+		*w = wText;
+		*h = hText *static_cast<int>(m_lines.size()) +1;
+		return;
 	}
-	int hText = m_font->GetMaxGlyphSize();//m_font->GetSize();
-	*w = wText;
-	*h = hText *static_cast<int>(m_lines.size()) +1;
+	FontManager::GetTextSize(*inText,m_font.get(),w);
+	*h = m_font->GetMaxGlyphSize() +1;
 }
 
 void WIText::UpdateRenderTexture()
@@ -619,108 +626,131 @@ static std::shared_ptr<prosper::UniformResizableBuffer> s_textBuffer = nullptr;
 void WIText::InitializeTextBuffers()
 {
 	auto &context = WGUI::GetInstance().GetContext();
-	int w,h;
-	GetTextSize(&w,&h);
-	if(w <= 0)
-		w = 1;
-	if(h <= 0)
-		h = 1;
-	m_textBufferInfo.width = w;
-	m_textBufferInfo.height = h;
-	auto sx = m_textBufferInfo.sx = 2.f /float(w);
-	auto sy = m_textBufferInfo.sy = 2.f /float(h);
 	//auto fontHeight = m_font->GetMaxGlyphTop();//m_font->GetMaxGlyphSize()
-	auto fontSize = m_font->GetSize();
 
 	// Initialize Buffers
-	float x = 0;
-	float y = 0;
-	std::vector<Vector4> glyphBounds;
-	std::vector<uint32_t> glyphIndices;
-	std::vector<std::pair<std::string,size_t>> subStrings {};
-	auto numChars = (*m_text)->size();
-	subStrings.reserve((numChars /MAX_CHARS_PER_BUFFER) +1u);
-	glyphBounds.reserve(numChars);
-	glyphIndices.reserve(numChars);
-	if(numChars == 0)
-		return;
-	for(unsigned int i=0;i<m_lines.size();i++)
+	struct SubStringInfo
 	{
-		x = 0;
-		auto &text = m_lines[i];
-		for(unsigned int j=0;j<text.size();j++)
+		std::string_view subString;
+		size_t hash;
+		uint32_t width;
+		uint32_t height;
+		float sx;
+		float sy;
+		uint32_t lineIndex;
+		std::vector<Vector4> glyphBounds;
+		std::vector<uint32_t> glyphIndices;
+	};
+
+	std::vector<SubStringInfo> subStrings {};
+	auto numChars = (*m_text)->size();
+	subStrings.reserve((numChars /MAX_CHARS_PER_BUFFER) +1u +m_lines.size());
+
+	const auto fAddSubString = [this,&subStrings](const std::string_view &substr,uint32_t lineIndex,uint32_t &inOutX,uint32_t &inOutY) {
+		if(substr.empty())
+			return;
+		subStrings.push_back({});
+		auto &info = subStrings.back();
+		info.subString = substr;
+		info.hash = std::hash<std::string_view>{}(info.subString);
+
+		int w,h;
+		GetTextSize(&w,&h,&info.subString);
+		if(w <= 0)
+			w = 1;
+		if(h <= 0)
+			h = 1;
+		info.width = w;
+		info.height = h;
+		auto sx = info.sx = 2.f /float(w);
+		auto sy = info.sy = 2.f /float(h);
+		info.lineIndex = lineIndex;
+
+		info.glyphBounds.reserve(substr.length());
+		info.glyphIndices.reserve(substr.length());
+
+		// Populate glyph bounds and indices
+		auto fontSize = m_font->GetSize();
+		for(auto c : info.subString)
 		{
-			auto c = static_cast<UChar>(text[j]);
 			auto *glyph = m_font->GetGlyphInfo(c);
-			if(glyph != nullptr)
-			{
-				int32_t left,top,width,height;
-				glyph->GetDimensions(left,top,width,height);
-				int32_t advanceX,advanceY;
-				glyph->GetAdvance(advanceX,advanceY);
+			if(glyph == nullptr)
+				continue;
+			int32_t left,top,width,height;
+			glyph->GetDimensions(left,top,width,height);
+			int32_t advanceX,advanceY;
+			glyph->GetAdvance(advanceX,advanceY);
 
-				auto x2 = x +left *sx -1.f;
-				auto y2 = y -1.f -((top -static_cast<int>(fontSize))) *sy;
-				auto w = width *sx;
-				auto h = height *sy;
+			auto x2 = (inOutX +left) *sx -1.f;
+			auto y2 = (inOutY -(top -static_cast<int>(fontSize))) *sy -1.f;
+			auto w = width *sx;
+			auto h = height *sy;
 
-				glyphBounds.push_back({x2,y2,width,height});
-				glyphIndices.push_back(FontInfo::CharToGlyphMapIndex(c));
-				if(subStrings.empty() || subStrings.back().first.size() >= MAX_CHARS_PER_BUFFER)
-				{
-					subStrings.push_back({});
-					subStrings.back().first.reserve(MAX_CHARS_PER_BUFFER);
-				}
-				subStrings.back().first += c;
+			info.glyphBounds.push_back({x2,y2,width,height});
+			info.glyphIndices.push_back(FontInfo::CharToGlyphMapIndex(c));
 
-				x += (advanceX >> 6) *sx;
-				y += (advanceY >> 6) *sy;
-			}
+			advanceX >>= 6;
+			advanceY >>= 6;
+			inOutX += advanceX;
+			inOutY += advanceY;
 		}
-		y += GetLineHeight() *sy;
-	}
-	numChars = glyphBounds.size();
-	assert(numChars != 0);
-	if(numChars == 0)
-		return;
-	m_textBufferInfo.numChars = numChars;
+	};
+	auto lineIndex = 0u;
+	auto y = 0u;
+	for(auto &line : m_lines)
+	{
+		auto x = 0u;
+		auto lineView = std::string_view{line};
+		auto subString = lineView;
+		while(subString.length() > MAX_CHARS_PER_BUFFER)
+		{
+			fAddSubString(subString.substr(0ull,MAX_CHARS_PER_BUFFER),lineIndex,x,y);
+			subString = subString.substr(MAX_CHARS_PER_BUFFER);
+		}
+		if(subString.empty() == false)
+			fAddSubString(subString,lineIndex,x,y);
+		++lineIndex;
 
-	if(subStrings.size() != (numChars /MAX_CHARS_PER_BUFFER) +((numChars %MAX_CHARS_PER_BUFFER) > 0 ? 1u : 0u))
-		throw std::logic_error("Unexpected size mismatch!");
-	for(auto &info : subStrings)
-		info.second = std::hash<std::string>{}(info.first);
+		y += GetLineHeight();
+	}
 
 	if(m_textBufferInfo.glyphInfoBufferInfos.size() > subStrings.size())
 		m_textBufferInfo.glyphInfoBufferInfos.resize(subStrings.size());
 	m_textBufferInfo.glyphInfoBufferInfos.reserve(subStrings.size());
-	for(auto i=decltype(numChars){0u};i<numChars;i+=MAX_CHARS_PER_BUFFER)
+	auto idx = 0u;
+	auto charOffset = 0u;
+	for(auto &subStrInfo : subStrings)
 	{
-		auto bufferIdx = i /MAX_CHARS_PER_BUFFER;
-		auto &subStrInfo = subStrings.at(bufferIdx);
-		auto hash = subStrInfo.second;
-		auto bExistingBuffer = bufferIdx < m_textBufferInfo.glyphInfoBufferInfos.size();
+		ScopeGuard sg{[&idx,&charOffset,&subStrInfo]() {
+			++idx;
+			charOffset += subStrInfo.subString.length();
+		}};
+
+		auto bExistingBuffer = idx < m_textBufferInfo.glyphInfoBufferInfos.size();
 		if(bExistingBuffer == true)
 		{
-			auto &curBufInfo = m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx);
-			if(curBufInfo.subStringHash == hash)
+			auto &curBufInfo = m_textBufferInfo.glyphInfoBufferInfos.at(idx);
+			if(curBufInfo.subStringHash == subStrInfo.hash)
 				continue; // No need to update the buffer
 		}
-		auto numCharsInstance = umath::min(static_cast<uint32_t>(numChars -i),MAX_CHARS_PER_BUFFER);
 		std::vector<GlyphBoundsInfo> glyphBoundsData {};
-		glyphBoundsData.resize(numCharsInstance);
-
-		for(auto j=i;j<(i +numCharsInstance);++j)
+		glyphBoundsData.reserve(subStrInfo.glyphBounds.size());
+		for(auto i=decltype(subStrInfo.glyphBounds.size()){0u};i<subStrInfo.glyphBounds.size();++i)
 		{
-			auto &boundsInfo = glyphBoundsData.at(j -i);
-			boundsInfo.bounds = glyphBounds.at(j);
-			boundsInfo.index = glyphIndices.at(j);
+			auto &bounds = subStrInfo.glyphBounds.at(i);
+			auto index = subStrInfo.glyphIndices.at(i);
+			glyphBoundsData.push_back({static_cast<int32_t>(index),bounds});
 		}
 		if(bExistingBuffer == false)
 			m_textBufferInfo.glyphInfoBufferInfos.push_back({s_textBuffer->AllocateBuffer()});
 		// Update existing buffer
-		auto &bufInfo = m_textBufferInfo.glyphInfoBufferInfos.at(bufferIdx);
-		bufInfo.subStringHash = hash;
-		bufInfo.numChars = subStrInfo.first.size();
+		auto &bufInfo = m_textBufferInfo.glyphInfoBufferInfos.at(idx);
+		bufInfo.subStringHash = subStrInfo.hash;
+		bufInfo.numChars = subStrInfo.subString.length();
+		bufInfo.width = subStrInfo.width;
+		bufInfo.height = subStrInfo.height;
+		bufInfo.sx = subStrInfo.sx;
+		bufInfo.sy = subStrInfo.sy;
 		context.ScheduleRecordUpdateBuffer(
 			bufInfo.buffer,
 			0ull,glyphBoundsData.size() *sizeof(glyphBoundsData.front()),glyphBoundsData.data()
@@ -780,23 +810,32 @@ void WIText::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 
 		auto currentSize = GetSizeProperty()->GetValue();
 		auto &size = GetSizeProperty()->GetValue();
-		// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
-		// This will be reset further below.
-		size.x = m_textBufferInfo.width;
-		size.y = m_textBufferInfo.height;
 
-		auto matText = GetTransformedMatrix(origin,width,height,matParent);
+		//auto matText = GetTransformedMatrix(origin,width,height,matParent);
 
 		wgui::ShaderTextRect::PushConstants pushConstants {
-			wgui::ElementData{matText,col},
-			m_textBufferInfo.sx,m_textBufferInfo.sy,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth
+			wgui::ElementData{Mat4{},col},
+			0.f,0.f,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth
 		};
-		const auto fDraw = [&context,&drawCmd,&shader,&pushConstants,width,height,pFont,this](bool bClear,uint32_t vpWidth,uint32_t vpHeight) {
+		const auto fDraw = [&context,&drawCmd,&shader,&pushConstants,&size,&origin,&matParent,width,height,pFont,this](bool bClear) {
 			if(shader.BeginDraw(drawCmd,width,height) == true)
 			{
 				auto descSet = m_font->GetGlyphMapDescriptorSet();
 				for(auto &bufInfo : m_textBufferInfo.glyphInfoBufferInfos)
+				{
+					pushConstants.fontInfo.widthScale = bufInfo.sx;
+					pushConstants.fontInfo.heightScale = bufInfo.sy;
+
+					size.x = bufInfo.width;
+					size.y = bufInfo.height;
+
+					// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
+					// This will be reset further below.
+					auto matText = GetTransformedMatrix(origin,width,height,matParent);
+					pushConstants.elementData.modelMatrix = matText;
+
 					shader.Draw(*bufInfo.buffer,*descSet,pushConstants,bufInfo.numChars);
+				}
 				shader.EndDraw();
 			}
 		};
@@ -820,7 +859,7 @@ void WIText::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 				pushConstants.elementData.modelMatrix = GetTransformedMatrix(origin,width,height,matParent);
 				if(pShadowColor != nullptr)
 					pushConstants.elementData.color = *pShadowColor;
-				fDraw(true,m_textBufferInfo.width,m_textBufferInfo.height); // TODO: Render text shadow shadow at the same time? (Single framebuffer)
+				fDraw(true); // TODO: Render text shadow shadow at the same time? (Single framebuffer)
 				pos = currentPos;
 				pushConstants.elementData.modelMatrix = tmpMatrix;
 				pushConstants.elementData.color = tmpColor;
@@ -839,7 +878,7 @@ void WIText::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 		//
 	
 		// Render Text
-		fDraw(false,m_textBufferInfo.width,m_textBufferInfo.height);
+		fDraw(false);
 		//
 
 		// Reset size

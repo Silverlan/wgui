@@ -266,7 +266,7 @@ void WITextEntryBase::SetCaretPos(int pos)
 				pos -= lenLine;
 			}
 			w = pText->GetWidth();
-			if((x +pCaret->GetWidth()) > (w -pText->GetX()))
+			/*if((x +pCaret->GetWidth()) > (w -pText->GetX()))
 			{
 				int offset = x -w +pCaret->GetWidth();
 				pText->SetX(-offset);
@@ -275,7 +275,7 @@ void WITextEntryBase::SetCaretPos(int pos)
 			{
 				int offset = x;
 				pText->SetX(-offset);
-			}
+			}*/
 			x += pText->GetX();
 			pCaret->SetPos(x,y);
 		}

@@ -101,8 +101,8 @@ public:
 	static std::shared_ptr<const FontInfo> LoadFont(const std::string &cidentifier,const std::string &cpath,uint32_t fontSize,bool bForceReload=false);
 	static std::shared_ptr<const FontInfo> GetFont(const std::string &cfontName);
 	static void Close();
-	static void GetTextSize(const std::string &text,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
-	static void GetTextSize(const std::string &text,const std::string &font,int32_t *width,int32_t *height=nullptr);
+	static void GetTextSize(const std::string_view &text,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
+	static void GetTextSize(const std::string_view &text,const std::string &font,int32_t *width,int32_t *height=nullptr);
 	static void GetTextSize(char c,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
 	static void GetTextSize(char c,const std::string &font,int32_t *width,int32_t *height=nullptr);
 private:
