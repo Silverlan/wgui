@@ -121,28 +121,27 @@ private:
 			*drawCmd,**m_stagingRenderTarget->GetTexture()->GetImage(),
 			Anvil::ImageLayout::TRANSFER_SRC_OPTIMAL,Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
 		);
+		auto &outputImg = *m_stagingRenderTarget->GetTexture()->GetImage();
 		prosper::util::record_begin_render_pass(*drawCmd,*m_stagingRenderTarget);
 			// Draw GUI elements to staging image
 			gui.Draw();
 		prosper::util::record_end_render_pass(*drawCmd);
 
-		auto &outputImg = *m_stagingRenderTarget->GetTexture()->GetImage();
 		prosper::util::record_image_barrier(
 			*drawCmd,outputImg.GetAnvilImage(),
 			Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,Anvil::ImageLayout::TRANSFER_SRC_OPTIMAL
 		);
 
 		auto &swapchainImg = *m_swapchainPtr->get_image(iCurrentSwapchainImage);
-		prosper::util::record_image_barrier(
-			*drawCmd,swapchainImg,
-			Anvil::ImageLayout::UNDEFINED,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL
-		);
+
+		prosper::util::BarrierImageLayout srcInfo {Anvil::PipelineStageFlagBits::TRANSFER_BIT,Anvil::ImageLayout::UNDEFINED,Anvil::AccessFlagBits{}};
+		prosper::util::BarrierImageLayout dstInfo {Anvil::PipelineStageFlagBits::TRANSFER_BIT,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::AccessFlagBits::TRANSFER_WRITE_BIT};
+		prosper::util::record_image_barrier(*drawCmd,swapchainImg,srcInfo,dstInfo);
 			// Blit staging image to swapchain image
 			prosper::util::record_blit_image(*drawCmd,{},outputImg.GetAnvilImage(),swapchainImg);
-		prosper::util::record_image_barrier(
-			*drawCmd,swapchainImg,
-			Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::ImageLayout::PRESENT_SRC_KHR
-		);
+		srcInfo = {Anvil::PipelineStageFlagBits::TRANSFER_BIT,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::AccessFlagBits::MEMORY_READ_BIT};
+		dstInfo = {Anvil::PipelineStageFlagBits::TRANSFER_BIT,Anvil::ImageLayout::PRESENT_SRC_KHR,Anvil::AccessFlagBits::TRANSFER_READ_BIT};
+		prosper::util::record_image_barrier(*drawCmd,swapchainImg,srcInfo,dstInfo);
 	}
 };
 
@@ -152,7 +151,7 @@ int main()
 	createInfo.width = 1'280;
 	createInfo.height = 1'024;
 	createInfo.presentMode = Anvil::PresentModeKHR::FIFO_KHR;
-	auto renderContext = RenderContext::Create("GUI Demo",createInfo);
+	auto renderContext = RenderContext::Create("GUI Demo",createInfo,true);
 	if(renderContext == nullptr)
 		return EXIT_FAILURE;
 

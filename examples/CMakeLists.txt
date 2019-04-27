@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 function(register_example SUB_PROJ_NAME)
-	message("Processing external library '${SUB_PROJ_NAME}'...")
+	message("Processing example '${SUB_PROJ_NAME}'...")
 	add_subdirectory(${SUB_PROJ_NAME})
 
 	set(SOLUTION_DIR_NAME samples)
@@ -15,7 +15,5 @@ function(register_example SUB_PROJ_NAME)
 endfunction(register_example)
 
 register_example(sample_application)
-
-message("Processing example 'sample_application'...")
 
 set(CMAKE_CXX_STANDARD 17)
