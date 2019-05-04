@@ -174,10 +174,14 @@ int main()
 	pLogo->SetMaterial("vulkan_logo.wmi");
 	pLogo->SetSize(512,136);
 
-	auto *pButton = wgui.Create<WIButton>(p);
-	pButton->SetText("Switch Skin");
-	pButton->SizeToContents();
-	pButton->SetPos(512,64);
+	auto *pTextShadow = wgui.Create<WIText>(p);
+	pTextShadow->SetText("Text with shadow");
+	pTextShadow->SetPos(512,64);
+	pTextShadow->SetColor(Color::LimeGreen);
+	pTextShadow->EnableShadow(true);
+	pTextShadow->SetShadowOffset(1,1);
+	pTextShadow->SetShadowColor(Color::Black);
+	pTextShadow->SizeToContents();
 
 	auto *pTextEntry = wgui.Create<WITextEntry>(p);
 	pTextEntry->SetSize(64,24);

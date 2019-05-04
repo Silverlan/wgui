@@ -53,4 +53,3 @@ WIBase *(*WGUIClassMap::FindFactory(std::string classname))()
 		return nullptr;
 	return i->second;
 }
-

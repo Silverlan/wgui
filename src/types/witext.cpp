@@ -545,8 +545,6 @@ void WIText::RenderText(Mat4&)
 	createInfo.size = glyphBoundsInfos.size() *sizeof(glyphBoundsInfos.front());
 
 	auto bufBounds = prosper::util::create_buffer(dev,createInfo,glyphBoundsInfos.data());
-	//
-
 	context.KeepResourceAliveUntilPresentationComplete(bufBounds);
 
 	auto drawCmd = context.GetDrawCommandBuffer();
