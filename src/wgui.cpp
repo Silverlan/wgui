@@ -16,6 +16,7 @@
 #include "wgui/shaders/wishader_coloredline.hpp"
 #include "wgui/shaders/wishader_text.hpp"
 #include "wgui/shaders/wishader_textured.hpp"
+#include "wgui/types/wicontextmenu.hpp"
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
@@ -39,7 +40,9 @@ void WGUI::Close()
 	s_wgui = nullptr;
 	FontManager::Close();
 	WIText::ClearTextBuffer();
+	WIContextMenu::SetKeyBindHandler(nullptr,nullptr);
 }
+bool WGUI::IsOpen() {return s_wgui != nullptr;}
 WGUI &WGUI::GetInstance() {return *s_wgui;}
 
 WGUI::WGUI(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager)
@@ -55,6 +58,7 @@ wgui::ShaderColoredRect *WGUI::GetColoredRectShader() {return static_cast<wgui::
 wgui::ShaderColoredLine *WGUI::GetColoredLineShader() {return static_cast<wgui::ShaderColoredLine*>(m_shaderColoredLine.get());}
 wgui::ShaderText *WGUI::GetTextShader() {return static_cast<wgui::ShaderText*>(m_shaderText.get());}
 wgui::ShaderTextRect *WGUI::GetTextRectShader() {return static_cast<wgui::ShaderTextRect*>(m_shaderTextCheap.get());}
+wgui::ShaderTextRectColor *WGUI::GetTextRectColorShader() {return static_cast<wgui::ShaderTextRectColor*>(m_shaderTextCheapColor.get());}
 wgui::ShaderTextured *WGUI::GetTexturedShader() {return static_cast<wgui::ShaderTextured*>(m_shaderTextured.get());}
 wgui::ShaderTexturedRect *WGUI::GetTexturedRectShader() {return static_cast<wgui::ShaderTexturedRect*>(m_shaderTexturedCheap.get());}
 
@@ -96,6 +100,7 @@ WGUI::ResultCode WGUI::Initialize()
 	m_shaderColoredLine = shaderManager.RegisterShader("wguicoloredline",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderColoredLine(context,identifier);});
 	m_shaderText = shaderManager.RegisterShader("wguitext",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderText(context,identifier);});
 	m_shaderTextCheap = shaderManager.RegisterShader("wguitext_cheap",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderTextRect(context,identifier);});
+	m_shaderTextCheapColor = shaderManager.RegisterShader("wguitext_cheap_color",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderTextRectColor(context,identifier);});
 	m_shaderTextured = shaderManager.RegisterShader("wguitextured",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderTextured(context,identifier);});
 	m_shaderTexturedCheap = shaderManager.RegisterShader("wguitextured_cheap",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderTexturedRect(context,identifier);});
 	
@@ -177,6 +182,11 @@ void WGUI::Think()
 	m_tLastThink = static_cast<double>(t);
 	if(m_base.IsValid())
 		m_base->Think();
+
+	auto *el = GetCursorGUIElement(GetBaseElement(),[](WIBase *el) -> bool {return true;});
+	while(el && el->GetCursor() == GLFW::Cursor::Shape::Default)
+		el = el->GetParent();
+	SetCursor(el ? el->GetCursor() : GLFW::Cursor::Shape::Arrow);
 }
 
 void WGUI::Draw()

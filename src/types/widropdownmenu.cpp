@@ -36,10 +36,12 @@ void WIDropDownMenu::Initialize()
 	if(m_hBase.IsValid() == true)
 	{
 		auto hThis = GetHandle();
-		m_hBase->AddCallback("OnMousePressed",FunctionCallback<void>::Create([this,hThis]() {
+		m_hBase->AddCallback("OnMousePressed",FunctionCallback<util::EventReply>::CreateWithOptionalReturn([this,hThis](util::EventReply *reply) -> CallbackReturnType {
+			*reply = util::EventReply::Handled;
 			if(hThis.IsValid() == false || IsEditable() == true)
-				return;
+				return CallbackReturnType::HasReturnValue;
 			ToggleMenu();
+			return CallbackReturnType::HasReturnValue;
 		}));
 	}
 	AddCallback("OnTextEntered",FunctionCallback<void>::Create([this]() {
@@ -208,15 +210,25 @@ void WIDropDownMenu::AddOption(const std::string &option,const std::string &valu
 	pOption->SetIndex(static_cast<int>(m_options.size()));
 	pOption->SetValue(value);
 	pOption->SetVisible(false);
-	pOption->AddCallback("OnScroll",FunctionCallback<void,Vector2>::Create(std::bind([](WIHandle hMenu,Vector2 offset) {
+	auto hMenu = GetHandle();
+	pOption->AddCallback("OnScroll",FunctionCallback<util::EventReply,Vector2>::CreateWithOptionalReturn([hMenu](util::EventReply *reply,Vector2 offset) -> CallbackReturnType {
 		if(!hMenu.IsValid())
-			return;
+		{
+			*reply = util::EventReply::Handled;
+			return CallbackReturnType::HasReturnValue;
+		}
 		WIDropDownMenu *dm = hMenu.get<WIDropDownMenu>();
 		dm->InjectScrollInput(offset);
-	},this->GetHandle(),std::placeholders::_1)));
-	pOption->AddCallback("OnMouseEvent",FunctionCallback<void,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>::Create(std::bind([](WIHandle hOption,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier) {
+		*reply = util::EventReply::Handled;
+		return CallbackReturnType::HasReturnValue;
+	}));
+	pOption->AddCallback("OnMouseEvent",FunctionCallback<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>::CreateWithOptionalReturn(
+		[hOption](util::EventReply *reply,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier) -> CallbackReturnType {
 		if(!hOption.IsValid())
-			return;
+		{
+			*reply = util::EventReply::Handled;
+			return CallbackReturnType::HasReturnValue;
+		}
 		WIDropDownMenuOption *pOption = hOption.get<WIDropDownMenuOption>();
 		if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press)
 		{
@@ -227,7 +239,9 @@ void WIDropDownMenu::AddOption(const std::string &option,const std::string &valu
 				dm->CloseMenu();
 			}
 		}
-	},hOption,std::placeholders::_1,std::placeholders::_2,std::placeholders::_3)));
+		*reply = util::EventReply::Handled;
+		return CallbackReturnType::HasReturnValue;
+	}));
 	m_options.push_back(hOption);
 	if(m_hScrollBar.IsValid())
 		m_hScrollBar.get<WIScrollBar>()->SetUp(m_numListItems,static_cast<unsigned int>(m_options.size()));
@@ -373,9 +387,10 @@ void WIDropDownMenu::ToggleMenu()
 	if(IsMenuOpen()) CloseMenu();
 	else OpenMenu();
 }
-void WIDropDownMenu::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+util::EventReply WIDropDownMenu::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
-	WITextEntry::MouseCallback(button,state,mods);
+	if(WITextEntry::MouseCallback(button,state,mods) == util::EventReply::Handled)
+		return util::EventReply::Handled;
 	if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press)
 	{
 		if(!IsMenuOpen())
@@ -384,13 +399,14 @@ void WIDropDownMenu::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state
 				OpenMenu();
 		}
 	}
+	return util::EventReply::Handled;
 }
-void WIDropDownMenu::ScrollCallback(Vector2 offset)
+util::EventReply WIDropDownMenu::ScrollCallback(Vector2 offset)
 {
-	WITextEntry::ScrollCallback(offset);
-	if(!m_hScrollBar.IsValid())
-		return;
+	if(WITextEntry::ScrollCallback(offset) == util::EventReply::Handled || !m_hScrollBar.IsValid())
+		return util::EventReply::Handled;
 	m_hScrollBar.get<WIScrollBar>()->AddScrollOffset(static_cast<int>(-offset.y));
+	return util::EventReply::Handled;
 }
 void WIDropDownMenu::SetSize(int x,int y)
 {

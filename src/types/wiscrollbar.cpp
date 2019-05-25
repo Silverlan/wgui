@@ -9,6 +9,7 @@
 
 LINK_WGUI_TO_CLASS(WIScrollBar,WIScrollBar);
 
+#pragma optimize("",off)
 WIScrollBar::WIScrollBar()
 	: WIBase(),m_bHorizontal(false),m_offset(0),
 	m_numElements(0),m_numListed(0),
@@ -44,14 +45,17 @@ void WIScrollBar::SetScrollOffset(unsigned int offset)
 	UpdateSliderOffset();
 	CallCallbacks<void,unsigned int>("OnScrollOffsetChanged",offset);
 }
-void WIScrollBar::ScrollCallback(Vector2 offset)
+util::EventReply WIScrollBar::ScrollCallback(Vector2 offset)
 {
-	WIBase::ScrollCallback(offset);
+	if(WIBase::ScrollCallback(offset) == util::EventReply::Handled)
+		return util::EventReply::Handled;
 	AddScrollOffset(static_cast<int>(-offset.y *static_cast<double>(GetScrollAmount())));
+	return util::EventReply::Handled;
 }
-void WIScrollBar::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+util::EventReply WIScrollBar::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
-	WIBase::MouseCallback(button,state,mods);
+	if(WIBase::MouseCallback(button,state,mods) == util::EventReply::Handled)
+		return util::EventReply::Handled;
 	if(state == GLFW::KeyState::Press && button == GLFW::MouseButton::Left)
 	{
 		if(m_slider.IsValid())
@@ -77,6 +81,7 @@ void WIScrollBar::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GL
 			}
 		}
 	}
+	return util::EventReply::Handled;
 }
 void WIScrollBar::AddScrollOffset(int scroll)
 {
@@ -86,20 +91,25 @@ void WIScrollBar::AddScrollOffset(int scroll)
 	SetScrollOffset(newOffset);
 }
 
+uint32_t WIScrollBar::GetElementCount() const {return m_numElements;}
+uint32_t WIScrollBar::GetScrollElementCount() const {return m_numListed;}
+uint32_t WIScrollBar::GetBottomScrollOffset()
+{
+	return umath::min(GetScrollOffset() +GetScrollElementCount(),GetElementCount());
+}
+
 void WIScrollBar::SetUp(unsigned int numElementsListed,unsigned int numElementsTotal)
 {
-	if(numElementsListed == 0 || numElementsListed >= numElementsTotal)
-	{
-		SetVisible(false);
-		return;
-	}
-	SetVisible(true);
 	m_numElements = numElementsTotal;
 	m_numListed = numElementsListed;
 	if(m_scrollAmount > m_numListed)
 		m_scrollAmount = m_numListed;
 	UpdateSliderSize();
 	SetScrollOffset(m_offset);
+	if(numElementsListed == 0 || numElementsListed >= numElementsTotal)
+		SetVisible(false);
+	else
+		SetVisible(true);
 }
 
 void WIScrollBar::SetSize(int x,int y)
@@ -267,9 +277,10 @@ void WIScrollBarSlider::SetSliderX(int x) {return (m_bHorizontal == true) ? SetY
 void WIScrollBarSlider::SetSliderY(int y) {return (m_bHorizontal == true) ? SetX(y) : SetY(y);}
 void WIScrollBarSlider::SetSliderPos(int x,int y) {(m_bHorizontal == true) ? SetPos(y,x) : SetPos(x,y);}
 void WIScrollBarSlider::SetSliderSize(int w,int h) {(m_bHorizontal == true) ? SetSize(h,w) : SetSize(w,h);}
-void WIScrollBarSlider::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+util::EventReply WIScrollBarSlider::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
-	WIRect::MouseCallback(button,state,mods);
+	if(WIRect::MouseCallback(button,state,mods) == util::EventReply::Handled)
+		return util::EventReply::Handled;
 	if(button == GLFW::MouseButton::Left)
 	{
 		if(state == GLFW::KeyState::Press)
@@ -291,6 +302,7 @@ void WIScrollBarSlider::MouseCallback(GLFW::MouseButton button,GLFW::KeyState st
 		else if(state == GLFW::KeyState::Release)
 			StopDragging();
 	}
+	return util::EventReply::Handled;
 }
 
 void WIScrollBarSlider::StopDragging()
@@ -346,11 +358,13 @@ void WIScrollBarSlider::SetHorizontal(bool b)
 bool WIScrollBarSlider::IsHorizontal() {return m_bHorizontal;}
 bool WIScrollBarSlider::IsVertical() {return !m_bHorizontal;}
 
-void WIScrollBarSlider::ScrollCallback(Vector2 offset)
+util::EventReply WIScrollBarSlider::ScrollCallback(Vector2 offset)
 {
-	WIRect::ScrollCallback(offset);
+	if(WIRect::ScrollCallback(offset) == util::EventReply::Handled)
+		return util::EventReply::Handled;
 	WIBase *parent = GetParent();
 	if(parent == NULL)
-		return;
-	parent->ScrollCallback(offset);
+		return util::EventReply::Handled;
+	return parent->ScrollCallback(offset);
 }
+#pragma optimize("",on)

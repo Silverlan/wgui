@@ -10,6 +10,7 @@
 #include "wgui/wgui.h"
 #include "wgui/wihandle.h"
 #include "wgui/shaders/wishader.hpp"
+#include "wgui/types/wicontextmenu.hpp"
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <sharedutils/scope_guard.h>
@@ -22,6 +23,7 @@ LINK_WGUI_TO_CLASS(WIBase,WIBase);
 std::deque<WIHandle> WIBase::m_focusTrapStack;
 float WIBase::RENDER_ALPHA = 1.f;
 
+#pragma optimize("",off)
 WIBase::WIBase()
 	: CallbackHandler(),m_cursor(GLFW::Cursor::Shape::Default),
 	m_color(util::ColorProperty::Create(Color::White)),
@@ -42,14 +44,14 @@ WIBase::WIBase()
 	RegisterCallback<void,WIBase*>("OnChildRemoved");
 	RegisterCallback<void>("OnCursorEntered");
 	RegisterCallback<void>("OnCursorExited");
-	RegisterCallback<void,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent");
-	RegisterCallback<void>("OnMousePressed");
-	RegisterCallback<void>("OnMouseReleased");
-	RegisterCallback<void>("OnDoubleClick");
-	RegisterCallback<void,std::reference_wrapper<const GLFW::Joystick>,uint32_t,GLFW::KeyState>("OnJoystickEvent");
-	RegisterCallback<void,GLFW::Key,int,GLFW::KeyState,GLFW::Modifier>("OnKeyEvent");
-	RegisterCallback<void,int,GLFW::Modifier>("OnCharEvent");
-	RegisterCallback<void,Vector2>("OnScroll");
+	RegisterCallbackWithOptionalReturn<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMousePressed");
+	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMouseReleased");
+	RegisterCallbackWithOptionalReturn<util::EventReply>("OnDoubleClick");
+	RegisterCallbackWithOptionalReturn<util::EventReply,std::reference_wrapper<const GLFW::Joystick>,uint32_t,GLFW::KeyState>("OnJoystickEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply,GLFW::Key,int,GLFW::KeyState,GLFW::Modifier>("OnKeyEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply,int,GLFW::Modifier>("OnCharEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply,Vector2>("OnScroll");
 
 	//auto hThis = GetHandle();
 	m_pos->AddCallback([this](std::reference_wrapper<const Vector2i> oldPos,std::reference_wrapper<const Vector2i> pos) {
@@ -336,6 +338,10 @@ int WIBase::GetLeft() const {return GetX();}
 int WIBase::GetTop() const {return GetY();}
 int WIBase::GetRight() const {return GetX() +GetWidth();}
 int WIBase::GetBottom() const {return GetY() +GetHeight();}
+void WIBase::SetLeft(int32_t pos) {SetX(pos);}
+void WIBase::SetRight(int32_t pos) {SetLeft(pos -GetWidth());}
+void WIBase::SetTop(int32_t pos) {SetY(pos);}
+void WIBase::SetBottom(int32_t pos) {SetTop(pos -GetHeight());}
 Vector2i WIBase::GetEndPos() const {return Vector2i(GetRight(),GetBottom());}
 void WIBase::SetX(int x) {SetPos(x,(*m_pos)->y);}
 void WIBase::SetY(int y) {SetPos((*m_pos)->x,y);}
@@ -1203,21 +1209,10 @@ void WIBase::UpdateChildrenMouseInBounds()
 }
 void WIBase::OnCursorEntered()
 {
-	if(m_cursor != GLFW::Cursor::Shape::Default)
-	{
-		m_prevCursor.mode = WGUI::GetInstance().GetCursorInputMode();
-		m_prevCursor.shape = WGUI::GetInstance().GetCursor();
-		WGUI::GetInstance().SetCursor(m_cursor);
-	}
 	CallCallbacks<void>("OnCursorEntered");
 }
 void WIBase::OnCursorExited()
 {
-	if(m_cursor != GLFW::Cursor::Shape::Default)
-	{
-		WGUI::GetInstance().SetCursor(m_prevCursor.shape);
-		WGUI::GetInstance().SetCursorInputMode(m_prevCursor.mode);
-	}
 	CallCallbacks<void>("OnCursorExited");
 }
 void WIBase::SetMouseInputEnabled(bool b)
@@ -1231,9 +1226,17 @@ void WIBase::SetMouseInputEnabled(bool b)
 }
 void WIBase::SetKeyboardInputEnabled(bool b) {umath::set_flag(m_stateFlags,StateFlags::AcceptKeyboardInputBit,b);}
 void WIBase::SetScrollInputEnabled(bool b) {umath::set_flag(m_stateFlags,StateFlags::AcceptScrollInputBit,b);}
-//#include <iostream>
-void WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+util::EventReply WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
+	auto hThis = GetHandle();
+	util::EventReply reply;
+	if(
+		CallCallbacksWithOptionalReturn<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent",reply,button,state,mods) == CallbackReturnType::HasReturnValue &&
+		reply == util::EventReply::Handled
+	)
+		return util::EventReply::Handled;
+	if(!hThis.IsValid())
+		return util::EventReply::Unhandled;
 	if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press)
 	{
 		ChronoTimePoint now = std::chrono::high_resolution_clock::now();
@@ -1241,7 +1244,8 @@ void WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::M
 		if(duration.count() <= 300)
 		{
 			umath::set_flag(m_stateFlags,StateFlags::ClickedBit,false);
-			OnDoubleClick();
+			if(OnDoubleClick() == util::EventReply::Handled)
+				return util::EventReply::Handled;
 		}
 		else
 		{
@@ -1249,41 +1253,60 @@ void WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::M
 			m_clickStart = std::chrono::high_resolution_clock::now();
 		}
 	}
-	auto hThis = GetHandle();
-	CallCallbacks<void,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent",button,state,mods);
-	if(!hThis.IsValid())
-		return;
 	if(button == GLFW::MouseButton::Left)
 	{
 		if(state == GLFW::KeyState::Press)
-			CallCallbacks<void>("OnMousePressed");
+		{
+			auto reply = util::EventReply::Unhandled;
+			CallCallbacksWithOptionalReturn<util::EventReply>("OnMousePressed",reply);
+			if(reply == util::EventReply::Unhandled || !hThis.IsValid())
+				return util::EventReply::Unhandled;
+			return util::EventReply::Handled;
+		}
 		else if(state == GLFW::KeyState::Release)
-			CallCallbacks<void>("OnMouseReleased");
+		{
+			auto reply = util::EventReply::Unhandled;
+			CallCallbacksWithOptionalReturn<util::EventReply>("OnMouseReleased",reply);
+			if(reply == util::EventReply::Unhandled || !hThis.IsValid())
+				return util::EventReply::Unhandled;
+			return util::EventReply::Handled;
+		}
 	}
 	//std::cout<<"MouseCallback: "<<button<<","<<action<<std::endl;
+	return util::EventReply::Unhandled;
 }
-void WIBase::OnDoubleClick()
+util::EventReply WIBase::OnDoubleClick()
 {
-	CallCallbacks<void>("OnDoubleClick");
+	auto reply = util::EventReply::Unhandled;
+	CallCallbacksWithOptionalReturn<util::EventReply>("OnDoubleClick",reply);
+	return reply;
 }
-void WIBase::JoystickCallback(const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state)
+util::EventReply WIBase::JoystickCallback(const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state)
 {
-	CallCallbacks<void,std::reference_wrapper<const GLFW::Joystick>,uint32_t,GLFW::KeyState>("OnJoystickEvent",std::ref(joystick),key,state);
+	auto reply = util::EventReply::Unhandled;
+	CallCallbacksWithOptionalReturn<util::EventReply,std::reference_wrapper<const GLFW::Joystick>,uint32_t,GLFW::KeyState>("OnJoystickEvent",reply,std::ref(joystick),key,state);
+	return reply;
 }
-void WIBase::KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods)
+util::EventReply WIBase::KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods)
 {
-	CallCallbacks<void,GLFW::Key,int,GLFW::KeyState,GLFW::Modifier>("OnKeyEvent",key,scanCode,state,mods);
 	//std::cout<<"KeyboardCallback: "<<key<<","<<action<<std::endl;
+	auto reply = util::EventReply::Unhandled;
+	CallCallbacksWithOptionalReturn<util::EventReply,GLFW::Key,int,GLFW::KeyState,GLFW::Modifier>("OnKeyEvent",reply,key,scanCode,state,mods);
+	return reply;
 }
-void WIBase::CharCallback(unsigned int c,GLFW::Modifier mods)
+util::EventReply WIBase::CharCallback(unsigned int c,GLFW::Modifier mods)
 {
-	CallCallbacks<void,int,GLFW::Modifier>("OnCharEvent",c,mods);
 	//std::cout<<"CharCallback: "<<char(c)<<","<<action<<std::endl;
+	auto reply = util::EventReply::Unhandled;
+	CallCallbacksWithOptionalReturn<util::EventReply,int,GLFW::Modifier>("OnCharEvent",reply,c,mods);
+	return reply;
 }
-void WIBase::ScrollCallback(Vector2 offset)
+util::EventReply WIBase::ScrollCallback(Vector2 offset)
 {
-	CallCallbacks<void,Vector2>("OnScroll",offset);
 	//std::cout<<"ScrollCallback: "<<xoffset<<","<<yoffset<<std::endl;
+	auto reply = util::EventReply::Unhandled;
+	CallCallbacksWithOptionalReturn<util::EventReply,Vector2>("OnScroll",reply,offset);
+	return reply;
 }
 
 WIBase *WIBase::FindDeepestChild(const std::function<bool(const WIBase&)> &predInspect,const std::function<bool(const WIBase&)> &predValidCandidate)
@@ -1316,7 +1339,7 @@ void WIBase::InjectMouseMoveInput(int32_t x,int32_t y)
 	OnCursorMoved(x,y);
 	UpdateChildrenMouseInBounds();
 }
-void WIBase::InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+util::EventReply WIBase::InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) {
 		return el.MouseInBounds();
@@ -1324,11 +1347,12 @@ void WIBase::InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW
 		return el.GetMouseInputEnabled();
 	});
 	if(el != nullptr)
-		el->MouseCallback(button,state,mods);
+		return el->MouseCallback(button,state,mods);
+	return util::EventReply::Handled;
 }
-void WIBase::InjectKeyboardInput(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods) {KeyboardCallback(key,scanCode,state,mods);}
-void WIBase::InjectCharInput(unsigned int c,GLFW::Modifier mods) {CharCallback(c,mods);}
-void WIBase::InjectScrollInput(Vector2 offset)
+util::EventReply WIBase::InjectKeyboardInput(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods) {return KeyboardCallback(key,scanCode,state,mods);}
+util::EventReply WIBase::InjectCharInput(unsigned int c,GLFW::Modifier mods) {return CharCallback(c,mods);}
+util::EventReply WIBase::InjectScrollInput(Vector2 offset)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) {
 		return el.MouseInBounds();
@@ -1336,7 +1360,8 @@ void WIBase::InjectScrollInput(Vector2 offset)
 		return el.GetScrollInputEnabled();
 	});
 	if(el != nullptr)
-		el->ScrollCallback(offset);
+		return el->ScrollCallback(offset);
+	return util::EventReply::Handled;
 }
 
 std::vector<std::string> &WIBase::GetStyleClasses() {return m_styleClasses;}
@@ -1361,15 +1386,22 @@ bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton butt
 	}
 	if(state == GLFW::KeyState::Press)
 	{
+		auto *pContextMenu = WIContextMenu::GetActiveContextMenu();
+		if(pContextMenu && pContextMenu->IsCursorInMenuBounds() == false)
+			WIContextMenu::CloseContextMenu();
+
 		auto cursorPos = window.GetCursorPos();
 		WIBase *p = WGUI::GetInstance().GetFocusedElement();
 		WIBase *gui = (p == nullptr || !p->IsFocusTrapped()) ? WGUI::GetInstance().GetBaseElement() : p;
-		if(gui->IsVisible())
+		auto hP = p ? p->GetHandle() : WIHandle{};
+		auto hGui = gui->GetHandle();
+		if(hGui.IsValid() && gui->IsVisible())
 		{
 			gui = WGUI::GetInstance().GetGUIElement(gui,static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y),[](WIBase *elChild) -> bool {return elChild->GetMouseInputEnabled();});
 			if(gui != NULL)
 			{
-				if(gui->GetMouseInputEnabled())
+				hGui = gui->GetHandle();
+				if(hGui.IsValid() && gui->GetMouseInputEnabled())
 				{
 					__lastMouseGUIElements.insert(std::unordered_map<GLFW::MouseButton,WIHandle>::value_type(button,gui->GetHandle()));
 					gui->MouseCallback(button,state,mods);
@@ -1379,14 +1411,15 @@ bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton butt
 					});
 					if(it != __lastMouseGUIElements.end() && !it->second.IsValid())
 						__lastMouseGUIElements.erase(it);
-					if(p != NULL && gui != p && !p->MouseInBounds())
+					if(hP.IsValid() && hGui.IsValid() && gui != p && !p->MouseInBounds())
 					{
 						p->KillFocus(); // Make sure to kill the focus AFTER the mouse callback.
-						gui->RequestFocus();
+						if(hGui.IsValid())
+							gui->RequestFocus();
 					}
 					return true;
 				}
-				else if(p != NULL && gui != p && !p->MouseInBounds())
+				else if(hP.IsValid() && hGui.IsValid() && gui != p && !p->MouseInBounds())
 					p->KillFocus();
 			}
 		}
@@ -1410,7 +1443,7 @@ bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyS
 			it->second->KeyboardCallback(key,scanCode,GLFW::KeyState::Release,mods);
 		__lastKeyboardGUIElements.erase(it);
 	}
-	if(state == GLFW::KeyState::Press)
+	if(state == GLFW::KeyState::Press || state == GLFW::KeyState::Repeat)
 	{
 		WIBase *gui = WGUI::GetInstance().GetFocusedElement();
 		if(gui != NULL)
@@ -1420,14 +1453,14 @@ bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyS
 			else if(gui->GetKeyboardInputEnabled())
 			{
 				__lastKeyboardGUIElements.insert(std::unordered_map<GLFW::Key,WIHandle>::value_type(key,gui->GetHandle()));
-				gui->KeyboardCallback(key,scanCode,state,mods);
+				auto result = gui->KeyboardCallback(key,scanCode,state,mods);
 				// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
 				auto it = std::find_if(__lastKeyboardGUIElements.begin(),__lastKeyboardGUIElements.end(),[gui](const std::pair<GLFW::Key,WIHandle> &p) {
 					return (p.second.get() == gui) ? true : false;
 				});
 				if(it != __lastKeyboardGUIElements.end() && !it->second.IsValid())
 					__lastKeyboardGUIElements.erase(it);
-				return true;
+				return result == util::EventReply::Handled;
 			}
 		}
 	}
@@ -1440,10 +1473,7 @@ bool WIBase::__wiCharCallback(GLFW::Window&,unsigned int c)
 	if(gui != NULL)
 	{
 		if(gui->GetKeyboardInputEnabled())
-		{
-			gui->CharCallback(c);
-			return true;
-		}
+			return gui->CharCallback(c) == util::EventReply::Handled;
 	}
 	return false;
 }
@@ -1458,10 +1488,7 @@ bool WIBase::__wiScrollCallback(GLFW::Window &window,Vector2 offset)
 		while(gui != nullptr)
 		{
 			if(gui->GetScrollInputEnabled())
-			{
-				gui->ScrollCallback(offset);
-				return true;
-			}
+				return gui->ScrollCallback(offset) == util::EventReply::Handled;
 			gui = gui->GetParent();
 		}
 	}
@@ -1492,3 +1519,4 @@ bool WIBase::IsFadingOut()
 		return false;
 	return (m_fade->alphaTarget < GetAlpha()) ? true : false;
 }
+#pragma optimize("",on)

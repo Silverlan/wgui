@@ -93,6 +93,7 @@ private:
 class DLLWGUI FontManager
 {
 public:
+	static const auto TAB_WIDTH_SPACE_COUNT = 4u;
 	static bool Initialize();
 	static std::shared_ptr<const FontInfo> GetDefaultFont();
 	static const std::unordered_map<std::string,std::shared_ptr<FontInfo>> &GetFonts();
@@ -101,10 +102,11 @@ public:
 	static std::shared_ptr<const FontInfo> LoadFont(const std::string &cidentifier,const std::string &cpath,uint32_t fontSize,bool bForceReload=false);
 	static std::shared_ptr<const FontInfo> GetFont(const std::string &cfontName);
 	static void Close();
-	static void GetTextSize(const std::string_view &text,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
-	static void GetTextSize(const std::string_view &text,const std::string &font,int32_t *width,int32_t *height=nullptr);
-	static void GetTextSize(char c,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
-	static void GetTextSize(char c,const std::string &font,int32_t *width,int32_t *height=nullptr);
+	// Char offset (relative to a line) is required to calculate the correct tab size
+	static uint32_t GetTextSize(const std::string_view &text,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
+	static uint32_t GetTextSize(const std::string_view &text,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height=nullptr);
+	static uint32_t GetTextSize(char c,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
+	static uint32_t GetTextSize(char c,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height=nullptr);
 private:
 	struct Library
 	{

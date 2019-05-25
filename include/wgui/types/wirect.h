@@ -33,6 +33,7 @@ public:
 	virtual void SetColor(float r,float g,float b,float a=1.f) override;
 	virtual void SetAlpha(float alpha) override;
 	virtual void SetSize(int x,int y) override;
+	using WIBase::SetColor;
 };
 
 class DLLWGUI WIRoundedRect

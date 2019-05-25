@@ -135,3 +135,27 @@ void ShaderTextRect::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pi
 	AddDescriptorSetGroup(pipelineInfo,ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
 	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),Anvil::ShaderStageFlagBits::VERTEX_BIT | Anvil::ShaderStageFlagBits::FRAGMENT_BIT);
 }
+
+///////////////////////
+
+decltype(ShaderTextRectColor::VERTEX_BINDING_COLOR) ShaderTextRectColor::VERTEX_BINDING_COLOR = {Anvil::VertexInputRate::INSTANCE};
+decltype(ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR) ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_COLOR,Anvil::Format::R32G32B32A32_SFLOAT};
+ShaderTextRectColor::ShaderTextRectColor(prosper::Context &context,const std::string &identifier)
+	: ShaderTextRectColor{context,identifier,"wgui/vs_wgui_text_cheap_color","wgui/fs_wgui_text_cheap_color"}
+{}
+ShaderTextRectColor::ShaderTextRectColor(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+	: ShaderTextRect{context,identifier,vsShader,fsShader,gsShader}
+{}
+bool ShaderTextRectColor::Draw(
+	prosper::Buffer &glyphBoundsIndexBuffer,prosper::Buffer &colorBuffer,
+	Anvil::DescriptorSet &descTextureSet,const PushConstants &pushConstants,
+	uint32_t instanceCount
+)
+{
+	return RecordBindVertexBuffers({&colorBuffer.GetAnvilBuffer()},2u) && ShaderTextRect::Draw(glyphBoundsIndexBuffer,descTextureSet,pushConstants,instanceCount);
+}
+void ShaderTextRectColor::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+{
+	ShaderTextRect::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
+	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_COLOR);
+}

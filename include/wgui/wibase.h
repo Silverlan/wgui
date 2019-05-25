@@ -20,6 +20,7 @@
 #include <iglfw/glfw_window.h>
 #include <sharedutils/property/util_property_vector.h>
 #include <sharedutils/property/util_property_color.hpp>
+#include <sharedutils/util_event_reply.hpp>
 
 struct DLLWGUI WIFadeInfo
 {
@@ -138,6 +139,10 @@ public:
 	int GetTop() const;
 	int GetRight() const;
 	int GetBottom() const;
+	void SetLeft(int32_t pos);
+	void SetRight(int32_t pos);
+	void SetTop(int32_t pos);
+	void SetBottom(int32_t pos);
 	Vector2i GetEndPos() const;
 	void SetX(int x);
 	void SetY(int y);
@@ -198,18 +203,18 @@ public:
 	virtual void OnCursorEntered();
 	virtual void OnCursorExited();
 	virtual void OnCursorMoved(int x,int y);
-	virtual void MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
-	virtual void OnDoubleClick();
-	virtual void JoystickCallback(const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
-	virtual void KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
-	virtual void CharCallback(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None);
-	virtual void ScrollCallback(Vector2 offset);
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
+	virtual util::EventReply OnDoubleClick();
+	virtual util::EventReply JoystickCallback(const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
+	virtual util::EventReply KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
+	virtual util::EventReply CharCallback(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None);
+	virtual util::EventReply ScrollCallback(Vector2 offset);
 
 	void InjectMouseMoveInput(int32_t x,int32_t y);
-	void InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
-	void InjectKeyboardInput(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
-	void InjectCharInput(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None);
-	void InjectScrollInput(Vector2 offset);
+	util::EventReply InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
+	util::EventReply InjectKeyboardInput(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
+	util::EventReply InjectCharInput(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None);
+	util::EventReply InjectScrollInput(Vector2 offset);
 
 	void GetMousePos(int *x,int *y) const;
 	void Remove();
@@ -269,11 +274,6 @@ protected:
 	std::optional<WIAnchor> m_anchor = {};
 	std::unordered_map<std::string,std::shared_ptr<WIAttachment>> m_attachments = {};
 	std::unique_ptr<WIFadeInfo> m_fade = nullptr;
-	struct
-	{
-		GLFW::Cursor::Shape shape=GLFW::Cursor::Shape::Default;
-		GLFW::CursorMode mode=GLFW::CursorMode::Normal;
-	} m_prevCursor;
 	GLFW::Cursor::Shape m_cursor = {};
 	CallbackHandle m_callbackFocusGained = {};
 	CallbackHandle m_callbackFocusKilled = {};

@@ -13,7 +13,7 @@ WIButton::WIButton()
 	: WIBase(),m_bPressed(false)
 {
 	SetMouseInputEnabled(true);
-	RegisterCallback<void>("OnPressed");
+	RegisterCallbackWithOptionalReturn<util::EventReply>("OnPressed");
 }
 WIButton::~WIButton()
 {}
@@ -41,12 +41,13 @@ std::string WIButton::GetText()
 		return "";
 	return m_text.get<WIText>()->GetText();
 }
-void WIButton::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+util::EventReply WIButton::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
 	auto hThis = GetHandle();
-	WIBase::MouseCallback(button,state,mods);
-	if(hThis.IsValid() == false)
-		return;
+	auto reply = WIBase::MouseCallback(button,state,mods);
+	if(reply == util::EventReply::Handled || hThis.IsValid() == false)
+		return util::EventReply::Handled;
+	auto response = util::EventReply::Handled;
 	if(button == GLFW::MouseButton::Left)
 	{
 		if(state == GLFW::KeyState::Press)
@@ -54,10 +55,11 @@ void WIButton::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW:
 		else
 		{
 			if(m_bPressed == true)
-				CallCallbacks<void>("OnPressed");
+				CallCallbacks<util::EventReply>("OnPressed",&response);
 			m_bPressed = false;
 		}
 	}
+	return util::EventReply::Handled;
 }
 
 void WIButton::SizeToContents()

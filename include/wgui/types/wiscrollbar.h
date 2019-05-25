@@ -38,8 +38,8 @@ public:
 	WIScrollBarSlider();
 	virtual ~WIScrollBarSlider() override = default;
 	virtual void Initialize() override;
-	virtual void ScrollCallback(Vector2 offset) override;
-	virtual void MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
+	virtual util::EventReply ScrollCallback(Vector2 offset) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual void Think() override;
 	void SetHorizontal(bool b);
 	bool IsHorizontal();
@@ -80,12 +80,15 @@ public:
 	unsigned int GetScrollOffset();
 	void SetScrollOffset(unsigned int offset);
 	void AddScrollOffset(int scroll);
+	uint32_t GetElementCount() const;
+	uint32_t GetScrollElementCount() const;
+	uint32_t GetBottomScrollOffset();
 	virtual void Initialize() override;
 	void SetHorizontal(bool b);
 	bool IsHorizontal();
 	bool IsVertical();
-	virtual void ScrollCallback(Vector2 offset) override;
-	virtual void MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
+	virtual util::EventReply ScrollCallback(Vector2 offset) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual void SetSize(int x,int y) override;
 };
 

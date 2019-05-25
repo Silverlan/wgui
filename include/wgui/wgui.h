@@ -39,6 +39,7 @@ namespace wgui
 	class ShaderColoredLine;
 	class ShaderText;
 	class ShaderTextRect;
+	class ShaderTextRectColor;
 	class ShaderTextured;
 	class ShaderTexturedRect;
 };
@@ -80,6 +81,7 @@ public:
 	static WGUI &Open(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager);
 	static void Close();
 	static WGUI &GetInstance();
+	static bool IsOpen();
 
 	ResultCode Initialize();
 	template<class TElement>
@@ -126,6 +128,7 @@ public:
 	wgui::ShaderColoredLine *GetColoredLineShader();
 	wgui::ShaderText *GetTextShader();
 	wgui::ShaderTextRect *GetTextRectShader();
+	wgui::ShaderTextRectColor *GetTextRectColorShader();
 	wgui::ShaderTextured *GetTexturedShader();
 	wgui::ShaderTexturedRect *GetTexturedRectShader();
 private:
@@ -158,6 +161,7 @@ private:
 	util::WeakHandle<prosper::Shader> m_shaderColoredLine = {};
 	util::WeakHandle<prosper::Shader> m_shaderText = {};
 	util::WeakHandle<prosper::Shader> m_shaderTextCheap = {};
+	util::WeakHandle<prosper::Shader> m_shaderTextCheapColor = {};
 	util::WeakHandle<prosper::Shader> m_shaderTextured = {};
 	util::WeakHandle<prosper::Shader> m_shaderTexturedCheap = {};
 

@@ -15,6 +15,9 @@ protected:
 	WIHandle m_hBase;
 	WIHandle m_hOutline;
 	WIHandle m_hBg;
+
+	virtual void OnTextEntered();
+	virtual void OnTextChanged(const std::string &oldText,const std::string &text);
 public:
 	WITextEntry();
 	virtual ~WITextEntry() override;
@@ -22,20 +25,28 @@ public:
 	virtual void SetSize(int x,int y) override;
 	virtual void SetMouseInputEnabled(bool b) override;
 	virtual void SetKeyboardInputEnabled(bool b) override;
+	virtual void SizeToContents() override;
+	virtual void SetColor(float r,float g,float b,float a=1.f) override;
+	using WIBase::SetSize;
+	using WIBase::SetColor;
 
+	WIText *GetTextElement();
 	void SetInputHidden(bool b);
-	std::string GetText();
+	std::string GetText() const;
 	void SetText(std::string text);
 	void InsertText(std::string instext,int pos);
 	void InsertText(std::string text);
-	int GetCaretPos();
+	int GetCaretPos() const;
 	void SetCaretPos(int pos);
+	WIRect *GetCaretElement();
 	virtual bool IsNumeric() const;
-	bool IsMultiLine();
+	bool IsMultiLine() const;
 	void SetMultiLine(bool bMultiLine);
-	bool IsEditable();
+	bool IsEditable() const;
 	void SetEditable(bool bEditable);
-	void GetSelectionBounds(int *start,int *end);
+	bool IsSelectable() const;
+	void SetSelectable(bool bSelectable);
+	void GetSelectionBounds(int *start,int *end) const;
 	void SetSelectionBounds(int start,int end);
 	void ClearSelection();
 	void RemoveSelection();
@@ -43,7 +54,7 @@ public:
 	virtual void RequestFocus() override;
 	virtual bool HasFocus() override;
 	void SetMaxLength(int length);
-	int GetMaxLength();
+	int GetMaxLength() const;
 };
 
 class DLLWGUI WINumericEntry

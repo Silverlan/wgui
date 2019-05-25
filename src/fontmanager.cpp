@@ -424,7 +424,7 @@ void FontManager::Close()
 	m_fonts.clear();
 	m_lib = {};
 }
-void FontManager::GetTextSize(const std::string_view &text,const FontInfo *font,int32_t *width,int32_t *height)
+uint32_t FontManager::GetTextSize(const std::string_view &text,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height)
 {
 	if(font == nullptr)
 	{
@@ -432,7 +432,7 @@ void FontManager::GetTextSize(const std::string_view &text,const FontInfo *font,
 			*width = 0;
 		if(height != nullptr)
 			*height = 0;
-		return;
+		return 0;
 	}
 	auto fWidth = 0.f;
 	auto fHeight = 0.f;
@@ -443,8 +443,16 @@ void FontManager::GetTextSize(const std::string_view &text,const FontInfo *font,
 	scrH = context.GetWindowHeight();
 	auto sx = 2.f /static_cast<float>(scrW);
 	auto sy = 2.f /static_cast<float>(scrH);
-	for(auto &c : text)
+	auto offset = charOffset;
+	for(auto c : text)
 	{
+		auto multiplier = 1u;
+		if(c == '\t')
+		{
+			c = ' ';
+			auto tabSpaceCount = TAB_WIDTH_SPACE_COUNT -(offset %TAB_WIDTH_SPACE_COUNT);
+			multiplier = tabSpaceCount;
+		}
 		auto *glyph = font->GetGlyphInfo(c);
 		if(glyph != nullptr)
 		{
@@ -453,14 +461,18 @@ void FontManager::GetTextSize(const std::string_view &text,const FontInfo *font,
 
 			int32_t left,top,width,height;
 			glyph->GetDimensions(left,top,width,height);
-			auto fadvanceX = static_cast<float>(advanceX >> 6);
+			width *= multiplier;
+			auto fadvanceX = static_cast<float>(advanceX >> 6) *multiplier;
 			auto fadvanceY = static_cast<float>(height);
 			fadvanceX *= sx;
 			fadvanceY *= sy;
 			fWidth += fadvanceX;
 			if(fadvanceY > fHeight)
 				fHeight = fadvanceY;
+			offset += multiplier;
 		}
+		if(c == '\n')
+			offset = 0u;
 	}
 	fWidth *= 0.5f;
 	fHeight *= 0.5f;
@@ -470,16 +482,17 @@ void FontManager::GetTextSize(const std::string_view &text,const FontInfo *font,
 		*width = static_cast<int32_t>(fWidth);
 	if(height != nullptr)
 		*height = static_cast<int32_t>(fHeight);
+	return offset -charOffset;
 }
 
-void FontManager::GetTextSize(const std::string_view &text,const std::string &font,int32_t *width,int32_t *height) {GetTextSize(text,GetFont(font).get(),width,height);}
-void FontManager::GetTextSize(char c,const FontInfo *font,int32_t *width,int32_t *height)
+uint32_t FontManager::GetTextSize(const std::string_view &text,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height) {return  GetTextSize(text,charOffset,GetFont(font).get(),width,height);}
+uint32_t FontManager::GetTextSize(char c,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height)
 {
 	std::string str{c,'\0'};
-	GetTextSize(str,font,width,height);
+	return GetTextSize(str,charOffset,font,width,height);
 }
-void FontManager::GetTextSize(char c,const std::string &font,int32_t *width,int32_t *height)
+uint32_t FontManager::GetTextSize(char c,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height)
 {
 	std::string str{c,'\0'};
-	GetTextSize(str,font,width,height);
+	return GetTextSize(str,charOffset,font,width,height);
 }

@@ -34,6 +34,7 @@ namespace wgui
 			uint32_t glyphMapWidth;
 			uint32_t glyphMapHeight;
 			uint32_t maxGlyphBitmapWidth;
+			uint32_t yOffset;
 		};
 #pragma pack(pop)
 
@@ -77,6 +78,26 @@ namespace wgui
 		);
 	protected:
 		virtual void InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+	};
+
+	///////////////////////
+
+	class DLLWGUI ShaderTextRectColor
+		: public ShaderTextRect
+	{
+	public:
+		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_COLOR;
+		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_COLOR;
+		ShaderTextRectColor(prosper::Context &context,const std::string &identifier);
+		ShaderTextRectColor(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+
+		bool Draw(
+			prosper::Buffer &glyphBoundsIndexBuffer,prosper::Buffer &colorBuffer,
+			Anvil::DescriptorSet &descTextureSet,const PushConstants &pushConstants,
+			uint32_t instanceCount
+		);
+	protected:
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 };

@@ -83,8 +83,8 @@ public:
 	void CloseMenu();
 	bool IsMenuOpen();
 	void ToggleMenu();
-	virtual void MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
-	virtual void ScrollCallback(Vector2 offset) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
+	virtual util::EventReply ScrollCallback(Vector2 offset) override;
 	virtual void SetSize(int x,int y) override;
 	virtual void SetParent(WIBase *base) override;
 };
