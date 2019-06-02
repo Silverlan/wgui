@@ -69,6 +69,7 @@ link_external_library(vulkan)
 link_external_library(anvil)
 link_external_library(freetype)
 link_external_library(glslang)
+link_external_library(util_formatted_text)
 
 add_include_dir(glm)
 add_include_dir(anvil_build)

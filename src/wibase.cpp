@@ -23,7 +23,6 @@ LINK_WGUI_TO_CLASS(WIBase,WIBase);
 std::deque<WIHandle> WIBase::m_focusTrapStack;
 float WIBase::RENDER_ALPHA = 1.f;
 
-#pragma optimize("",off)
 WIBase::WIBase()
 	: CallbackHandler(),m_cursor(GLFW::Cursor::Shape::Default),
 	m_color(util::ColorProperty::Create(Color::White)),
@@ -471,13 +470,27 @@ bool WIBase::IsAncestorOf(WIBase *el) {return el->IsAncestor(this);}
 void WIBase::OnFocusGained()
 {
 	CallCallbacks<void>("OnFocusGained");
+	OnDescendantFocusGained(*this);
 }
 void WIBase::OnFocusKilled()
 {
 	CallCallbacks<void>("OnFocusKilled");
+	OnDescendantFocusKilled(*this);
+}
+void WIBase::OnDescendantFocusGained(WIBase &el)
+{
+	auto *parent = GetParent();
+	if(parent)
+		parent->OnDescendantFocusGained(el);
+}
+void WIBase::OnDescendantFocusKilled(WIBase &el)
+{
+	auto *parent = GetParent();
+	if(parent)
+		parent->OnDescendantFocusKilled(el);
 }
 const util::PBoolProperty &WIBase::GetVisibilityProperty() const {return m_bVisible;}
-bool WIBase::IsVisible() const {return (*m_bVisible && m_color->GetValue().a > 0.f) ? true : false;}
+bool WIBase::IsVisible() const {return (*m_bVisible && (m_color->GetValue().a > 0.f || umath::is_flag_set(m_stateFlags,StateFlags::RenderIfZeroAlpha))) ? true : false;}
 void WIBase::OnVisibilityChanged(bool) {}
 void WIBase::SetVisible(bool b)
 {
@@ -645,7 +658,7 @@ void WIBase::SetSize(int x,int y)
 #endif
 	*m_size = Vector2i{x,y};
 }
-Mat4 WIBase::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat)
+Mat4 WIBase::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const
 {
 	Mat4 r = glm::translate(mat,Vector3(
 		-((w -(*m_size)->x) /float(w)) +(origin.x /float(w)) *2,
@@ -654,13 +667,13 @@ Mat4 WIBase::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat)
 	));
 	return GetScaledMatrix(w,h,r);
 }
-Mat4 WIBase::GetTransformedMatrix(int w,int h,Mat4 mat) {return GetTransformedMatrix(*m_pos,w,h,mat);}
-Mat4 WIBase::GetTransformedMatrix(int w,int h)
+Mat4 WIBase::GetTransformedMatrix(int w,int h,Mat4 mat) const {return GetTransformedMatrix(*m_pos,w,h,mat);}
+Mat4 WIBase::GetTransformedMatrix(int w,int h) const
 {
 	Mat4 mat(1.0f);
 	return GetTransformedMatrix(*m_pos,w,h,mat);
 }
-Mat4 WIBase::GetTranslatedMatrix(const Vector2i &origin,int w,int h,Mat4 mat)
+Mat4 WIBase::GetTranslatedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const
 {
 	return glm::translate(mat,Vector3(
 		(origin.x /float(w)) *2,
@@ -668,21 +681,21 @@ Mat4 WIBase::GetTranslatedMatrix(const Vector2i &origin,int w,int h,Mat4 mat)
 		0
 	));
 }
-Mat4 WIBase::GetTranslatedMatrix(int w,int h,Mat4 mat)
+Mat4 WIBase::GetTranslatedMatrix(int w,int h,Mat4 mat) const
 {
 	return GetTranslatedMatrix(*m_pos,w,h,mat);
 }
-Mat4 WIBase::GetTranslatedMatrix(int w,int h)
+Mat4 WIBase::GetTranslatedMatrix(int w,int h) const
 {
 	Mat4 mat(1.0f);
 	return GetTranslatedMatrix(w,h,mat);
 }
-Mat4 WIBase::GetScaledMatrix(int w,int h,Mat4 mat)
+Mat4 WIBase::GetScaledMatrix(int w,int h,Mat4 mat) const
 {
 	Vector3 scale((*m_size)->x /float(w),(*m_size)->y /float(h),0);
 	return glm::scale(mat,scale);
 }
-Mat4 WIBase::GetScaledMatrix(int w,int h)
+Mat4 WIBase::GetScaledMatrix(int w,int h) const
 {
 	Mat4 mat(1.0f);
 	return GetScaledMatrix(w,h,mat);
@@ -748,12 +761,13 @@ void WIBase::ApplySkin(WISkin *skin)
 			hChild->ApplySkin((m_skin == nullptr) ? skin : m_skin);
 	}
 }
-void WIBase::SetThinkIfInvisible(bool bThinkIfInvisible) {umath::set_flag(m_stateFlags,StateFlags::ThinkIfInvisibleBit);}
+void WIBase::SetThinkIfInvisible(bool bThinkIfInvisible) {umath::set_flag(m_stateFlags,StateFlags::ThinkIfInvisibleBit,bThinkIfInvisible);}
+void WIBase::SetRenderIfZeroAlpha(bool renderIfZeroAlpha) {umath::set_flag(m_stateFlags,StateFlags::RenderIfZeroAlpha,renderIfZeroAlpha);}
 void WIBase::Think()
 {
 	if(umath::is_flag_set(m_stateFlags,StateFlags::RemoveScheduledBit) == true)
 		return;
-	if(*m_bVisible == false && m_fade == nullptr && umath::is_flag_set(m_stateFlags,StateFlags::ThinkIfInvisibleBit) == false)
+	if(*m_bVisible == false && m_fade == nullptr && umath::is_flag_set(m_stateFlags,StateFlags::ThinkIfInvisibleBit | StateFlags::RenderIfZeroAlpha) == false)
 		return;
 	if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit) == true)
 		Update();
@@ -776,14 +790,16 @@ void WIBase::Think()
 		if(window.IsFocused())
 			UpdateChildrenMouseInBounds();
 	}
-	for(unsigned int i=0;i<m_children.size();i++)
+	for(auto it=m_children.begin();it!=m_children.end();)
 	{
-		if(m_children[i].IsValid())
+		auto &hChild = *it;
+		if(hChild.IsValid() == false)
 		{
-			WIBase *child = m_children[i].get();
-			if(child != NULL)
-				child->Think();
+			it = m_children.erase(it);
+			continue;
 		}
+		hChild->Think();
+		++it;
 	}
 	if(umath::is_flag_set(m_stateFlags,StateFlags::MouseCheckEnabledBit) == true)
 	{
@@ -821,6 +837,14 @@ void WIBase::Think()
 	}
 	CallCallbacks<void>("Think");
 }
+void WIBase::CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize)
+{
+	outSize = Vector2i(mat[0][0] *w,mat[1][1] *h);
+	outPos = Vector2i(
+		(w -((-mat[3][0] *w) +outSize.x)) /2.f,
+		(h -((-mat[3][1] *h) +outSize.y)) /2.f
+	);
+}
 void WIBase::Draw(int w,int h,const Vector2i &origin,Vector2i offsetParent,Vector2i scissorOffset,Vector2i scissorSize,Mat4 mat,bool bUseScissor,const Mat4 *matPostTransform)
 {
 	auto matDraw = GetTransformedMatrix(origin,w,h,mat);
@@ -834,11 +858,8 @@ void WIBase::Draw(int w,int h,const Vector2i &origin,Vector2i offsetParent,Vecto
 		// all its children) altogether.
 
 		// Calc (absolute) element position and size from Matrix
-		auto size = Vector2i(matDraw[0][0] *w,matDraw[1][1] *h);
-		auto pos = Vector2i(
-			(w -((-matDraw[3][0] *w) +size.x)) /2.f,
-			(h -((-matDraw[3][1] *h) +size.y)) /2.f
-		);
+		Vector2i pos,size;
+		CalcBounds(matDraw,w,h,pos,size);
 		const auto margin = Vector2i(2,2); // Add a small margin to the element bounds, to account for precision errors
 		auto boundsStart = pos -margin;
 		auto boundsEnd = pos +size +margin;
@@ -886,12 +907,17 @@ void WIBase::Draw(int w,int h,const Vector2i &origin,Vector2i offsetParent,Vecto
 				WGUI::GetInstance().SetScissor(umath::max(posScissor[0],0),umath::max(posScissor[1],0),umath::max(szScissor[0],0),umath::max(szScissor[1],0));
 
 			float aOriginal = WIBase::RENDER_ALPHA;
-			float alpha = child->GetAlpha();
-			WIBase::RENDER_ALPHA = aOriginal *alpha;
-			if(WIBase::RENDER_ALPHA > 1.f)
+			if(child->ShouldIgnoreParentAlpha())
 				WIBase::RENDER_ALPHA = 1.f;
-			else if(WIBase::RENDER_ALPHA < 0.f)
-				WIBase::RENDER_ALPHA = 0.f;
+			else
+			{
+				float alpha = child->GetAlpha();
+				WIBase::RENDER_ALPHA = aOriginal *alpha;
+				if(WIBase::RENDER_ALPHA > 1.f)
+					WIBase::RENDER_ALPHA = 1.f;
+				else if(WIBase::RENDER_ALPHA < 0.f)
+					WIBase::RENDER_ALPHA = 0.f;
+			}
 			child->Draw(w,h,offsetParentNew,posScissor,szScissor,mat,bUseScissor,matPostTransform);
 			WIBase::RENDER_ALPHA = aOriginal;
 		}
@@ -1506,17 +1532,18 @@ void WIBase::FadeOut(float tFade,bool removeOnFaded)
 	m_fade->alphaTarget = 0.f;
 	m_fade->removeOnFaded = removeOnFaded;
 }
-bool WIBase::IsFading() {return (m_fade != NULL) ? true : false;}
-bool WIBase::IsFadingIn()
+bool WIBase::IsFading() const {return (m_fade != NULL) ? true : false;}
+bool WIBase::IsFadingIn() const
 {
 	if(!IsFading())
 		return false;
 	return (m_fade->alphaTarget >= GetAlpha()) ? true : false;
 }
-bool WIBase::IsFadingOut()
+bool WIBase::IsFadingOut() const
 {
 	if(!IsFading())
 		return false;
 	return (m_fade->alphaTarget < GetAlpha()) ? true : false;
 }
-#pragma optimize("",on)
+void WIBase::SetIgnoreParentAlpha(bool ignoreParentAlpha) {umath::set_flag(m_stateFlags,StateFlags::IgnoreParentAlpha,ignoreParentAlpha);}
+bool WIBase::ShouldIgnoreParentAlpha() const {return umath::is_flag_set(m_stateFlags,StateFlags::IgnoreParentAlpha);}

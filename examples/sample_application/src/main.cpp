@@ -162,26 +162,34 @@ int main()
 	p->SetAutoAlignToParent(true);
 	p->SetColor(Color::AliceBlue);
 
+	WIText::set_link_handler([](const std::string &link) {
+		std::cout<<"Clicked Link!"<<std::endl;
+	});
 	auto *pText = wgui.Create<WIText>(p);
+	// pText->SetTagsEnabled(true);
 	pText->SetText("This is a demo showcasing the GUI and materialmanager libraries!");
 	pText->SetColor(Color::DarkOrange);
+	// pText->SetAutoBreakMode(WIText::AutoBreak::WHITESPACE);
+	pText->SetWidth(128);
 	pText->SetFont("default_large");
 	pText->EnableShadow(true);
 	pText->SetShadowOffset(Vector2i{2,2});
+	//pText->InsertText("InsertedText",1);
 	pText->SizeToContents();
+	pText->SetHeight(512);
 	
 	auto *pLogo = wgui.Create<WITexturedRect>(p);
 	pLogo->SetMaterial("vulkan_logo.wmi");
 	pLogo->SetSize(512,136);
 
-	auto *pTextShadow = wgui.Create<WIText>(p);
+	/*auto *pTextShadow = wgui.Create<WIText>(p);
 	pTextShadow->SetText("Text with shadow");
 	pTextShadow->SetPos(512,64);
 	pTextShadow->SetColor(Color::LimeGreen);
 	pTextShadow->EnableShadow(true);
 	pTextShadow->SetShadowOffset(1,1);
 	pTextShadow->SetShadowColor(Color::Black);
-	pTextShadow->SizeToContents();
+	pTextShadow->SizeToContents();*/
 
 	auto *pTextEntry = wgui.Create<WITextEntry>(p);
 	pTextEntry->SetSize(64,24);

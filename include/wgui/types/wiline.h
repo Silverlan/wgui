@@ -40,10 +40,10 @@ public:
 	const util::PVector2iProperty &GetStartPosProperty() const;
 	const util::PVector2iProperty &GetEndPosProperty() const;
 
-	Vector2i &GetStartPos();
+	Vector2i &GetStartPos() const;
 	void SetStartPos(Vector2i pos);
 	void SetStartPos(int x,int y);
-	Vector2i &GetEndPos();
+	Vector2i &GetEndPos() const;
 	void SetEndPos(Vector2i pos);
 	void SetEndPos(int x,int y);
 	void SetStartColor(const Color &col);
@@ -53,7 +53,7 @@ public:
 	virtual void SizeToContents() override;
 	virtual unsigned int GetVertexCount() override;
 	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;
-	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) override;
+	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const override;
 };
 
 #endif

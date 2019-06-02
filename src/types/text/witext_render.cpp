@@ -4,6 +4,7 @@
 
 #include "stdafx_wgui.h"
 #include "wgui/types/witext.h"
+#include "wgui/types/witext_tags.hpp"
 #include "wgui/shaders/wishader_text.hpp"
 #include "wgui/types/wirect.h"
 #include <prosper_context.hpp>
@@ -14,8 +15,7 @@
 #include <prosper_command_buffer.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <sharedutils/scope_guard.h>
-
-#pragma optimize("",off)
+#include <util_formatted_text.hpp>
 
 void WIText::InitializeBlur(bool bReload)
 {
@@ -81,9 +81,9 @@ void WIText::DestroyShadow() {m_shadowRenderTarget = nullptr;}
 void WIText::ScheduleRenderUpdate(bool bFull)
 {
 	if(bFull)
-		m_flags |= Flags::FullUpdateScheduled;
+		m_flags |= Flags::FullUpdateScheduled | Flags::ApplySubTextTags;
 	else
-		m_flags |= Flags::RenderTextScheduled;
+		m_flags |= Flags::RenderTextScheduled | Flags::ApplySubTextTags;
 }
 
 void WIText::SetShadowBlurSize(float size)
@@ -153,7 +153,7 @@ void WIText::SelectShader()
 {
 	// Deprecated?
 }
-Mat4 WIText::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat)
+Mat4 WIText::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const
 {
 	return WIBase::GetTransformedMatrix(origin,w,h,mat);
 	/*
@@ -174,6 +174,7 @@ void WIText::UpdateRenderTexture()
 		if((m_flags &(Flags::RenderTextScheduled | Flags::FullUpdateScheduled)) != Flags::None)
 		{
 			m_flags &= ~(Flags::RenderTextScheduled | Flags::FullUpdateScheduled);
+			UpdateSubLines();
 			InitializeTextBuffers();
 		}
 		if((m_flags &Flags::ApplySubTextTags) != Flags::None)
@@ -236,14 +237,10 @@ void WIText::UpdateRenderTexture()
 	InitializeBlur();
 	if(m_renderTarget == nullptr) // Dimensions are most likely 0
 		return;
-	if(m_baseText.IsValid())
+	if(m_baseEl.IsValid())
 	{
-		WITexturedRect *text = m_baseText.get<WITexturedRect>();
-		if(text != NULL)
-		{
-			text->SetSize(w,h);
-			text->SetTexture(*m_renderTarget->GetTexture());
-		}
+		auto *el = static_cast<WITextBase*>(m_baseEl.get());
+		el->InitializeTexture(*m_renderTarget->GetTexture(),w,h);
 	}
 	if(m_baseTextShadow.IsValid())
 	{
@@ -304,19 +301,22 @@ void WIText::RenderText(Mat4&)
 	// Initialize Buffers
 	float x = 0;
 	float y = 0;
-	auto numChars = (*m_text)->size();
+	auto numChars = m_text->GetCharCount();
 	std::vector<GlyphBoundsInfo> glyphBoundsInfos;
 	glyphBoundsInfos.reserve(numChars);
 	if(numChars == 0)
 		return;
-	for(unsigned int i=0;i<m_lines.size();i++)
+	for(unsigned int i=0;i<m_lineInfos.size();i++)
 	{
 		x = 0;
-		auto &lineInfo = m_lines[i];
-		auto &line = lineInfo.line;
-		for(unsigned int j=0;j<line.size();j++)
+		auto &lineInfo = m_lineInfos.at(i);
+		if(lineInfo.wpLine.expired())
+			continue;
+		auto &line = *lineInfo.wpLine.lock();
+		auto &formattedLine = line.GetFormattedLine();
+		for(unsigned int j=0;j<formattedLine.GetLength();j++)
 		{
-			auto c = static_cast<UChar>(line.at(j));
+			auto c = static_cast<UChar>(formattedLine.At(j));
 			auto *glyph = m_font->GetGlyphInfo(c);
 			if(glyph != nullptr)
 			{
@@ -428,23 +428,26 @@ void WIText::RenderText(Mat4&)
 
 void WIText::InitializeTextBuffers()
 {
-	if(m_lines.empty())
-		return;
-	for(auto i=decltype(m_lines.size()){0u};i<m_lines.size();++i)
+	util::text::LineIndex lineIndex = 0;
+	for(auto &lineInfo : m_lineInfos)
 	{
-		auto &lineInfo = m_lines.at(i);
-		if(lineInfo.bufferUpdateRequired == false)
-			continue;
-		lineInfo.bufferUpdateRequired = false;
-		InitializeTextBuffers(i);
+		if(lineInfo.bufferUpdateRequired == true)
+			InitializeTextBuffers(lineInfo,lineIndex);
+		if(lineInfo.subLines.empty() == false)
+			lineIndex += lineInfo.subLines.size();
+		else
+			++lineIndex;
 	}
 }
 
-void WIText::InitializeTextBuffers(uint32_t lineIndex)
+void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex lineIndex)
 {
-	auto &lineInfo = m_lines.at(lineIndex);
-	if(lineInfo.textRange.length == 0)
-		return; // This is an empty new-line, ignore it!
+	lineInfo.bufferUpdateRequired = false;
+	if(lineInfo.wpLine.expired() == true)
+	{
+		lineInfo.buffers.clear();
+		return;
+	}
 	auto &context = WGUI::GetInstance().GetContext();
 	//auto fontHeight = m_font->GetMaxGlyphTop();//m_font->GetMaxGlyphSize()
 
@@ -457,26 +460,29 @@ void WIText::InitializeTextBuffers(uint32_t lineIndex)
 		uint32_t height;
 		float sx;
 		float sy;
-		uint32_t lineIndex;
+		util::text::CharOffset charOffset;
 		std::vector<Vector4> glyphBounds;
 		std::vector<uint32_t> glyphIndices;
-		std::pair<uint32_t,uint32_t> range;
+		util::text::LineIndex absLineIndex;
 	};
 
 	std::vector<SubStringInfo> subStrings {};
-	auto numChars = (*m_text)->size();
-	subStrings.reserve((numChars /MAX_CHARS_PER_BUFFER) +1u +m_lines.size());
+	auto numChars = m_text->GetCharCount();
 
-	const auto fAddSubString = [this,&subStrings](const std::string_view &substr,uint32_t startOffset,uint32_t endOffset,uint32_t lineIndex,uint32_t &inOutX,uint32_t &inOutY) {
+	const auto fAddSubString = [this,&subStrings](const std::string_view &substr,util::text::LineIndex lineIndex,util::text::CharOffset charOffset,uint32_t &inOutX,uint32_t &inOutY) {
 		if(substr.empty())
 			return;
+		if(subStrings.size() == subStrings.capacity())
+			subStrings.reserve(subStrings.size() +20);
 		subStrings.push_back({});
 		auto &info = subStrings.back();
 		info.subString = substr;
-		info.hash = std::hash<std::string_view>{}(info.subString); // COLOR TODO
+		info.charOffset = charOffset;
+		info.hash = std::hash<std::string_view>{}(info.subString);
+		info.absLineIndex = lineIndex;
 
 		int w,h;
-		GetTextSize(&w,&h,&info.subString); // COLOR TODO
+		GetTextSize(&w,&h,&info.subString);
 		if(w <= 0)
 			w = 1;
 		if(h <= 0)
@@ -485,11 +491,9 @@ void WIText::InitializeTextBuffers(uint32_t lineIndex)
 		info.height = h;
 		auto sx = info.sx = 2.f /float(w);
 		auto sy = info.sy = 2.f /float(h);
-		info.lineIndex = lineIndex;
 
 		info.glyphBounds.reserve(substr.length());
 		info.glyphIndices.reserve(substr.length());
-		info.range = {startOffset,endOffset};
 
 		// Populate glyph bounds and indices
 		auto fontSize = m_font->GetSize();
@@ -530,20 +534,36 @@ void WIText::InitializeTextBuffers(uint32_t lineIndex)
 	};
 	auto y = 0u; // lineIndex *GetLineHeight();
 	auto x = 0u;
-	auto lineView = std::string_view{lineInfo.line};
+	auto pLine = lineInfo.wpLine.lock();
+	auto lineView = std::string_view{pLine->GetFormattedLine()};
 	auto subString = lineView;
-	auto startOffset = lineInfo.textRange.offset;
-	while(subString.length() > MAX_CHARS_PER_BUFFER)
+	util::text::CharOffset offset = 0;
+	auto subLines = lineInfo.subLines;
+	while(subString.empty() == false)
 	{
-		auto endOffset = m_visibleTextIndexToRawTextIndex.at(m_rawTextIndexToVisibleTextIndex.at(startOffset) +MAX_CHARS_PER_BUFFER);
-		fAddSubString(subString.substr(0ull,MAX_CHARS_PER_BUFFER),startOffset,endOffset,lineIndex,x,y);
-		subString = subString.substr(MAX_CHARS_PER_BUFFER);
-		startOffset = endOffset;
+		auto curLineIndex = lineIndex;
+		auto numChars = std::min<uint32_t>(MAX_CHARS_PER_BUFFER,subString.length());
+		auto newLine = false;
+		if(subLines.empty() == false)
+		{
+			auto &numCharsSubLine = subLines.front();
+			numChars = std::min<uint32_t>(numCharsSubLine,numChars);
+			numCharsSubLine -= numChars;
+			if(numCharsSubLine == 0)
+			{
+				newLine = true;
+				subLines.erase(subLines.begin());
+				++lineIndex;
+			}
+		}
+		fAddSubString(subString.substr(0ull,numChars),curLineIndex,offset,x,y);
+		subString = subString.substr(numChars);
+		offset += numChars;
+		if(newLine)
+			x = 0;
 	}
-	if(subString.empty() == false)
-		fAddSubString(subString,startOffset,lineInfo.textRange.GetEndOffset(),lineIndex,x,y);
 
-	// TODO: Re-use existing buffer if possible
+	lineInfo.buffers.clear();
 	auto bufferOffset = 0u;
 	for(auto &subStrInfo : subStrings)
 	{
@@ -554,8 +574,8 @@ void WIText::InitializeTextBuffers(uint32_t lineIndex)
 		auto bExistingBuffer = bufferOffset < lineInfo.buffers.size();
 		if(bExistingBuffer == true)
 		{
-			auto &curBufInfo = lineInfo.buffers.at(bufferOffset);
-			/*if(
+			/*auto &curBufInfo = lineInfo.buffers.at(bufferOffset);
+			if(
 				curBufInfo.subStringHash == subStrInfo.hash &&
 				curBufInfo.width == subStrInfo.width && curBufInfo.height == subStrInfo.height &&
 				curBufInfo.sx == subStrInfo.sx && curBufInfo.sy == subStrInfo.sy &&
@@ -576,15 +596,16 @@ void WIText::InitializeTextBuffers(uint32_t lineIndex)
 			lineInfo.buffers.push_back({s_textBuffer->AllocateBuffer()});
 		// Update existing buffer
 		auto &bufInfo = lineInfo.buffers.at(bufferOffset);
-		bufInfo.subStringHash = subStrInfo.hash;
+		// bufInfo.subStringHash = subStrInfo.hash;
 		bufInfo.numChars = subStrInfo.subString.length();
+		bufInfo.charOffset = subStrInfo.charOffset;
+		bufInfo.absLineIndex = subStrInfo.absLineIndex;
 		bufInfo.colorBuffer = nullptr;
 
 		bufInfo.width = subStrInfo.width;
 		bufInfo.height = subStrInfo.height;
 		bufInfo.sx = subStrInfo.sx;
 		bufInfo.sy = subStrInfo.sy;
-		bufInfo.range = {static_cast<int32_t>(subStrInfo.range.first),static_cast<int32_t>(subStrInfo.range.second -subStrInfo.range.first +1)};
 		context.ScheduleRecordUpdateBuffer(
 			bufInfo.buffer,
 			0ull,glyphBoundsData.size() *sizeof(glyphBoundsData.front()),glyphBoundsData.data()
@@ -596,6 +617,16 @@ void WIText::InitializeTextBuffers(uint32_t lineIndex)
 		);
 	}
 	lineInfo.buffers.resize(bufferOffset);
+}
+
+void WIText::RemoveDecorator(const WITextDecorator &decorator)
+{
+	auto it = std::find_if(m_tagInfos.begin(),m_tagInfos.end(),[&decorator](const std::shared_ptr<WITextDecorator> &decoOther) {
+		return decoOther.get() == &decorator;
+	});
+	if(it == m_tagInfos.end())
+		return;
+	m_tagInfos.erase(it);
 }
 
 void WIText::InitializeTextBuffer(prosper::Context &context)
@@ -615,23 +646,134 @@ void WIText::InitializeTextBuffer(prosper::Context &context)
 void WIText::ClearTextBuffer()
 {
 	s_textBuffer = nullptr;
-	s_colorBuffer = nullptr;
+	WITextTagColor::ClearColorBuffer();
+}
+void WITextBase::SetTextElement(WIText &elText)
+{
+	m_hText = elText.GetHandle();
+}
+void WITextBase::InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h)
+{
+	if(m_hTexture.IsValid())
+	{
+		static_cast<WITexturedRect*>(m_hTexture.get())->SetTexture(tex);
+		return;
+	}
+	auto *pEl = WGUI::GetInstance().Create<WITexturedRect>(this);
+	pEl->SetAlphaOnly(true);
+	pEl->SetZPos(1);
+	pEl->SetAlpha(0.f);
+	pEl->GetColorProperty()->Link(*GetColorProperty());
+	pEl->SetAutoAlignToParent(true);
+	pEl->SetSize(w,h);
+	m_hTexture = pEl->GetHandle();
 }
 
-void WIText::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
+bool WITextBase::RenderLines(
+	wgui::ShaderTextRect &shader,int32_t width,int32_t height,
+	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
+	const Mat4 &matParent,Vector2i &inOutSize,
+	wgui::ShaderTextRect::PushConstants &inOutPushConstants,
+	const std::function<void(const SubBufferInfo&,Anvil::DescriptorSet&)> &fDraw,
+	bool colorPass
+) const
+{
+	auto &textEl = static_cast<WIText&>(*m_hText.get());
+	auto &context = WGUI::GetInstance().GetContext();
+	auto &drawCmd = context.GetDrawCommandBuffer();
+	if(shader.BeginDraw(drawCmd,width,height) == false)
+		return false;
+	uint32_t xScissor,yScissor,wScissor,hScissor;
+	WGUI::GetInstance().GetScissor(xScissor,yScissor,wScissor,hScissor);
+
+	auto bHasColorBuffers = false;
+	auto *descSet = textEl.m_font->GetGlyphMapDescriptorSet();
+	auto lineHeight = textEl.GetLineHeight();
+	uint32_t lineIndex = 0;
+	for(auto &lineInfo : textEl.m_lineInfos)
+	{
+		if(lineInfo.buffers.empty())
+			continue;
+		auto &firstBufferInfo = lineInfo.buffers.front();
+		auto firstLineIndex = firstBufferInfo.absLineIndex;
+
+		auto &lastBufferInfo = lineInfo.buffers.back();
+		auto lastLineIndex = lastBufferInfo.absLineIndex;
+
+		int32_t yLineStartPxOffset = absPos.y +(static_cast<int32_t>(firstLineIndex) +1) *lineHeight;
+		int32_t yLineEndPxOffset = absPos.y +(static_cast<int32_t>(lastLineIndex) +1) *lineHeight;
+
+		if(yLineEndPxOffset < static_cast<int32_t>(yScissor))
+			continue; // Line is out of scissor bounds; We don't need to render it
+		if(yLineStartPxOffset >= static_cast<int32_t>(yScissor +hScissor))
+			break; // Line is out of scissor bounds; We can skip all remaining lines altogether
+
+		for(auto &bufInfo : lineInfo.buffers)
+		{
+			if(bufInfo.colorBuffer != nullptr)
+			{
+				bHasColorBuffers = true;
+				if(colorPass == false)
+					continue;
+			}
+			else if(colorPass)
+				continue;
+			inOutPushConstants.fontInfo.widthScale = bufInfo.sx;
+			inOutPushConstants.fontInfo.heightScale = bufInfo.sy;
+
+			inOutSize.x = bufInfo.width;
+			inOutSize.y = bufInfo.height;
+
+			// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
+			// This will be reset further below.
+			auto matText = GetTransformedMatrix(origin,width,height,matParent);
+			inOutPushConstants.elementData.modelMatrix = matText;
+
+			inOutPushConstants.fontInfo.yOffset = bufInfo.absLineIndex *lineHeight;
+
+			fDraw(bufInfo,*descSet);
+		}
+	}
+	shader.EndDraw();
+	return bHasColorBuffers;
+}
+
+void WITextBase::RenderLines(
+	int32_t width,int32_t height,
+	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
+	const Mat4 &matParent,Vector2i &inOutSize,
+	wgui::ShaderTextRect::PushConstants &inOutPushConstants
+) const
+{
+	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
+	auto bHasColorBuffers = RenderLines(*pShaderTextRect,width,height,absPos,transform,origin,matParent,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect](const SubBufferInfo &bufInfo,Anvil::DescriptorSet &descSet) {
+		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars);
+	},false);
+	if(bHasColorBuffers == false)
+		return;
+	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
+	RenderLines(*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor](const SubBufferInfo &bufInfo,Anvil::DescriptorSet &descSet) {
+		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars);
+	},true);
+}
+
+void WITextBase::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
 {
 	WIBase::Render(width,height,mat,origin,matParent);
-	if(m_renderTarget != nullptr && IsCacheEnabled() == true)
+	if(m_hText.IsValid() == false)
+		return;
+	auto &textEl = static_cast<WIText&>(*m_hText.get());
+	if(textEl.m_renderTarget != nullptr && textEl.IsCacheEnabled() == true)
 		return;
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
 	if(pShaderTextRect != nullptr)
 	{
-		auto *pFont = GetFont();
+		auto *pFont = textEl.GetFont();
 		if(pFont == nullptr)
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
-		for(auto &lineInfo : m_lines)
+		for(auto &lineInfo : textEl.m_lineInfos)
 		{
 			for(auto &bufInfo : lineInfo.buffers)
 			{
@@ -642,16 +784,13 @@ void WIText::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 		}
 
 		auto drawCmd = context.GetDrawCommandBuffer();
-		auto &shader = *pShaderTextRect;
-		auto &shaderColor = *pShaderTextRectColor;
-
 		auto glyphMap = pFont->GetGlyphMap();
 		auto glyphMapExtents = (*glyphMap->GetImage())->get_image_extent_2D(0u);
 		auto maxGlyphBitmapWidth = pFont->GetMaxGlyphBitmapWidth();
 
 		auto col = GetColor().ToVector4();
 		col.a *= WIBase::RENDER_ALPHA;
-		if(col.a <= 0.f)
+		if(col.a <= 0.f && umath::is_flag_set(m_stateFlags,StateFlags::RenderIfZeroAlpha) == false)
 			return;
 
 		auto currentSize = GetSizeProperty()->GetValue();
@@ -663,80 +802,19 @@ void WIText::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 			wgui::ElementData{Mat4{},col},
 			0.f,0.f,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth
 		};
-		const auto fDraw = [&context,&drawCmd,&shader,&shaderColor,&pushConstants,&size,&origin,&matParent,width,height,pFont,this](bool bClear) {
-			auto bHasColorBuffers = false;
-			if(shader.BeginDraw(drawCmd,width,height) == true)
-			{
-				auto descSet = m_font->GetGlyphMapDescriptorSet();
-				auto lineIndex = 0u;
-				auto lineHeight = GetLineHeight();
-				for(auto &lineInfo : m_lines)
-				{
-					for(auto &bufInfo : lineInfo.buffers)
-					{
-						if(bufInfo.colorBuffer != nullptr)
-						{
-							bHasColorBuffers = true;
-							continue;
-						}
-						pushConstants.fontInfo.widthScale = bufInfo.sx;
-						pushConstants.fontInfo.heightScale = bufInfo.sy;
-
-						size.x = bufInfo.width;
-						size.y = bufInfo.height;
-
-						// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
-						// This will be reset further below.
-						auto matText = GetTransformedMatrix(origin,width,height,matParent);
-						pushConstants.elementData.modelMatrix = matText;
-
-						pushConstants.fontInfo.yOffset = lineIndex *lineHeight;
-
-						shader.Draw(*bufInfo.buffer,*descSet,pushConstants,bufInfo.numChars);
-					}
-					++lineIndex;
-				}
-				shader.EndDraw();
-			}
-			if(bHasColorBuffers == true && shaderColor.BeginDraw(drawCmd,width,height) == true)
-			{
-				auto descSet = m_font->GetGlyphMapDescriptorSet();
-				auto lineIndex = 0u;
-				auto lineHeight = GetLineHeight();
-				for(auto &lineInfo : m_lines)
-				{
-					for(auto &bufInfo : lineInfo.buffers)
-					{
-						if(bufInfo.colorBuffer == nullptr)
-							continue;
-						pushConstants.fontInfo.widthScale = bufInfo.sx;
-						pushConstants.fontInfo.heightScale = bufInfo.sy;
-
-						size.x = bufInfo.width;
-						size.y = bufInfo.height;
-
-						// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
-						// This will be reset further below.
-						auto matText = GetTransformedMatrix(origin,width,height,matParent);
-						pushConstants.elementData.modelMatrix = matText;
-
-						pushConstants.fontInfo.yOffset = lineIndex *lineHeight;
-
-						shaderColor.Draw(*bufInfo.buffer,*bufInfo.colorBuffer,*descSet,pushConstants,bufInfo.numChars);
-					}
-					++lineIndex;
-				}
-				shader.EndDraw();
-			}
+		Vector2i absPos,absSize;
+		CalcBounds(mat,width,height,absPos,absSize);
+		const auto fDraw = [&context,&drawCmd,&pushConstants,&size,&origin,&mat,&matParent,width,height,pFont,this,&textEl,&absPos,&absSize](bool bClear) {
+			RenderLines(width,height,absPos,mat,origin,matParent,size,pushConstants);
 		};
 
 		// Render Shadow
-		if(m_shadow.enabled)
+		if(textEl.m_shadow.enabled)
 		{
-			auto *pShadowColor = GetShadowColor();
+			auto *pShadowColor = textEl.GetShadowColor();
 			if(pShadowColor != nullptr && pShadowColor->w > 0.f)
 			{
-				auto *pOffset = GetShadowOffset();
+				auto *pOffset = textEl.GetShadowOffset();
 				auto currentPos = GetPosProperty()->GetValue();
 				auto &pos = GetPosProperty()->GetValue();
 				if(pOffset != nullptr)
@@ -775,4 +853,3 @@ void WIText::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 		size = currentSize;
 	}
 }
-#pragma optimize("",on)

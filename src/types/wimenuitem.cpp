@@ -9,7 +9,6 @@
 
 LINK_WGUI_TO_CLASS(WIMenuItem,WIMenuItem);
 
-#pragma optimize("",off)
 WIMenuItem::WIMenuItem()
 	: WIBase{}
 {
@@ -123,4 +122,3 @@ void WIMenuItem::UpdateRightText()
 	m_hRightText->SetX(GetWidth() -m_hRightText->GetWidth() -border);
 	m_hRightText->SetY(GetHeight() *0.5f -m_hRightText->GetHeight() *0.5f);
 }
-#pragma optimize("",on)

@@ -111,7 +111,7 @@ const Color &WILine::GetStartColor() const {return m_colStart;}
 const Color &WILine::GetEndColor() const {return m_colEnd;}
 
 unsigned int WILine::GetVertexCount() {return 2;}
-Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat)
+Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const
 {
 	auto &posStart = GetStartPos();
 	auto &posEnd = GetEndPos();
@@ -184,14 +184,14 @@ void WILine::SizeToContents()
 
 const util::PVector2iProperty &WILine::GetStartPosProperty() const {return m_posStart;}
 const util::PVector2iProperty &WILine::GetEndPosProperty() const {return m_posEnd;}
-Vector2i &WILine::GetStartPos() {return *m_posStart;}
+Vector2i &WILine::GetStartPos() const {return *m_posStart;}
 void WILine::SetStartPos(Vector2i pos) {SetStartPos(pos.x,pos.y);}
 void WILine::SetStartPos(int x,int y)
 {
 	*m_posStart = Vector2i{x,y};
 }
 
-Vector2i &WILine::GetEndPos() {return *m_posEnd;}
+Vector2i &WILine::GetEndPos() const {return *m_posEnd;}
 void WILine::SetEndPos(Vector2i pos) {SetEndPos(pos.x,pos.y);}
 void WILine::SetEndPos(int x,int y)
 {

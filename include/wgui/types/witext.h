@@ -5,27 +5,71 @@
 #ifndef __WITEXT_H__
 #define __WITEXT_H__
 
-#define WITEXT_VALIDATION_ENABLED
-
 #include "wgui/wibase.h"
 #include "wgui/fontmanager.h"
 #include "wgui/wihandle.h"
+#include "wgui/shaders/wishader_text.hpp"
 #include <image/prosper_render_target.hpp>
 #include <sharedutils/property/util_property.hpp>
+#include <sharedutils/util_shared_handle.hpp>
+#include <util_formatted_text_types.hpp>
 #include <string_view>
 #include <queue>
-#ifdef WITEXT_VALIDATION_ENABLED
-#include <sstream>
-#endif
 
 namespace prosper
 {
+	class Buffer;
 	class Shader;
 	class BlurSet;
 	class UniformResizableBuffer;
 };
 
+namespace util{namespace text{class FormattedText; class TextTag; class FormattedTextLine;};};
 class WGUIShaderText;
+class WITextTag;
+class WITextDecorator;
+struct WITextTagArgument;
+
+class WIText;
+class DLLWGUI WITextBase
+	: public WIBase
+{
+public:
+	struct SubBufferInfo
+	{
+		std::shared_ptr<prosper::Buffer> buffer;
+		std::shared_ptr<prosper::Buffer> colorBuffer;
+		util::text::TextLength numChars = 0u;
+		util::text::CharOffset charOffset = 0u;
+		util::text::LineIndex absLineIndex = 0;
+		uint32_t width = 0u;
+		uint32_t height = 0u;
+		float sx = 0.f;
+		float sy = 0.f;
+	};
+
+	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;
+	void InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h);
+	void SetTextElement(WIText &elText);
+private:
+	bool RenderLines(
+		wgui::ShaderTextRect &shader,int32_t width,int32_t height,
+		const Vector2i &absPos,const Mat4 &transform,
+		const Vector2i &origin,const Mat4 &matParent,Vector2i &inOutSize,
+		wgui::ShaderTextRect::PushConstants &inOutPushConstants,
+		const std::function<void(const SubBufferInfo&,Anvil::DescriptorSet&)> &fDraw,
+		bool colorPass
+	) const;
+	void RenderLines(
+		int32_t width,int32_t height,
+		const Vector2i &absPos,const Mat4 &transform,
+		const Vector2i &origin,const Mat4 &matParent,Vector2i &inOutSize,
+		wgui::ShaderTextRect::PushConstants &inOutPushConstants
+	) const;
+	WIHandle m_hTexture = {};
+	WIHandle m_hText = {};
+};
+
 class DLLWGUI WIText
 	: public WIBase
 {
@@ -37,19 +81,7 @@ public:
 		int32_t GetEndOffset() const {return offset +length -1;} // Note: May be negative if length is 0
 		void SetEndOffset(int32_t endOffset) {length = endOffset -offset +1;}
 	};
-private:
-	struct SubBufferInfo
-	{
-		std::shared_ptr<prosper::Buffer> buffer;
-		std::shared_ptr<prosper::Buffer> colorBuffer;
-		size_t subStringHash;
-		RangeInfo range = {}; // start offset and length into RAW text (including tags)
-		uint32_t numChars = 0u;
-		uint32_t width = 0u;
-		uint32_t height = 0u;
-		float sx = 0.f;
-		float sy = 0.f;
-	};
+	friend WITextBase;
 public:
 	enum class AutoBreak : int
 	{
@@ -78,90 +110,37 @@ public:
 	};
 	struct DLLWGUI LineInfo
 	{
-		RangeInfo textRange = {}; // start offset and size into RAW text (including tags, but excluding new-line characters)
-		RangeInfo visTextRange = {};
-		std::string_view line;
+		LineInfo()=default;
+		std::weak_ptr<util::text::FormattedTextLine> wpLine;
 		int32_t widthInPixels = 0u;
-		bool newLine = false; // Indicates whether this line is terminated by a new-line character
 		bool bufferUpdateRequired = true;
-		std::vector<SubBufferInfo> buffers = {};
-		uint32_t GetNumberOfVisibleCharacters() const {return line.size();}
-		uint32_t GetNumberOfCharacters() const {return line.size() +(newLine ? 1 : 0);}
-		bool IsEmpty() const {return visTextRange.length == 0;}
+		util::text::LineIndex subLineIndexOffset = 0;
+		std::vector<WITextBase::SubBufferInfo> buffers = {};
+		std::vector<util::text::TextLength> subLines = {};
 	};
-	struct DLLWGUI TagArgument
-	{
-		enum class Type : uint32_t
-		{
-			String = 0u,
-			Function,
-			Color,
-			Vector4
-		};
-		Type type;
-		std::shared_ptr<void> value;
-	};
-	struct DLLWGUI TagInfo
-	{
-		~TagInfo()
-		{
-			ClearOverlays();
-		}
-		void ClearOverlays()
-		{
-			for(auto &hOverlay : overlays)
-			{
-				if(hOverlay.IsValid())
-					hOverlay->Remove();
-			}
-		}
-		TagType tagType = TagType::None;
-		std::vector<TagArgument> args = {};
-		RangeInfo rangeOpenTag = {}; // start offset and length into RAW text (including tags themselves)
-		RangeInfo rangeClosingTag = {};
-		std::vector<WIHandle> overlays = {};
-		std::string label = {};
-		uint32_t GetLength() const
-		{
-			return rangeClosingTag.GetEndOffset() -rangeOpenTag.offset +1;
-		}
-		std::string GetOpenTag(const std::string &baseText) const
-		{
-			return baseText.substr(rangeOpenTag.offset,rangeOpenTag.length);
-		}
-		std::string GetClosingTag(const std::string &baseText) const
-		{
-			return baseText.substr(rangeClosingTag.offset,rangeClosingTag.length);
-		}
-		std::string GetTagString(const std::string &baseText) const
-		{
-			return baseText.substr(rangeOpenTag.offset,GetLength());
-		}
-	};
-	static void set_link_handler(const std::function<void(const std::string&)> &linkHandler);
+	static const auto MAX_CHARS_PER_BUFFER = 32u;
 
 	WIText();
 	virtual ~WIText() override;
 	WIText(const WIText&)=delete;
 	void operator=(const WIText&)=delete;
 	virtual void Initialize() override;
+	WITextBase *GetBaseElement();
 	const FontInfo *GetFont() const;
 	uint32_t GetLineCount() const;
-	// Number of lines including lines broken
-	// up into multiple segments
 	uint32_t GetTotalLineCount() const;
 	const std::vector<LineInfo> &GetLines() const;
-	std::string_view *GetLine(int line);
+	std::vector<LineInfo> &GetLines();
+	util::text::FormattedTextLine *GetLine(util::text::LineIndex lineIdx);
 	int GetLineHeight() const;
 	int GetBreakHeight();
 	void SetBreakHeight(int breakHeight);
-	const util::PStringProperty &GetTextProperty() const;
+	const util::text::FormattedText &GetFormattedTextObject() const;
+	util::text::FormattedText &GetFormattedTextObject();
 	const std::string &GetText() const;
-	const std::string &GetVisibleText() const;
-	const std::vector<uint32_t> &GetRawTextIndicesToVisibleIndices() const;
-	const std::vector<uint32_t> &GetVisibleTextIndicesToRawIndices() const;
-	void SetText(const std::string &text);
-	void SetFont(const std::string &font);
+	const std::string &GetFormattedText() const;
+	void SetText(const std::string_view &text);
+	void SetFont(const std::string_view &font);
 	void SetFont(const FontInfo *font);
 	void SetAutoBreakMode(AutoBreak b);
 	AutoBreak GetAutoBreakMode() const;
@@ -170,26 +149,34 @@ public:
 	int GetTextHeight();
 	std::shared_ptr<prosper::Texture> GetTexture() const;
 	virtual std::string GetDebugInfo() const override;
-	std::pair<Vector2i,Vector2i> GetCharacterPixelBounds(uint32_t charOffset) const;
+	std::pair<Vector2i,Vector2i> GetCharacterPixelBounds(util::text::LineIndex lineIdx,util::text::CharOffset charOffset) const;
 	void SetTagArgument(const std::string &tagLabel,uint32_t argumentIndex,const std::string &arg);
 	void SetTagArgument(const std::string &tagLabel,uint32_t argumentIndex,const Vector4 &arg);
 	void SetTagArgument(const std::string &tagLabel,uint32_t argumentIndex,const CallbackHandle &arg);
 	void SetTagArgument(const std::string &tagLabel,uint32_t argumentIndex,const Color &arg);
 	void SetTagsEnabled(bool bEnabled);
 	bool AreTagsEnabled() const;
+	Color GetCharColor(util::text::TextOffset offset) const;
+
+	void AppendText(const std::string_view &text);
+	bool InsertText(const std::string_view &text,util::text::LineIndex lineIdx,util::text::CharOffset charOffset=util::text::LAST_CHAR);
+	void AppendLine(const std::string_view &line);
+	void PopFrontLine();
+	void PopBackLine();
+	void RemoveLine(util::text::LineIndex lineIdx);
+	bool RemoveText(util::text::LineIndex lineIdx,util::text::CharOffset charOffset,util::text::TextLength len);
+	bool RemoveText(util::text::TextOffset offset,util::text::TextLength len);
+	bool MoveText(util::text::LineIndex lineIdx,util::text::CharOffset startOffset,util::text::TextLength len,util::text::LineIndex targetLineIdx,util::text::CharOffset targetCharOffset=util::text::LAST_CHAR);
+	std::string Substr(util::text::TextOffset startOffset,util::text::TextLength len) const;
+	void Clear();
 
 	void SetTabSpaceCount(uint32_t numberOfSpaces);
 	uint32_t GetTabSpaceCount() const;
 
 	void SetAutoSizeToText(bool bAutoSize);
 	bool ShouldAutoSizeToText() const;
+	void UpdateTags();
 	
-	void RemoveLine(uint32_t lineIdx);
-	void PopFrontLine();
-	void PopBackLine();
-	void InsertLine(uint32_t lineIdx,const std::string_view &line);
-	void AppendLine(const std::string_view &line);
-	void PrependLine(const std::string_view &line);
 	void SetDirty();
 	bool IsDirty() const;
 
@@ -210,22 +197,20 @@ public:
 	//
 
 	virtual void SelectShader();
-	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;
 	virtual void Think() override;
 	virtual void Update() override;
 	virtual void SizeToContents() override;
-	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) override;
+	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const override;
 
 	void SetCacheEnabled(bool bEnabled);
 	bool IsCacheEnabled() const;
 
+	template<class TDecorator,typename... TARGS>
+		std::shared_ptr<WITextDecorator> AddDecorator(TARGS&& ...args);
+	void RemoveDecorator(const WITextDecorator &decorator);
+
 	static void InitializeTextBuffer(prosper::Context &context);
 	static void ClearTextBuffer();
-
-#ifdef WITEXT_VALIDATION_ENABLED
-	bool Validate(std::stringstream &outMsg) const;
-	bool UnitTest();
-#endif
 private:
 	struct WITextShadowInfo
 	{
@@ -238,24 +223,19 @@ private:
 		float blurSize;
 	};
 private:
-	static const auto MAX_CHARS_PER_BUFFER = 32u;
 	static std::shared_ptr<prosper::UniformResizableBuffer> s_textBuffer;
-	static std::shared_ptr<prosper::UniformResizableBuffer> s_colorBuffer;
-	static std::function<void(const std::string&)> s_linkHandler;
 	util::WeakHandle<prosper::Shader> m_shader = {};
-	util::PStringProperty m_text;
-	std::string m_visibleText;
-	std::vector<uint32_t> m_rawTextIndexToVisibleTextIndex = {}; // Visible text = excluding tags
-	std::vector<uint32_t> m_visibleTextIndexToRawTextIndex = {};
-	std::vector<LineInfo> m_lines = {}; // Excludes tags
-	uint32_t m_lineCount = 0u; // Number of actual lines
-	std::vector<TagInfo> m_subTextTags = {};
-	std::unordered_map<std::string,std::unordered_map<uint32_t,TagArgument>> m_tagArgumentOverrides = {};
-	WIHandle m_baseText;
+	std::shared_ptr<util::text::FormattedText> m_text = nullptr;
+	std::vector<LineInfo> m_lineInfos = {};
+
+	std::vector<std::shared_ptr<WITextDecorator>> m_tagInfos = {};
+	std::unordered_map<std::string,std::vector<std::weak_ptr<WITextTag>>> m_labelToDecorators = {};
+
+	std::unordered_map<std::string,std::unordered_map<uint32_t,WITextTagArgument>> m_tagArgumentOverrides = {};
+	WIHandle m_baseEl;
 	std::shared_ptr<const FontInfo> m_font;
 	int m_breakHeight;
 	AutoBreak m_autoBreak;
-	bool m_bTagsEnabled = false;
 	bool m_bAutoSizeToText = false;
 	uint32_t m_tabSpaceCount = 4u;
 
@@ -274,31 +254,18 @@ private:
 	unsigned int m_wTexture;
 	unsigned int m_hTexture;
 
-	// Takes the index for an actual line (separated by a new-line character) and returns
-	// the associated index for the m_lines array
-	std::optional<uint32_t> GetInternalLineIndex(uint32_t lineIndex) const;
-	std::pair<int32_t,int32_t> GetTagRange(const TagInfo &tag) const;
-	bool IsTextUpdateRequired(const std::string &newText,bool compareText=false) const;
-	bool ParseLines(const std::string_view &text);
-	uint32_t ParseLine(const std::string_view &text);
-	void BreakLineByWidth(uint32_t lineIndex);
+	bool BreakLineByWidth(uint32_t lineIndex,util::text::ShiftOffset &lineShift);
+	void UpdateSubLines();
 	
-	void UpdateLineStringViewObjects(uint32_t offset=0u);
 	void PerformTextPostProcessing();
 	void AutoSizeToText();
-	int32_t FindLine(int32_t charOffset);
-	uint32_t GetStringLength(const std::string_view &sv) const;
-	std::optional<uint32_t> ParseCodeTag(const std::string_view &sv,uint32_t offset=0u,TagInfo *outTagInfo=nullptr,bool *outIsClosingTag=nullptr) const;
-	void SetTagArgument(const std::string &tagLabel,uint32_t argumentIndex,const TagArgument &arg);
+
+	void InitializeTagArguments(const WITextTag &tag,std::vector<WITextTagArgument> &args) const;
+	void SetTagArgument(const std::string &tagLabel,uint32_t argumentIndex,const WITextTagArgument &arg);
 	void ApplySubTextTags();
-	void ApplySubTextTag(const std::string &label);
-	void ApplySubTextTag(TagInfo &tag);
-	void ApplySubTextColor(TagInfo &tag);
-	void ApplySubTextLink(TagInfo &tag);
-	void ApplySubTextUnderline(TagInfo &tag);
-	const std::vector<WIHandle> *CreateSubTextOverlayElement(TagInfo &tag);
+	void ApplySubTextTag(WITextDecorator &tag);
 	void InitializeTextBuffers();
-	void InitializeTextBuffers(uint32_t lineIndex);
+	void InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex lineIndex);
 	void UpdateRenderTexture();
 	void GetTextSize(int *w,int *h,const std::string_view *inText=nullptr);
 	void RenderText();
@@ -310,5 +277,24 @@ private:
 	void ScheduleRenderUpdate(bool bFull=false);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIText::Flags)
+
+template<class TDecorator,typename... TARGS>
+	std::shared_ptr<WITextDecorator> WIText::AddDecorator(TARGS&& ...args)
+{
+	auto pDecorator = std::make_shared<TDecorator>(*this,std::forward<TARGS>(args)...);
+	if constexpr(std::is_base_of_v<WITextTag,TDecorator>)
+	{
+		InitializeTagArguments(*pDecorator,pDecorator->GetArguments());
+	}
+	pDecorator->Initialize();
+	auto startOffset = pDecorator->GetStartTextCharOffset();
+	auto it = std::find_if(m_tagInfos.begin(),m_tagInfos.end(),[startOffset](const std::shared_ptr<WITextDecorator> &decoratorOther) {
+		return decoratorOther->GetStartTextCharOffset() >= startOffset;
+	});
+	m_tagInfos.insert(it,pDecorator);
+	pDecorator->SetDirty();
+	m_flags |= Flags::ApplySubTextTags;
+	return pDecorator;
+}
 
 #endif

@@ -128,10 +128,10 @@ void WIDropDownMenu::SelectOptionByText(const std::string &name)
 	SelectOption(static_cast<WIDropDownMenuOption*>(it->get())->GetIndex());
 }
 
-std::string WIDropDownMenu::GetOptionText(uint32_t idx)
+std::string_view WIDropDownMenu::GetOptionText(uint32_t idx)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
-		return "";
+		return {};
 	WIDropDownMenuOption *pOption = m_options[idx].get<WIDropDownMenuOption>();
 	return pOption->GetText();
 }
@@ -156,7 +156,7 @@ void WIDropDownMenu::SetOptionValue(uint32_t idx,const std::string &val)
 	static_cast<WIDropDownMenuOption*>(m_options[idx].get())->SetValue(val);
 }
 
-std::string WIDropDownMenu::GetText() {return WITextEntry::GetText();}
+std::string_view WIDropDownMenu::GetText() const {return WITextEntry::GetText();}
 
 std::string WIDropDownMenu::GetValue()
 {
@@ -167,7 +167,7 @@ std::string WIDropDownMenu::GetValue()
 	return pOption->GetValue();
 }
 
-void WIDropDownMenu::SetText(const std::string &text)
+void WIDropDownMenu::SetText(const std::string_view &text)
 {
 	WITextEntry::SetText(text);
 	//SetText(text);
@@ -344,7 +344,7 @@ void WIDropDownMenu::OpenMenu()
 		if(pScrollBar->IsVisible())
 			marginRight = pScrollBar->GetWidth();
 	}
-	std::string text = GetText();
+	auto text = GetText();
 	int w = GetWidth() -marginRight;
 	for(unsigned int i=0;i<numOptions;i++)
 	{
@@ -461,7 +461,7 @@ void WIDropDownMenuOption::Initialize()
 	SetScrollInputEnabled(true);
 }
 
-void WIDropDownMenuOption::SetText(const std::string &text)
+void WIDropDownMenuOption::SetText(const std::string_view &text)
 {
 	if(!m_hText.IsValid())
 		return;
@@ -472,11 +472,11 @@ void WIDropDownMenuOption::SetText(const std::string &text)
 	UpdateTextPos();
 }
 
-std::string WIDropDownMenuOption::GetText()
+std::string_view WIDropDownMenuOption::GetText() const
 {
 	if(!m_hText.IsValid())
-		return "";
-	return m_hText.get<WIText>()->GetText();
+		return {};
+	return static_cast<WIText*>(m_hText.get())->GetText();
 }
 
 void WIDropDownMenuOption::UpdateTextPos()

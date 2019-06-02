@@ -33,8 +33,8 @@ public:
 	const std::string &GetValue();
 	void SetIndex(int idx);
 	int GetIndex();
-	void SetText(const std::string &text);
-	std::string GetText();
+	void SetText(const std::string_view &text);
+	std::string_view GetText() const;
 	virtual void SetSize(int x,int y) override;
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
@@ -65,13 +65,13 @@ public:
 	void SelectOption(const std::string &value);
 	void SelectOptionByText(const std::string &name);
 	void OnOptionSelected(WIDropDownMenuOption *option);
-	std::string GetText();
+	std::string_view GetText() const;
 	std::string GetValue();
-	std::string GetOptionText(uint32_t idx);
+	std::string_view GetOptionText(uint32_t idx);
 	std::string GetOptionValue(uint32_t idx);
 	void SetOptionText(uint32_t idx,const std::string &text);
 	void SetOptionValue(uint32_t idx,const std::string &val);
-	void SetText(const std::string &text);
+	void SetText(const std::string_view &text);
 	unsigned int GetOptionCount();
 	void AddOption(const std::string &option,const std::string &value);
 	void AddOption(const std::string &option);

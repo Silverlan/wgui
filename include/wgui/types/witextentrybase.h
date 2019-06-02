@@ -6,9 +6,12 @@
 #define __WITEXTENTRYBASE_H__
 #include "wgui/wibase.h"
 #include "wgui/wihandle.h"
+#include <util_formatted_text_types.hpp>
+#include <string_view>
 
 class WIText;
 class WIRect;
+class WITextDecorator;
 class DLLWGUI WITextEntryBase
 	: public WIBase
 {
@@ -32,11 +35,11 @@ public:
 	virtual void OnFocusKilled() override;
 	virtual void SizeToContents() override;
 	void SetInputHidden(bool b);
-	std::string GetText();
+	std::string_view GetText() const;
 	WIText *GetTextElement();
-	void SetText(std::string text);
-	void InsertText(std::string instext,int pos);
-	void InsertText(std::string text);
+	void SetText(std::string_view text);
+	void InsertText(const std::string_view &instext,int pos);
+	void InsertText(const std::string_view &text);
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual util::EventReply KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual util::EventReply CharCallback(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None) override;
@@ -61,17 +64,17 @@ public:
 	void GetSelectionBounds(int *start,int *end);
 	void SetSelectionBounds(int start,int end);
 	void ClearSelection();
-	void RemoveSelection();
 	bool RemoveSelectedText();
 	void OnEnter();
 	void SetMaxLength(int length);
 	int GetMaxLength();
 protected:
-	virtual void OnTextChanged(const std::string &oldText,const std::string &text);
-	std::vector<WIHandle> m_selection;
+	virtual void OnTextContentsChanged();
+	void UpdateHiddenText();
+	std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;
 	WIHandle m_hText;
 	WIHandle m_hCaret;
-	std::string m_text;
+	std::string m_realText; // Only used if the 'HideInput' flag is set
 	int m_maxLength;
 	int m_posCaret;
 	StateFlags m_stateFlags = static_cast<StateFlags>(umath::to_integral(StateFlags::Editable) | umath::to_integral(StateFlags::Selectable));
@@ -79,15 +82,16 @@ protected:
 	int m_selectStart;
 	int m_selectEnd;
 	bool m_bWasDoubleClick = false;
-	int GetCharPos(int x,int y);
-	int GetCharPos();
+	int GetCharPos(int x,int y) const;
+	int GetCharPos() const;
 	int GetLineFromPos(int pos);
 	void SetSelectionStart(int pos);
 	void SetSelectionEnd(int pos);
 	void UpdateSelection();
-	int GetLineInfo(int pos,const std::string_view **line,int *lpos);
+	std::pair<util::text::LineIndex,util::text::LineIndex> GetLineInfo(int pos,std::string_view &outLine,int *lpos) const;
 	void UpdateTextPosition();
-	void UpdateText(const std::string &text);
+	virtual void OnTextChanged(const std::string &text);
+	void OnTextChanged();
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WITextEntryBase::StateFlags)
 

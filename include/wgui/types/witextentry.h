@@ -17,7 +17,8 @@ protected:
 	WIHandle m_hBg;
 
 	virtual void OnTextEntered();
-	virtual void OnTextChanged(const std::string &oldText,const std::string &text);
+	virtual void OnTextChanged(const std::string &text);
+	virtual void OnContentsChanged();
 public:
 	WITextEntry();
 	virtual ~WITextEntry() override;
@@ -32,10 +33,10 @@ public:
 
 	WIText *GetTextElement();
 	void SetInputHidden(bool b);
-	std::string GetText() const;
-	void SetText(std::string text);
-	void InsertText(std::string instext,int pos);
-	void InsertText(std::string text);
+	std::string_view GetText() const;
+	void SetText(std::string_view text);
+	void InsertText(std::string_view instext,int pos);
+	void InsertText(std::string_view text);
 	int GetCaretPos() const;
 	void SetCaretPos(int pos);
 	WIRect *GetCaretElement();

@@ -9,7 +9,6 @@
 
 LINK_WGUI_TO_CLASS(WIScrollBar,WIScrollBar);
 
-#pragma optimize("",off)
 WIScrollBar::WIScrollBar()
 	: WIBase(),m_bHorizontal(false),m_offset(0),
 	m_numElements(0),m_numListed(0),
@@ -367,4 +366,3 @@ util::EventReply WIScrollBarSlider::ScrollCallback(Vector2 offset)
 		return util::EventReply::Handled;
 	return parent->ScrollCallback(offset);
 }
-#pragma optimize("",on)

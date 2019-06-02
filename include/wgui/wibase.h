@@ -68,8 +68,11 @@ public:
 		RemoveScheduledBit = UpdateScheduledBit<<1u,
 		SkinAppliedBit = RemoveScheduledBit<<1u,
 		ClickedBit = SkinAppliedBit<<1u,
-		ThinkIfInvisibleBit = ClickedBit<<1u
+		ThinkIfInvisibleBit = ClickedBit<<1u,
+		IgnoreParentAlpha = ThinkIfInvisibleBit<<1u,
+		RenderIfZeroAlpha = IgnoreParentAlpha<<1u
 	};
+	static void CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize);
 
 	WIBase();
 	virtual ~WIBase();
@@ -118,6 +121,8 @@ public:
 	void KillFocus(bool bForceKill=false);
 	virtual void OnFocusGained();
 	virtual void OnFocusKilled();
+	virtual void OnDescendantFocusGained(WIBase &el);
+	virtual void OnDescendantFocusKilled(WIBase &el);
 	const util::PBoolProperty &GetVisibilityProperty() const;
 	bool IsVisible() const;
 	virtual void SetVisible(bool b);
@@ -187,14 +192,14 @@ public:
 	void RemoveChild(WIBase *child);
 	void AddChild(WIBase *child);
 	bool HasChild(WIBase *child);
-	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat);
-	Mat4 GetTransformedMatrix(int w,int h,Mat4 mat);
-	Mat4 GetTransformedMatrix(int w,int h);
-	Mat4 GetTranslatedMatrix(const Vector2i &origin,int w,int h,Mat4 mat);
-	Mat4 GetTranslatedMatrix(int w,int h,Mat4 mat);
-	Mat4 GetTranslatedMatrix(int w,int h);
-	Mat4 GetScaledMatrix(int w,int h,Mat4 mat);
-	Mat4 GetScaledMatrix(int w,int h);
+	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const;
+	Mat4 GetTransformedMatrix(int w,int h,Mat4 mat) const;
+	Mat4 GetTransformedMatrix(int w,int h) const;
+	Mat4 GetTranslatedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const;
+	Mat4 GetTranslatedMatrix(int w,int h,Mat4 mat) const;
+	Mat4 GetTranslatedMatrix(int w,int h) const;
+	Mat4 GetScaledMatrix(int w,int h,Mat4 mat) const;
+	Mat4 GetScaledMatrix(int w,int h) const;
 	bool PosInBounds(int x,int y) const;
 	bool PosInBounds(Vector2i pos) const;
 	const util::PBoolProperty &GetMouseInBoundsProperty() const;
@@ -222,11 +227,14 @@ public:
 	void RemoveOnRemoval(WIBase *other);
 	void FadeIn(float tFade=0.25f,float alphaTarget=1.f);
 	void FadeOut(float tFade=0.25f,bool removeOnFaded=false);
-	bool IsFading();
-	bool IsFadingIn();
-	bool IsFadingOut();
+	bool IsFading() const;
+	bool IsFadingIn() const;
+	bool IsFadingOut() const;
+	void SetIgnoreParentAlpha(bool ignoreParentAlpha);
+	bool ShouldIgnoreParentAlpha() const;
 
 	void SetThinkIfInvisible(bool bThinkIfInvisible);
+	void SetRenderIfZeroAlpha(bool renderIfZeroAlpha);
 
 	virtual std::string GetDebugInfo() const;
 

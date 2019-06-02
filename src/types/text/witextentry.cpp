@@ -11,12 +11,12 @@
 LINK_WGUI_TO_CLASS(WITextEntry,WITextEntry);
 LINK_WGUI_TO_CLASS(WINumericEntry,WINumericEntry);
 
-#pragma optimize("",off)
 WITextEntry::WITextEntry()
 	: WIBase()
 {
 	RegisterCallback<void>("OnTextEntered");
-	RegisterCallback<void,std::reference_wrapper<const std::string>,std::reference_wrapper<const std::string>>("OnTextChanged");
+	RegisterCallback<void,std::reference_wrapper<const std::string>>("OnTextChanged");
+	RegisterCallback<void>("OnContentsChanged");
 }
 
 WITextEntry::~WITextEntry()
@@ -103,12 +103,18 @@ void WITextEntry::Initialize()
 		WITextEntry *te = hTextEntry.get<WITextEntry>();
 		te->OnTextEntered();
 	},this->GetHandle())));
-	pBase->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const std::string>,std::reference_wrapper<const std::string>>::Create(std::bind([](WIHandle hTextEntry,std::reference_wrapper<const std::string> oldText,std::reference_wrapper<const std::string> text) {
+	pBase->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const std::string>>::Create(std::bind([](WIHandle hTextEntry,std::reference_wrapper<const std::string> text) {
 		if(!hTextEntry.IsValid())
 			return;
 		WITextEntry *te = hTextEntry.get<WITextEntry>();
-		te->OnTextChanged(oldText,text);
-	},this->GetHandle(),std::placeholders::_1,std::placeholders::_2)));
+		te->OnTextChanged(text);
+	},this->GetHandle(),std::placeholders::_1)));
+	pBase->AddCallback("OnContentsChanged",FunctionCallback<void>::Create(std::bind([](WIHandle hTextEntry) {
+		if(!hTextEntry.IsValid())
+			return;
+		WITextEntry *te = hTextEntry.get<WITextEntry>();
+		te->OnContentsChanged();
+	},this->GetHandle())));
 	pBase->AddCallback("OnFocusGained",FunctionCallback<>::Create(std::bind([](WIHandle hTextEntry) {
 		if(!hTextEntry.IsValid())
 			return;
@@ -138,7 +144,12 @@ void WITextEntry::OnTextEntered()
 	CallCallbacks<void>("OnTextEntered");
 }
 
-void WITextEntry::OnTextChanged(const std::string &oldText,const std::string &text)
+void WITextEntry::OnTextChanged(const std::string &text)
+{
+	CallCallbacks<void,std::reference_wrapper<const std::string>>("OnTextChanged",text);
+}
+
+void WITextEntry::OnContentsChanged()
 {
 	if(m_hBase.IsValid())
 	{
@@ -151,7 +162,7 @@ void WITextEntry::OnTextChanged(const std::string &oldText,const std::string &te
 				SetHeight(pBase->GetHeight());
 		}
 	}
-	CallCallbacks<void,std::reference_wrapper<const std::string>,std::reference_wrapper<const std::string>>("OnTextChanged",oldText,text);
+	CallCallbacks<void>("OnContentsChanged");
 }
 
 void WITextEntry::SetSize(int x,int y)
@@ -204,25 +215,25 @@ int WITextEntry::GetMaxLength() const
 	return m_hBase.get<WITextEntryBase>()->GetMaxLength();
 }
 
-std::string WITextEntry::GetText() const
+std::string_view WITextEntry::GetText() const
 {
 	if(!m_hBase.IsValid())
-		return "";
-	return m_hBase.get<WITextEntryBase>()->GetText();
+		return {};
+	return static_cast<WITextEntryBase*>(m_hBase.get())->GetText();
 }
-void WITextEntry::SetText(std::string text)
+void WITextEntry::SetText(std::string_view text)
 {
 	if(!m_hBase.IsValid())
 		return;
 	m_hBase.get<WITextEntryBase>()->SetText(text);
 }
-void WITextEntry::InsertText(std::string instext,int pos)
+void WITextEntry::InsertText(std::string_view instext,int pos)
 {
 	if(!m_hBase.IsValid())
 		return;
 	m_hBase.get<WITextEntryBase>()->InsertText(instext,pos);
 }
-void WITextEntry::InsertText(std::string text)
+void WITextEntry::InsertText(std::string_view text)
 {
 	if(!m_hBase.IsValid())
 		return;
@@ -307,7 +318,7 @@ void WITextEntry::RemoveSelection()
 {
 	if(!m_hBase.IsValid())
 		return;
-	return m_hBase.get<WITextEntryBase>()->RemoveSelection();
+	m_hBase.get<WITextEntryBase>()->RemoveSelectedText();
 }
 
 ///////////////////////////////////
@@ -329,7 +340,7 @@ void WINumericEntry::Initialize()
 			if(!hThis.IsValid())
 				return CallbackReturnType::HasReturnValue;
 			auto text = GetText();
-			auto i = atoi(text.c_str());
+			auto i = atoi(text.data());
 			if(m_numeric.max != nullptr)
 				i = umath::min(++i,*m_numeric.max);
 			SetText(ustring::int_to_string(i));
@@ -347,7 +358,7 @@ void WINumericEntry::Initialize()
 			if(!hThis.IsValid())
 				return CallbackReturnType::HasReturnValue;
 			auto text = GetText();
-			auto i = atoi(text.c_str());
+			auto i = atoi(text.data());
 			if(m_numeric.min != nullptr)
 				i = umath::max(--i,*m_numeric.min);
 			SetText(ustring::int_to_string(i));
@@ -399,4 +410,3 @@ void WINumericEntry::SetSize(int x,int y)
 	WITextEntry::SetSize(x,y);
 	UpdateArrowPositions();
 }
-#pragma optimize("",on)
