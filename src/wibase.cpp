@@ -790,16 +790,20 @@ void WIBase::Think()
 		if(window.IsFocused())
 			UpdateChildrenMouseInBounds();
 	}
-	for(auto it=m_children.begin();it!=m_children.end();)
+	
+	// Note: Cannot use iterators here, because the Think-function of the child
+	// may modify m_children indirectly (and therefore invalidating the iterators).
+	// This should be avoided if possible, but is unlikely to cause any problems.
+	for(auto i=decltype(m_children.size()){0};i<m_children.size();)
 	{
-		auto &hChild = *it;
+		auto &hChild = m_children.at(i);
 		if(hChild.IsValid() == false)
 		{
-			it = m_children.erase(it);
+			m_children.erase(m_children.begin() +i);
 			continue;
 		}
 		hChild->Think();
-		++it;
+		++i;
 	}
 	if(umath::is_flag_set(m_stateFlags,StateFlags::MouseCheckEnabledBit) == true)
 	{
