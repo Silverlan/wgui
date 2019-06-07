@@ -15,6 +15,9 @@
 #include <util_formatted_text_types.hpp>
 #include <string_view>
 #include <queue>
+#ifdef __linux__
+	#include "wgui/types/witext_tags.hpp"
+#endif
 
 namespace prosper
 {
