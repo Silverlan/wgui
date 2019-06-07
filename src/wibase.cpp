@@ -783,7 +783,7 @@ void WIBase::Think()
 		UpdateAnchorTransform();
 	}*/
 	ApplySkin();
-	if(*m_bHasFocus == true)
+	//if(*m_bHasFocus == true)
 	{
 		auto &context = WGUI::GetInstance().GetContext();
 		auto &window = context.GetWindow();
