@@ -83,7 +83,7 @@ public:
 	static WGUI &GetInstance();
 	static bool IsOpen();
 
-	ResultCode Initialize();
+	ResultCode Initialize(std::optional<Vector2i> resolution={});
 	template<class TElement>
 		TElement *Create(WIBase *parent=nullptr);
 	template<class TElement>

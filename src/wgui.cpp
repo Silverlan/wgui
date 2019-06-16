@@ -79,7 +79,7 @@ void WGUI::GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h)
 	h = s_scissor.at(3u);
 }
 
-WGUI::ResultCode WGUI::Initialize()
+WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 {
 	if(!FontManager::Initialize())
 		return ResultCode::UnableToInitializeFontManager;
@@ -120,7 +120,12 @@ WGUI::ResultCode WGUI::Initialize()
 	base->Initialize();
 	base->InitializeHandle();
 	m_base = base->GetHandle();
-	base->SetSize(context.GetWindowWidth(),context.GetWindowHeight());
+	Vector2i baseSize;
+	if(resolution.has_value())
+		baseSize = *resolution;
+	else
+		baseSize = {context.GetWindowWidth(),context.GetWindowHeight()};
+	base->SetSize(baseSize);
 	base->Setup();
 	return ResultCode::Ok;
 }
@@ -197,9 +202,8 @@ void WGUI::Draw()
 	if(!m_base.IsValid())
 		return;
 	auto *p = m_base.get();
-	auto size = context.GetWindowSize();
 	if(p->IsVisible())
-		p->Draw(size.at(0),size.at(1));
+		p->Draw(p->GetWidth(),p->GetHeight());
 }
 
 WIBase *WGUI::Create(std::string classname,WIBase *parent)
