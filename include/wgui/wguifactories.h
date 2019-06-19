@@ -6,6 +6,7 @@
 #define __GUIFACTORIES_H__
 #include <string>
 #include <unordered_map>
+#include <typeinfo>
 #include "wguidefinitions.h"
 #undef GetClassName
 class DLLWGUI WIBase;
