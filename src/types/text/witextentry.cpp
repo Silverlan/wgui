@@ -11,6 +11,7 @@
 LINK_WGUI_TO_CLASS(WITextEntry,WITextEntry);
 LINK_WGUI_TO_CLASS(WINumericEntry,WINumericEntry);
 
+#pragma optimize("",off)
 WITextEntry::WITextEntry()
 	: WIBase()
 {
@@ -410,3 +411,4 @@ void WINumericEntry::SetSize(int x,int y)
 	WITextEntry::SetSize(x,y);
 	UpdateArrowPositions();
 }
+#pragma optimize("",on)

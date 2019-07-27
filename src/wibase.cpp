@@ -1269,7 +1269,7 @@ util::EventReply WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState s
 		return util::EventReply::Unhandled;
 	if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press)
 	{
-		ChronoTimePoint now = std::chrono::high_resolution_clock::now();
+		ChronoTimePoint now = util::Clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now -m_clickStart);
 		if(duration.count() <= 300)
 		{
@@ -1280,7 +1280,7 @@ util::EventReply WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState s
 		else
 		{
 			umath::set_flag(m_stateFlags,StateFlags::ClickedBit,true);
-			m_clickStart = std::chrono::high_resolution_clock::now();
+			m_clickStart = util::Clock::now();
 		}
 	}
 	if(button == GLFW::MouseButton::Left)

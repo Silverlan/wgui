@@ -25,7 +25,7 @@ void WIRoot::Think()
 		auto *pTooltip = static_cast<WITooltip*>(m_hTooltip.get());
 		if(pTooltip->IsVisible() == false)
 		{
-			auto t = std::chrono::high_resolution_clock::now();
+			auto t = util::Clock::now();
 			auto tDelta = std::chrono::duration_cast<std::chrono::milliseconds>(t -m_tCursorOver).count();
 			if(tDelta >= 500)
 			{
@@ -63,7 +63,7 @@ void WIRoot::OnCursorMoved(int x,int y)
 	}
 	if(el == m_hTooltipTarget.get())
 		return;
-	m_tCursorOver = std::chrono::high_resolution_clock::now();
+	m_tCursorOver = util::Clock::now();
 	if(pTooltip->IsVisible() == true)
 	{
 		m_tCursorOver -= std::chrono::milliseconds(500);

@@ -6,6 +6,7 @@
 #define __WIROOT_H__
 
 #include "wgui/wibase.h"
+#include <sharedutils/util_clock.hpp>
 
 class DLLWGUI WIRoot
 	: public WIBase
@@ -14,7 +15,7 @@ private:
 	virtual ~WIRoot();
 	WIHandle m_hTooltip;
 	WIHandle m_hTooltipTarget;
-	std::chrono::high_resolution_clock::time_point m_tCursorOver;
+	util::Clock::time_point m_tCursorOver;
 public:
 	WIRoot();
 	virtual void OnCursorMoved(int x,int y) override;

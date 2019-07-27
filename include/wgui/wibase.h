@@ -21,6 +21,7 @@
 #include <sharedutils/property/util_property_vector.h>
 #include <sharedutils/property/util_property_color.hpp>
 #include <sharedutils/util_event_reply.hpp>
+#include <sharedutils/util_clock.hpp>
 
 struct DLLWGUI WIFadeInfo
 {
@@ -33,8 +34,8 @@ struct DLLWGUI WIFadeInfo
 	bool removeOnFaded;
 };
 
-using ChronoTimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
-using ChronoDuration = std::chrono::duration<std::chrono::high_resolution_clock::rep,std::chrono::high_resolution_clock::period>;
+using ChronoTimePoint = util::Clock::time_point;
+using ChronoDuration = util::Clock::duration;
 
 class WIHandle;
 class WISkin;

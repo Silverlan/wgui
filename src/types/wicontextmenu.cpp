@@ -8,6 +8,7 @@
 
 LINK_WGUI_TO_CLASS(WIContextMenu,WIContextMenu);
 
+#pragma optimize("",off)
 static WIContextMenu *s_contextMenu = nullptr;
 static std::function<std::string(GLFW::Key,const std::string&)> s_fBindKey = nullptr;
 static std::function<std::optional<std::string>(const std::string&)> s_fGetBoundKey = nullptr;
@@ -250,3 +251,4 @@ std::optional<uint32_t> WIContextMenu::GetSelectedItemIndex() const
 		return {};
 	return itItem -m_items.begin();
 }
+#pragma optimize("",on)
