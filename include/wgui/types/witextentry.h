@@ -17,7 +17,7 @@ protected:
 	WIHandle m_hBg;
 
 	virtual void OnTextEntered();
-	virtual void OnTextChanged(const std::string &text);
+	virtual void OnTextChanged(const std::string &text,bool changedByUser);
 	virtual void OnContentsChanged();
 public:
 	WITextEntry();

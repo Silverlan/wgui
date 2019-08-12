@@ -16,7 +16,7 @@ WITextEntry::WITextEntry()
 	: WIBase()
 {
 	RegisterCallback<void>("OnTextEntered");
-	RegisterCallback<void,std::reference_wrapper<const std::string>>("OnTextChanged");
+	RegisterCallback<void,std::reference_wrapper<const std::string>,bool>("OnTextChanged");
 	RegisterCallback<void>("OnContentsChanged");
 }
 
@@ -104,12 +104,12 @@ void WITextEntry::Initialize()
 		WITextEntry *te = hTextEntry.get<WITextEntry>();
 		te->OnTextEntered();
 	},this->GetHandle())));
-	pBase->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const std::string>>::Create(std::bind([](WIHandle hTextEntry,std::reference_wrapper<const std::string> text) {
+	pBase->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const std::string>,bool>::Create(std::bind([](WIHandle hTextEntry,std::reference_wrapper<const std::string> text,bool changedByUser) {
 		if(!hTextEntry.IsValid())
 			return;
 		WITextEntry *te = hTextEntry.get<WITextEntry>();
-		te->OnTextChanged(text);
-	},this->GetHandle(),std::placeholders::_1)));
+		te->OnTextChanged(text,changedByUser);
+	},this->GetHandle(),std::placeholders::_1,std::placeholders::_2)));
 	pBase->AddCallback("OnContentsChanged",FunctionCallback<void>::Create(std::bind([](WIHandle hTextEntry) {
 		if(!hTextEntry.IsValid())
 			return;
@@ -145,9 +145,9 @@ void WITextEntry::OnTextEntered()
 	CallCallbacks<void>("OnTextEntered");
 }
 
-void WITextEntry::OnTextChanged(const std::string &text)
+void WITextEntry::OnTextChanged(const std::string &text,bool changedByUser)
 {
-	CallCallbacks<void,std::reference_wrapper<const std::string>>("OnTextChanged",text);
+	CallCallbacks<void,std::reference_wrapper<const std::string>,bool>("OnTextChanged",text,changedByUser);
 }
 
 void WITextEntry::OnContentsChanged()

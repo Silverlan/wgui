@@ -90,8 +90,8 @@ protected:
 	void UpdateSelection();
 	std::pair<util::text::LineIndex,util::text::LineIndex> GetLineInfo(int pos,std::string_view &outLine,int *lpos) const;
 	void UpdateTextPosition();
-	virtual void OnTextChanged(const std::string &text);
-	void OnTextChanged();
+	virtual void OnTextChanged(const std::string &text,bool changedByUser);
+	void OnTextChanged(bool changedByUser);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WITextEntryBase::StateFlags)
 

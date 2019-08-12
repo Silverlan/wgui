@@ -22,7 +22,7 @@ WITextEntryBase::WITextEntryBase()
 {
 	RegisterCallback<void>("OnTextEntered");
 	RegisterCallback<void>("OnContentsChanged");
-	RegisterCallback<void,std::reference_wrapper<const std::string>>("OnTextChanged");
+	RegisterCallback<void,std::reference_wrapper<const std::string>,bool>("OnTextChanged");
 }
 
 void WITextEntryBase::OnTextContentsChanged()
@@ -71,22 +71,22 @@ void WITextEntryBase::UpdateHiddenText()
 
 WIText *WITextEntryBase::GetTextElement() {return static_cast<WIText*>(m_hText.get());}
 
-void WITextEntryBase::OnTextChanged(const std::string &text)
+void WITextEntryBase::OnTextChanged(const std::string &text,bool changedByUser)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
 		return;
 	if(pText->GetAutoBreakMode() == WIText::AutoBreak::NONE)
 		pText->SizeToContents();
-	CallCallbacks<void,std::reference_wrapper<const std::string>>("OnTextChanged",text);
+	CallCallbacks<void,std::reference_wrapper<const std::string>,bool>("OnTextChanged",text,changedByUser);
 }
 
-void WITextEntryBase::OnTextChanged()
+void WITextEntryBase::OnTextChanged(bool changedByUser)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
 		return;
-	OnTextChanged(pText->GetText());
+	OnTextChanged(pText->GetText(),changedByUser);
 }
 
 void WITextEntryBase::SizeToContents()
@@ -131,7 +131,7 @@ void WITextEntryBase::Initialize()
 		if(!hTeBase.IsValid())
 			return;
 		WITextEntryBase *te = hTeBase.get<WITextEntryBase>();
-		te->OnTextChanged();
+		te->OnTextChanged(false);
 	},this->GetHandle(),std::placeholders::_1)));
 
 	m_hCaret = CreateChild<WIRect>();
@@ -155,7 +155,7 @@ void WITextEntryBase::SetMaxLength(int length)
 		return;
 	pText->GetFormattedTextObject().RemoveText(length,util::text::END_OF_TEXT);
 	UpdateHiddenText();
-	OnTextChanged();
+	OnTextChanged(false);
 }
 int WITextEntryBase::GetMaxLength() {return m_maxLength;}
 
@@ -594,7 +594,7 @@ bool WITextEntryBase::RemoveSelectedText()
 
 	pText->GetFormattedTextObject().RemoveText(st,en -st +1);
 	UpdateHiddenText();
-	OnTextChanged();
+	OnTextChanged(true);
 
 	SetCaretPos(st);
 	ClearSelection();
@@ -632,7 +632,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 								if(prevPos.has_value())
 								{
 									pText->RemoveText(*prevPos,1);
-									OnTextChanged();
+									OnTextChanged(true);
 									SetCaretPos(*prevPos);
 								}
 							}
@@ -643,7 +643,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 							if(pos < text.length())
 							{
 								pText->RemoveText(pos,1);
-								OnTextChanged();
+								OnTextChanged(true);
 							}
 						}
 					}
@@ -875,7 +875,7 @@ void WITextEntryBase::InsertText(const std::string_view &instext,int pos)
 		pText->AppendText(instext);
 	
 	UpdateHiddenText();
-	OnTextChanged();
+	OnTextChanged(true);
 	SetCaretPos(GetCaretPos() +static_cast<int>(instext.length()));
 }
 
