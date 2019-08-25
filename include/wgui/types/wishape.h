@@ -52,6 +52,7 @@ protected:
 	std::shared_ptr<prosper::Buffer> m_uvBuffer = nullptr;
 	std::vector<Vector2> m_uvs;
 	bool m_bAlphaOnly;
+	float m_lod = -1.f;
 
 	void ReloadDescriptorSet();
 	virtual void SetShader(prosper::Shader &shader,prosper::Shader *shaderCheap=nullptr) override;
@@ -66,12 +67,14 @@ public:
 	prosper::Buffer &GetUVBuffer() const;
 	void SetUVBuffer(prosper::Buffer &buffer);
 	void SetAlphaOnly(bool b);
-	bool GetAlphaOnly();
+	bool GetAlphaOnly() const;
+	float GetLOD() const;
+	void SetLOD(float lod);
 	virtual void Update() override;
 	void SetMaterial(Material *material);
 	void SetMaterial(const std::string &material);
 	Material *GetMaterial();
-	void SetTexture(prosper::Texture &tex);
+	void SetTexture(prosper::Texture &tex,uint32_t layerIndex=0u);
 	void ClearTexture();
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
 	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;

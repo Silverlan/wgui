@@ -107,7 +107,9 @@ void WITexturedShape::ReloadDescriptorSet()
 prosper::Buffer &WITexturedShape::GetUVBuffer() const {return *m_uvBuffer;}
 void WITexturedShape::SetUVBuffer(prosper::Buffer &buffer) {m_uvBuffer = buffer.shared_from_this();}
 void WITexturedShape::SetAlphaOnly(bool b) {m_bAlphaOnly = b;}
-bool WITexturedShape::GetAlphaOnly() {return m_bAlphaOnly;}
+bool WITexturedShape::GetAlphaOnly() const {return m_bAlphaOnly;}
+float WITexturedShape::GetLOD() const {return m_lod;}
+void WITexturedShape::SetLOD(float lod) {m_lod = lod;}
 void WITexturedShape::ClearTextureLoadCallback()
 {
 	if(m_texLoadCallback != nullptr)
@@ -175,13 +177,13 @@ void WITexturedShape::ClearTexture()
 	m_hMaterial = MaterialHandle();
 	m_texture = nullptr;
 }
-void WITexturedShape::SetTexture(prosper::Texture &tex)
+void WITexturedShape::SetTexture(prosper::Texture &tex,uint32_t layerIndex)
 {
 	ClearTexture();
 	m_texture = tex.shared_from_this();
 	
 	ReloadDescriptorSet(); // Need to generate a new descriptor set and keep the old one alive, in case it was still in use
-	prosper::util::set_descriptor_set_binding_texture(*(*m_descSetTextureGroup)->get_descriptor_set(0u),tex,0u);
+	prosper::util::set_descriptor_set_binding_texture(*(*m_descSetTextureGroup)->get_descriptor_set(0u),tex,0u,layerIndex);
 }
 const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const {return m_texture;}
 
@@ -248,7 +250,7 @@ void WITexturedShape::Render(int width,int height,const Mat4 &mat,const Vector2i
 		auto &context = WGUI::GetInstance().GetContext();
 		if(pShaderCheap->BeginDraw(context.GetDrawCommandBuffer(),width,height) == true)
 		{
-			pShaderCheap->Draw({mat,col,m_bAlphaOnly ? 1 : 0},*(*m_descSetTextureGroup)->get_descriptor_set(0u));
+			pShaderCheap->Draw({mat,col,m_bAlphaOnly ? 1 : 0,m_lod},*(*m_descSetTextureGroup)->get_descriptor_set(0u));
 			pShaderCheap->EndDraw();
 		}
 		return;
@@ -265,6 +267,7 @@ void WITexturedShape::Render(int width,int height,const Mat4 &mat,const Vector2i
 		wgui::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = mat;
 		pushConstants.elementData.color = col;
+		pushConstants.lod = m_lod;
 		auto &dev = context.GetDevice();
 		shader.Draw(
 			(buf != nullptr) ? buf : prosper::util::get_square_vertex_buffer(dev),

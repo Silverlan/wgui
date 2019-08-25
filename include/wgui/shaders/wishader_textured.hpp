@@ -27,6 +27,7 @@ namespace wgui
 		{
 			wgui::ElementData elementData;
 			int32_t alphaOnly;
+			float lod;
 		};
 #pragma pack(pop)
 
@@ -49,6 +50,7 @@ namespace wgui
 		{
 			wgui::ElementData elementData;
 			int32_t alphaOnly;
+			float lod;
 		};
 #pragma pack(pop)
 
