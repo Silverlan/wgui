@@ -281,6 +281,8 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 		glyphCharBounds.advanceX = advanceX;
 		glyphCharBounds.advanceY = advanceY;
 	}
+	prosper::util::record_image_barrier(**setupCmd,**glyphMapImage,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL);
+
 	prosper::util::BufferCreateInfo bufCreateInfo {};
 	bufCreateInfo.size = glyphCharacterBounds.size() *sizeof(glyphCharacterBounds.front());
 	bufCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
@@ -288,7 +290,7 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 	m_glyphBoundsBuffer = prosper::util::create_buffer(dev,bufCreateInfo,glyphCharacterBounds.data());
 	m_glyphBoundsBuffer->SetDebugName("font_glyph_bounds_buffer");
 	m_glyphBoundsDsg = prosper::util::create_descriptor_set_group(dev,wgui::ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
-	prosper::util::set_descriptor_set_binding_storage_buffer(*(*m_glyphBoundsDsg)->get_descriptor_set(0u),*m_glyphBoundsBuffer,0u);
+	prosper::util::set_descriptor_set_binding_storage_buffer(*m_glyphBoundsDsg->GetDescriptorSet(),*m_glyphBoundsBuffer,0u);
 	context.FlushSetupCommandBuffer();
 
 	m_maxGlyphSize = szMax;
@@ -299,7 +301,7 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 	if(wpShader.expired() == false)
 	{
 		m_glyphMapDescSetGroup = prosper::util::create_descriptor_set_group(dev,wgui::ShaderText::DESCRIPTOR_SET_TEXTURE);
-		prosper::util::set_descriptor_set_binding_texture(*(*m_glyphMapDescSetGroup)->get_descriptor_set(0u),*m_glyphMap,0u);
+		prosper::util::set_descriptor_set_binding_texture(*m_glyphMapDescSetGroup->GetDescriptorSet(),*m_glyphMap,0u);
 	}
 	return true;
 }

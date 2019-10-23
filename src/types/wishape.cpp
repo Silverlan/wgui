@@ -134,12 +134,12 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 	m_texLoadCallback = std::make_shared<bool>(true);
 	auto bLoadCallback = m_texLoadCallback;
 	texture->CallOnLoaded([hThis,bLoadCallback](std::shared_ptr<Texture> texture) {
-		if((bLoadCallback != nullptr && *bLoadCallback == false) || !hThis.IsValid() || texture->texture == nullptr)
+		if((bLoadCallback != nullptr && *bLoadCallback == false) || !hThis.IsValid() || texture->HasValidVkTexture() == false)
 			return;
 		if(hThis.get<WITexturedShape>()->m_descSetTextureGroup == nullptr)
 			return;
-		auto &descSet = *(*hThis.get<WITexturedShape>()->m_descSetTextureGroup)->get_descriptor_set(0u);
-		prosper::util::set_descriptor_set_binding_texture(descSet,*texture->texture,0u);
+		auto &descSet = *hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet();
+		prosper::util::set_descriptor_set_binding_texture(descSet,*texture->GetVkTexture(),0u);
 	});
 }
 void WITexturedShape::SetMaterial(Material *material)
@@ -183,7 +183,7 @@ void WITexturedShape::SetTexture(prosper::Texture &tex,uint32_t layerIndex)
 	m_texture = tex.shared_from_this();
 	
 	ReloadDescriptorSet(); // Need to generate a new descriptor set and keep the old one alive, in case it was still in use
-	prosper::util::set_descriptor_set_binding_texture(*(*m_descSetTextureGroup)->get_descriptor_set(0u),tex,0u,layerIndex);
+	prosper::util::set_descriptor_set_binding_texture(*m_descSetTextureGroup->GetDescriptorSet(),tex,0u,layerIndex);
 }
 const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const {return m_texture;}
 
