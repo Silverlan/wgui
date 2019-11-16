@@ -23,6 +23,7 @@ LINK_WGUI_TO_CLASS(WIBase,WIBase);
 std::deque<WIHandle> WIBase::m_focusTrapStack;
 float WIBase::RENDER_ALPHA = 1.f;
 
+#pragma optimize("",off)
 WIBase::WIBase()
 	: CallbackHandler(),m_cursor(GLFW::Cursor::Shape::Default),
 	m_color(util::ColorProperty::Create(Color::White)),
@@ -61,6 +62,8 @@ WIBase::WIBase()
 	m_size->AddCallback([this](std::reference_wrapper<const Vector2i> oldSize,std::reference_wrapper<const Vector2i> size) {
 		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
+		if(umath::is_flag_set(m_stateFlags,StateFlags::UpdatingAnchorTransform) == false)
+			UpdateAnchorSizePixelOffsets();
 		CallCallbacks<void>("SetSize");
 		for(auto &hChild : m_children)
 		{
@@ -636,10 +639,7 @@ void WIBase::SetColor(const Vector4 &col) {SetColor(col.r,col.g,col.b,col.a);}
 void WIBase::SetColor(const Color &col) {SetColor(static_cast<float>(col.r) /255.f,static_cast<float>(col.g) /255.f,static_cast<float>(col.b) /255.f,static_cast<float>(col.a) /255.f);}
 void WIBase::SetColor(float r,float g,float b,float a) {*m_color = Color(r *255.f,g *255.f,b *255.f,a *255.f);}
 void WIBase::SetPos(const Vector2i &pos) {SetPos(pos.x,pos.y);}
-void WIBase::SetPos(int x,int y)
-{
-	*m_pos = Vector2i{x,y};
-}
+void WIBase::SetPos(int x,int y) {*m_pos = Vector2i{x,y};}
 int WIBase::GetWidth() const {return (*m_size)->x;}
 int WIBase::GetHeight() const {return (*m_size)->y;}
 const util::PVector2iProperty &WIBase::GetSizeProperty() const {return m_size;}
@@ -997,6 +997,39 @@ const util::PVector2iProperty *WIBase::GetAttachmentPosProperty(const std::strin
 		return nullptr;
 	return &pAttachment->GetAbsPosProperty();
 }
+bool WIBase::Wrap(WIBase &wrapper)
+{
+	auto *parent = GetParent();
+	if(parent == nullptr)
+		return false;
+	auto pos = GetPos();
+	auto size = GetSize();
+	float left,top,right,bottom;
+	auto hasAnchor = GetAnchor(left,top,right,bottom);
+	ClearAnchor();
+	SetParent(&wrapper);
+	SetPos(0,0);
+
+	wrapper.SetParent(parent);
+	wrapper.SetPos(pos);
+	wrapper.SetSize(size);
+	if(hasAnchor)
+		wrapper.SetAnchor(left,top,right,bottom);
+
+	SetAnchor(0.f,0.f,1.f,1.f);
+	return true;
+}
+WIBase *WIBase::Wrap(const std::string &wrapperClass)
+{
+	auto *parent = GetParent();
+	if(parent == nullptr)
+		return nullptr; // Can't wrap root element
+	auto *wrapper = WGUI::GetInstance().Create(wrapperClass);
+	if(wrapper == nullptr)
+		return nullptr;
+	Wrap(*wrapper);
+	return wrapper;
+}
 bool WIBase::HasAnchor() const {return m_anchor.has_value();}
 std::pair<Vector2,Vector2> WIBase::GetAnchorBounds(uint32_t refWidth,uint32_t refHeight) const
 {
@@ -1011,6 +1044,7 @@ std::pair<Vector2,Vector2> WIBase::GetAnchorBounds() const
 	auto h = pParent ? pParent->GetHeight() : GetHeight();
 	return GetAnchorBounds(w,h);
 }
+void WIBase::ClearAnchor() {m_anchor = {};}
 void WIBase::SetAnchor(float left,float top,float right,float bottom,uint32_t refWidth,uint32_t refHeight)
 {
 	m_anchor = WIAnchor{};
@@ -1018,6 +1052,8 @@ void WIBase::SetAnchor(float left,float top,float right,float bottom,uint32_t re
 	m_anchor->right = right;
 	m_anchor->top = top;
 	m_anchor->bottom = bottom;
+	m_anchor->referenceWidth = refWidth;
+	m_anchor->referenceHeight = refHeight;
 
 	if(m_anchor.has_value() && m_anchor->initialized == false)
 	{
@@ -1026,10 +1062,17 @@ void WIBase::SetAnchor(float left,float top,float right,float bottom,uint32_t re
 		auto anchorBounds = GetAnchorBounds(refWidth,refHeight);
 		m_anchor->pxOffsetLeft = GetLeft() -anchorBounds.first.x;
 		m_anchor->pxOffsetTop = GetTop() -anchorBounds.first.y;
-		m_anchor->pxOffsetRight = GetRight() -anchorBounds.second.x;
-		m_anchor->pxOffsetBottom = GetBottom() -anchorBounds.second.y;
+		UpdateAnchorSizePixelOffsets();
 		UpdateAnchorTransform();
 	}
+}
+void WIBase::UpdateAnchorSizePixelOffsets()
+{
+	if(m_anchor.has_value() == false || m_anchor->initialized == false)
+		return;
+	auto anchorBounds = GetAnchorBounds(m_anchor->referenceWidth,m_anchor->referenceHeight);
+	m_anchor->pxOffsetRight = GetRight() -anchorBounds.second.x;
+	m_anchor->pxOffsetBottom = GetBottom() -anchorBounds.second.y;
 }
 void WIBase::SetAnchor(float left,float top,float right,float bottom)
 {
@@ -1041,28 +1084,28 @@ void WIBase::SetAnchor(float left,float top,float right,float bottom)
 void WIBase::SetAnchorLeft(float f)
 {
 	if(m_anchor.has_value() == false)
-		m_anchor = {};
+		m_anchor = WIAnchor{};
 	m_anchor->initialized = false;
 	m_anchor->left = f;
 }
 void WIBase::SetAnchorRight(float f)
 {
 	if(m_anchor.has_value() == false)
-		m_anchor = {};
+		m_anchor = WIAnchor{};
 	m_anchor->initialized = false;
 	m_anchor->right = f;
 }
 void WIBase::SetAnchorTop(float f)
 {
 	if(m_anchor.has_value() == false)
-		m_anchor = {};
+		m_anchor = WIAnchor{};
 	m_anchor->initialized = false;
 	m_anchor->top = f;
 }
 void WIBase::SetAnchorBottom(float f)
 {
 	if(m_anchor.has_value() == false)
-		m_anchor = {};
+		m_anchor = WIAnchor{};
 	m_anchor->initialized = false;
 	m_anchor->bottom = f;
 }
@@ -1093,8 +1136,10 @@ void WIBase::UpdateAnchorTransform()
 	auto elMin = Vector2{anchorBounds.first.x +m_anchor->pxOffsetLeft,anchorBounds.first.y +m_anchor->pxOffsetTop};
 	auto elMax = Vector2{anchorBounds.second.x +m_anchor->pxOffsetRight,anchorBounds.second.y +m_anchor->pxOffsetBottom};
 	auto sz = elMax -elMin;
+	umath::set_flag(m_stateFlags,StateFlags::UpdatingAnchorTransform);
 	SetPos(elMin);
 	SetSize(sz);
+	umath::set_flag(m_stateFlags,StateFlags::UpdatingAnchorTransform,false);
 }
 void WIBase::Remove()
 {
@@ -1551,3 +1596,4 @@ bool WIBase::IsFadingOut() const
 }
 void WIBase::SetIgnoreParentAlpha(bool ignoreParentAlpha) {umath::set_flag(m_stateFlags,StateFlags::IgnoreParentAlpha,ignoreParentAlpha);}
 bool WIBase::ShouldIgnoreParentAlpha() const {return umath::is_flag_set(m_stateFlags,StateFlags::IgnoreParentAlpha);}
+#pragma optimize("",on)

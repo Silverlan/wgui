@@ -71,7 +71,8 @@ public:
 		ClickedBit = SkinAppliedBit<<1u,
 		ThinkIfInvisibleBit = ClickedBit<<1u,
 		IgnoreParentAlpha = ThinkIfInvisibleBit<<1u,
-		RenderIfZeroAlpha = IgnoreParentAlpha<<1u
+		RenderIfZeroAlpha = IgnoreParentAlpha<<1u,
+		UpdatingAnchorTransform = RenderIfZeroAlpha<<1u
 	};
 	static void CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize);
 
@@ -259,6 +260,7 @@ public:
 	const Vector2i *GetAbsoluteAttachmentPos(const std::string &name) const;
 	const util::PVector2iProperty *GetAttachmentPosProperty(const std::string &name) const;
 
+	void ClearAnchor();
 	void SetAnchor(float left,float top,float right,float bottom);
 	void SetAnchor(float left,float top,float right,float bottom,uint32_t refWidth,uint32_t refHeight);
 	void SetAnchorLeft(float f);
@@ -270,10 +272,14 @@ public:
 	std::pair<Vector2,Vector2> GetAnchorBounds() const;
 	std::pair<Vector2,Vector2> GetAnchorBounds(uint32_t refWidth,uint32_t refHeight) const;
 
+	WIBase *Wrap(const std::string &wrapperClass);
+	bool Wrap(WIBase &wrapper);
+
 	// Handles
 	WIHandle GetHandle() const;
 protected:
 	void UpdateAnchorTransform();
+	void UpdateAnchorSizePixelOffsets();
 	StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 	std::array<std::shared_ptr<void>,4> m_userData;
 	std::shared_ptr<WIHandle> m_handle = nullptr;

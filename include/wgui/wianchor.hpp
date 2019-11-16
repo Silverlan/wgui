@@ -20,6 +20,9 @@ struct DLLWGUI WIAnchor
 	int32_t pxOffsetTop = 0;
 	int32_t pxOffsetBottom = 0;
 
+	uint32_t referenceWidth = 0;
+	uint32_t referenceHeight = 0;
+
 	bool initialized = false;
 };
 

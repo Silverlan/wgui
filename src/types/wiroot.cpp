@@ -35,6 +35,7 @@ void WIRoot::Think()
 				pTooltip->FadeIn(0.1f);
 				pTooltip->SetVisible(true);
 				pTooltip->SetText(el->GetTooltip());
+				pTooltip->SetZPos(std::numeric_limits<int>::max());
 				auto xMax = GetWidth() -pTooltip->GetWidth();
 				auto yMax = GetHeight() -pTooltip->GetHeight();
 				if(xMax >= 0 && xMax < x)
