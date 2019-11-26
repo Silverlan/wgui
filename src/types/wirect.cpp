@@ -27,7 +27,7 @@ WIRect::WIRect()
 ///////////////////
 
 WIOutlinedRect::WIOutlinedRect()
-	: WIBase(),m_lineWidth(1),m_lineColor(0,0,0,1)
+	: WIBase(),m_lineWidth(1)
 {
 	for(auto &hLine : m_lines)
 		hLine = {};
@@ -36,38 +36,13 @@ WIOutlinedRect::WIOutlinedRect()
 void WIOutlinedRect::Initialize()
 {
 	WIBase::Initialize();
-	auto col = GetColor().ToVector4();
 	for(unsigned int i=0;i<4;i++)
 	{
 		WIRect *pLine = WGUI::GetInstance().Create<WIRect>(this);
-		pLine->SetColor(col);
+		pLine->GetColorProperty()->Link(*GetColorProperty());
 		m_lines[i] = pLine->GetHandle();
 	}
 }
-
-void WIOutlinedRect::SetColor(float r,float g,float b,float a)
-{
-	WIBase::SetColor(r,g,b,a);
-	for(auto &hLine : m_lines)
-	{
-		if(!hLine.IsValid())
-			continue;
-		auto *pLine = hLine.get<WIRect>();
-		pLine->SetColor(r,g,b,a);
-	}
-}
-void WIOutlinedRect::SetAlpha(float alpha)
-{
-	WIBase::SetAlpha(alpha);
-	for(auto &hLine : m_lines)
-	{
-		if(!hLine.IsValid())
-			continue;
-		auto *pLine = hLine.get<WIRect>();
-		pLine->SetAlpha(alpha);
-	}
-}
-
 unsigned int WIOutlinedRect::GetOutlineWidth() {return m_lineWidth;}
 
 void WIOutlinedRect::SetOutlineWidth(unsigned int width)

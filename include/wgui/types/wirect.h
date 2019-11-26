@@ -23,15 +23,12 @@ class DLLWGUI WIOutlinedRect
 private:
 	std::array<WIHandle,4> m_lines;
 	unsigned int m_lineWidth;
-	Vector4 m_lineColor;
 	void UpdateLines();
 public:
 	WIOutlinedRect();
 	virtual void Initialize() override;
 	unsigned int GetOutlineWidth();
 	void SetOutlineWidth(unsigned int width);
-	virtual void SetColor(float r,float g,float b,float a=1.f) override;
-	virtual void SetAlpha(float alpha) override;
 	virtual void SetSize(int x,int y) override;
 	using WIBase::SetColor;
 };
