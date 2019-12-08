@@ -26,7 +26,7 @@ public:
 	virtual void SetSize(int x,int y) override;
 	virtual void SetMouseInputEnabled(bool b) override;
 	virtual void SetKeyboardInputEnabled(bool b) override;
-	virtual void SizeToContents() override;
+	virtual void SizeToContents(bool x=true,bool y=true) override;
 	virtual void SetColor(float r,float g,float b,float a=1.f) override;
 	using WIBase::SetSize;
 	using WIBase::SetColor;

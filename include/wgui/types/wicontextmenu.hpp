@@ -23,7 +23,6 @@ public:
 	virtual void Initialize() override;
 	virtual void OnRemove() override;
 	virtual util::EventReply KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods) override;
-	virtual void Update() override;
 	virtual void Think() override;
 	
 	bool IsCursorInMenuBounds() const;
@@ -39,6 +38,7 @@ public:
 	WIMenuItem *SelectItem(uint32_t idx);
 	std::optional<uint32_t> GetSelectedItemIndex() const;
 private:
+	virtual void DoUpdate() override;
 	std::vector<WIHandle> m_items = {};
 	std::vector<WIHandle> m_subMenues = {};
 	WIHandle m_hBg = {};

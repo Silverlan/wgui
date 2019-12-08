@@ -50,7 +50,7 @@ public:
 	void SetEndColor(const Color &col);
 	const Color &GetStartColor() const;
 	const Color &GetEndColor() const;
-	virtual void SizeToContents() override;
+	virtual void SizeToContents(bool x=true,bool y=true) override;
 	virtual unsigned int GetVertexCount() override;
 	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;
 	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const override;

@@ -150,7 +150,7 @@ void WILine::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 	}
 }
 
-void WILine::SizeToContents()
+void WILine::SizeToContents(bool x,bool y)
 {
 	Vector2i &pos = GetStartPos();
 	Vector2i &posEnd = GetEndPos();
@@ -176,7 +176,14 @@ void WILine::SizeToContents()
 		yB = pos.y;
 	}
 	SetPos(xL,yU);
-	SetSize(xR -xL,yB -yU +1);
+	auto w = xR -xL;
+	auto h = yB -yU +1;
+	if(x && y)
+		SetSize(w,h);
+	else if(x)
+		SetWidth(w);
+	else if(y)
+		SetHeight(h);
 	Vector2 dir = Vector2((*m_posEnd)->x,(*m_posEnd)->y) -Vector2((*m_posStart)->x,(*m_posStart)->y);
 	dir = glm::normalize(dir);
 	m_dot = glm::dot(Vector2(1.f,0.f),dir);

@@ -18,6 +18,7 @@ private:
 	util::Clock::time_point m_tCursorOver;
 public:
 	WIRoot();
+	virtual void Initialize() override;
 	virtual void OnCursorMoved(int x,int y) override;
 	virtual void Think() override;
 	void Setup();

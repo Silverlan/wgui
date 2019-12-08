@@ -84,6 +84,7 @@ void WIText::ScheduleRenderUpdate(bool bFull)
 		m_flags |= Flags::FullUpdateScheduled | Flags::ApplySubTextTags;
 	else
 		m_flags |= Flags::RenderTextScheduled | Flags::ApplySubTextTags;
+	EnableThinking();
 }
 
 void WIText::SetShadowBlurSize(float size)

@@ -297,6 +297,7 @@ util::EventReply WIScrollBarSlider::MouseCallback(GLFW::MouseButton button,GLFW:
 				m_moveOrigin = GetPos().x;
 			}
 			m_bMoving = true;
+			EnableThinking();
 		}
 		else if(state == GLFW::KeyState::Release)
 			StopDragging();
@@ -310,6 +311,7 @@ void WIScrollBarSlider::StopDragging()
 	m_moveOffset = 0;
 	m_moveOrigin = 0;
 	m_bMoving = false;
+	DisableThinking();
 }
 
 void WIScrollBarSlider::UpdatePosition()

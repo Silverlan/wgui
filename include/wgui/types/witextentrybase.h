@@ -33,7 +33,6 @@ public:
 	virtual void RequestFocus() override;
 	virtual void OnFocusGained() override;
 	virtual void OnFocusKilled() override;
-	virtual void SizeToContents() override;
 	void SetInputHidden(bool b);
 	std::string_view GetText() const;
 	WIText *GetTextElement();

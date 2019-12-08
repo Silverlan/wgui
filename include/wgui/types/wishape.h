@@ -13,9 +13,6 @@
 class DLLWGUI WIShape
 	: public WIBufferBase
 {
-protected:
-	std::vector<Vector2> m_vertices;
-	uint8_t m_vertexBufferUpdateRequired;
 public:
 	WIShape();
 	~WIShape() override = default;
@@ -23,8 +20,11 @@ public:
 	void SetVertexPos(unsigned int vertID,Vector2 pos);
 	void InvertVertexPositions(bool x=true,bool y=true);
 	virtual void ClearVertices();
-	virtual void Update() override;
 	virtual unsigned int GetVertexCount() override;
+protected:
+	virtual void DoUpdate() override;
+	std::vector<Vector2> m_vertices;
+	uint8_t m_vertexBufferUpdateRequired;
 };
 
 class DLLWGUI WIOutlinedShape
@@ -46,6 +46,7 @@ private:
 	void ClearTextureLoadCallback();
 	void InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture);
 protected:
+	virtual void DoUpdate() override;
 	MaterialHandle m_hMaterial;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	std::shared_ptr<bool> m_texLoadCallback;
@@ -70,7 +71,6 @@ public:
 	bool GetAlphaOnly() const;
 	float GetLOD() const;
 	void SetLOD(float lod);
-	virtual void Update() override;
 	void SetMaterial(Material *material);
 	void SetMaterial(const std::string &material);
 	Material *GetMaterial();
@@ -78,6 +78,7 @@ public:
 	void ClearTexture();
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
 	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;
+	void SizeToTexture();
 };
 
 #endif

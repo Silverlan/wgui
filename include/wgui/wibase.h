@@ -72,7 +72,11 @@ public:
 		ThinkIfInvisibleBit = ClickedBit<<1u,
 		IgnoreParentAlpha = ThinkIfInvisibleBit<<1u,
 		RenderIfZeroAlpha = IgnoreParentAlpha<<1u,
-		UpdatingAnchorTransform = RenderIfZeroAlpha<<1u
+		UpdatingAnchorTransform = RenderIfZeroAlpha<<1u,
+		ThinkingEnabled = UpdatingAnchorTransform<<1u,
+		ParentVisible = ThinkingEnabled<<1u,
+		AutoSizeToContentsX = ParentVisible<<1u,
+		AutoSizeToContentsY = AutoSizeToContentsX<<1u
 	};
 	static void CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize);
 
@@ -127,6 +131,8 @@ public:
 	virtual void OnDescendantFocusKilled(WIBase &el);
 	const util::PBoolProperty &GetVisibilityProperty() const;
 	bool IsVisible() const;
+	bool IsParentVisible() const;
+	bool IsSelfVisible() const;
 	virtual void SetVisible(bool b);
 	bool GetMouseInputEnabled() const;
 	bool GetKeyboardInputEnabled() const;
@@ -136,8 +142,8 @@ public:
 	virtual void SetKeyboardInputEnabled(bool b);
 	virtual void SetScrollInputEnabled(bool b);
 	void SetMouseMovementCheckEnabled(bool b);
-	virtual void Update();
-	virtual void SizeToContents();
+	void Update();
+	virtual void SizeToContents(bool x=true,bool y=true);
 	const util::PVector2iProperty &GetPosProperty() const;
 	const Vector2i &GetPos() const;
 	int GetX() const;
@@ -275,11 +281,28 @@ public:
 	WIBase *Wrap(const std::string &wrapperClass);
 	bool Wrap(WIBase &wrapper);
 
+	void SetAutoSizeToContents(bool x,bool y);
+	void SetAutoSizeToContents(bool autoSize);
+	bool ShouldAutoSizeToContentsX() const;
+	bool ShouldAutoSizeToContentsY() const;
+
+	void EnableThinking();
+	void DisableThinking();
+	void SetThinkingEnabled(bool enabled);
+
+	uint64_t GetIndex() const;
+
 	// Handles
 	WIHandle GetHandle() const;
 protected:
+	void SetIndex(uint64_t idx);
+	void UpdateAutoSizeToContents();
+	virtual void DoUpdate();
+	void UpdateVisibility();
 	void UpdateAnchorTransform();
-	void UpdateAnchorSizePixelOffsets();
+	void UpdateAnchorTopLeftPixelOffsets();
+	void UpdateAnchorBottomRightPixelOffsets();
+	uint64_t m_index = std::numeric_limits<uint64_t>::max();
 	StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 	std::array<std::shared_ptr<void>,4> m_userData;
 	std::shared_ptr<WIHandle> m_handle = nullptr;
@@ -318,13 +341,17 @@ protected:
 	void UpdateChildrenMouseInBounds();
 	virtual void OnVisibilityChanged(bool bVisible);
 	void ApplySkin(WISkin *skin=nullptr);
+	WISkin *GetSkin();
 	void SetAutoAlignToParent(bool bX,bool bY,bool bReload);
 	void SetAutoCenterToParentX(bool b,bool bReload);
 	void SetAutoCenterToParentY(bool b,bool bReload);
 	virtual void OnChildAdded(WIBase *child);
 	virtual void OnChildRemoved(WIBase *child);
 	virtual void OnRemove();
+
+	bool ShouldThink() const;
 private:
+	void UpdateThink();
 	WIBase *FindDeepestChild(const std::function<bool(const WIBase&)> &predInspect,const std::function<bool(const WIBase&)> &predValidCandidate);
 	util::PVector2iProperty m_pos = nullptr;
 	util::PVector2iProperty m_size = nullptr;

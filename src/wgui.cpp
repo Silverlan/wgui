@@ -24,6 +24,7 @@
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <misc/memory_allocator.h>
 
+#pragma optimize("",off)
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 WGUI &WGUI::Open(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager)
 {
@@ -117,8 +118,8 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 	else
 		return ResultCode::FontNotFound;
 	auto *base = new WIRoot;
-	base->Initialize();
 	base->InitializeHandle();
+	base->Initialize();
 	m_base = base->GetHandle();
 	Vector2i baseSize;
 	if(resolution.has_value())
@@ -181,17 +182,76 @@ void WGUI::Think()
 			hEl->Remove();
 		m_removeQueue.pop();
 	}
+
+	if(m_bGUIUpdateRequired && m_base.IsValid())
+	{
+		m_bGUIUpdateRequired = false;
+
+		std::vector<WIHandle> tmpUpdateQueue = std::move(m_updateQueue);
+		m_updateQueue.clear();
+		for(auto &hEl : tmpUpdateQueue)
+		{
+			if(hEl.IsValid() == false)
+				continue;
+			if(hEl->IsVisible() == false)
+			{
+				// We don't want to update hidden elements, but we have to remember that we have to
+				// update them later!
+				m_updateQueue.push_back(hEl);
+				continue;
+			}
+			hEl->Update();
+		}
+	}
+
 	m_time.Update();
 	auto t = m_time();
 	m_tDelta = static_cast<double>(t -m_tLastThink);
 	m_tLastThink = static_cast<double>(t);
-	if(m_base.IsValid())
-		m_base->Think();
+
+	for(auto i=decltype(m_thinkingElements.size()){0u};i<m_thinkingElements.size();)
+	{
+		auto &hEl = m_thinkingElements.at(i);
+		if(hEl.IsValid() == false)
+		{
+			m_thinkingElements.erase(m_thinkingElements.begin() +i);
+			continue;
+		}
+		auto *pEl = hEl.get();
+		pEl->Think();
+		
+		// Calling 'Think' may have removed the element from the thinking elements,
+		// so we must only increment i if that wasn't the case.
+		if(i < m_thinkingElements.size() && m_thinkingElements.at(i).get() == pEl)
+			++i;
+	}
 
 	auto *el = GetCursorGUIElement(GetBaseElement(),[](WIBase *el) -> bool {return true;});
 	while(el && el->GetCursor() == GLFW::Cursor::Shape::Default)
 		el = el->GetParent();
 	SetCursor(el ? el->GetCursor() : GLFW::Cursor::Shape::Arrow);
+}
+
+void WGUI::ScheduleElementForUpdate(WIBase &el)
+{
+	m_bGUIUpdateRequired = true;
+	umath::set_flag(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit,true);
+
+	if(umath::is_flag_set(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit))
+	{
+		// Element is already scheduled for an updated, but we'll want to make sure it's at the end of the list, so we'll
+		// remove the previous entry! We'll iterate backwards because it's likely the last update-schedule was very recently.
+		auto it = std::find_if(m_updateQueue.rbegin(),m_updateQueue.rend(),[&el](const WIHandle &hEl) -> bool {
+			return hEl.get() == &el;
+		});
+		if(it != m_updateQueue.rend())
+		{
+			// We don't erase the element from the vector because that would re-order the entire vector, which is expensive.
+			// Instead we'll just invalidate it, the vector will be cleared during the next ::Think anyway!
+			*it = {};
+		}
+	}
+	m_updateQueue.push_back(el.GetHandle());
 }
 
 void WGUI::Draw()
@@ -260,6 +320,32 @@ bool WGUI::SetFocusedElement(WIBase *gui)
 }
 
 WIBase *WGUI::GetFocusedElement() {return m_focused.get();}
+
+WIBase *WGUI::FindByFilter(const std::function<bool(WIBase&)> &filter) const
+{
+	std::function<WIBase*(WIBase&)> fIterate = nullptr;
+	fIterate = [&filter,&fIterate](WIBase &el) -> WIBase* {
+		for(auto &hChild : *el.GetChildren())
+		{
+			if(hChild.IsValid() == false)
+				continue;
+			if(filter(*hChild.get()))
+				return hChild.get();
+			auto *child = fIterate(*hChild.get());
+			if(child)
+				return child;
+		}
+		return nullptr;
+	};
+	auto *root = const_cast<WGUI*>(this)->GetBaseElement();
+	return root ? fIterate(*root) : nullptr;
+}
+WIBase *WGUI::FindByIndex(uint64_t index) const
+{
+	return FindByFilter([index](WIBase &el) -> bool {
+		return el.GetIndex() == index;
+	});
+}
 
 void WGUI::RemoveSafely(WIBase &gui)
 {
@@ -403,3 +489,4 @@ WIBase *WGUI::GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> 
 	GetMousePos(x,y);
 	return GetGUIElement(el,x,y,condition);
 }
+#pragma optimize("",on)

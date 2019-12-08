@@ -201,8 +201,7 @@ public:
 
 	virtual void SelectShader();
 	virtual void Think() override;
-	virtual void Update() override;
-	virtual void SizeToContents() override;
+	virtual void SizeToContents(bool x=true,bool y=true) override;
 	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const override;
 
 	void SetCacheEnabled(bool bEnabled);

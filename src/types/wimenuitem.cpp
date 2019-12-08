@@ -93,13 +93,18 @@ void WIMenuItem::SetSize(int x,int y)
 	UpdateRightText();
 }
 const auto border = 8u;
-void WIMenuItem::SizeToContents()
+void WIMenuItem::SizeToContents(bool x,bool y)
 {
 	if(m_hText.IsValid() == false)
 		return;
 	auto sz = m_hText->GetSize();
 	sz.x += border *2;
-	SetSize(sz);
+	if(x && y)
+		SetSize(sz);
+	else if(x)
+		SetWidth(sz.x);
+	else if(y)
+		SetHeight(sz.y);
 	m_hText->SetX(border);
 	m_hText->SetY(GetHeight() *0.5f -m_hText->GetHeight() *0.5f);
 }

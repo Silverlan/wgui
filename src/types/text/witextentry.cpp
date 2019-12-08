@@ -11,7 +11,6 @@
 LINK_WGUI_TO_CLASS(WITextEntry,WITextEntry);
 LINK_WGUI_TO_CLASS(WINumericEntry,WINumericEntry);
 
-#pragma optimize("",off)
 WITextEntry::WITextEntry()
 	: WIBase()
 {
@@ -65,15 +64,15 @@ void WITextEntry::SetKeyboardInputEnabled(bool b)
 		return;
 	m_hBase->SetKeyboardInputEnabled(b);
 }
-void WITextEntry::SizeToContents()
+void WITextEntry::SizeToContents(bool x,bool y)
 {
 	if(m_hBase.IsValid())
 	{
-		m_hBase->SizeToContents();
+		m_hBase->SizeToContents(x,y);
 		SetSize(m_hBase->GetSize());
 	}
 	else
-		WIBase::SizeToContents();
+		WIBase::SizeToContents(x,y);
 }
 void WITextEntry::SetColor(float r,float g,float b,float a)
 {
@@ -411,4 +410,3 @@ void WINumericEntry::SetSize(int x,int y)
 	WITextEntry::SetSize(x,y);
 	UpdateArrowPositions();
 }
-#pragma optimize("",on)

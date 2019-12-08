@@ -89,13 +89,6 @@ void WITextEntryBase::OnTextChanged(bool changedByUser)
 	OnTextChanged(pText->GetText(),changedByUser);
 }
 
-void WITextEntryBase::SizeToContents()
-{
-	// if(m_hText.IsValid())
-	// 	m_hText->SizeToContents();
-	WIBase::SizeToContents();
-}
-
 void WITextEntryBase::UpdateTextPosition()
 {
 	/*if(!m_hText.IsValid())
@@ -206,6 +199,7 @@ void WITextEntryBase::OnFocusGained()
 		pRect->SetVisible(true);
 		m_tBlink = GLFW::get_time();
 	}
+	EnableThinking();
 }
 
 void WITextEntryBase::OnFocusKilled()
@@ -216,6 +210,7 @@ void WITextEntryBase::OnFocusKilled()
 		WIRect *pRect = m_hCaret.get<WIRect>();
 		pRect->SetVisible(false);
 	}
+	DisableThinking();
 }
 
 std::string_view WITextEntryBase::GetText() const

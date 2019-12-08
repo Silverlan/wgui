@@ -15,7 +15,6 @@ static float MARGIN = 5.f;
 static int MARGIN_LEFT = 4;
 static int OPTION_HEIGHT = 18;
 
-#pragma optimize("",off)
 WIDropDownMenu::WIDropDownMenu()
 	: WITextEntry(),m_numListItems(5),m_listOffset(0),
 	m_selected(-1)
@@ -508,4 +507,3 @@ void WIDropDownMenuOption::OnCursorExited()
 	if(m_hBackground.IsValid())
 		m_hBackground->SetVisible(false);
 }
-#pragma optimize("",on)

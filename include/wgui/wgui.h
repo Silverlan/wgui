@@ -93,6 +93,8 @@ public:
 	void Remove(WIBase &gui);
 	WIBase *GetBaseElement();
 	WIBase *GetFocusedElement();
+	WIBase *FindByFilter(const std::function<bool(WIBase&)> &filter) const;
+	WIBase *FindByIndex(uint64_t index) const;
 	void Think();
 	void Draw();
 	bool HandleJoystickInput(GLFW::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
@@ -134,17 +136,26 @@ public:
 
 	void GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h);
 private:
+	void ScheduleElementForUpdate(WIBase &el);
 	void SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h);
 	friend WIBase;
 	friend wgui::Shader;
 	friend wgui::ShaderColoredRect;
 
 	WISkin *m_skin = nullptr;
+	bool m_bGUIUpdateRequired = false;
 	std::unordered_map<std::string,WISkin*> m_skins = {};
 	std::weak_ptr<MaterialManager> m_matManager = {};
 	std::shared_ptr<prosper::UniformResizableBuffer> m_elementBuffer = nullptr;
 	WIHandle m_base = {};
 	WIHandle m_focused = {};
+	uint64_t m_nextGuiElementIndex = 0u;
+
+	// In general very few elements actually need to apply any continuous logic,
+	// so we keep a separate reference to those elements for better efficiency.
+	std::vector<WIHandle> m_thinkingElements;
+
+	std::vector<WIHandle> m_updateQueue;
 	std::queue<WIHandle> m_removeQueue;
 	std::function<std::shared_ptr<WIHandle>(WIBase&)> m_handleFactory = nullptr;
 	std::vector<std::unique_ptr<GLFW::Cursor>> m_cursors;
@@ -196,6 +207,7 @@ template<class TSkin>
 template<class TElement>
 	void WGUI::Setup(WIBase &el,WIBase *parent)
 {
+	el.SetIndex(m_nextGuiElementIndex++);
 	if(m_handleFactory != nullptr)
 	{
 		auto handle = m_handleFactory(el);
@@ -210,11 +222,12 @@ template<class TElement>
 		el.SetParent(parent);
 	else if(m_base.IsValid())
 		el.SetParent(m_base.get());
-	el.Initialize();
 	auto *map = GetWGUIClassMap();
 	std::string classname;
 	if(map->GetClassName(typeid(TElement),&classname))
 		el.m_class = classname;
+	el.AddStyleClass(el.GetClass());
+	el.Initialize();
 	if(m_createCallback != nullptr)
 		m_createCallback(el);
 }

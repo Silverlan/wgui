@@ -62,12 +62,17 @@ util::EventReply WIButton::MouseCallback(GLFW::MouseButton button,GLFW::KeyState
 	return util::EventReply::Handled;
 }
 
-void WIButton::SizeToContents()
+void WIButton::SizeToContents(bool x,bool y)
 {
 	if(!m_text.IsValid())
 		return;
 	auto *pText = m_text.get<WIText>();
 	auto w = pText->GetWidth();
 	auto h = pText->GetHeight();
-	SetSize(w +30,h +15);
+	if(x && y)
+		SetSize(w +30,h +15);
+	else if(x)
+		SetWidth(w +30);
+	else if(y)
+		SetHeight(h +15);
 }

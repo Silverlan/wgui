@@ -35,9 +35,9 @@ void WIShape::SetVertexPos(unsigned int vertID,Vector2 pos)
 	m_vertexBufferUpdateRequired |= 1;
 }
 void WIShape::ClearVertices() {m_vertices.clear(); m_vertexBufferUpdateRequired |= 1;}
-void WIShape::Update()
+void WIShape::DoUpdate()
 {
-	WIBase::Update();
+	WIBase::DoUpdate();
 	if(!(m_vertexBufferUpdateRequired &1) || m_vertices.size() == 0)
 		return;
 	m_vertexBufferUpdateRequired &= ~1;
@@ -185,7 +185,18 @@ void WITexturedShape::SetTexture(prosper::Texture &tex,uint32_t layerIndex)
 	ReloadDescriptorSet(); // Need to generate a new descriptor set and keep the old one alive, in case it was still in use
 	prosper::util::set_descriptor_set_binding_texture(*m_descSetTextureGroup->GetDescriptorSet(),tex,0u,layerIndex);
 }
-const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const {return m_texture;}
+const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
+{
+	if(m_texture || m_hMaterial.IsValid() == false)
+		return m_texture;
+	auto *diffuseMap = m_hMaterial.get()->GetDiffuseMap();
+	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
+		return m_texture;
+	auto diffuseTexture = std::static_pointer_cast<Texture>(diffuseMap->texture);
+	if(diffuseTexture == nullptr)
+		return m_texture;
+	return diffuseTexture->GetVkTexture();
+}
 
 void WITexturedShape::SetVertexUVCoord(unsigned int vertID,Vector2 uv)
 {
@@ -218,9 +229,9 @@ unsigned int WITexturedShape::AddVertex(Vector2 vert,Vector2 uv)
 	m_vertexBufferUpdateRequired |= 2;
 	return WIShape::AddVertex(vert);
 }
-void WITexturedShape::Update()
+void WITexturedShape::DoUpdate()
 {
-	WIShape::Update();
+	WIShape::DoUpdate();
 	if(!(m_vertexBufferUpdateRequired &2) || m_uvs.size() == 0)
 		return;
 	m_vertexBufferUpdateRequired &= ~2;
@@ -231,6 +242,15 @@ void WITexturedShape::Update()
 	createInfo.size = m_uvs.size() *sizeof(Vector2);
 	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
 	m_uvBuffer = prosper::util::create_buffer(context.GetDevice(),createInfo,m_uvs.data());
+}
+void WITexturedShape::SizeToTexture()
+{
+	auto &texture = GetTexture();
+	if(texture == nullptr)
+		return;
+	auto &img = texture->GetImage();
+	auto extents = img->GetExtents();
+	SetSize(extents.width,extents.height);
 }
 void WITexturedShape::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
 {

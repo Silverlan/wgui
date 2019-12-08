@@ -8,12 +8,17 @@
 
 WIRoot::WIRoot()
 	: WIBase(),m_hTooltipTarget{},m_tCursorOver()
-{
-	SetMouseMovementCheckEnabled(true);
-}
+{}
 
 WIRoot::~WIRoot()
 {}
+
+void WIRoot::Initialize()
+{
+	WIBase::Initialize();
+	SetMouseMovementCheckEnabled(true);
+	EnableThinking();
+}
 
 void WIRoot::Think()
 {

@@ -294,18 +294,13 @@ void WIText::Think()
 {
 	WIBase::Think();
 	UpdateRenderTexture();
-}
-
-void WIText::Update()
-{
-	WIBase::Update();
-	
+	DisableThinking();
 }
 
 void WIText::SetDirty() {m_flags |= Flags::TextDirty;}
 bool WIText::IsDirty() const {return umath::is_flag_set(m_flags,Flags::TextDirty);}
 
-void WIText::SizeToContents()
+void WIText::SizeToContents(bool x,bool y)
 {
 	if(GetAutoBreakMode() != WIText::AutoBreak::NONE)
 	{
@@ -322,7 +317,12 @@ void WIText::SizeToContents()
 		w += shadowOffset.x;
 		h += shadowOffset.y;
 	}
-	SetSize(w,h);
+	if(x && y)
+		SetSize(w,h);
+	else if(x)
+		SetWidth(w);
+	else if(y)
+		SetHeight(h);
 }
 
 WIText::AutoBreak WIText::GetAutoBreakMode() const {return m_autoBreak;}
