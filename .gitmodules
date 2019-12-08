@@ -25,3 +25,33 @@
 [submodule "third_party_libs/anvil"]
 	path = third_party_libs/anvil
 	url = https://github.com/Silverlan/Anvil.git
+[submodule "external_libs/vfilesystem"]
+	path = external_libs/vfilesystem
+	url = https://github.com/Silverlan/vfilesystem.git
+[submodule "third_party_libs/glm"]
+	path = third_party_libs/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "third_party_libs/glfw"]
+	path = third_party_libs/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "third_party_libs/bzip2"]
+	path = third_party_libs/bzip2
+	url = https://github.com/sergiud/bzip2.git
+[submodule "third_party_libs/exprtk"]
+	path = third_party_libs/exprtk
+	url = https://github.com/ArashPartow/exprtk.git
+[submodule "external_libs/util_image"]
+	path = external_libs/util_image
+	url = https://github.com/Silverlan/util_image.git
+[submodule "third_party_libs/libpng"]
+	path = third_party_libs/libpng
+	url = https://github.com/glennrp/libpng.git
+[submodule "third_party_libs/zlib"]
+	path = third_party_libs/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "third_party_libs/gli"]
+	path = third_party_libs/gli
+	url = https://github.com/g-truc/gli.git
+[submodule "third_party_libs/squish"]
+	path = third_party_libs/squish
+	url = https://github.com/Cavewhere/squish.git
