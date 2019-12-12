@@ -14,19 +14,22 @@ function(add_include_dir IDENTIFIER DEFAULT_INCLUDE_DIR)
 	set(INCLUDE_DIRS ${INCLUDE_DIRS} DEPENDENCY_${UIDENTIFIER}_INCLUDE PARENT_SCOPE)
 endfunction(add_include_dir)
 
+set(WGUI_INCLUDE_DEPENDENCIES ON CACHE BOOL "Include dependencies required to build the wgui library?")
 function(setup_library_dependency_var LIB_PATH LIB_NAME STATIC_LIB VAR_NAME)
-	if(WIN32)
-		set(LIB_FILE_NAME "${LIB_NAME}.lib")
-	else()
-		if(STATIC_LIB MATCHES 1)
-			set(FILE_EXTENSION ".a")
+	if(WGUI_INCLUDE_DEPENDENCIES MATCHES ON)
+		if(WIN32)
+			set(LIB_FILE_NAME "${LIB_NAME}.lib")
 		else()
-			set(FILE_EXTENSION ".so")
+			if(STATIC_LIB MATCHES 1)
+				set(FILE_EXTENSION ".a")
+			else()
+				set(FILE_EXTENSION ".so")
+			endif()
+			
+			set(LIB_FILE_NAME "${LIB_NAME}${FILE_EXTENSION}")
 		endif()
-		
-		set(LIB_FILE_NAME "${LIB_NAME}${FILE_EXTENSION}")
+		set(${VAR_NAME} "${LIB_PATH}/${LIB_FILE_NAME}" CACHE PATH "Path to library." FORCE)
 	endif()
-	set(${VAR_NAME} "${LIB_PATH}/${LIB_FILE_NAME}" CACHE PATH "Path to library." FORCE)
 endfunction(setup_library_dependency_var)
 
 set(LIBRARIES)
@@ -159,107 +162,109 @@ add_include_dir(anvil_build "${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/anvil/
 add_include_dir(bzip2 "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/bzip2")
 add_include_dir(exprtk "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/exprtk")
 
-# Anvil
-set(ANVIL_LINK_STATICALLY_WITH_VULKAN_LIB ON CACHE BOOL ON FORCE)
-set(ANVIL_USE_BUILT_IN_VULKAN_HEADERS OFF CACHE BOOL OFF FORCE)
-set(ENABLE_HLSL ON CACHE BOOL ".." FORCE)
-set(SKIP_GLSLANG_INSTALL ON CACHE BOOL ON FORCE)
-set(VULKAN_LIBRARY ${DEPENDENCY_VULKAN_LIBRARY} CACHE PATH "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL OFF FORCE)
-register_third_party_library(anvil)
-set(BUILD_SHARED_LIBS ON CACHE BOOL ON FORCE)
-set_target_properties(Anvil PROPERTIES FOLDER third_party_libs/anvil)
-set_target_properties(glslangValidator PROPERTIES FOLDER third_party_libs/anvil/tools)
-set_target_properties(spirv-remap PROPERTIES FOLDER third_party_libs/anvil/tools)
-set_target_properties(glslang PROPERTIES FOLDER third_party_libs/anvil/glslang)
-set_target_properties(glslang-default-resource-limits PROPERTIES FOLDER third_party_libs/anvil/glslang)
-set_target_properties(OGLCompiler PROPERTIES FOLDER third_party_libs/anvil/glslang)
-set_target_properties(OSDependent PROPERTIES FOLDER third_party_libs/anvil/glslang)
-set_target_properties(SPIRV PROPERTIES FOLDER third_party_libs/anvil/glslang)
-set_target_properties(SPVRemapper PROPERTIES FOLDER third_party_libs/anvil/glslang)
-#
+if(WGUI_INCLUDE_DEPENDENCIES MATCHES ON)
+	# Anvil
+	set(ANVIL_LINK_STATICALLY_WITH_VULKAN_LIB ON CACHE BOOL ON FORCE)
+	set(ANVIL_USE_BUILT_IN_VULKAN_HEADERS OFF CACHE BOOL OFF FORCE)
+	set(ENABLE_HLSL ON CACHE BOOL ".." FORCE)
+	set(SKIP_GLSLANG_INSTALL ON CACHE BOOL ON FORCE)
+	set(VULKAN_LIBRARY ${DEPENDENCY_VULKAN_LIBRARY} CACHE PATH "" FORCE)
+	set(BUILD_SHARED_LIBS OFF CACHE BOOL OFF FORCE)
+	register_third_party_library(anvil)
+	set(BUILD_SHARED_LIBS ON CACHE BOOL ON FORCE)
+	set_target_properties(Anvil PROPERTIES FOLDER third_party_libs/anvil)
+	set_target_properties(glslangValidator PROPERTIES FOLDER third_party_libs/anvil/tools)
+	set_target_properties(spirv-remap PROPERTIES FOLDER third_party_libs/anvil/tools)
+	set_target_properties(glslang PROPERTIES FOLDER third_party_libs/anvil/glslang)
+	set_target_properties(glslang-default-resource-limits PROPERTIES FOLDER third_party_libs/anvil/glslang)
+	set_target_properties(OGLCompiler PROPERTIES FOLDER third_party_libs/anvil/glslang)
+	set_target_properties(OSDependent PROPERTIES FOLDER third_party_libs/anvil/glslang)
+	set_target_properties(SPIRV PROPERTIES FOLDER third_party_libs/anvil/glslang)
+	set_target_properties(SPVRemapper PROPERTIES FOLDER third_party_libs/anvil/glslang)
+	#
 
-# Vulkan
-set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL ON FORCE)
-set(SPIRV_SKIP_TESTS ON CACHE BOOL ".." FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL OFF FORCE)
+	# Vulkan
+	set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL ON FORCE)
+	set(SPIRV_SKIP_TESTS ON CACHE BOOL ".." FORCE)
+	set(BUILD_SHARED_LIBS OFF CACHE BOOL OFF FORCE)
 
-add_subdirectory("${VULKAN_SDK}/spirv-tools" third_party_libs/vulkan/spirv-tools)
-set(BUILD_SHARED_LIBS ON CACHE BOOL ".." FORCE)
-set_target_properties(core_tables PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
-set_target_properties(enum_string_mapping PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
-set_target_properties(extinst_tables PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
-set_target_properties(spirv-tools-pkg-config PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
-set_target_properties(spirv-tools-shared-pkg-config PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
+	add_subdirectory("${VULKAN_SDK}/spirv-tools" third_party_libs/vulkan/spirv-tools)
+	set(BUILD_SHARED_LIBS ON CACHE BOOL ".." FORCE)
+	set_target_properties(core_tables PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
+	set_target_properties(enum_string_mapping PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
+	set_target_properties(extinst_tables PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
+	set_target_properties(spirv-tools-pkg-config PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
+	set_target_properties(spirv-tools-shared-pkg-config PROPERTIES FOLDER third_party_libs/anvil/tools/spirv)
 
-set_target_properties(spirv-tools-build-version PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
-# set_target_properties(spirv-tools-debuginfo PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
-set_target_properties(spirv-tools-header-DebugInfo PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
-# set_target_properties(spirv-tools-spv-amd-gcn-shader PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
-# set_target_properties(spirv-tools-spv-amd-shader-ballot PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
-# set_target_properties(spirv-tools-spv-amd-shader-explicit-vertex-parameter PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
-# set_target_properties(spirv-tools-spv-amd-shader-trinary-minmax PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
+	set_target_properties(spirv-tools-build-version PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
+	# set_target_properties(spirv-tools-debuginfo PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
+	set_target_properties(spirv-tools-header-DebugInfo PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
+	# set_target_properties(spirv-tools-spv-amd-gcn-shader PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
+	# set_target_properties(spirv-tools-spv-amd-shader-ballot PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
+	# set_target_properties(spirv-tools-spv-amd-shader-explicit-vertex-parameter PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
+	# set_target_properties(spirv-tools-spv-amd-shader-trinary-minmax PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/build)
 
-set_target_properties(SPIRV-Tools PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
-set_target_properties(SPIRV-Tools-link PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
-set_target_properties(SPIRV-Tools-opt PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
-set_target_properties(SPIRV-Tools-reduce PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
-set_target_properties(SPIRV-Tools-shared PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
+	set_target_properties(SPIRV-Tools PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
+	set_target_properties(SPIRV-Tools-link PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
+	set_target_properties(SPIRV-Tools-opt PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
+	set_target_properties(SPIRV-Tools-reduce PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
+	set_target_properties(SPIRV-Tools-shared PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/libraries)
 
-set_target_properties(spirv-tools-vimsyntax PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/utilities)
-#
+	set_target_properties(spirv-tools-vimsyntax PROPERTIES FOLDER third_party_libs/anvil/tools/spirv/utilities)
+	#
 
-# Freetype
-register_third_party_library(freetype)
-set_target_properties(freetype PROPERTIES FOLDER third_party_libs)
-target_include_directories(freetype PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
-#
+	# Freetype
+	register_third_party_library(freetype)
+	set_target_properties(freetype PROPERTIES FOLDER third_party_libs)
+	target_include_directories(freetype PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
+	#
 
-# squish
-if(WIN32)
-	include_external_msproject(squish ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/squish/vs9/squish/squish.vcproj)
-	set_target_properties(squish PROPERTIES FOLDER third_party_libs)
+	# squish
+	if(WIN32)
+		include_external_msproject(squish ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/squish/vs9/squish/squish.vcproj)
+		set_target_properties(squish PROPERTIES FOLDER third_party_libs)
+	endif()
+	#
+
+	# zlib
+	register_third_party_library(zlib)
+	set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/zlib CACHE STRING "" FORCE)
+	set(DEPENDENCY_ZLIB_INCLUDE ${ZLIB_INCLUDE_DIR} CACHE STRING "" FORCE)
+	target_include_directories(zlib PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
+	target_include_directories(zlibstatic PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
+	set_target_properties(example PROPERTIES FOLDER third_party_libs/zlib)
+	set_target_properties(minigzip PROPERTIES FOLDER third_party_libs/zlib)
+	set_target_properties(zlib PROPERTIES FOLDER third_party_libs/zlib)
+	set_target_properties(zlibstatic PROPERTIES FOLDER third_party_libs/zlib)
+	#
+
+	# libpng
+	register_third_party_library(libpng)
+	set_target_properties(genfiles PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(png PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(png_static PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(pngfix PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(png-fix-itxt PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(pngimage PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(pngstest PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(pngtest PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(pngunknown PROPERTIES FOLDER third_party_libs/libpng)
+	set_target_properties(pngvalid PROPERTIES FOLDER third_party_libs/libpng)
+
+	target_include_directories(png PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
+	#
+
+	# GLFW
+	set(GLFW_BUILD_DOCS OFF CACHE BOOL OFF FORCE)
+	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL OFF FORCE)
+	set(GLFW_BUILD_TESTS OFF CACHE BOOL OFF FORCE)
+	set(GLFW_INSTALL OFF CACHE BOOL OFF FORCE)
+	set(VULKAN_INCLUDE_DIR ${DEPENDENCY_VULKAN_INCLUDE} CACHE STRING "" FORCE)
+	set(VULKAN_LIBRARY ${DEPENDENCY_VULKAN_LIBRARY} CACHE STRING "" FORCE)
+	register_third_party_library(glfw)
+	set_target_properties(glfw PROPERTIES FOLDER third_party_libs/glfw)
+	#
 endif()
-#
-
-# zlib
-register_third_party_library(zlib)
-set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/zlib CACHE STRING "" FORCE)
-set(DEPENDENCY_ZLIB_INCLUDE ${ZLIB_INCLUDE_DIR} CACHE STRING "" FORCE)
-target_include_directories(zlib PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
-target_include_directories(zlibstatic PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
-set_target_properties(example PROPERTIES FOLDER third_party_libs/zlib)
-set_target_properties(minigzip PROPERTIES FOLDER third_party_libs/zlib)
-set_target_properties(zlib PROPERTIES FOLDER third_party_libs/zlib)
-set_target_properties(zlibstatic PROPERTIES FOLDER third_party_libs/zlib)
-#
-
-# libpng
-register_third_party_library(libpng)
-set_target_properties(genfiles PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(png PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(png_static PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(pngfix PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(png-fix-itxt PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(pngimage PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(pngstest PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(pngtest PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(pngunknown PROPERTIES FOLDER third_party_libs/libpng)
-set_target_properties(pngvalid PROPERTIES FOLDER third_party_libs/libpng)
-
-target_include_directories(png PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
-#
-
-# GLFW
-set(GLFW_BUILD_DOCS OFF CACHE BOOL OFF FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL OFF FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL OFF FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL OFF FORCE)
-set(VULKAN_INCLUDE_DIR ${DEPENDENCY_VULKAN_INCLUDE} CACHE STRING "" FORCE)
-set(VULKAN_LIBRARY ${DEPENDENCY_VULKAN_LIBRARY} CACHE STRING "" FORCE)
-register_third_party_library(glfw)
-set_target_properties(glfw PROPERTIES FOLDER third_party_libs/glfw)
-#
 
 set(DEFINITIONS
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -324,30 +329,32 @@ set_target_properties(${PROJ_NAME} PROPERTIES ${TARGET_PROPERTIES})
 
 add_subdirectory(examples)
 
-##### EXTERNAL LIBRARIES #####
+if(WGUI_INCLUDE_DEPENDENCIES MATCHES ON)
+	##### EXTERNAL LIBRARIES #####
 
-message("Processing external libraries...")
-set(MATHUTIL_ENABLE_MESH_FUNCTIONS OFF CACHE BOOL OFF FORCE)
-set(CONFIG_ENABLE_VTF_SUPPORT OFF CACHE BOOL FORCE "Enable support for VMT/VTF files.")
-add_subdirectory(external_libs)
+	message("Processing external libraries...")
+	set(MATHUTIL_ENABLE_MESH_FUNCTIONS OFF CACHE BOOL OFF FORCE)
+	set(CONFIG_ENABLE_VTF_SUPPORT OFF CACHE BOOL FORCE "Enable support for VMT/VTF files.")
+	add_subdirectory(external_libs)
 
-target_include_directories(materialsystem PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
-target_include_directories(util_image PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
-target_include_directories(cmaterialsystem PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
+	target_include_directories(materialsystem PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
+	target_include_directories(util_image PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
+	target_include_directories(cmaterialsystem PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
 
-##### DEPENDENCIES #####
+	##### DEPENDENCIES #####
 
-add_dependencies(png zlib)
-add_dependencies(freetype zlib)
-add_dependencies(mathutil sharedutils-static)
-add_dependencies(sharedutils mathutil)
-add_dependencies(vfilesystem sharedutils)
-add_dependencies(datasystem vfilesystem)
-add_dependencies(materialsystem datasystem util_image png)
-add_dependencies(iglfw glfw)
-add_dependencies(iglfw vfilesystem)
-add_dependencies(prosper vfilesystem iglfw Anvil util_image SPIRV SPIRV-Tools OSDependent OGLCompiler SPIRV-Tools-opt SPVRemapper glslang)
+	add_dependencies(png zlib)
+	add_dependencies(freetype zlib)
+	add_dependencies(mathutil sharedutils-static)
+	add_dependencies(sharedutils mathutil)
+	add_dependencies(vfilesystem sharedutils)
+	add_dependencies(datasystem vfilesystem)
+	add_dependencies(materialsystem datasystem util_image png)
+	add_dependencies(iglfw glfw)
+	add_dependencies(iglfw vfilesystem)
+	add_dependencies(prosper vfilesystem iglfw Anvil util_image SPIRV SPIRV-Tools OSDependent OGLCompiler SPIRV-Tools-opt SPVRemapper glslang)
 
-add_dependencies(cmaterialsystem materialsystem prosper)
-add_dependencies(wgui cmaterialsystem freetype glslang util_formatted_text)
-add_dependencies(sample_application wgui)
+	add_dependencies(cmaterialsystem materialsystem prosper)
+	add_dependencies(wgui cmaterialsystem freetype glslang util_formatted_text)
+	add_dependencies(sample_application wgui)
+endif()

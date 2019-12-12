@@ -85,7 +85,7 @@ void WITextEntry::Initialize()
 
 	SetMouseInputEnabled(true);
 	SetKeyboardInputEnabled(true);
-	SetHeight(24);
+	SetHeight(25);
 	Vector2i size = GetSize();
 	m_hBg = CreateChild<WIRect>();
 	WIRect *pBg = m_hBg.get<WIRect>();

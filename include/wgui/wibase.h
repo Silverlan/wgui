@@ -76,7 +76,8 @@ public:
 		ThinkingEnabled = UpdatingAnchorTransform<<1u,
 		ParentVisible = ThinkingEnabled<<1u,
 		AutoSizeToContentsX = ParentVisible<<1u,
-		AutoSizeToContentsY = AutoSizeToContentsX<<1u
+		AutoSizeToContentsY = AutoSizeToContentsX<<1u,
+		IsBeingRemoved = AutoSizeToContentsY<<1u
 	};
 	static void CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize);
 
@@ -108,7 +109,6 @@ public:
 	void SetAutoCenterToParent(bool b);
 	void CenterToParentX();
 	void CenterToParentY();
-	void CenterToParent();
 	bool GetAutoAlignToParentX() const;
 	bool GetAutoAlignToParentY() const;
 	bool GetAutoAlignToParent() const;
@@ -146,6 +146,14 @@ public:
 	virtual void SizeToContents(bool x=true,bool y=true);
 	const util::PVector2iProperty &GetPosProperty() const;
 	const Vector2i &GetPos() const;
+	Vector2 GetCenter() const;
+	float GetCenterX() const;
+	float GetCenterY() const;
+	void SetCenterPos(const Vector2i &pos);
+	void CenterToParent(bool applyAnchor=false);
+	Vector2 GetHalfSize() const;
+	float GetHalfWidth() const;
+	float GetHalfHeight() const;
 	int GetX() const;
 	int GetY() const;
 	int GetLeft() const;
@@ -253,6 +261,8 @@ public:
 
 	std::vector<std::string> &GetStyleClasses();
 	void AddStyleClass(const std::string &className);
+	void RemoveStyleClass(const std::string &className);
+	void ClearStyleClasses();
 
 	void SetTooltip(const std::string &msg);
 	const std::string &GetTooltip() const;

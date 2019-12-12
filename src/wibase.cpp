@@ -253,25 +253,6 @@ void WIBase::SetAutoCenterToParentY(bool b,bool bReload)
 	m_cbAutoCenterYOwn = AddCallback("SetSize",FunctionCallback<>::Create(cb));
 	m_cbAutoCenterY(this);
 }
-void WIBase::CenterToParentX()
-{
-	auto *parent = GetParent();
-	if(parent == nullptr)
-		return;
-	SetX(static_cast<int>(static_cast<float>(parent->GetWidth()) *0.5f -static_cast<float>(GetWidth()) *0.5f));
-}
-void WIBase::CenterToParentY()
-{
-	auto *parent = GetParent();
-	if(parent == nullptr)
-		return;
-	SetY(static_cast<int>(static_cast<float>(parent->GetHeight()) *0.5f -static_cast<float>(GetHeight()) *0.5f));
-}
-void WIBase::CenterToParent()
-{
-	CenterToParentX();
-	CenterToParentY();
-}
 void WIBase::SetAutoAlignToParent(bool bX,bool bY) {SetAutoAlignToParent(bX,bY,false);}
 void WIBase::SetAutoAlignToParent(bool b) {SetAutoAlignToParent(b,b,false);}
 void WIBase::SetAutoCenterToParentX(bool b) {SetAutoCenterToParentX(b,false);}
@@ -606,6 +587,41 @@ void WIBase::GetPos(int *x,int *y) const
 	*x = (*m_pos)->x;
 	*y = (*m_pos)->y;
 }
+Vector2 WIBase::GetCenter() const {return Vector2{GetCenterX(),GetCenterY()};}
+float WIBase::GetCenterX() const {return GetX() +GetHalfWidth();}
+float WIBase::GetCenterY() const {return GetY() +GetHalfHeight();}
+void WIBase::SetCenterPos(const Vector2i &pos)
+{
+	Vector2 centerPos {pos.x,pos.y};
+	centerPos -= GetHalfSize();
+	SetPos(centerPos.x,centerPos.y);
+}
+void WIBase::CenterToParent(bool applyAnchor)
+{
+	auto *parent = GetParent();
+	if(parent == nullptr)
+		return;
+	SetCenterPos(parent->GetHalfSize());
+	if(applyAnchor)
+		SetAnchor(0.5f,0.5f,0.5f,0.5f);
+}
+void WIBase::CenterToParentX()
+{
+	auto *parent = GetParent();
+	if(parent == nullptr)
+		return;
+	SetX(parent->GetHalfWidth() -GetHalfWidth());
+}
+void WIBase::CenterToParentY()
+{
+	auto *parent = GetParent();
+	if(parent == nullptr)
+		return;
+	SetY(parent->GetHalfHeight() -GetHalfHeight());
+}
+Vector2 WIBase::GetHalfSize() const {return Vector2{GetHalfWidth(),GetHalfHeight()};}
+float WIBase::GetHalfWidth() const {return GetWidth() *0.5f;}
+float WIBase::GetHalfHeight() const {return GetHeight() *0.5f;}
 Vector2i WIBase::GetAbsolutePos() const
 {
 	Vector2i pos = GetPos();
@@ -823,21 +839,24 @@ void WIBase::ApplySkin(WISkin *skin)
 		return;
 	umath::set_flag(m_stateFlags,StateFlags::SkinAppliedBit,true);
 	UpdateThink();
+	if(m_skin == nullptr)
+		m_skin = skin;
+	if(m_skin == nullptr)
+	{
+		auto *parent = GetParent();
+		if(parent)
+			m_skin = parent->GetSkin();
+	}
+	if(m_skin == nullptr)
+		m_skin = WGUI::GetInstance().GetSkin();
 	if(m_skin != nullptr)
 		m_skin->Initialize(this);
-	else
-	{
-		if(skin == nullptr)
-			skin = WGUI::GetInstance().GetSkin();
-		if(skin)
-			skin->Initialize(this);
-	}
 	std::vector<WIHandle> *children = GetChildren();
 	for(unsigned int i=0;i<children->size();i++)
 	{
 		WIHandle &hChild = (*children)[i];
 		if(hChild.IsValid())
-			hChild->ApplySkin((m_skin == nullptr) ? skin : m_skin);
+			hChild->ApplySkin(m_skin);
 	}
 }
 WISkin *WIBase::GetSkin()
@@ -1219,6 +1238,9 @@ void WIBase::UpdateAnchorTransform()
 }
 void WIBase::Remove()
 {
+	if(umath::is_flag_set(m_stateFlags,StateFlags::IsBeingRemoved))
+		return;
+	umath::set_flag(m_stateFlags,StateFlags::IsBeingRemoved);
 	for(auto &hChild : *GetChildren())
 	{
 		if(hChild.IsValid() == false)
@@ -1564,6 +1586,19 @@ void WIBase::AddStyleClass(const std::string &className)
 	auto lname = className;
 	ustring::to_lower(lname);
 	m_styleClasses.push_back(lname);
+}
+void WIBase::RemoveStyleClass(const std::string &className)
+{
+	auto lname = className;
+	ustring::to_lower(lname);
+	auto it = std::find(m_styleClasses.begin(),m_styleClasses.end(),lname);
+	if(it == m_styleClasses.end())
+		return;
+	m_styleClasses.erase(it);
+}
+void WIBase::ClearStyleClasses()
+{
+	m_styleClasses.clear();
 }
 
 /////////////////
