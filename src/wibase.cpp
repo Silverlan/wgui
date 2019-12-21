@@ -64,8 +64,7 @@ WIBase::WIBase()
 		}
 		CallCallbacks<void>("SetPos");
 
-		if(m_parent.IsValid())
-			m_parent->UpdateAutoSizeToContents();
+		UpdateParentAutoSizeToContents();
 	});
 	m_size->AddCallback([this](std::reference_wrapper<const Vector2i> oldSize,std::reference_wrapper<const Vector2i> size) {
 		for(auto &pair : m_attachments)
@@ -80,16 +79,11 @@ WIBase::WIBase()
 			hChild->UpdateAnchorTransform();
 		}
 
-		if(m_parent.IsValid())
-			m_parent->UpdateAutoSizeToContents();
+		UpdateParentAutoSizeToContents();
 	});
 	m_bVisible->AddCallback([this](std::reference_wrapper<const bool> oldVisible,std::reference_wrapper<const bool> visible) {
-		for(auto &hChild : m_children)
-		{
-			if(hChild.IsValid() == false)
-				continue;
-			hChild->UpdateVisibility();
-		}
+		UpdateVisibility();
+		UpdateParentAutoSizeToContents();
 	});
 	umath::set_flag(m_stateFlags,StateFlags::ParentVisible);
 }
@@ -114,14 +108,34 @@ WIBase::~WIBase()
 	}
 	m_fade = nullptr;
 }
-void WIBase::UpdateAutoSizeToContents()
+void WIBase::UpdateParentAutoSizeToContents()
+{
+	if(m_parent == nullptr || umath::is_flag_set(m_parent->m_stateFlags,StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY) == false)
+		return;
+	auto updateX = true;
+	auto updateY = true;
+	if(HasAnchor())
+	{
+		// If we have an axis anchor enabled that would change our size,
+		// we mustn't let our parent resize itself on that axis or we could end
+		// up in an infinite recursion!
+		float left,top,right,bottom;
+		GetAnchor(left,top,right,bottom);
+		if(left != right) // Horizontal axis anchor
+			updateX = false;
+		if(top != bottom) // Vertical axis anchor
+			updateY = false;
+	}
+	m_parent->UpdateAutoSizeToContents(updateX,updateY);
+}
+void WIBase::UpdateAutoSizeToContents(bool updateX,bool updateY)
 {
 	if(umath::is_flag_set(m_stateFlags,StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY))
 	{
-		// Auto-size cannot work if this element is anchored, otherwise we could end up in an infinite recursion!
-		assert(!HasAnchor());
-		if(HasAnchor() == false)
-			SizeToContents(umath::is_flag_set(m_stateFlags,StateFlags::AutoSizeToContentsX),umath::is_flag_set(m_stateFlags,StateFlags::AutoSizeToContentsY));
+		SizeToContents(
+			updateX && umath::is_flag_set(m_stateFlags,StateFlags::AutoSizeToContentsX),
+			updateY && umath::is_flag_set(m_stateFlags,StateFlags::AutoSizeToContentsY)
+		);
 	}
 }
 void WIBase::UpdateVisibility()
@@ -318,11 +332,13 @@ void WIBase::SetZPos(int zpos)
 		return;
 	parent->UpdateChildOrder(this);
 }
-static void InsertGUIElement(std::vector<WIHandle> &elements,const WIHandle &hElement)
+static void InsertGUIElement(std::vector<WIHandle> &elements,const WIHandle &hElement,std::optional<uint32_t> index)
 {
 	WIBase *pChild = hElement.get();
-	if(elements.empty())
+	if(elements.empty() || (index.has_value() && *index >= elements.size()))
 		elements.push_back(hElement);
+	else if(index.has_value())
+		elements.insert(elements.begin() +*index,hElement);
 	else
 	{
 		int zpos = pChild->GetZPos();
@@ -355,7 +371,7 @@ void WIBase::UpdateChildOrder(WIBase *child)
 				if(pElement == child)
 				{
 					m_children.erase(m_children.begin() +i);
-					InsertGUIElement(m_children,pElement->GetHandle());
+					InsertGUIElement(m_children,pElement->GetHandle(),{});
 					break;
 				}
 			}
@@ -368,7 +384,7 @@ void WIBase::UpdateChildOrder(WIBase *child)
 	{
 		WIHandle &hChild = m_children[i];
 		if(hChild.IsValid())
-			InsertGUIElement(sorted,hChild);
+			InsertGUIElement(sorted,hChild,{});
 	}
 	m_children = sorted;
 }
@@ -1295,10 +1311,16 @@ void WIBase::SetThinkingEnabled(bool enabled)
 }
 uint64_t WIBase::GetIndex() const {return m_index;}
 void WIBase::SetIndex(uint64_t idx) {m_index = idx;}
-void WIBase::SetParent(WIBase *base)
+void WIBase::SetParent(WIBase *base,std::optional<uint32_t> childIndex)
 {
 	if(base == this || (m_parent.get() == base))
-		return;
+	{
+		if(childIndex.has_value() == false)
+			return;
+		auto curChildIndex = m_parent->FindChildIndex(*this);
+		if(curChildIndex.has_value() && *curChildIndex == *childIndex)
+			return;
+	}
 	if(base != nullptr && base->GetParent() == this)
 		base->ClearParent();
 	ClearParent();
@@ -1315,7 +1337,7 @@ void WIBase::SetParent(WIBase *base)
 		return;
 	}
 	m_parent = base->GetHandle();
-	base->AddChild(this);
+	base->AddChild(this,childIndex);
 	if(GetAutoAlignToParent() == true)
 		SetAutoAlignToParent(true,true);
 	if(umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentXBit) == true)
@@ -1356,13 +1378,20 @@ void WIBase::RemoveChild(WIBase *child)
 		}
 	}
 }
-void WIBase::AddChild(WIBase *child)
+void WIBase::AddChild(WIBase *child,std::optional<uint32_t> childIndex)
 {
-	if(child == this || HasChild(child))
+	if(child == this)
 		return;
+	auto curIndex = FindChildIndex(*child);
+	if(curIndex.has_value())
+	{
+		if(childIndex.has_value() == false || *curIndex == *childIndex)
+			return;
+		child->ClearParent();
+	}
 	if(child->HasChild(this))
 		child->RemoveChild(this);
-	InsertGUIElement(m_children,child->GetHandle());
+	InsertGUIElement(m_children,child->GetHandle(),childIndex);
 	child->SetParent(this);
 	OnChildAdded(child);
 }
@@ -1374,6 +1403,15 @@ bool WIBase::HasChild(WIBase *child)
 			return true;
 	}
 	return false;
+}
+std::optional<uint32_t> WIBase::FindChildIndex(WIBase &child) const
+{
+	auto it = std::find_if(m_children.begin(),m_children.end(),[&child](const WIHandle &hEl) -> bool {
+		return hEl.get() == &child;
+	});
+	if(it == m_children.end())
+		return {};
+	return it -m_children.begin();
 }
 void WIBase::OnChildAdded(WIBase *child) {CallCallbacks<void,WIBase*>("OnChildAdded",child);}
 void WIBase::OnChildRemoved(WIBase *child) {CallCallbacks<void,WIBase*>("OnChildRemoved",child);}
@@ -1445,14 +1483,7 @@ void WIBase::SetScrollInputEnabled(bool b) {umath::set_flag(m_stateFlags,StateFl
 util::EventReply WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
 	auto hThis = GetHandle();
-	util::EventReply reply;
-	if(
-		CallCallbacksWithOptionalReturn<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent",reply,button,state,mods) == CallbackReturnType::HasReturnValue &&
-		reply == util::EventReply::Handled
-	)
-		return util::EventReply::Handled;
-	if(!hThis.IsValid())
-		return util::EventReply::Unhandled;
+
 	if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press)
 	{
 		ChronoTimePoint now = util::Clock::now();
@@ -1469,6 +1500,15 @@ util::EventReply WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState s
 			m_clickStart = util::Clock::now();
 		}
 	}
+
+	util::EventReply reply;
+	if(
+		CallCallbacksWithOptionalReturn<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent",reply,button,state,mods) == CallbackReturnType::HasReturnValue &&
+		reply == util::EventReply::Handled
+	)
+		return util::EventReply::Handled;
+	if(!hThis.IsValid())
+		return util::EventReply::Unhandled;
 	if(button == GLFW::MouseButton::Left)
 	{
 		if(state == GLFW::KeyState::Press)

@@ -202,12 +202,13 @@ public:
 	void Draw(int w,int h,const Vector2i &origin,const Vector2i &offsetParent,const Mat4 &mat=Mat4(1.f),bool bUseScissor=true,const Mat4 *matPostTransform=nullptr);
 	void Draw(int w,int h,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Mat4 &mat,bool bUseScissor=true,const Mat4 *matPostTransform=nullptr);
 	void Draw(int w,int h,const Vector2i &offsetParent,const Mat4 &mat,bool bUseScissor=true,const Mat4 *matPostTransform=nullptr);
-	virtual void SetParent(WIBase *base);
+	virtual void SetParent(WIBase *base,std::optional<uint32_t> childIndex={});
 	WIBase *GetParent() const;
 	void ClearParent();
 	void RemoveChild(WIBase *child);
-	void AddChild(WIBase *child);
+	void AddChild(WIBase *child,std::optional<uint32_t> childIndex={});
 	bool HasChild(WIBase *child);
+	std::optional<uint32_t> FindChildIndex(WIBase &child) const;
 	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const;
 	Mat4 GetTransformedMatrix(int w,int h,Mat4 mat) const;
 	Mat4 GetTransformedMatrix(int w,int h) const;
@@ -306,7 +307,8 @@ public:
 	WIHandle GetHandle() const;
 protected:
 	void SetIndex(uint64_t idx);
-	void UpdateAutoSizeToContents();
+	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
+	void UpdateParentAutoSizeToContents();
 	virtual void DoUpdate();
 	void UpdateVisibility();
 	void UpdateAnchorTransform();

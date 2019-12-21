@@ -14,13 +14,13 @@ function(add_include_dir IDENTIFIER DEFAULT_INCLUDE_DIR)
 	set(INCLUDE_DIRS ${INCLUDE_DIRS} DEPENDENCY_${UIDENTIFIER}_INCLUDE PARENT_SCOPE)
 endfunction(add_include_dir)
 
-set(WGUI_INCLUDE_DEPENDENCIES ON CACHE BOOL "Include dependencies required to build the wgui library?")
+option(WGUI_INCLUDE_DEPENDENCIES "Include dependencies required to build the wgui library?" ON)
 function(setup_library_dependency_var LIB_PATH LIB_NAME STATIC_LIB VAR_NAME)
-	if(WGUI_INCLUDE_DEPENDENCIES MATCHES ON)
+	if(WGUI_INCLUDE_DEPENDENCIES)
 		if(WIN32)
 			set(LIB_FILE_NAME "${LIB_NAME}.lib")
 		else()
-			if(STATIC_LIB MATCHES 1)
+			if(STATIC_LIB)
 				set(FILE_EXTENSION ".a")
 			else()
 				set(FILE_EXTENSION ".so")
@@ -162,7 +162,7 @@ add_include_dir(anvil_build "${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/anvil/
 add_include_dir(bzip2 "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/bzip2")
 add_include_dir(exprtk "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/exprtk")
 
-if(WGUI_INCLUDE_DEPENDENCIES MATCHES ON)
+if(WGUI_INCLUDE_DEPENDENCIES)
 	# Anvil
 	set(ANVIL_LINK_STATICALLY_WITH_VULKAN_LIB ON CACHE BOOL ON FORCE)
 	set(ANVIL_USE_BUILT_IN_VULKAN_HEADERS OFF CACHE BOOL OFF FORCE)
@@ -275,8 +275,8 @@ set(DEFINITIONS
 ##### CONFIGURATION #####
 
 set(LIB_TYPE SHARED)
-if(ENABLE_STATIC_LIBRARY_FLAG MATCHES 1)
-	set(CONFIG_STATIC_LIBRARY 0 CACHE BOOL "Build as static library?")
+if(ENABLE_STATIC_LIBRARY_FLAG)
+	option(CONFIG_STATIC_LIBRARY "Build as static library?" OFF)
 endif()
 if(DEFINED ${CONFIG_STATIC_LIBRARY} AND ${CONFIG_STATIC_LIBRARY})
 	set(LIB_TYPE STATIC)
@@ -329,12 +329,17 @@ set_target_properties(${PROJ_NAME} PROPERTIES ${TARGET_PROPERTIES})
 
 add_subdirectory(examples)
 
-if(WGUI_INCLUDE_DEPENDENCIES MATCHES ON)
+if(WGUI_INCLUDE_DEPENDENCIES)
 	##### EXTERNAL LIBRARIES #####
 
 	message("Processing external libraries...")
-	set(MATHUTIL_ENABLE_MESH_FUNCTIONS OFF CACHE BOOL OFF FORCE)
-	set(CONFIG_ENABLE_VTF_SUPPORT OFF CACHE BOOL FORCE "Enable support for VMT/VTF files.")
+
+	unset(MATHUTIL_ENABLE_MESH_FUNCTIONS CACHE)
+	SET(MATHUTIL_ENABLE_MESH_FUNCTIONS OFF CACHE BOOL "")
+
+	unset(CONFIG_ENABLE_VTF_SUPPORT CACHE)
+	SET(CONFIG_ENABLE_VTF_SUPPORT OFF CACHE BOOL "Enable support for VMT/VTF files.")
+
 	add_subdirectory(external_libs)
 
 	target_include_directories(materialsystem PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)

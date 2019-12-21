@@ -84,11 +84,6 @@ void WIDropDownMenu::Initialize()
 	SetMouseInputEnabled(true);
 }
 
-void WIDropDownMenu::SetParent(WIBase *base)
-{
-	WITextEntry::SetParent(base);
-}
-
 void WIDropDownMenu::SelectOption(unsigned int idx)
 {
 	if(idx >= m_options.size())
