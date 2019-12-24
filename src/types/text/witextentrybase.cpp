@@ -48,26 +48,11 @@ void WITextEntryBase::OnTextContentsChanged()
 
 void WITextEntryBase::SetInputHidden(bool b)
 {
-	if(umath::is_flag_set(m_stateFlags,StateFlags::HideInput) == b)
+	if(m_hText.IsValid() == false)
 		return;
-	umath::set_flag(m_stateFlags,StateFlags::HideInput,b);
-	if(b)
-		UpdateHiddenText();
-	else
-		SetText(GetText());
+	static_cast<WIText*>(m_hText.get())->HideText(b);
 }
-
-void WITextEntryBase::UpdateHiddenText()
-{
-	if(umath::is_flag_set(m_stateFlags,StateFlags::HideInput) == false)
-		return;
-	auto *pText = GetTextElement();
-	if(pText == nullptr)
-		return;
-	// TODO
-	std::string hiddenText('*',m_realText.length());
-	SetText(hiddenText);
-}
+bool WITextEntryBase::IsInputHidden() const {return m_hText.IsValid() ? static_cast<WIText*>(m_hText.get())->IsTextHidden() : false;}
 
 WIText *WITextEntryBase::GetTextElement() {return static_cast<WIText*>(m_hText.get());}
 
@@ -147,7 +132,6 @@ void WITextEntryBase::SetMaxLength(int length)
 	if(text.length() <= length)
 		return;
 	pText->GetFormattedTextObject().RemoveText(length,util::text::END_OF_TEXT);
-	UpdateHiddenText();
 	OnTextChanged(false);
 }
 int WITextEntryBase::GetMaxLength() {return m_maxLength;}
@@ -217,8 +201,6 @@ std::string_view WITextEntryBase::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};
-	if(umath::is_flag_set(m_stateFlags,StateFlags::HideInput))
-		return m_realText;
 	return static_cast<WIText*>(m_hText.get())->GetText();
 }
 
@@ -319,7 +301,14 @@ void WITextEntryBase::SetCaretPos(int pos)
 					int32_t w = 0;
 					auto relPos = pos -lineInfo.GetAbsCharStartOffset();
 					auto startOffset = lineInfo.relCharStartOffset;
-					FontManager::GetTextSize(std::string_view{lineInfo.line->GetFormattedLine().GetText()}.substr(startOffset,relPos),startOffset,pText->GetFont(),&w,nullptr);
+					auto text = std::string_view{lineInfo.line->GetFormattedLine().GetText()}.substr(startOffset,relPos);
+					std::string strHidden;
+					if(IsInputHidden())
+					{
+						strHidden = std::string(text.length(),'*');
+						text = strHidden;
+					}
+					FontManager::GetTextSize(text,startOffset,pText->GetFont(),&w,nullptr);
 					x = w;
 					y = lineInfo.absSubLineIndex *lineHeight;
 					break;
@@ -365,6 +354,21 @@ int WITextEntryBase::GetCharPos(int x,int y) const
 		if(itLine != lineIt.end())
 		{
 			auto &lineInfo = *itLine;
+
+			if(IsInputHidden())
+			{
+				auto len = lineInfo.line->GetUnformattedLine().GetLength();
+				auto c = '*';
+				int32_t width = 0;
+				int32_t height = 0;
+				FontManager::GetTextSize(c,0,pText->GetFont(),&width,&height);
+				auto charPos = x /static_cast<float>(width);
+				auto charIdx = umath::floor(charPos);
+				charPos -= charIdx;
+				if(charPos >= 0.5f)
+					++charIdx;
+				return charIdx;
+			}
 
 			CharIterator charIt{*pText,lineInfo,true /* updatePixelWidth */};
 			auto itChar = std::find_if(charIt.begin(),charIt.end(),[x](const CharIteratorBase::Info &charInfo) {
@@ -588,7 +592,6 @@ bool WITextEntryBase::RemoveSelectedText()
 	en = *enOffset;
 
 	pText->GetFormattedTextObject().RemoveText(st,en -st +1);
-	UpdateHiddenText();
 	OnTextChanged(true);
 
 	SetCaretPos(st);
@@ -770,11 +773,11 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 					{
 						auto &context = WGUI::GetInstance().GetContext();
 						auto &window = context.GetWindow();
-						if(umath::is_flag_set(m_stateFlags,StateFlags::HideInput))
+						auto *pText = GetTextElement();
+						if(pText == nullptr || pText->IsTextHidden())
 							window.SetClipboardString("");
 						else
 						{
-							auto *pText = GetTextElement();
 							if(pText)
 							{
 								auto &text = pText->GetFormattedText();
@@ -869,7 +872,6 @@ void WITextEntryBase::InsertText(const std::string_view &instext,int pos)
 	else
 		pText->AppendText(instext);
 	
-	UpdateHiddenText();
 	OnTextChanged(true);
 	SetCaretPos(GetCaretPos() +static_cast<int>(instext.length()));
 }

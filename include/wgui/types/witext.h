@@ -100,7 +100,8 @@ public:
 
 		Cache = FullUpdateScheduled<<1u,
 		TextDirty = Cache<<1u,
-		ApplySubTextTags = TextDirty<<1u
+		ApplySubTextTags = TextDirty<<1u,
+		HideText = ApplySubTextTags<<1u // If enabled, text will be rendered as '*'
 	};
 	enum class TagType : uint32_t
 	{
@@ -160,6 +161,9 @@ public:
 	void SetTagsEnabled(bool bEnabled);
 	bool AreTagsEnabled() const;
 	Color GetCharColor(util::text::TextOffset offset) const;
+
+	bool IsTextHidden() const;
+	void HideText(bool hide=true);
 
 	void AppendText(const std::string_view &text);
 	bool InsertText(const std::string_view &text,util::text::LineIndex lineIdx,util::text::CharOffset charOffset=util::text::LAST_CHAR);
@@ -262,6 +266,7 @@ private:
 	void PerformTextPostProcessing();
 	void AutoSizeToText();
 
+	void SetFlag(Flags flag,bool enabled=true);
 	void InitializeTagArguments(const WITextTag &tag,std::vector<WITextTagArgument> &args) const;
 	void SetTagArgument(const std::string &tagLabel,uint32_t argumentIndex,const WITextTagArgument &arg);
 	void ApplySubTextTags();

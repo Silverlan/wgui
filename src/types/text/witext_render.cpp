@@ -307,6 +307,7 @@ void WIText::RenderText(Mat4&)
 	glyphBoundsInfos.reserve(numChars);
 	if(numChars == 0)
 		return;
+	auto isHidden = IsTextHidden();
 	for(unsigned int i=0;i<m_lineInfos.size();i++)
 	{
 		x = 0;
@@ -317,7 +318,7 @@ void WIText::RenderText(Mat4&)
 		auto &formattedLine = line.GetFormattedLine();
 		for(unsigned int j=0;j<formattedLine.GetLength();j++)
 		{
-			auto c = static_cast<UChar>(formattedLine.At(j));
+			auto c = isHidden ? '*' : static_cast<UChar>(formattedLine.At(j));
 			auto *glyph = m_font->GetGlyphInfo(c);
 			if(glyph != nullptr)
 			{
@@ -499,8 +500,11 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 		// Populate glyph bounds and indices
 		auto fontSize = m_font->GetSize();
 		auto offset = 0u;
+		auto isHidden = IsTextHidden();
 		for(auto c : info.subString)
 		{
+			if(isHidden)
+				c = '*';
 			auto multiplier = 1u;
 			if(c == '\t')
 			{

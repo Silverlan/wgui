@@ -62,6 +62,9 @@ void WIText::SetTagArgument(const std::string &tagLabel,uint32_t argumentIndex,c
 void WIText::SetTagsEnabled(bool bEnabled) {m_text->SetTagsEnabled(bEnabled);}
 bool WIText::AreTagsEnabled() const {return m_text->AreTagsEnabled();}
 
+bool WIText::IsTextHidden() const {return umath::is_flag_set(m_flags,Flags::HideText);}
+void WIText::HideText(bool hide) {umath::set_flag(m_flags,Flags::HideText,hide);}
+
 Color WIText::GetCharColor(util::text::TextOffset offset) const
 {
 	auto itTag = std::find_if(m_tagInfos.begin(),m_tagInfos.end(),[offset](const std::shared_ptr<WITextDecorator> &pTag) {

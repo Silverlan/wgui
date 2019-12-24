@@ -167,8 +167,9 @@ public:
 	Vector2i GetEndPos() const;
 	void SetX(int x);
 	void SetY(int y);
-	void SetWidth(int w);
-	void SetHeight(int h);
+	float GetAspectRatio() const;
+	void SetWidth(int w,bool keepRatio=false);
+	void SetHeight(int h,bool keepRatio=false);
 	Vector2i GetAbsolutePos() const;
 	void SetAbsolutePos(Vector2i pos);
 	std::vector<WIHandle> *GetChildren();
@@ -310,6 +311,8 @@ protected:
 	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 	void UpdateParentAutoSizeToContents();
 	virtual void DoUpdate();
+	virtual util::EventReply OnMousePressed();
+	virtual util::EventReply OnMouseReleased();
 	void UpdateVisibility();
 	void UpdateAnchorTransform();
 	void UpdateAnchorTopLeftPixelOffsets();

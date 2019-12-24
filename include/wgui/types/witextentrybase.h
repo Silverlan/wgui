@@ -22,8 +22,7 @@ public:
 		Numeric = 1u,
 		MultiLine = Numeric<<1u,
 		Editable = MultiLine<<1u,
-		Selectable = Editable<<1u,
-		HideInput = Selectable<<1u
+		Selectable = Editable<<1u
 	};
 
 	WITextEntryBase();
@@ -34,6 +33,7 @@ public:
 	virtual void OnFocusGained() override;
 	virtual void OnFocusKilled() override;
 	void SetInputHidden(bool b);
+	bool IsInputHidden() const;
 	std::string_view GetText() const;
 	WIText *GetTextElement();
 	void SetText(std::string_view text);
@@ -69,11 +69,9 @@ public:
 	int GetMaxLength();
 protected:
 	virtual void OnTextContentsChanged();
-	void UpdateHiddenText();
 	std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;
 	WIHandle m_hText;
 	WIHandle m_hCaret;
-	std::string m_realText; // Only used if the 'HideInput' flag is set
 	int m_maxLength;
 	int m_posCaret;
 	StateFlags m_stateFlags = static_cast<StateFlags>(umath::to_integral(StateFlags::Editable) | umath::to_integral(StateFlags::Selectable));

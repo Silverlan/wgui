@@ -401,8 +401,25 @@ void WIBase::SetBottom(int32_t pos) {SetTop(pos -GetHeight());}
 Vector2i WIBase::GetEndPos() const {return Vector2i(GetRight(),GetBottom());}
 void WIBase::SetX(int x) {SetPos(x,(*m_pos)->y);}
 void WIBase::SetY(int y) {SetPos((*m_pos)->x,y);}
-void WIBase::SetWidth(int w) {SetSize(w,(*m_size)->y);}
-void WIBase::SetHeight(int h) {SetSize((*m_size)->x,h);}
+float WIBase::GetAspectRatio() const
+{
+	auto h = GetHeight();
+	return (h != 0) ? (GetWidth() /static_cast<float>(h)) : 1.f;
+}
+void WIBase::SetWidth(int w,bool keepRatio)
+{
+	auto h = (*m_size)->y;
+	if(keepRatio)
+		h = w *(1.f /GetAspectRatio());
+	SetSize(w,h);
+}
+void WIBase::SetHeight(int h,bool keepRatio)
+{
+	auto w = (*m_size)->x;
+	if(keepRatio)
+		w = h *GetAspectRatio();
+	SetSize(w,h);
+}
 int WIBase::GetZPos() const {return m_zpos;}
 float WIBase::GetAlpha() const {return m_color->GetValue().a /255.f;}
 void WIBase::SetAlpha(float alpha)
@@ -1515,22 +1532,28 @@ util::EventReply WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState s
 		{
 			auto reply = util::EventReply::Unhandled;
 			CallCallbacksWithOptionalReturn<util::EventReply>("OnMousePressed",reply);
-			if(reply == util::EventReply::Unhandled || !hThis.IsValid())
+			if(!hThis.IsValid())
 				return util::EventReply::Unhandled;
-			return util::EventReply::Handled;
+			if(reply == util::EventReply::Unhandled)
+				return OnMousePressed();
+			return reply;
 		}
 		else if(state == GLFW::KeyState::Release)
 		{
 			auto reply = util::EventReply::Unhandled;
 			CallCallbacksWithOptionalReturn<util::EventReply>("OnMouseReleased",reply);
-			if(reply == util::EventReply::Unhandled || !hThis.IsValid())
+			if(!hThis.IsValid())
 				return util::EventReply::Unhandled;
-			return util::EventReply::Handled;
+			if(reply == util::EventReply::Unhandled)
+				return OnMouseReleased();
+			return reply;
 		}
 	}
 	//std::cout<<"MouseCallback: "<<button<<","<<action<<std::endl;
 	return util::EventReply::Unhandled;
 }
+util::EventReply WIBase::OnMousePressed() {return util::EventReply::Unhandled;}
+util::EventReply WIBase::OnMouseReleased() {return util::EventReply::Unhandled;}
 util::EventReply WIBase::OnDoubleClick()
 {
 	auto reply = util::EventReply::Unhandled;
@@ -1666,31 +1689,29 @@ bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton butt
 		auto hGui = gui->GetHandle();
 		if(hGui.IsValid() && gui->IsVisible())
 		{
-			gui = WGUI::GetInstance().GetGUIElement(gui,static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y),[](WIBase *elChild) -> bool {return elChild->GetMouseInputEnabled();});
-			if(gui != NULL)
-			{
-				hGui = gui->GetHandle();
-				if(hGui.IsValid() && gui->GetMouseInputEnabled())
+			gui = WGUI::GetInstance().GetGUIElement(gui,static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y),
+				[&hGui,&hP,p,button,state,mods](WIBase *elChild) -> bool {
+				if(elChild->GetMouseInputEnabled() == false)
+					return false;
+				hGui = elChild->GetHandle();
+				__lastMouseGUIElements.insert(std::unordered_map<GLFW::MouseButton,WIHandle>::value_type(button,elChild->GetHandle()));
+				auto result = elChild->MouseCallback(button,state,mods);
+				// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
+				auto it = std::find_if(__lastMouseGUIElements.begin(),__lastMouseGUIElements.end(),[elChild](const std::pair<GLFW::MouseButton,WIHandle> &p) {
+					return (p.second.get() == elChild) ? true : false;
+				});
+				if(it != __lastMouseGUIElements.end() && !it->second.IsValid())
+					__lastMouseGUIElements.erase(it);
+				if(hP.IsValid() && hGui.IsValid() && elChild != p && !p->MouseInBounds())
 				{
-					__lastMouseGUIElements.insert(std::unordered_map<GLFW::MouseButton,WIHandle>::value_type(button,gui->GetHandle()));
-					gui->MouseCallback(button,state,mods);
-					// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
-					auto it = std::find_if(__lastMouseGUIElements.begin(),__lastMouseGUIElements.end(),[gui](const std::pair<GLFW::MouseButton,WIHandle> &p) {
-						return (p.second.get() == gui) ? true : false;
-					});
-					if(it != __lastMouseGUIElements.end() && !it->second.IsValid())
-						__lastMouseGUIElements.erase(it);
-					if(hP.IsValid() && hGui.IsValid() && gui != p && !p->MouseInBounds())
-					{
-						p->KillFocus(); // Make sure to kill the focus AFTER the mouse callback.
-						if(hGui.IsValid())
-							gui->RequestFocus();
-					}
-					return true;
+					p->KillFocus(); // Make sure to kill the focus AFTER the mouse callback.
+					if(hGui.IsValid())
+						elChild->RequestFocus();
 				}
-				else if(hP.IsValid() && hGui.IsValid() && gui != p && !p->MouseInBounds())
-					p->KillFocus();
-			}
+				return (result == util::EventReply::Handled) ? true : false;
+			});
+			if(gui)
+				return true;
 		}
 	}
 	return false;

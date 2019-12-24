@@ -111,7 +111,6 @@ endif()
 link_external_library(vulkan "${VULKAN_SDK}/Include" "${VULKAN_SDK}/Lib" "vulkan-1" 0)
 link_external_library(glslang "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/anvil/deps/glslang" "${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/anvil/deps/glslang/glslang/${CMAKE_BUILD_TYPE}" "glslang" 1)
 
-link_external_library(wgui "${CMAKE_CURRENT_LIST_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}" "wgui" 0)
 link_external_library(sharedutils "${CMAKE_CURRENT_LIST_DIR}/external_libs/sharedutils/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/sharedutils/${CMAKE_BUILD_TYPE}" "sharedutils" 0)
 link_external_library(sharedutils_static "${CMAKE_CURRENT_LIST_DIR}/external_libs/sharedutils/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/sharedutils-static/${CMAKE_BUILD_TYPE}" "sharedutils-static" 1)
 set(DEPENDENCY_SHAREDUTILS_LIBRARY_STATIC ${DEPENDENCY_SHAREDUTILS_STATIC_LIBRARY} CACHE STRING "" FORCE)

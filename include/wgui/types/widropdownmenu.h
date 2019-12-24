@@ -57,6 +57,7 @@ protected:
 
 	void UpdateTextPos();
 	void UpdateText();
+	virtual void OnTextChanged(const std::string &text,bool changedByUser) override;
 public:
 	WIDropDownMenu();
 	virtual ~WIDropDownMenu() override;

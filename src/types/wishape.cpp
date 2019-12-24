@@ -245,12 +245,24 @@ void WITexturedShape::DoUpdate()
 }
 void WITexturedShape::SizeToTexture()
 {
-	auto &texture = GetTexture();
-	if(texture == nullptr)
+	if(m_texture || m_hMaterial.IsValid() == false)
 		return;
-	auto &img = texture->GetImage();
-	auto extents = img->GetExtents();
-	SetSize(extents.width,extents.height);
+	uint32_t width,height;
+	if(m_texture)
+	{
+		auto extents = m_texture->GetImage()->GetExtents();
+		width = extents.width;
+		height = extents.height;
+	}
+	else
+	{
+		auto *diffuseMap = m_hMaterial.get()->GetDiffuseMap();
+		if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
+			return;
+		width = diffuseMap->width;
+		height = diffuseMap->height;
+	}
+	SetSize(width,height);
 }
 void WITexturedShape::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
 {

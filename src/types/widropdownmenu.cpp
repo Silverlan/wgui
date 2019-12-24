@@ -15,6 +15,7 @@ static float MARGIN = 5.f;
 static int MARGIN_LEFT = 4;
 static int OPTION_HEIGHT = 18;
 
+#pragma optimize("",off)
 WIDropDownMenu::WIDropDownMenu()
 	: WITextEntry(),m_numListItems(5),m_listOffset(0),
 	m_selected(-1)
@@ -28,18 +29,27 @@ WIDropDownMenu::~WIDropDownMenu()
 		m_hList->Remove();
 }
 
+void WIDropDownMenu::OnTextChanged(const std::string &text,bool changedByUser)
+{
+	WITextEntry::OnTextChanged(text,changedByUser);
+	if(changedByUser)
+		m_selected = -1;
+}
+
 void WIDropDownMenu::Initialize()
 {
 	WITextEntry::Initialize();
-	WITextEntry::SetEditable(false);
+	SetEditable(false);
 
 	if(m_hBase.IsValid() == true)
 	{
 		auto hThis = GetHandle();
 		m_hBase->AddCallback("OnMousePressed",FunctionCallback<util::EventReply>::CreateWithOptionalReturn([this,hThis](util::EventReply *reply) -> CallbackReturnType {
 			*reply = util::EventReply::Handled;
-			if(hThis.IsValid() == false || IsEditable() == true)
+			if(hThis.IsValid() == false)
 				return CallbackReturnType::HasReturnValue;
+			if(IsEditable())
+				return CallbackReturnType::NoReturnValue; // Let text entry handle mouse input
 			ToggleMenu();
 			return CallbackReturnType::HasReturnValue;
 		}));
@@ -53,8 +63,21 @@ void WIDropDownMenu::Initialize()
 	pOutline->SetOutlineWidth(1);
 	pOutline->SetColor(0.f,0.f,0.f,1.f);
 
-	m_hArrow = CreateChild<WIArrow>();
+	auto *pArrowContainer = CreateChild<WIBase>().get();
+	pArrowContainer->SetSize(20,GetHeight());
+	pArrowContainer->SetX(GetWidth() -pArrowContainer->GetWidth());
+	pArrowContainer->SetAnchor(1.f,0.f,1.f,1.f);
+	pArrowContainer->SetMouseInputEnabled(true);
+	pArrowContainer->AddCallback("OnMousePressed",FunctionCallback<util::EventReply>::CreateWithOptionalReturn([this](util::EventReply *reply) -> CallbackReturnType {
+		ToggleMenu();
+		*reply = util::EventReply::Handled;
+		return CallbackReturnType::HasReturnValue;
+	}));
+	
+	m_hArrow = WGUI::GetInstance().Create<WIArrow>(pArrowContainer)->GetHandle();
 	auto *pArrow = m_hArrow.get<WIArrow>();
+	pArrow->CenterToParent();
+	pArrow->SetAnchor(0.5f,0.5f,0.5f,0.5f);
 
 	//m_hText = CreateChild<WIText>();
 	//WIText *pText = m_hText.get<WIText>();
@@ -157,7 +180,7 @@ std::string WIDropDownMenu::GetValue()
 {
 	auto idx = m_selected;
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
-		return "";
+		return IsEditable() ? std::string{GetText()} : "";
 	WIDropDownMenuOption *pOption = m_options[idx].get<WIDropDownMenuOption>();
 	return pOption->GetValue();
 }
@@ -411,11 +434,11 @@ void WIDropDownMenu::SetSize(int x,int y)
 		WIOutlinedRect *pOutline = m_hOutline.get<WIOutlinedRect>();
 		pOutline->SetSize(x,y);
 	}
-	if(m_hArrow.IsValid())
+	/*if(m_hArrow.IsValid())
 	{
 		auto *pArrow = m_hArrow.get();
 		pArrow->SetPos(x -pArrow->GetWidth() -static_cast<int>(MARGIN),static_cast<int>(static_cast<float>(y) *0.55f -MARGIN));
-	}
+	}*/
 	UpdateText();
 }
 
@@ -502,3 +525,4 @@ void WIDropDownMenuOption::OnCursorExited()
 	if(m_hBackground.IsValid())
 		m_hBackground->SetVisible(false);
 }
+#pragma optimize("",on)

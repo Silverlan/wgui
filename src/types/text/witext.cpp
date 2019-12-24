@@ -14,6 +14,7 @@
 
 LINK_WGUI_TO_CLASS(WIText,WIText);
 
+#pragma optimize("",off)
 decltype(WIText::s_textBuffer) WIText::s_textBuffer = nullptr;
 WIText::WIText()
 	: WIBase(),m_font(nullptr),m_breakHeight(0),m_wTexture(0),m_hTexture(0),
@@ -43,7 +44,7 @@ WIText::WIText()
 	callbacks.onLineRemoved = [this,fShiftBufferLines](util::text::FormattedTextLine &line) {
 		auto lineIdx = line.GetIndex();
 		m_lineInfos.erase(m_lineInfos.begin() +lineIdx);
-		m_flags |= Flags::ApplySubTextTags;
+		SetFlag(Flags::ApplySubTextTags);
 		PerformTextPostProcessing();
 
 		fShiftBufferLines(lineIdx,-1);
@@ -117,8 +118,6 @@ WIText::WIText()
 	};
 	m_text->SetCallbacks(callbacks);
 	SetTagsEnabled(false);
-	SetText("");
-	SetFont(FontManager::GetDefaultFont().get());
 
 	auto &shaderManager = WGUI::GetInstance().GetContext().GetShaderManager();
 	m_shader = shaderManager.GetShader("wguitext");
@@ -127,8 +126,6 @@ WIText::WIText()
 	RegisterCallback<void,const FontInfo*>("OnFontChanged");
 	RegisterCallback<void,std::reference_wrapper<const std::shared_ptr<prosper::RenderTarget>>>("OnTextRendered");
 	RegisterCallback<void>("OnContentsChanged");
-
-	InitializeTextBuffer(WGUI::GetInstance().GetContext());
 }
 
 WIText::~WIText()
@@ -144,7 +141,7 @@ WIText::~WIText()
 
 void WIText::SetAutoSizeToText(bool bAutoSize) {m_bAutoSizeToText = bAutoSize;}
 bool WIText::ShouldAutoSizeToText() const {return m_bAutoSizeToText;}
-void WIText::UpdateTags() {m_flags |= Flags::ApplySubTextTags;}
+void WIText::UpdateTags() {SetFlag(Flags::ApplySubTextTags);}
 
 std::string WIText::GetDebugInfo() const {return "Text: " +GetText();}
 
@@ -160,6 +157,14 @@ std::pair<Vector2i,Vector2i> WIText::GetCharacterPixelBounds(util::text::LineInd
 	if(charOffset >= strLine.size())
 		charOffset = strLine.size() -1;
 	auto strViewLine = std::string_view{strLine};
+
+	std::string strHidden;
+	if(IsTextHidden())
+	{
+		strHidden = std::string(strViewLine.length(),'*');
+		strViewLine = strHidden;
+	}
+
 	auto subLineIndex = lineInfo.subLineIndexOffset;
 	util::text::CharOffset offset = 0;
 	util::text::CharOffset lineStartOffset = 0;
@@ -199,6 +204,10 @@ std::pair<Vector2i,Vector2i> WIText::GetCharacterPixelBounds(util::text::LineInd
 		el->SetAutoAlignToParent(true);
 		el->GetColorProperty()->Link(*GetColorProperty());
 	}
+
+	SetText("");
+	SetFont(FontManager::GetDefaultFont().get());
+	InitializeTextBuffer(WGUI::GetInstance().GetContext());
 }
 
  WITextBase *WIText::GetBaseElement() {return static_cast<WITextBase*>(m_baseEl.get());}
@@ -244,7 +253,7 @@ void WIText::SetFont(const FontInfo *font)
 
 void WIText::SetCacheEnabled(bool bEnabled)
 {
-	umath::set_flag(m_flags,Flags::Cache,bEnabled);
+	SetFlag(Flags::Cache,bEnabled);
 	if(bEnabled == true || m_renderTarget == nullptr)
 		return;
 	WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_renderTarget);
@@ -290,14 +299,22 @@ void WIText::GetTextSize(int *w,int *h,const std::string_view *inText)
 	*h = m_font->GetMaxGlyphSize() +1;
 }
 
+void WIText::SetFlag(Flags flag,bool enabled)
+{
+	umath::set_flag(m_flags,flag,enabled);
+	if(umath::is_flag_set(m_flags,Flags::ApplySubTextTags | Flags::RenderTextScheduled | Flags::FullUpdateScheduled))
+		EnableThinking();
+}
+
 void WIText::Think()
 {
 	WIBase::Think();
 	UpdateRenderTexture();
-	DisableThinking();
+	if(umath::is_flag_set(m_flags,Flags::ApplySubTextTags | Flags::RenderTextScheduled | Flags::FullUpdateScheduled) == false)
+		DisableThinking();
 }
 
-void WIText::SetDirty() {m_flags |= Flags::TextDirty;}
+void WIText::SetDirty() {SetFlag(Flags::TextDirty);}
 bool WIText::IsDirty() const {return umath::is_flag_set(m_flags,Flags::TextDirty);}
 
 void WIText::SizeToContents(bool x,bool y)
@@ -359,3 +376,4 @@ std::string WIText::Substr(util::text::TextOffset startOffset,util::text::TextLe
 	return m_text->Substr(startOffset,len);
 }
 void WIText::Clear() {return m_text->Clear();}
+#pragma optimize("",on)

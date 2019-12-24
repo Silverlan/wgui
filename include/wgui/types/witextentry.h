@@ -44,7 +44,7 @@ public:
 	bool IsMultiLine() const;
 	void SetMultiLine(bool bMultiLine);
 	bool IsEditable() const;
-	void SetEditable(bool bEditable);
+	virtual void SetEditable(bool bEditable);
 	bool IsSelectable() const;
 	void SetSelectable(bool bSelectable);
 	void GetSelectionBounds(int *start,int *end) const;

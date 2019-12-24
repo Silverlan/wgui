@@ -445,42 +445,44 @@ bool WGUI::HandleScrollInput(GLFW::Window &window,Vector2 offset)
 	return WIBase::__wiScrollCallback(window,offset);
 }
 
-static WIBase *check_children(WIBase *gui,int x,int y,int32_t *bestZPos,const std::function<bool(WIBase*)> &condition)
+static WIBase *check_children(WIBase *gui,int x,int y,int32_t &bestZPos,const std::function<bool(WIBase*)> &condition)
 {
-	if(!gui->PosInBounds(x,y))
+	if(gui->IsVisible() == false || gui->PosInBounds(x,y) == false)
 		return nullptr;
-	auto *children = gui->GetChildren();
-	int32_t localBestZPos = -1;
-	for(auto &hnd : *children)
+	auto children = *gui->GetChildren();
+
+	// Children are sorted by zpos, with the highest zpos being at the end, so we have
+	// to reverse iterate (since higher zpos has higher priority).
+	for(auto it=children.rbegin();it!=children.rend();++it)
 	{
+		auto &hnd = *it;
+		if(hnd.IsValid() == false)
+			continue;
 		auto *el = hnd.get();
-		if(el != nullptr && el->IsVisible())
-		{
-			auto *child = check_children(el,x,y,bestZPos,condition);
-			if(child != nullptr && (condition == nullptr || condition(child) == true))
-			{
-				auto zPos = el->GetZPos(); // child->GetZPos();
-				if(zPos >= localBestZPos)
-				{
-					localBestZPos = zPos;
-					if(zPos > *bestZPos)
-						*bestZPos = zPos;
-					gui = child;
-				}
-			}
-		}
+		auto *pChild = check_children(el,x,y,bestZPos,condition);
+		if(pChild)
+			return pChild;
 	}
-	return gui;
+
+	// None of our children were viable, check if we're viable
+	if(condition && condition(gui))
+	{
+		auto zPos = gui->GetZPos();
+		if(zPos > bestZPos)
+			bestZPos = zPos;
+		return gui;
+	}
+	return nullptr;
 }
 static WIBase *check_children(WIBase *gui,int x,int y,const std::function<bool(WIBase*)> &condition)
 {
 	int32_t bestZPos = -1;
-	return check_children(gui,x,y,&bestZPos,condition);
+	return check_children(gui,x,y,bestZPos,condition);
 }
 
 WIBase *WGUI::GetGUIElement(WIBase *el,int32_t x,int32_t y,const std::function<bool(WIBase*)> &condition)
 {
-	return check_children((el != nullptr) ? el : GetBaseElement(),x,y,condition);
+	return check_children(el ? el : GetBaseElement(),x,y,condition);
 }
 
 WIBase *WGUI::GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> &condition)
