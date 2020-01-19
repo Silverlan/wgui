@@ -705,7 +705,7 @@ bool WITextBase::RenderLines(
 		auto &lastBufferInfo = lineInfo.buffers.back();
 		auto lastLineIndex = lastBufferInfo.absLineIndex;
 
-		int32_t yLineStartPxOffset = absPos.y +(static_cast<int32_t>(firstLineIndex) +1) *lineHeight;
+		int32_t yLineStartPxOffset = absPos.y +static_cast<int32_t>(firstLineIndex) *lineHeight;
 		int32_t yLineEndPxOffset = absPos.y +(static_cast<int32_t>(lastLineIndex) +1) *lineHeight;
 
 		if(yLineEndPxOffset < static_cast<int32_t>(yScissor))

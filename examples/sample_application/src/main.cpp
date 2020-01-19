@@ -162,9 +162,9 @@ int main()
 	p->SetAutoAlignToParent(true);
 	p->SetColor(Color::AliceBlue);
 
-	WIText::set_link_handler([](const std::string &link) {
-		std::cout<<"Clicked Link!"<<std::endl;
-	});
+	//WIText::set_link_handler([](const std::string &link) {
+	//	std::cout<<"Clicked Link!"<<std::endl;
+	//});
 	auto *pText = wgui.Create<WIText>(p);
 	// pText->SetTagsEnabled(true);
 	pText->SetText("This is a demo showcasing the GUI and materialmanager libraries!");

@@ -110,7 +110,7 @@ WIBase::~WIBase()
 }
 void WIBase::UpdateParentAutoSizeToContents()
 {
-	if(m_parent == nullptr || umath::is_flag_set(m_parent->m_stateFlags,StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY) == false)
+	if(m_parent == nullptr || umath::is_flag_set(m_parent->m_stateFlags,StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY) == false || IsBackgroundElement())
 		return;
 	auto updateX = true;
 	auto updateY = true;
@@ -447,19 +447,18 @@ void WIBase::SizeToContents(bool x,bool y)
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIHandle &child = m_children[i];
-		if(child.IsValid())
-		{
-			WIBase *gui = child.get();
-			int xChild,yChild,wChild,hChild;
-			gui->GetPos(&xChild,&yChild);
-			gui->GetSize(&wChild,&hChild);
-			wChild += xChild;
-			hChild += yChild;
-			if(wChild > width)
-				width = wChild;
-			if(hChild > height)
-				height = hChild;
-		}
+		if(child.IsValid() == false || child->IsBackgroundElement())
+			continue;
+		WIBase *gui = child.get();
+		int xChild,yChild,wChild,hChild;
+		gui->GetPos(&xChild,&yChild);
+		gui->GetSize(&wChild,&hChild);
+		wChild += xChild;
+		hChild += yChild;
+		if(wChild > width)
+			width = wChild;
+		if(hChild > height)
+			height = hChild;
 	}
 	if(x && y)
 		SetSize(width,height);
@@ -468,6 +467,19 @@ void WIBase::SizeToContents(bool x,bool y)
 	else if(y)
 		SetHeight(height);
 }
+void WIBase::SetBackgroundElement(bool backgroundElement,bool autoAlignToParent)
+{
+	umath::set_flag(m_stateFlags,StateFlags::IsBackgroundElement,backgroundElement);
+	if(backgroundElement && autoAlignToParent)
+	{
+		//SetPos(0,0);
+		//SetSize(GetParent()->GetSize());
+		//SetAnchor(0.f,0.f,1.f,1.f);
+		SetAutoAlignToParent(true);
+		SetZPos(-100);
+	}
+}
+bool WIBase::IsBackgroundElement() const {return umath::is_flag_set(m_stateFlags,StateFlags::IsBackgroundElement);}
 bool WIBase::HasFocus() {return *m_bHasFocus;}
 void WIBase::RequestFocus()
 {
@@ -608,7 +620,9 @@ void WIBase::SetVisible(bool b)
 }
 void WIBase::Update()
 {
+	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated);
 	DoUpdate();
+	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated,false);
 	// Flag must be cleared after DoUpdate, in case DoUpdate has set it again!
 	umath::set_flag(m_stateFlags,StateFlags::UpdateScheduledBit,false);
 }

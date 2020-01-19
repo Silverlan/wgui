@@ -465,7 +465,7 @@ static WIBase *check_children(WIBase *gui,int x,int y,int32_t &bestZPos,const st
 	}
 
 	// None of our children were viable, check if we're viable
-	if(condition && condition(gui))
+	if(condition == nullptr || condition(gui))
 	{
 		auto zPos = gui->GetZPos();
 		if(zPos > bestZPos)

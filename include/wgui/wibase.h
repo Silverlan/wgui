@@ -77,7 +77,9 @@ public:
 		ParentVisible = ThinkingEnabled<<1u,
 		AutoSizeToContentsX = ParentVisible<<1u,
 		AutoSizeToContentsY = AutoSizeToContentsX<<1u,
-		IsBeingRemoved = AutoSizeToContentsY<<1u
+		IsBeingRemoved = AutoSizeToContentsY<<1u,
+		IsBeingUpdated = IsBeingRemoved<<1u,
+		IsBackgroundElement = IsBeingUpdated<<1u
 	};
 	static void CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize);
 
@@ -232,6 +234,9 @@ public:
 	virtual util::EventReply KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
 	virtual util::EventReply CharCallback(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None);
 	virtual util::EventReply ScrollCallback(Vector2 offset);
+
+	void SetBackgroundElement(bool backgroundElement,bool autoAlignToParent=true);
+	bool IsBackgroundElement() const;
 
 	void InjectMouseMoveInput(int32_t x,int32_t y);
 	util::EventReply InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
