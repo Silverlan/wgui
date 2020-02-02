@@ -1639,9 +1639,9 @@ util::EventReply WIBase::InjectMouseInput(GLFW::MouseButton button,GLFW::KeyStat
 	},[](const WIBase &el) {
 		return el.GetMouseInputEnabled();
 	});
-	if(el != nullptr)
-		return el->MouseCallback(button,state,mods);
-	return util::EventReply::Handled;
+	if(el == nullptr)
+		return util::EventReply::Handled;
+	return InjectMouseButtonCallback(*el,button,state,mods);
 }
 util::EventReply WIBase::InjectKeyboardInput(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods) {return KeyboardCallback(key,scanCode,state,mods);}
 util::EventReply WIBase::InjectCharInput(unsigned int c,GLFW::Modifier mods) {return CharCallback(c,mods);}
@@ -1681,6 +1681,28 @@ void WIBase::ClearStyleClasses()
 /////////////////
 
 static std::unordered_map<GLFW::MouseButton,WIHandle> __lastMouseGUIElements;
+util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+{
+	auto hEl = el.GetHandle();
+
+	WIBase *pFocused = WGUI::GetInstance().GetFocusedElement();
+	auto hFocused = pFocused ? pFocused->GetHandle() : WIHandle{};
+	__lastMouseGUIElements.insert(std::unordered_map<GLFW::MouseButton,WIHandle>::value_type(button,el.GetHandle()));
+	auto result = el.MouseCallback(button,state,mods);
+	// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
+	auto it = std::find_if(__lastMouseGUIElements.begin(),__lastMouseGUIElements.end(),[&el](const std::pair<GLFW::MouseButton,WIHandle> &p) {
+		return (p.second.get() == &el) ? true : false;
+		});
+	if(it != __lastMouseGUIElements.end() && !it->second.IsValid())
+		__lastMouseGUIElements.erase(it);
+	if(hFocused.IsValid() && hEl.IsValid() && &el != pFocused && !pFocused->MouseInBounds())
+	{
+		pFocused->KillFocus(); // Make sure to kill the focus AFTER the mouse callback.
+		if(hEl.IsValid())
+			el.RequestFocus();
+	}
+	return result;
+}
 bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
 	auto i = __lastMouseGUIElements.find(button);
@@ -1708,20 +1730,7 @@ bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton butt
 				if(elChild->GetMouseInputEnabled() == false)
 					return false;
 				hGui = elChild->GetHandle();
-				__lastMouseGUIElements.insert(std::unordered_map<GLFW::MouseButton,WIHandle>::value_type(button,elChild->GetHandle()));
-				auto result = elChild->MouseCallback(button,state,mods);
-				// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
-				auto it = std::find_if(__lastMouseGUIElements.begin(),__lastMouseGUIElements.end(),[elChild](const std::pair<GLFW::MouseButton,WIHandle> &p) {
-					return (p.second.get() == elChild) ? true : false;
-				});
-				if(it != __lastMouseGUIElements.end() && !it->second.IsValid())
-					__lastMouseGUIElements.erase(it);
-				if(hP.IsValid() && hGui.IsValid() && elChild != p && !p->MouseInBounds())
-				{
-					p->KillFocus(); // Make sure to kill the focus AFTER the mouse callback.
-					if(hGui.IsValid())
-						elChild->RequestFocus();
-				}
+				auto result = InjectMouseButtonCallback(*elChild,button,state,mods);
 				return (result == util::EventReply::Handled) ? true : false;
 			});
 			if(gui)

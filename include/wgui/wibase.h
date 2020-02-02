@@ -388,6 +388,7 @@ private:
 	static bool __wiCharCallback(GLFW::Window &window,unsigned int c);
 	static bool __wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
 	static bool __wiScrollCallback(GLFW::Window &window,Vector2 offset);
+	static util::EventReply InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)
 

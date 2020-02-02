@@ -21,6 +21,7 @@ WIDropDownMenu::WIDropDownMenu()
 	m_selected(-1)
 {
 	RegisterCallback<void,unsigned int>("OnOptionSelected");
+	RegisterCallback<void>("OnValueChanged");
 }
 
 WIDropDownMenu::~WIDropDownMenu()
@@ -118,6 +119,7 @@ void WIDropDownMenu::SelectOption(unsigned int idx)
 	m_selected = idx;
 	SetText(pOption->GetText());
 	CallCallbacks<void,unsigned int>("OnOptionSelected",idx);
+	CallCallbacks<void>("OnValueChanged");
 }
 
 void WIDropDownMenu::SelectOption(const std::string &value)

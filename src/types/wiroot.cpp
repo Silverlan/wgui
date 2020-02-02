@@ -6,6 +6,7 @@
 #include "wgui/types/wiroot.h"
 #include "wgui/types/witooltip.h"
 
+constexpr uint32_t TOOLTIP_HOVER_DELAY_MS = 750;
 WIRoot::WIRoot()
 	: WIBase(),m_hTooltipTarget{},m_tCursorOver()
 {}
@@ -32,22 +33,26 @@ void WIRoot::Think()
 		{
 			auto t = util::Clock::now();
 			auto tDelta = std::chrono::duration_cast<std::chrono::milliseconds>(t -m_tCursorOver).count();
-			if(tDelta >= 500)
+			if(tDelta >= TOOLTIP_HOVER_DELAY_MS)
 			{
 				auto *el = m_hTooltipTarget.get();
 				int32_t x,y;
 				WGUI::GetInstance().GetMousePos(x,y);
-				pTooltip->FadeIn(0.1f);
-				pTooltip->SetVisible(true);
+				//pTooltip->FadeIn(0.1f);
 				pTooltip->SetText(el->GetTooltip());
 				pTooltip->SetZPos(std::numeric_limits<int>::max());
+				pTooltip->SetName("tooltip");
 				auto xMax = GetWidth() -pTooltip->GetWidth();
 				auto yMax = GetHeight() -pTooltip->GetHeight();
 				if(xMax >= 0 && xMax < x)
 					x = xMax;
+				auto yBottom = el->GetAbsolutePos().y +el->GetHeight();
+				if(y < yBottom)
+					y = yBottom;
 				if(yMax >= 0 && yMax < y)
 					y = yMax;
 				pTooltip->SetPos(x,y);
+				pTooltip->SetVisible(true);
 			}
 		}
 	}
@@ -64,7 +69,7 @@ void WIRoot::OnCursorMoved(int x,int y)
 	{
 		m_hTooltipTarget = {};
 		pTooltip->SetVisible(false);
-		pTooltip->SetAlpha(0.f);
+		//pTooltip->SetAlpha(0.f);
 		return;
 	}
 	if(el == m_hTooltipTarget.get())
@@ -72,7 +77,7 @@ void WIRoot::OnCursorMoved(int x,int y)
 	m_tCursorOver = util::Clock::now();
 	if(pTooltip->IsVisible() == true)
 	{
-		m_tCursorOver -= std::chrono::milliseconds(500);
+		m_tCursorOver -= std::chrono::milliseconds(TOOLTIP_HOVER_DELAY_MS);
 		pTooltip->SetVisible(false);
 	}
 	m_hTooltipTarget = el->GetHandle();
