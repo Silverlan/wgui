@@ -187,6 +187,8 @@ std::string WIDropDownMenu::GetValue()
 	return pOption->GetValue();
 }
 
+int32_t WIDropDownMenu::GetSelectedOption() const {return m_selected;}
+
 void WIDropDownMenu::SetText(const std::string_view &text)
 {
 	WITextEntry::SetText(text);

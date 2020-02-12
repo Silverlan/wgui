@@ -68,6 +68,7 @@ public:
 	void OnOptionSelected(WIDropDownMenuOption *option);
 	std::string_view GetText() const;
 	std::string GetValue();
+	int32_t GetSelectedOption() const;
 	std::string_view GetOptionText(uint32_t idx);
 	std::string GetOptionValue(uint32_t idx);
 	void SetOptionText(uint32_t idx,const std::string &text);
