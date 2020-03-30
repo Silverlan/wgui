@@ -264,12 +264,11 @@ void WITexturedShape::SizeToTexture()
 	}
 	SetSize(width,height);
 }
-void WITexturedShape::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
+void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 {
 	if(m_hMaterial.IsValid() == false && m_texture == nullptr)
 		return;
-	auto col = GetColor().ToVector4();
-	col.a *= WIBase::RENDER_ALPHA;
+	auto col = drawInfo.GetColor(*this);
 	if(col.a <= 0.f)
 		return;
 	// Try to use cheap shader if no custom vertex buffer was used
@@ -280,9 +279,9 @@ void WITexturedShape::Render(int width,int height,const Mat4 &mat,const Vector2i
 		if(pShaderCheap == nullptr)
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
-		if(pShaderCheap->BeginDraw(context.GetDrawCommandBuffer(),width,height) == true)
+		if(pShaderCheap->BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
 		{
-			pShaderCheap->Draw({mat,col,m_bAlphaOnly ? 1 : 0,m_lod},*(*m_descSetTextureGroup)->get_descriptor_set(0u));
+			pShaderCheap->Draw({matDraw,col,m_bAlphaOnly ? 1 : 0,m_lod},*(*m_descSetTextureGroup)->get_descriptor_set(0u));
 			pShaderCheap->EndDraw();
 		}
 		return;
@@ -294,10 +293,10 @@ void WITexturedShape::Render(int width,int height,const Mat4 &mat,const Vector2i
 		return;
 	auto &shader = static_cast<wgui::ShaderTextured&>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(context.GetDrawCommandBuffer(),width,height) == true)
+	if(shader.BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
 	{
 		wgui::ShaderTextured::PushConstants pushConstants {};
-		pushConstants.elementData.modelMatrix = mat;
+		pushConstants.elementData.modelMatrix = matDraw;
 		pushConstants.elementData.color = col;
 		pushConstants.lod = m_lod;
 		auto &dev = context.GetDevice();

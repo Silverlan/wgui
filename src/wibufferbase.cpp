@@ -64,11 +64,10 @@ void WIBufferBase::InitializeBufferData(prosper::Buffer &buffer)
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }
 
-void WIBufferBase::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
+void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 {
 	// Try to use cheap shader if no custom vertex buffer was used
-	auto col = GetColor().ToVector4();
-	col.a *= WIBase::RENDER_ALPHA;
+	auto col = drawInfo.GetColor(*this);
 	if(col.a <= 0.f)
 		return;
 	auto &dev = WGUI::GetInstance().GetContext().GetDevice();
@@ -78,9 +77,9 @@ void WIBufferBase::Render(int width,int height,const Mat4 &mat,const Vector2i &o
 			return;
 		auto *pShader = static_cast<wgui::ShaderColoredRect*>(m_shaderCheap.get());
 		auto &context = WGUI::GetInstance().GetContext();
-		if(pShader->BeginDraw(context.GetDrawCommandBuffer(),width,height) == true)
+		if(pShader->BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
 		{
-			pShader->Draw({mat,col});
+			pShader->Draw({matDraw,col});
 			pShader->EndDraw();
 		}
 		return;
@@ -92,9 +91,9 @@ void WIBufferBase::Render(int width,int height,const Mat4 &mat,const Vector2i &o
 		return;
 	auto &shader = static_cast<wgui::ShaderColored&>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(context.GetDrawCommandBuffer(),width,height) == true)
+	if(shader.BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
 	{
-		shader.Draw(*buf,GetVertexCount(),wgui::ElementData{mat,col});
+		shader.Draw(*buf,GetVertexCount(),wgui::ElementData{matDraw,col});
 		shader.EndDraw();
 	}
 }

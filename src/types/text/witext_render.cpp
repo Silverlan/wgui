@@ -762,9 +762,9 @@ void WITextBase::RenderLines(
 	},true);
 }
 
-void WITextBase::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
+void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 {
-	WIBase::Render(width,height,mat,origin,matParent);
+	WIBase::Render(drawInfo,matDraw);
 	if(m_hText.IsValid() == false)
 		return;
 	auto &textEl = static_cast<WIText&>(*m_hText.get());
@@ -793,8 +793,7 @@ void WITextBase::Render(int width,int height,const Mat4 &mat,const Vector2i &ori
 		auto glyphMapExtents = (*glyphMap->GetImage())->get_image_extent_2D(0u);
 		auto maxGlyphBitmapWidth = pFont->GetMaxGlyphBitmapWidth();
 
-		auto col = GetColor().ToVector4();
-		col.a *= WIBase::RENDER_ALPHA;
+		auto col = drawInfo.GetColor(*this);
 		if(col.a <= 0.f && umath::is_flag_set(m_stateFlags,StateFlags::RenderIfZeroAlpha) == false)
 			return;
 
@@ -808,9 +807,9 @@ void WITextBase::Render(int width,int height,const Mat4 &mat,const Vector2i &ori
 			0.f,0.f,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth
 		};
 		Vector2i absPos,absSize;
-		CalcBounds(mat,width,height,absPos,absSize);
-		const auto fDraw = [&context,&drawCmd,&pushConstants,&size,&origin,&mat,&matParent,width,height,pFont,this,&textEl,&absPos,&absSize](bool bClear) {
-			RenderLines(width,height,absPos,mat,origin,matParent,size,pushConstants);
+		CalcBounds(matDraw,drawInfo.size.x,drawInfo.size.y,absPos,absSize);
+		const auto fDraw = [&context,&drawCmd,&pushConstants,&size,&drawInfo,&matDraw,pFont,this,&textEl,&absPos,&absSize](bool bClear) {
+			RenderLines(drawInfo.size.x,drawInfo.size.y,absPos,matDraw,drawInfo.offset,drawInfo.transform /* parent transform */,size,pushConstants);
 		};
 
 		// Render Shadow
@@ -829,7 +828,7 @@ void WITextBase::Render(int width,int height,const Mat4 &mat,const Vector2i &ori
 				}
 				auto tmpMatrix = pushConstants.elementData.modelMatrix;
 				auto tmpColor = pushConstants.elementData.color;
-				pushConstants.elementData.modelMatrix = GetTransformedMatrix(origin,width,height,matParent);
+				pushConstants.elementData.modelMatrix = GetTransformedMatrix(drawInfo.offset,drawInfo.size.x,drawInfo.size.y,drawInfo.transform /* parent transform */);
 				if(pShadowColor != nullptr)
 					pushConstants.elementData.color = *pShadowColor;
 				fDraw(true); // TODO: Render text shadow shadow at the same time? (Single framebuffer)

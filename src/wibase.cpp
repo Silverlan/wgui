@@ -21,6 +21,19 @@
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 
 #pragma optimize("",off)
+Vector4 WIBase::DrawInfo::GetColor(WIBase &el) const
+{
+	Vector4 color;
+	if(this->color.has_value())
+		color = *this->color;
+	else
+		color = el.GetColor().ToVector4();
+	color.a *= WIBase::RENDER_ALPHA;
+	return color;
+}
+
+/////////////
+
 std::deque<WIHandle> WIBase::m_focusTrapStack;
 float WIBase::RENDER_ALPHA = 1.f;
 
@@ -839,7 +852,7 @@ Mat4 WIBase::GetScaledMatrix(int w,int h) const
 	Mat4 mat(1.0f);
 	return GetScaledMatrix(w,h,mat);
 }
-void WIBase::Render(int,int,const Mat4&,const Vector2i&,const Mat4&)
+void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 {
 }
 const std::string &WIBase::GetName() const {return m_name;}
@@ -975,10 +988,18 @@ void WIBase::CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vec
 		(h -((-mat[3][1] *h) +outSize.y)) /2.f
 	);
 }
-void WIBase::Draw(int w,int h,const Vector2i &origin,Vector2i offsetParent,Vector2i scissorOffset,Vector2i scissorSize,Mat4 mat,bool bUseScissor,const Mat4 *matPostTransform)
+void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize)
 {
+	const auto w = drawInfo.size.x;
+	const auto h = drawInfo.size.y;
+	const auto &origin = drawInfo.offset;
+
+	auto mat = drawInfo.transform;
+	const auto bUseScissor = drawInfo.useScissor;
+	const auto &matPostTransform = drawInfo.postTransform;
+
 	auto matDraw = GetTransformedMatrix(origin,w,h,mat);
-	if(matPostTransform != nullptr)
+	if(matPostTransform.has_value())
 		matDraw = *matPostTransform *matDraw;
 
 	if(bUseScissor == true)
@@ -998,7 +1019,7 @@ void WIBase::Draw(int w,int h,const Vector2i &origin,Vector2i offsetParent,Vecto
 			return; // Outside of scissor rect; Skip rendering
 	}
 
-	Render(w,h,matDraw,origin,mat);
+	Render(drawInfo,matDraw);
 	mat = GetTranslatedMatrix(origin,w,h,mat);
 	auto &context = WGUI::GetInstance().GetContext();
 	auto drawCmd = context.GetDrawCommandBuffer();
@@ -1048,28 +1069,37 @@ void WIBase::Draw(int w,int h,const Vector2i &origin,Vector2i offsetParent,Vecto
 				else if(WIBase::RENDER_ALPHA < 0.f)
 					WIBase::RENDER_ALPHA = 0.f;
 			}
-			child->Draw(w,h,offsetParentNew,posScissor,szScissor,mat,bUseScissor,matPostTransform);
+			auto childDrawInfo = drawInfo;
+			childDrawInfo.offset = *child->m_pos;
+			childDrawInfo.transform = mat;
+			childDrawInfo.useScissor = bShouldScissor;
+			child->Draw(childDrawInfo,offsetParentNew,posScissor,szScissor);
 			WIBase::RENDER_ALPHA = aOriginal;
 		}
 	}
 }
-void WIBase::Draw(int w,int h,const Vector2i &origin,const Vector2i &offsetParent,const Mat4 &mat,bool bUseScissor,const Mat4 *matPostTransform)
+void WIBase::Draw(const DrawInfo &drawInfo)
 {
-	Draw(w,h,origin,offsetParent,Vector2i(0,0),*m_size,mat,bUseScissor,matPostTransform);
-}
-void WIBase::Draw(int w,int h,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Mat4 &mat,bool bUseScissor,const Mat4 *matPostTransform)
-{
-	Draw(w,h,*m_pos,offsetParent,scissorOffset,scissorSize,mat,bUseScissor,matPostTransform);
-}
-void WIBase::Draw(int w,int h,const Vector2i &offsetParent,const Mat4 &mat,bool bUseScissor,const Mat4 *matPostTransform)
-{
-	Draw(w,h,*m_pos,offsetParent,mat,bUseScissor,matPostTransform);
+	if(GetClass() == "wiasseticon")
+		std::cout<<"";
+	auto scissorPos = GetPos();
+	auto scissorSize = drawInfo.size;
+	if(drawInfo.useScissor)
+	{
+		scissorPos = {};
+		scissorSize = GetSize();
+	}
+	Draw(drawInfo,GetPos(),scissorPos,scissorSize);
 }
 void WIBase::Draw(int w,int h)
 {
 	if(!IsVisible())
 		return;
-	Draw(w,h,GetPos(),GetPos(),GetSize(),Mat4(1));
+	DrawInfo drawInfo {};
+	drawInfo.offset = GetPos();
+	drawInfo.useScissor = GetShouldScissor();
+	drawInfo.size = {w,h};
+	Draw(drawInfo);
 }
 std::string WIBase::GetDebugInfo() const {return "";}
 void WIBase::SetTooltip(const std::string &msg) {m_toolTip = msg;}
@@ -1759,10 +1789,13 @@ bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyS
 	if(state == GLFW::KeyState::Press || state == GLFW::KeyState::Repeat)
 	{
 		WIBase *gui = WGUI::GetInstance().GetFocusedElement();
-		if(gui != NULL)
+		while(gui)
 		{
 			if(key == GLFW::Key::Escape && !gui->IsFocusTrapped())
+			{
 				gui->KillFocus();
+				break;
+			}
 			else if(gui->GetKeyboardInputEnabled())
 			{
 				__lastKeyboardGUIElements.insert(std::unordered_map<GLFW::Key,WIHandle>::value_type(key,gui->GetHandle()));
@@ -1770,11 +1803,14 @@ bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyS
 				// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
 				auto it = std::find_if(__lastKeyboardGUIElements.begin(),__lastKeyboardGUIElements.end(),[gui](const std::pair<GLFW::Key,WIHandle> &p) {
 					return (p.second.get() == gui) ? true : false;
-				});
+					});
 				if(it != __lastKeyboardGUIElements.end() && !it->second.IsValid())
 					__lastKeyboardGUIElements.erase(it);
-				return result == util::EventReply::Handled;
+				if(result == util::EventReply::Handled)
+					break;
 			}
+
+			gui = gui->GetParent();
 		}
 	}
 	return false;

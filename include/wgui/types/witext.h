@@ -51,7 +51,7 @@ public:
 		float sy = 0.f;
 	};
 
-	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent) override;
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw) override;
 	void InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h);
 	void SetTextElement(WIText &elText);
 private:

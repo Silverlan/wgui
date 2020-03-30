@@ -81,6 +81,17 @@ public:
 		IsBeingUpdated = IsBeingRemoved<<1u,
 		IsBackgroundElement = IsBeingUpdated<<1u
 	};
+	struct DLLWGUI DrawInfo
+	{
+		Vector2i offset = {};
+		Vector2i size = {};
+		std::optional<Vector4> color = {};
+		Mat4 transform = umat::identity();
+		std::optional<Mat4> postTransform = {};
+		bool useScissor = true;
+
+		Vector4 GetColor(WIBase &el) const;
+	};
 	static void CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize);
 
 	WIBase();
@@ -201,10 +212,8 @@ public:
 	void SetSize(const Vector2i &size);
 	virtual void SetSize(int x,int y);
 	virtual void Draw(int w,int h);
-	void Draw(int w,int h,const Vector2i &origin,Vector2i offsetParent,Vector2i scissorOffset,Vector2i scissorSize,Mat4 mat,bool bUseScissor=true,const Mat4 *matPostTransform=nullptr);
-	void Draw(int w,int h,const Vector2i &origin,const Vector2i &offsetParent,const Mat4 &mat=Mat4(1.f),bool bUseScissor=true,const Mat4 *matPostTransform=nullptr);
-	void Draw(int w,int h,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Mat4 &mat,bool bUseScissor=true,const Mat4 *matPostTransform=nullptr);
-	void Draw(int w,int h,const Vector2i &offsetParent,const Mat4 &mat,bool bUseScissor=true,const Mat4 *matPostTransform=nullptr);
+	void Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize);
+	void Draw(const DrawInfo &drawInfo);
 	virtual void SetParent(WIBase *base,std::optional<uint32_t> childIndex={});
 	WIBase *GetParent() const;
 	void ClearParent();
@@ -347,7 +356,7 @@ protected:
 	int m_lastMouseY = 0;
 	std::vector<WIHandle> m_children;
 	mutable WIHandle m_parent = {};
-	virtual void Render(int w,int h,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent);
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw);
 	void UpdateChildOrder(WIBase *child=NULL);
 	template<class TElement>
 		WIHandle CreateChild();

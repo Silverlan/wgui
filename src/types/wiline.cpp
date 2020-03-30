@@ -130,11 +130,10 @@ Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) c
 	return mat;
 }
 
-void WILine::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,const Mat4 &matParent)
+void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 {
 	auto *pShader = GetShader();
-	auto col = GetColor().ToVector4();
-	col.a *= WIBase::RENDER_ALPHA;
+	auto col = drawInfo.GetColor(*this);
 	if(col.a <= 0.f)
 		return;
 
@@ -142,9 +141,9 @@ void WILine::Render(int width,int height,const Mat4 &mat,const Vector2i &origin,
 		return;
 	auto &shader = static_cast<wgui::ShaderColoredLine&>(*pShader);
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(context.GetDrawCommandBuffer(),width,height) == true)
+	if(shader.BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
 	{
-		wgui::ElementData pushConstants {mat,col};
+		wgui::ElementData pushConstants {matDraw,col};
 		shader.Draw(s_lineBuffer,m_bufColor,GetVertexCount(),GetLineWidth(),pushConstants);
 		shader.EndDraw();
 	}

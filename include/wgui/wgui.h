@@ -135,9 +135,9 @@ public:
 	wgui::ShaderTexturedRect *GetTexturedRectShader();
 
 	void GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h);
+	void SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h);
 private:
 	void ScheduleElementForUpdate(WIBase &el);
-	void SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h);
 	friend WIBase;
 	friend wgui::Shader;
 	friend wgui::ShaderColoredRect;
