@@ -23,10 +23,7 @@ void WIText::InitializeBlur(bool bReload)
 		DestroyBlur();
 	// Initialize blur temp buffers
 	if(m_shadowRenderTarget != nullptr)
-	{
-		auto &dev = WGUI::GetInstance().GetContext().GetDevice();
-		m_shadowBlurSet = prosper::BlurSet::Create(dev,m_shadowRenderTarget);
-	}
+		m_shadowBlurSet = prosper::BlurSet::Create(WGUI::GetInstance().GetContext(),m_shadowRenderTarget);
 	//
 }
 
@@ -37,21 +34,20 @@ void WIText::InitializeShadow(bool bReload)
 	if(bReload == true)
 		DestroyShadow();
 	auto &context = WGUI::GetInstance().GetContext();
-	auto &dev = context.GetDevice();
 	prosper::util::ImageCreateInfo createInfo {};
 	createInfo.width = m_wTexture;
 	createInfo.height = m_hTexture;
-	createInfo.format = Anvil::Format::R8_UNORM;
-	createInfo.usage = Anvil::ImageUsageFlagBits::SAMPLED_BIT | Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT;
-	createInfo.postCreateLayout = Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL;
+	createInfo.format = prosper::Format::R8_UNorm;
+	createInfo.usage = prosper::ImageUsageFlags::SampledBit | prosper::ImageUsageFlags::ColorAttachmentBit;
+	createInfo.postCreateLayout = prosper::ImageLayout::ShaderReadOnlyOptimal;
 	auto imgViewCreateInfo = prosper::util::ImageViewCreateInfo {};
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
-	samplerCreateInfo.addressModeU = samplerCreateInfo.addressModeV = Anvil::SamplerAddressMode::CLAMP_TO_EDGE;
-	auto img = prosper::util::create_image(dev,createInfo);
-	auto tex = prosper::util::create_texture(dev,{},std::move(img),&imgViewCreateInfo,&samplerCreateInfo);
+	samplerCreateInfo.addressModeU = samplerCreateInfo.addressModeV = prosper::SamplerAddressMode::ClampToEdge;
+	auto img = context.CreateImage(createInfo);
+	auto tex = context.CreateTexture({},*img,imgViewCreateInfo,samplerCreateInfo);
 	auto &shader = static_cast<wgui::ShaderText&>(*m_shader.get());
 	auto &renderPass = shader.GetRenderPass();
-	m_shadowRenderTarget = prosper::util::create_render_target(dev,{tex},renderPass);
+	m_shadowRenderTarget = context.CreateRenderTarget({tex},renderPass);
 
 	if(!m_baseTextShadow.IsValid())
 	{
@@ -218,21 +214,21 @@ void WIText::UpdateRenderTexture()
 	if(m_wTexture == 0u || m_hTexture == 0u)
 		return;
 
-	auto &dev = WGUI::GetInstance().GetContext().GetDevice();
 	auto imgCreateInfo = prosper::util::ImageCreateInfo {};
 	imgCreateInfo.width = m_wTexture;
 	imgCreateInfo.height = m_hTexture;
-	imgCreateInfo.format = Anvil::Format::R8_UNORM;
-	imgCreateInfo.usage = Anvil::ImageUsageFlagBits::SAMPLED_BIT | Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT;
-	imgCreateInfo.postCreateLayout = Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL;
+	imgCreateInfo.format = prosper::Format::R8_UNorm;
+	imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit | prosper::ImageUsageFlags::ColorAttachmentBit;
+	imgCreateInfo.postCreateLayout = prosper::ImageLayout::ShaderReadOnlyOptimal;
 	
-	auto img = prosper::util::create_image(dev,imgCreateInfo);
+	auto &context = WGUI::GetInstance().GetContext();
+	auto img = context.CreateImage(imgCreateInfo);
 	auto imgViewCreateInfo = prosper::util::ImageViewCreateInfo {};
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
-	auto tex = prosper::util::create_texture(dev,{},std::move(img),&imgViewCreateInfo,&samplerCreateInfo);
+	auto tex = context.CreateTexture({},*img,imgViewCreateInfo,samplerCreateInfo);
 	auto &shader = static_cast<wgui::ShaderText&>(*m_shader.get());
 	auto &renderPass = shader.GetRenderPass();
-	m_renderTarget = prosper::util::create_render_target(dev,{tex},renderPass);
+	m_renderTarget = context.CreateRenderTarget({tex},renderPass);
 	if(IsShadowEnabled())
 		InitializeShadow();
 	InitializeBlur();
@@ -241,7 +237,7 @@ void WIText::UpdateRenderTexture()
 	if(m_baseEl.IsValid())
 	{
 		auto *el = static_cast<WITextBase*>(m_baseEl.get());
-		el->InitializeTexture(*m_renderTarget->GetTexture(),w,h);
+		el->InitializeTexture(m_renderTarget->GetTexture(),w,h);
 	}
 	if(m_baseTextShadow.IsValid())
 	{
@@ -249,7 +245,7 @@ void WIText::UpdateRenderTexture()
 		if(text != NULL)
 		{
 			text->SetSize(w,h);
-			text->SetTexture(*m_shadowRenderTarget->GetTexture());
+			text->SetTexture(m_shadowRenderTarget->GetTexture());
 		}
 	}
 
@@ -277,7 +273,7 @@ void WIText::RenderText()
 	mat = glm::translate(mat,Vector3(-1.f,0.f,0.f));
 	RenderText(mat);
 }
-std::shared_ptr<prosper::Texture> WIText::GetTexture() const {return (m_renderTarget != nullptr) ? m_renderTarget->GetTexture() : nullptr;}
+std::shared_ptr<prosper::Texture> WIText::GetTexture() const {return (m_renderTarget != nullptr) ? m_renderTarget->GetTexture().shared_from_this() : nullptr;}
 
 #pragma pack(push,1)
 struct GlyphBoundsInfo
@@ -291,7 +287,7 @@ void WIText::RenderText(Mat4&)
 	if(m_font == nullptr || m_renderTarget == nullptr || m_shader.expired() || IsCacheEnabled() == false)
 		return;
 	auto &context = WGUI::GetInstance().GetContext();
-	auto extents = (*m_renderTarget->GetTexture()->GetImage())->get_image_extent_2D(0u);
+	auto extents = m_renderTarget->GetTexture().GetImage().GetExtents();
 	auto w = extents.width;
 	auto h = extents.height;
 	auto sx = 2.f /float(w);
@@ -347,13 +343,12 @@ void WIText::RenderText(Mat4&)
 	assert(numChars != 0);
 	if(numChars == 0)
 		return;
-	auto &dev = context.GetDevice();
 	prosper::util::BufferCreateInfo createInfo {};
-	createInfo.usageFlags = Anvil::BufferUsageFlagBits::VERTEX_BUFFER_BIT;
-	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
+	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
+	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 	createInfo.size = glyphBoundsInfos.size() *sizeof(glyphBoundsInfos.front());
 
-	auto bufBounds = prosper::util::create_buffer(dev,createInfo,glyphBoundsInfos.data());
+	auto bufBounds = context.CreateBuffer(createInfo,glyphBoundsInfos.data());
 	context.KeepResourceAliveUntilPresentationComplete(bufBounds);
 
 	auto drawCmd = context.GetDrawCommandBuffer();
@@ -362,41 +357,39 @@ void WIText::RenderText(Mat4&)
 	//prosper::util::record_set_scissor(*drawCmd,w,h);
 
 	auto glyphMap = m_font->GetGlyphMap();
-	auto glyphMapExtents = (*glyphMap->GetImage())->get_image_extent_2D(0u);
+	auto glyphMapExtents = glyphMap->GetImage().GetExtents();
 	auto maxGlyphBitmapWidth = m_font->GetMaxGlyphBitmapWidth();
 
 	wgui::ShaderText::PushConstants pushConstants {
 		sx,sy,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth
 	};
-	const auto fDraw = [&context,&drawCmd,&dev,&shader,&bufBounds,&pushConstants,sx,sy,numChars,w,h,this](prosper::RenderTarget &rt,bool bClear,uint32_t vpWidth,uint32_t vpHeight) {
-		auto &img = rt.GetTexture()->GetImage();
+	const auto fDraw = [&context,&drawCmd,&shader,&bufBounds,&pushConstants,sx,sy,numChars,w,h,this](prosper::RenderTarget &rt,bool bClear,uint32_t vpWidth,uint32_t vpHeight) {
+		auto &img = rt.GetTexture().GetImage();
 
-		auto &primCmd = static_cast<Anvil::PrimaryCommandBuffer&>(drawCmd->GetAnvilCommandBuffer());
-
-		prosper::util::record_image_barrier(
-			primCmd,img->GetAnvilImage(),
-			Anvil::PipelineStageFlagBits::FRAGMENT_SHADER_BIT | Anvil::PipelineStageFlagBits::COLOR_ATTACHMENT_OUTPUT_BIT,Anvil::PipelineStageFlagBits::COLOR_ATTACHMENT_OUTPUT_BIT,
-			Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL,Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-			Anvil::AccessFlagBits::SHADER_READ_BIT | Anvil::AccessFlagBits::COLOR_ATTACHMENT_WRITE_BIT,Anvil::AccessFlagBits::COLOR_ATTACHMENT_WRITE_BIT
+		drawCmd->RecordImageBarrier(
+			img,
+			prosper::PipelineStageFlags::FragmentShaderBit | prosper::PipelineStageFlags::ColorAttachmentOutputBit,prosper::PipelineStageFlags::ColorAttachmentOutputBit,
+			prosper::ImageLayout::ShaderReadOnlyOptimal,prosper::ImageLayout::ColorAttachmentOptimal,
+			prosper::AccessFlags::ShaderReadBit | prosper::AccessFlags::ColorAttachmentWriteBit,prosper::AccessFlags::ColorAttachmentWriteBit
 		);
 
-		prosper::util::record_begin_render_pass(primCmd,rt);
-			prosper::util::record_clear_attachment(primCmd,**img,std::array<float,4>{0.f,0.f,0.f,0.f});
+		drawCmd->RecordBeginRenderPass(rt);
+			drawCmd->RecordClearAttachment(img,std::array<float,4>{0.f,0.f,0.f,0.f});
 			if(shader.BeginDraw(drawCmd,w,h) == true)
 			{
-				prosper::util::record_set_viewport(primCmd,vpWidth,vpHeight);
-				prosper::util::record_set_scissor(primCmd,vpWidth,vpHeight);
+				drawCmd->RecordSetViewport(vpWidth,vpHeight);
+				drawCmd->RecordSetScissor(vpWidth,vpHeight);
 				auto descSet = m_font->GetGlyphMapDescriptorSet();
 				shader.Draw(*bufBounds,*descSet,pushConstants,numChars);
 				shader.EndDraw();
 			}
-		prosper::util::record_end_render_pass(primCmd);
+		drawCmd->RecordEndRenderPass();
 
-		prosper::util::record_image_barrier(
-			primCmd,img->GetAnvilImage(),
-			Anvil::PipelineStageFlagBits::COLOR_ATTACHMENT_OUTPUT_BIT,Anvil::PipelineStageFlagBits::COLOR_ATTACHMENT_OUTPUT_BIT | Anvil::PipelineStageFlagBits::FRAGMENT_SHADER_BIT,
-			Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
-			Anvil::AccessFlagBits::COLOR_ATTACHMENT_WRITE_BIT,Anvil::AccessFlagBits::COLOR_ATTACHMENT_WRITE_BIT | Anvil::AccessFlagBits::SHADER_READ_BIT
+		drawCmd->RecordImageBarrier(
+			img,
+			prosper::PipelineStageFlags::ColorAttachmentOutputBit,prosper::PipelineStageFlags::ColorAttachmentOutputBit | prosper::PipelineStageFlags::FragmentShaderBit,
+			prosper::ImageLayout::ShaderReadOnlyOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal,
+			prosper::AccessFlags::ColorAttachmentWriteBit,prosper::AccessFlags::ColorAttachmentWriteBit | prosper::AccessFlags::ShaderReadBit
 		);
 	};
 
@@ -407,7 +400,7 @@ void WIText::RenderText(Mat4&)
 
 		if(m_shadow.blurSize != 0.f && m_shadowBlurSet != nullptr)
 		{
-			prosper::util::record_blur_image(dev,drawCmd,*m_shadowBlurSet,{
+			prosper::util::record_blur_image(context,drawCmd,*m_shadowBlurSet,{
 				Vector4(2.f,1.f,1.f,1.f),
 				m_shadow.blurSize,
 				9
@@ -616,9 +609,9 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 			0ull,glyphBoundsData.size() *sizeof(glyphBoundsData.front()),glyphBoundsData.data()
 		);
 
-		prosper::util::record_buffer_barrier(
-			**context.GetDrawCommandBuffer(),*bufInfo.buffer,
-			Anvil::PipelineStageFlagBits::TRANSFER_BIT,Anvil::PipelineStageFlagBits::VERTEX_INPUT_BIT,Anvil::AccessFlagBits::TRANSFER_WRITE_BIT,Anvil::AccessFlagBits::VERTEX_ATTRIBUTE_READ_BIT
+		context.GetDrawCommandBuffer()->RecordBufferBarrier(
+			*bufInfo.buffer,
+			prosper::PipelineStageFlags::TransferBit,prosper::PipelineStageFlags::VertexInputBit,prosper::AccessFlags::TransferWriteBit,prosper::AccessFlags::VertexAttributeReadBit
 		);
 	}
 	lineInfo.buffers.resize(bufferOffset);
@@ -641,10 +634,10 @@ void WIText::InitializeTextBuffer(prosper::Context &context)
 	const auto maxInstances = 8'192; // 5 MiB total space
 	auto instanceSize = sizeof(GlyphBoundsInfo) *MAX_CHARS_PER_BUFFER;
 	prosper::util::BufferCreateInfo createInfo {};
-	createInfo.usageFlags = Anvil::BufferUsageFlagBits::VERTEX_BUFFER_BIT | Anvil::BufferUsageFlagBits::TRANSFER_DST_BIT;
-	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
+	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
+	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 	createInfo.size = instanceSize *maxInstances;
-	s_textBuffer = prosper::util::create_uniform_resizable_buffer(context,createInfo,instanceSize,createInfo.size *5u,0.05f);
+	s_textBuffer = context.CreateUniformResizableBuffer(createInfo,instanceSize,createInfo.size *5u,0.05f);
 	s_textBuffer->SetPermanentlyMapped(true);
 	s_textBuffer->SetDebugName("text_glyph_bounds_info_buf");
 }
@@ -679,7 +672,7 @@ bool WITextBase::RenderLines(
 	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
 	const Mat4 &matParent,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,
-	const std::function<void(const SubBufferInfo&,Anvil::DescriptorSet&)> &fDraw,
+	const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 	bool colorPass
 ) const
 {
@@ -751,13 +744,13 @@ void WITextBase::RenderLines(
 ) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
-	auto bHasColorBuffers = RenderLines(*pShaderTextRect,width,height,absPos,transform,origin,matParent,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect](const SubBufferInfo &bufInfo,Anvil::DescriptorSet &descSet) {
+	auto bHasColorBuffers = RenderLines(*pShaderTextRect,width,height,absPos,transform,origin,matParent,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars);
 	},false);
 	if(bHasColorBuffers == false)
 		return;
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
-	RenderLines(*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor](const SubBufferInfo &bufInfo,Anvil::DescriptorSet &descSet) {
+	RenderLines(*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars);
 	},true);
 }
@@ -790,7 +783,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 
 		auto drawCmd = context.GetDrawCommandBuffer();
 		auto glyphMap = pFont->GetGlyphMap();
-		auto glyphMapExtents = (*glyphMap->GetImage())->get_image_extent_2D(0u);
+		auto glyphMapExtents = glyphMap->GetImage().GetExtents();
 		auto maxGlyphBitmapWidth = pFont->GetMaxGlyphBitmapWidth();
 
 		auto col = drawInfo.GetColor(*this);

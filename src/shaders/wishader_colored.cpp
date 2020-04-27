@@ -21,10 +21,10 @@ ShaderColored::ShaderColored(prosper::Context &context,const std::string &identi
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderColored::Draw(prosper::Buffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants)
+bool ShaderColored::Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants)
 {
 	if(
-		RecordBindVertexBuffer(vertBuffer.GetAnvilBuffer()) == false ||
+		RecordBindVertexBuffer(vertBuffer) == false ||
 		RecordPushConstants(pushConstants) == false ||
 		RecordDraw(vertCount) == false
 	)
@@ -39,7 +39,7 @@ void ShaderColored::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pip
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),Anvil::ShaderStageFlagBits::VERTEX_BIT | Anvil::ShaderStageFlagBits::FRAGMENT_BIT);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
@@ -56,7 +56,7 @@ bool ShaderColoredRect::Draw(const wgui::ElementData &pushConstants)
 {
 	if(
 		RecordPushConstants(pushConstants) == false ||
-		RecordBindVertexBuffer(**prosper::util::get_square_vertex_buffer(WGUI::GetInstance().GetContext().GetDevice())) == false ||
+		RecordBindVertexBuffer(*prosper::util::get_square_vertex_buffer(WGUI::GetInstance().GetContext())) == false ||
 		RecordDraw(prosper::util::get_square_vertex_count()) == false
 	)
 		return false;
@@ -70,5 +70,5 @@ void ShaderColoredRect::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo 
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),Anvil::ShaderStageFlagBits::FRAGMENT_BIT | Anvil::ShaderStageFlagBits::VERTEX_BIT);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
 }

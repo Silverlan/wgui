@@ -16,11 +16,11 @@ namespace wgui
 	public:
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_POSITION;
-		static prosper::Shader::DescriptorSetInfo DESCRIPTOR_SET;
+		static prosper::DescriptorSetInfo DESCRIPTOR_SET;
 
 		Shader(prosper::Context &context,const std::string &identifier);
 		Shader(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
-		bool BeginDraw(const std::shared_ptr<prosper::PrimaryCommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx=0u);
+		bool BeginDraw(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx=0u);
 		virtual size_t GetBaseTypeHashCode() const override;
 		using ShaderGraphics::BeginDraw;
 	protected:

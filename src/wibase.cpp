@@ -1807,7 +1807,7 @@ bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyS
 				if(it != __lastKeyboardGUIElements.end() && !it->second.IsValid())
 					__lastKeyboardGUIElements.erase(it);
 				if(result == util::EventReply::Handled)
-					break;
+					return true;
 			}
 
 			gui = gui->GetParent();

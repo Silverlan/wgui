@@ -49,10 +49,10 @@ void WITextTagColor::Apply()
 		const auto maxInstances = 2'048; // 1 MiB total space
 		auto instanceSize = sizeof(Vector4) *WIText::MAX_CHARS_PER_BUFFER;
 		prosper::util::BufferCreateInfo createInfo {};
-		createInfo.usageFlags = Anvil::BufferUsageFlagBits::VERTEX_BUFFER_BIT | Anvil::BufferUsageFlagBits::TRANSFER_DST_BIT;
-		createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
+		createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
+		createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 		createInfo.size = instanceSize *maxInstances;
-		s_colorBuffer = prosper::util::create_uniform_resizable_buffer(WGUI::GetInstance().GetContext(),createInfo,instanceSize,createInfo.size *5u,0.05f);
+		s_colorBuffer = WGUI::GetInstance().GetContext().CreateUniformResizableBuffer(createInfo,instanceSize,createInfo.size *5u,0.05f);
 		s_colorBuffer->SetPermanentlyMapped(true);
 		s_colorBuffer->SetDebugName("text_color_buf");
 	}
@@ -120,9 +120,10 @@ void WITextTagColor::Apply()
 					offsetRelativeToBuffer *sizeof(colors.front()),(endOffsetRelativeToBuffer -offsetRelativeToBuffer +1) *sizeof(colors.front()),colors.data() +offsetRelativeToBuffer
 				);
 			}
-			prosper::util::record_buffer_barrier(
-				**context.GetDrawCommandBuffer(),*glyphBufferInfo.colorBuffer,
-				Anvil::PipelineStageFlagBits::TRANSFER_BIT,Anvil::PipelineStageFlagBits::VERTEX_INPUT_BIT,Anvil::AccessFlagBits::TRANSFER_WRITE_BIT,Anvil::AccessFlagBits::VERTEX_ATTRIBUTE_READ_BIT
+			context.GetDrawCommandBuffer()->RecordBufferBarrier(
+				*glyphBufferInfo.colorBuffer,
+				prosper::PipelineStageFlags::TransferBit,prosper::PipelineStageFlags::VertexInputBit,
+				prosper::AccessFlags::TransferWriteBit,prosper::AccessFlags::VertexAttributeReadBit
 			);
 		}
 	}

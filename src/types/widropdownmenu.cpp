@@ -427,7 +427,7 @@ util::EventReply WIDropDownMenu::ScrollCallback(Vector2 offset)
 {
 	if(WITextEntry::ScrollCallback(offset) == util::EventReply::Handled || !m_hScrollBar.IsValid())
 		return util::EventReply::Handled;
-	m_hScrollBar.get<WIScrollBar>()->AddScrollOffset(static_cast<int>(-offset.y));
+	m_hScrollBar.get<WIScrollBar>()->ScrollCallback(offset);
 	return util::EventReply::Handled;
 }
 void WIDropDownMenu::SetSize(int x,int y)

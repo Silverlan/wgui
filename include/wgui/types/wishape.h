@@ -7,6 +7,7 @@
 #include "wgui/wibase.h"
 #include <materialmanager.h>
 #include "wgui/wibufferbase.h"
+#include "wgui/shaders/wishader_textured.hpp"
 #include "wiline.h"
 #include <texturemanager/texture.h>
 
@@ -35,14 +36,14 @@ public:
 	virtual ~WIOutlinedShape() override = default;
 };
 
-namespace prosper {class DescriptorSetGroup;};
+namespace prosper {class IDescriptorSetGroup;};
 class WGUIShaderTextured;
 class DLLWGUI WITexturedShape
 	: public WIShape
 {
 private:
 	util::WeakHandle<prosper::Shader> m_shader = {};
-	std::shared_ptr<prosper::DescriptorSetGroup> m_descSetTextureGroup = nullptr;
+	std::shared_ptr<prosper::IDescriptorSetGroup> m_descSetTextureGroup = nullptr;
 	void ClearTextureLoadCallback();
 	void InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture);
 protected:
@@ -50,8 +51,14 @@ protected:
 	MaterialHandle m_hMaterial;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	std::shared_ptr<bool> m_texLoadCallback;
-	std::shared_ptr<prosper::Buffer> m_uvBuffer = nullptr;
+	std::shared_ptr<prosper::IBuffer> m_uvBuffer = nullptr;
 	std::vector<Vector2> m_uvs;
+	std::array<wgui::ShaderTextured::Channel,4> m_channels = {
+		wgui::ShaderTextured::Channel::Red,
+		wgui::ShaderTextured::Channel::Green,
+		wgui::ShaderTextured::Channel::Blue,
+		wgui::ShaderTextured::Channel::Alpha
+	};
 	bool m_bAlphaOnly;
 	float m_lod = -1.f;
 
@@ -65,8 +72,8 @@ public:
 	void SetVertexUVCoord(unsigned int vertID,Vector2 uv);
 	void InvertVertexUVCoordinates(bool x=true,bool y=true);
 	virtual void ClearVertices() override;
-	prosper::Buffer &GetUVBuffer() const;
-	void SetUVBuffer(prosper::Buffer &buffer);
+	prosper::IBuffer &GetUVBuffer() const;
+	void SetUVBuffer(prosper::IBuffer &buffer);
 	void SetAlphaOnly(bool b);
 	bool GetAlphaOnly() const;
 	float GetLOD() const;
@@ -79,6 +86,9 @@ public:
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
 	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw) override;
 	void SizeToTexture();
+
+	void SetChannelSwizzle(wgui::ShaderTextured::Channel dst,wgui::ShaderTextured::Channel src);
+	wgui::ShaderTextured::Channel GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const;
 };
 
 #endif

@@ -41,7 +41,7 @@ class WIHandle;
 class WISkin;
 class WGUI;
 namespace util {class ColorProperty;};
-namespace prosper {class Buffer;};
+namespace prosper {class IBuffer;};
 class DLLWGUI WIBase
 	: public CallbackHandler
 {

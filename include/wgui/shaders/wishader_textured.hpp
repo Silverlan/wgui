@@ -8,6 +8,8 @@
 #include "wishader.hpp"
 #include "wgui/wielementdata.hpp"
 
+namespace prosper {class IDescriptorSet;};
+
 namespace wgui
 {
 	class DLLWGUI ShaderTextured
@@ -20,7 +22,15 @@ namespace wgui
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_UV;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_UV;
 
-		static prosper::Shader::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
+		static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
+
+		enum class Channel : uint8_t
+		{
+			Red = 0,
+			Green,
+			Blue,
+			Alpha
+		};
 
 #pragma pack(push,1)
 		struct PushConstants
@@ -28,13 +38,20 @@ namespace wgui
 			wgui::ElementData elementData;
 			int32_t alphaOnly;
 			float lod;
+			Channel red;
+			Channel green;
+			Channel blue;
+			Channel alpha;
 		};
 #pragma pack(pop)
 
 		ShaderTextured(prosper::Context &context,const std::string &identifier);
 		ShaderTextured(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(const std::shared_ptr<prosper::Buffer> &vertBuffer,const std::shared_ptr<prosper::Buffer> &uvBuffer,uint32_t vertCount,Anvil::DescriptorSet &descSetTexture,const PushConstants &pushConstants);
+		bool Draw(
+			const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &uvBuffer,uint32_t vertCount,
+			prosper::IDescriptorSet &descSetTexture,const PushConstants &pushConstants
+		);
 	protected:
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
@@ -51,13 +68,17 @@ namespace wgui
 			wgui::ElementData elementData;
 			int32_t alphaOnly;
 			float lod;
+			ShaderTextured::Channel red;
+			ShaderTextured::Channel green;
+			ShaderTextured::Channel blue;
+			ShaderTextured::Channel alpha;
 		};
 #pragma pack(pop)
 
 		ShaderTexturedRect(prosper::Context &context,const std::string &identifier);
 		ShaderTexturedRect(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(const PushConstants &pushConstants,Anvil::DescriptorSet &descSet);
+		bool Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet);
 	protected:
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};

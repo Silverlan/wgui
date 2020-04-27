@@ -25,9 +25,9 @@ class WIHandle;
 namespace GLFW {class Joystick;};
 namespace prosper
 {
-	class UniformResizableBuffer;
-	class Buffer;
-	class DescriptorSetGroup;
+	class IUniformResizableBuffer;
+	class IBuffer;
+	class IDescriptorSetGroup;
 	class Shader;
 };
 
@@ -120,6 +120,8 @@ public:
 	GLFW::Cursor::Shape GetCursor();
 	GLFW::CursorMode GetCursorInputMode();
 	MaterialManager &GetMaterialManager();
+	void SetMaterialLoadHandler(const std::function<Material*(const std::string&)> &handler);
+	const std::function<Material*(const std::string&)> &GetMaterialLoadHandler() const;
 	WIBase *GetGUIElement(WIBase *el,int32_t x,int32_t y,const std::function<bool(WIBase*)> &condition);
 	WIBase *GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> &condition);
 	double GetDeltaTime() const;
@@ -146,7 +148,8 @@ private:
 	bool m_bGUIUpdateRequired = false;
 	std::unordered_map<std::string,WISkin*> m_skins = {};
 	std::weak_ptr<MaterialManager> m_matManager = {};
-	std::shared_ptr<prosper::UniformResizableBuffer> m_elementBuffer = nullptr;
+	std::function<Material*(const std::string&)> m_materialLoadHandler = nullptr;
+	std::shared_ptr<prosper::IUniformResizableBuffer> m_elementBuffer = nullptr;
 	WIHandle m_base = {};
 	WIHandle m_focused = {};
 	uint64_t m_nextGuiElementIndex = 0u;

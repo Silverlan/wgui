@@ -48,9 +48,16 @@ WGUI &WGUI::GetInstance() {return *s_wgui;}
 
 WGUI::WGUI(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager)
 	: prosper::ContextObject(context),m_matManager(wpMatManager)
-{}
+{
+	SetMaterialLoadHandler([this](const std::string &path) -> Material* {
+		return m_matManager.lock()->Load(path);
+	});
+}
 
 WGUI::~WGUI() {}
+
+void WGUI::SetMaterialLoadHandler(const std::function<Material*(const std::string&)> &handler) {m_materialLoadHandler = handler;}
+const std::function<Material*(const std::string&)> &WGUI::GetMaterialLoadHandler() const {return m_materialLoadHandler;}
 
 double WGUI::GetDeltaTime() const {return m_tDelta;}
 

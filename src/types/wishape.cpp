@@ -42,12 +42,12 @@ void WIShape::DoUpdate()
 		return;
 	m_vertexBufferUpdateRequired &= ~1;
 	
-	auto &dev = WGUI::GetInstance().GetContext().GetDevice();
+	auto &context = WGUI::GetInstance().GetContext();
 	prosper::util::BufferCreateInfo createInfo {};
 	createInfo.size = m_vertices.size() *sizeof(Vector2);
-	createInfo.usageFlags = Anvil::BufferUsageFlagBits::VERTEX_BUFFER_BIT;
-	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
-	auto buf = prosper::util::create_buffer(dev,createInfo,m_vertices.data());
+	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
+	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+	auto buf = context.CreateBuffer(createInfo,m_vertices.data());
 	buf->SetDebugName("gui_shape_vertex_buf");
 	InitializeBufferData(*buf);
 }
@@ -101,11 +101,11 @@ void WITexturedShape::ReloadDescriptorSet()
 	m_descSetTextureGroup = nullptr;
 	if(wgui::ShaderTextured::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
 		return;
-	m_descSetTextureGroup = prosper::util::create_descriptor_set_group(WGUI::GetInstance().GetContext().GetDevice(),wgui::ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	m_descSetTextureGroup = WGUI::GetInstance().GetContext().CreateDescriptorSetGroup(wgui::ShaderTextured::DESCRIPTOR_SET_TEXTURE);
 	//m_descSetTextureGroup = prosper::util::create_descriptor_set_group(WGUI::GetInstance().GetContext().GetDevice(),m_shader.get()->GetDescriptorSetGroup(),false); // TODO: FIXME
 }
-prosper::Buffer &WITexturedShape::GetUVBuffer() const {return *m_uvBuffer;}
-void WITexturedShape::SetUVBuffer(prosper::Buffer &buffer) {m_uvBuffer = buffer.shared_from_this();}
+prosper::IBuffer &WITexturedShape::GetUVBuffer() const {return *m_uvBuffer;}
+void WITexturedShape::SetUVBuffer(prosper::IBuffer &buffer) {m_uvBuffer = buffer.shared_from_this();}
 void WITexturedShape::SetAlphaOnly(bool b) {m_bAlphaOnly = b;}
 bool WITexturedShape::GetAlphaOnly() const {return m_bAlphaOnly;}
 float WITexturedShape::GetLOD() const {return m_lod;}
@@ -139,7 +139,7 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 		if(hThis.get<WITexturedShape>()->m_descSetTextureGroup == nullptr)
 			return;
 		auto &descSet = *hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet();
-		prosper::util::set_descriptor_set_binding_texture(descSet,*texture->GetVkTexture(),0u);
+		descSet.SetBindingTexture(*texture->GetVkTexture(),0u);
 	});
 }
 void WITexturedShape::SetMaterial(Material *material)
@@ -158,8 +158,7 @@ void WITexturedShape::SetMaterial(Material *material)
 }
 void WITexturedShape::SetMaterial(const std::string &material)
 {
-	auto &matManager = WGUI::GetInstance().GetMaterialManager();
-	auto *mat = matManager.Load(material);
+	auto *mat = WGUI::GetInstance().GetMaterialLoadHandler()(material);
 	if(mat == nullptr)
 		SetMaterial(nullptr);
 	else
@@ -183,7 +182,7 @@ void WITexturedShape::SetTexture(prosper::Texture &tex,uint32_t layerIndex)
 	m_texture = tex.shared_from_this();
 	
 	ReloadDescriptorSet(); // Need to generate a new descriptor set and keep the old one alive, in case it was still in use
-	prosper::util::set_descriptor_set_binding_texture(*m_descSetTextureGroup->GetDescriptorSet(),tex,0u,layerIndex);
+	m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(tex,0u,layerIndex);
 }
 const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
 {
@@ -238,10 +237,18 @@ void WITexturedShape::DoUpdate()
 
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::util::BufferCreateInfo createInfo {};
-	createInfo.usageFlags = Anvil::BufferUsageFlagBits::VERTEX_BUFFER_BIT;
+	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
 	createInfo.size = m_uvs.size() *sizeof(Vector2);
-	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
-	m_uvBuffer = prosper::util::create_buffer(context.GetDevice(),createInfo,m_uvs.data());
+	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+	m_uvBuffer = context.CreateBuffer(createInfo,m_uvs.data());
+}
+void WITexturedShape::SetChannelSwizzle(wgui::ShaderTextured::Channel dst,wgui::ShaderTextured::Channel src)
+{
+	m_channels.at(umath::to_integral(src)) = dst;
+}
+wgui::ShaderTextured::Channel WITexturedShape::GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const
+{
+	return m_channels.at(umath::to_integral(channel));
 }
 void WITexturedShape::SizeToTexture()
 {
@@ -250,7 +257,7 @@ void WITexturedShape::SizeToTexture()
 	uint32_t width,height;
 	if(m_texture)
 	{
-		auto extents = m_texture->GetImage()->GetExtents();
+		auto extents = m_texture->GetImage().GetExtents();
 		width = extents.width;
 		height = extents.height;
 	}
@@ -281,7 +288,13 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 		auto &context = WGUI::GetInstance().GetContext();
 		if(pShaderCheap->BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
 		{
-			pShaderCheap->Draw({matDraw,col,m_bAlphaOnly ? 1 : 0,m_lod},*(*m_descSetTextureGroup)->get_descriptor_set(0u));
+			pShaderCheap->Draw({
+				matDraw,col,m_bAlphaOnly ? 1 : 0,m_lod,
+				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
+				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)),
+				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)),
+				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha))
+			},*m_descSetTextureGroup->GetDescriptorSet(0u));
 			pShaderCheap->EndDraw();
 		}
 		return;
@@ -299,11 +312,14 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 		pushConstants.elementData.modelMatrix = matDraw;
 		pushConstants.elementData.color = col;
 		pushConstants.lod = m_lod;
-		auto &dev = context.GetDevice();
+		pushConstants.red = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red));
+		pushConstants.green = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green));
+		pushConstants.blue = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue));
+		pushConstants.alpha = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha));
 		shader.Draw(
-			(buf != nullptr) ? buf : prosper::util::get_square_vertex_buffer(dev),
-			(m_uvBuffer != nullptr) ? m_uvBuffer : prosper::util::get_square_uv_buffer(dev),
-			GetVertexCount(),*(*m_descSetTextureGroup)->get_descriptor_set(0u),pushConstants
+			(buf != nullptr) ? buf : prosper::util::get_square_vertex_buffer(context),
+			(m_uvBuffer != nullptr) ? m_uvBuffer : prosper::util::get_square_uv_buffer(context),
+			GetVertexCount(),*m_descSetTextureGroup->GetDescriptorSet(0u),pushConstants
 		);
 		shader.EndDraw();
 	}

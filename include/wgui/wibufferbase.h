@@ -28,7 +28,7 @@ protected:
 	prosper::Shader *GetShader();
 	prosper::Shader *GetCheapShader();
 
-	void InitializeBufferData(prosper::Buffer &buffer);
+	void InitializeBufferData(prosper::IBuffer &buffer);
 
 	// If this isn't set, the standard square vertex buffer (with optimized shaders) will be used instead
 	std::unique_ptr<WIElementVertexBufferData> m_vertexBufferData = nullptr;

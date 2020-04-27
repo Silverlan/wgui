@@ -139,8 +139,7 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 	m_maxBitmapWidth = 0;
 	m_maxBitmapHeight = 0;
 	auto &context = WGUI::GetInstance().GetContext();
-	auto &dev = context.GetDevice();
-	std::vector<std::shared_ptr<prosper::Image>> glyphImages(m_glyphs.size(),nullptr);
+	std::vector<std::shared_ptr<prosper::IImage>> glyphImages(m_glyphs.size(),nullptr);
 	std::vector<std::pair<uint32_t,uint32_t>> glyphBounds(m_glyphs.size());
 	for(auto i=umath::to_integral(GlyphRange::Start);i<=umath::to_integral(GlyphRange::End);i++)
 	{
@@ -158,13 +157,13 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 			if(gslot->bitmap.width > 0 && gslot->bitmap.rows > 0)
 			{
 				prosper::util::ImageCreateInfo createInfo {};
-				createInfo.format = Anvil::Format::R8_UNORM;
+				createInfo.format = prosper::Format::R8_UNorm;
 				createInfo.width = gslot->bitmap.width;
 				createInfo.height = umath::next_power_of_2(gslot->bitmap.rows); // With has to be a power of 2!
-				createInfo.tiling = Anvil::ImageTiling::LINEAR;
-				createInfo.usage = Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT;
-				createInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_SRC_OPTIMAL;
-				createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::HostAccessable;
+				createInfo.tiling = prosper::ImageTiling::Linear;
+				createInfo.usage = prosper::ImageUsageFlags::TransferSrcBit;
+				createInfo.postCreateLayout = prosper::ImageLayout::TransferSrcOptimal;
+				createInfo.memoryFeatures = prosper::MemoryFeatureFlags::HostAccessable;
 
 				std::vector<uint8_t> data(createInfo.width *createInfo.height);
 				m_maxBitmapWidth = umath::max(m_maxBitmapWidth,gslot->bitmap.width);
@@ -185,7 +184,9 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 					ptr += createInfo.width;
 				}
 
-				auto &glyphImg = glyphImages.at(i -umath::to_integral(GlyphRange::Start)) = prosper::util::create_image(dev,createInfo,data.data());
+				createInfo.flags |= prosper::util::ImageCreateInfo::Flags::DontAllocateMemory;
+				auto &glyphImg = glyphImages.at(i -umath::to_integral(GlyphRange::Start)) = context.CreateImage(createInfo,data.data());
+				context.AllocateTemporaryBuffer(*glyphImg);
 				glyphImg->SetDebugName("tmp_glyph_img");
 				glyphBounds.at(i -umath::to_integral(GlyphRange::Start)) = {gslot->bitmap.width,gslot->bitmap.rows};
 			}
@@ -211,18 +212,19 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 	}
 
 	// Initialize font image map
-	const auto format = Anvil::Format::R8_UNORM;
+	const auto format = prosper::Format::R8_UNorm;
 	// TODO: Calculate proper width / height ratio
 	auto imgCreateInfo = prosper::util::ImageCreateInfo {};
 	imgCreateInfo.format = format;
 	imgCreateInfo.width = numGlyphs *m_maxBitmapWidth;
 	imgCreateInfo.height = m_maxBitmapHeight;
-	imgCreateInfo.usage = Anvil::ImageUsageFlagBits::SAMPLED_BIT | Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT | Anvil::ImageUsageFlagBits::TRANSFER_DST_BIT;
-	imgCreateInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_DST_OPTIMAL;
+	imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+	imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit | prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferDstBit;
+	imgCreateInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
 	auto imgViewCreateInfo = prosper::util::ImageViewCreateInfo {};
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
-	auto glyphMapImage = std::shared_ptr<prosper::Image>(prosper::util::create_image(dev,imgCreateInfo));
-	m_glyphMap = prosper::util::create_texture(dev,{},glyphMapImage,&imgViewCreateInfo,&samplerCreateInfo);
+	auto glyphMapImage =context.CreateImage(imgCreateInfo);
+	m_glyphMap = context.CreateTexture({},*glyphMapImage,imgViewCreateInfo,samplerCreateInfo);
 	m_glyphMap->SetDebugName("glyph_map_tex");
 
 	auto setupCmd = context.GetSetupCommandBuffer();
@@ -254,12 +256,12 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 		imgCreateInfo.format = format;
 		imgCreateInfo.width = bounds.first;
 		imgCreateInfo.height = bounds.second;
-		imgCreateInfo.usage = Anvil::ImageUsageFlagBits::SAMPLED_BIT | Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT | Anvil::ImageUsageFlagBits::TRANSFER_DST_BIT;
-		imgCreateInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_DST_OPTIMAL;
+		imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit | prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferDstBit;
+		imgCreateInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
 
 		prosper::util::CopyInfo copyInfo {};
-		copyInfo.srcSubresource = Anvil::ImageSubresourceLayers{Anvil::ImageAspectFlagBits::COLOR_BIT,0u,0u,1u};
-		copyInfo.dstSubresource = Anvil::ImageSubresourceLayers{Anvil::ImageAspectFlagBits::COLOR_BIT,0u,0u,1u};
+		copyInfo.srcSubresource = prosper::util::ImageSubresourceLayers{prosper::ImageAspectFlags::ColorBit,0u,0u,1u};
+		copyInfo.dstSubresource = prosper::util::ImageSubresourceLayers{prosper::ImageAspectFlags::ColorBit,0u,0u,1u};
 		copyInfo.width = bounds.first;
 		copyInfo.height = bounds.second;
 
@@ -267,7 +269,7 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 		auto xOffset = i *m_maxBitmapWidth;
 		uint32_t yOffset = 0;
 		copyInfo.dstOffset = vk::Offset3D(xOffset,yOffset,0);
-		prosper::util::record_copy_image(setupCmd->GetAnvilCommandBuffer(),copyInfo,glyphImage->GetAnvilImage(),glyphMapImage->GetAnvilImage());
+		setupCmd->RecordCopyImage(copyInfo,*glyphImage,*glyphMapImage);
 
 		glyphCharacterBounds.push_back(GlyphBounds{});
 		auto &glyphCharBounds = glyphCharacterBounds.back();
@@ -281,16 +283,16 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 		glyphCharBounds.advanceX = advanceX;
 		glyphCharBounds.advanceY = advanceY;
 	}
-	prosper::util::record_image_barrier(**setupCmd,**glyphMapImage,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL);
+	setupCmd->RecordImageBarrier(*glyphMapImage,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
 
 	prosper::util::BufferCreateInfo bufCreateInfo {};
 	bufCreateInfo.size = glyphCharacterBounds.size() *sizeof(glyphCharacterBounds.front());
-	bufCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
-	bufCreateInfo.usageFlags = Anvil::BufferUsageFlagBits::STORAGE_BUFFER_BIT;
-	m_glyphBoundsBuffer = prosper::util::create_buffer(dev,bufCreateInfo,glyphCharacterBounds.data());
+	bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+	bufCreateInfo.usageFlags = prosper::BufferUsageFlags::StorageBufferBit;
+	m_glyphBoundsBuffer = context.CreateBuffer(bufCreateInfo,glyphCharacterBounds.data());
 	m_glyphBoundsBuffer->SetDebugName("font_glyph_bounds_buffer");
-	m_glyphBoundsDsg = prosper::util::create_descriptor_set_group(dev,wgui::ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
-	prosper::util::set_descriptor_set_binding_storage_buffer(*m_glyphBoundsDsg->GetDescriptorSet(),*m_glyphBoundsBuffer,0u);
+	m_glyphBoundsDsg = context.CreateDescriptorSetGroup(wgui::ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
+	m_glyphBoundsDsg->GetDescriptorSet()->SetBindingStorageBuffer(*m_glyphBoundsBuffer,0u);
 	context.FlushSetupCommandBuffer();
 
 	m_maxGlyphSize = szMax;
@@ -300,8 +302,8 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 	auto wpShader = context.GetShader("wguitext");
 	if(wpShader.expired() == false)
 	{
-		m_glyphMapDescSetGroup = prosper::util::create_descriptor_set_group(dev,wgui::ShaderText::DESCRIPTOR_SET_TEXTURE);
-		prosper::util::set_descriptor_set_binding_texture(*m_glyphMapDescSetGroup->GetDescriptorSet(),*m_glyphMap,0u);
+		m_glyphMapDescSetGroup = context.CreateDescriptorSetGroup(wgui::ShaderText::DESCRIPTOR_SET_TEXTURE);
+		m_glyphMapDescSetGroup->GetDescriptorSet()->SetBindingTexture(*m_glyphMap,0u);
 	}
 	return true;
 }
@@ -311,12 +313,12 @@ uint32_t FontInfo::GetMaxGlyphBitmapHeight() const {return m_maxBitmapHeight;}
 uint32_t FontInfo::CharToGlyphMapIndex(char c) {return static_cast<uint8_t>(c) -umath::to_integral(GlyphRange::Start);}
 
 std::shared_ptr<prosper::Texture> FontInfo::GetGlyphMap() const {return m_glyphMap;}
-std::shared_ptr<prosper::Buffer> FontInfo::GetGlyphBoundsBuffer() const {return m_glyphBoundsBuffer;}
-Anvil::DescriptorSet *FontInfo::GetGlyphBoundsDescriptorSet() const
+std::shared_ptr<prosper::IBuffer> FontInfo::GetGlyphBoundsBuffer() const {return m_glyphBoundsBuffer;}
+prosper::IDescriptorSet *FontInfo::GetGlyphBoundsDescriptorSet() const
 {
-	return (m_glyphBoundsDsg != nullptr) ? (*m_glyphBoundsDsg)->get_descriptor_set(0u) : nullptr;
+	return m_glyphBoundsDsg ? m_glyphBoundsDsg->GetDescriptorSet() : nullptr;
 }
-Anvil::DescriptorSet *FontInfo::GetGlyphMapDescriptorSet() const {return (*m_glyphMapDescSetGroup)->get_descriptor_set(0u);}
+prosper::IDescriptorSet *FontInfo::GetGlyphMapDescriptorSet() const {return m_glyphMapDescSetGroup->GetDescriptorSet();}
 
 const FT_Face FontInfo::GetFace() const {return m_face.GetFtFace();}
 

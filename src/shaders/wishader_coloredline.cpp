@@ -13,8 +13,8 @@
 
 using namespace wgui;
 
-decltype(ShaderColoredLine::VERTEX_BINDING_VERTEX) ShaderColoredLine::VERTEX_BINDING_VERTEX = {Anvil::VertexInputRate::VERTEX};
-decltype(ShaderColoredLine::VERTEX_ATTRIBUTE_COLOR) ShaderColoredLine::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_VERTEX,Anvil::Format::R32G32B32A32_SFLOAT};
+decltype(ShaderColoredLine::VERTEX_BINDING_VERTEX) ShaderColoredLine::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
+decltype(ShaderColoredLine::VERTEX_ATTRIBUTE_COLOR) ShaderColoredLine::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_VERTEX,prosper::Format::R32G32B32A32_SFloat};
 ShaderColoredLine::ShaderColoredLine(prosper::Context &context,const std::string &identifier)
 	: ShaderColored(context,identifier,"wgui/vs_wgui_colored_vertex","wgui/fs_wgui_colored_vertex")
 {
@@ -31,16 +31,16 @@ void ShaderColoredLine::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo 
 }
 
 bool ShaderColoredLine::Draw(
-	const std::shared_ptr<prosper::Buffer> &vertBuffer,const std::shared_ptr<prosper::Buffer> &colorBuffer,
+	const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &colorBuffer,
 	uint32_t vertCount,float lineWidth,const wgui::ElementData &pushConstants
 )
 {
 	auto drawCmd = GetCurrentCommandBuffer();
 	if(drawCmd == nullptr)
 		return false;
-	drawCmd->GetAnvilCommandBuffer().record_set_line_width(lineWidth);
+	drawCmd->RecordSetLineWidth(lineWidth);
 	if(
-		RecordBindVertexBuffers({&vertBuffer->GetAnvilBuffer(),&colorBuffer->GetAnvilBuffer()}) == false ||
+		RecordBindVertexBuffers({vertBuffer.get(),colorBuffer.get()}) == false ||
 		RecordPushConstants(pushConstants) == false ||
 		RecordDraw(vertCount) == false
 	)

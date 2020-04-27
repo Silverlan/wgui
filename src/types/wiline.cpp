@@ -22,7 +22,7 @@ WILineBase::WILineBase()
 
 ////////////////////
 
-static std::shared_ptr<prosper::Buffer> s_lineBuffer = nullptr;
+static std::shared_ptr<prosper::IBuffer> s_lineBuffer = nullptr;
 static uint32_t s_lineCount = 0u;
 
 WILine::WILine()
@@ -45,19 +45,19 @@ WILine::WILine()
 	if(s_lineBuffer == nullptr)
 	{
 		prosper::util::BufferCreateInfo bufCreateInfo {};
-		bufCreateInfo.usageFlags = Anvil::BufferUsageFlagBits::VERTEX_BUFFER_BIT;
+		bufCreateInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
 		bufCreateInfo.size = verts.size() *sizeof(Vector2);
-		bufCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
-		s_lineBuffer = prosper::util::create_buffer(dev,bufCreateInfo,verts.data());
+		bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+		s_lineBuffer = context.CreateBuffer(bufCreateInfo,verts.data());
 		s_lineBuffer->SetDebugName("gui_line_vertex_buf");
 	}
 	InitializeBufferData(*s_lineBuffer);
 
 	prosper::util::BufferCreateInfo bufCreateInfo {};
-	bufCreateInfo.usageFlags = Anvil::BufferUsageFlagBits::VERTEX_BUFFER_BIT | Anvil::BufferUsageFlagBits::TRANSFER_DST_BIT;
+	bufCreateInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
 	bufCreateInfo.size = sizeof(Vector4) *2;
-	bufCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
-	m_bufColor = prosper::util::create_buffer(dev,bufCreateInfo,verts.data());
+	bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+	m_bufColor = context.CreateBuffer(bufCreateInfo,verts.data());
 	m_bufColor->SetDebugName("gui_line_color_buf");
 
 	auto col = Color::White.ToVector4();

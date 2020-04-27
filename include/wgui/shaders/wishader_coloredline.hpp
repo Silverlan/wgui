@@ -19,7 +19,7 @@ namespace wgui
 
 		ShaderColoredLine(prosper::Context &context,const std::string &identifier);
 
-		bool Draw(const std::shared_ptr<prosper::Buffer> &vertBuffer,const std::shared_ptr<prosper::Buffer> &colorBuffer,uint32_t vertCount,float lineWidth,const wgui::ElementData &pushConstants);
+		bool Draw(const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &colorBuffer,uint32_t vertCount,float lineWidth,const wgui::ElementData &pushConstants);
 	protected:
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};

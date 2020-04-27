@@ -23,8 +23,8 @@ namespace wgui
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_GLYPH_INDEX;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_GLYPH_BOUNDS;
 
-		static prosper::Shader::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
-		static prosper::Shader::DescriptorSetInfo DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER;
+		static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
+		static prosper::DescriptorSetInfo DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER;
 
 #pragma pack(push,1)
 		struct PushConstants
@@ -42,14 +42,14 @@ namespace wgui
 		ShaderText(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
 		bool Draw(
-			prosper::Buffer &glyphBoundsIndexBuffer,
-			Anvil::DescriptorSet &descTextureSet,const PushConstants &pushConstants,
+			prosper::IBuffer &glyphBoundsIndexBuffer,
+			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 			uint32_t instanceCount
 		);
 		using Shader::BeginDraw;
 		using ShaderGraphics::BeginDraw;
 	protected:
-		virtual void InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx) override;
+		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 
@@ -72,12 +72,12 @@ namespace wgui
 		ShaderTextRect(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
 		bool Draw(
-			prosper::Buffer &glyphBoundsIndexBuffer,
-			Anvil::DescriptorSet &descTextureSet,const PushConstants &pushConstants,
+			prosper::IBuffer &glyphBoundsIndexBuffer,
+			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 			uint32_t instanceCount
 		);
 	protected:
-		virtual void InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx) override;
+		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 
@@ -93,8 +93,8 @@ namespace wgui
 		ShaderTextRectColor(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
 		bool Draw(
-			prosper::Buffer &glyphBoundsIndexBuffer,prosper::Buffer &colorBuffer,
-			Anvil::DescriptorSet &descTextureSet,const PushConstants &pushConstants,
+			prosper::IBuffer &glyphBoundsIndexBuffer,prosper::IBuffer &colorBuffer,
+			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 			uint32_t instanceCount
 		);
 	protected:

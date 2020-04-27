@@ -33,7 +33,7 @@ static std::array<std::array<Vector2,3>,4> s_vertices {
 		Vector2{1.f,1.f}
 	}
 };
-static std::array<std::shared_ptr<prosper::Buffer>,4> s_vertexBuffers {nullptr,nullptr,nullptr,nullptr};
+static std::array<std::shared_ptr<prosper::IBuffer>,4> s_vertexBuffers {nullptr,nullptr,nullptr,nullptr};
 
 static uint32_t s_arrowCount = 0u;
 WIArrow::WIArrow()
@@ -42,16 +42,15 @@ WIArrow::WIArrow()
 	if(s_arrowCount++ == 0u)
 	{
 		auto &context = WGUI::GetInstance().GetContext();
-		auto &dev = context.GetDevice();
 		for(auto i=decltype(s_vertexBuffers.size()){0};i<s_vertexBuffers.size();++i)
 		{
 			auto &verts = s_vertices[i];
 
 			auto bufCreateInfo = prosper::util::BufferCreateInfo {};
-			bufCreateInfo.usageFlags = Anvil::BufferUsageFlagBits::VERTEX_BUFFER_BIT;
+			bufCreateInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
 			bufCreateInfo.size = verts.size() *sizeof(verts.front());
-			bufCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
-			s_vertexBuffers[i] = prosper::util::create_buffer(dev,bufCreateInfo,verts.data());
+			bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+			s_vertexBuffers[i] = context.CreateBuffer(bufCreateInfo,verts.data());
 			s_vertexBuffers[i]->SetDebugName("gui_arrow_vertex_buffer_" +std::to_string(i));
 		}
 	}

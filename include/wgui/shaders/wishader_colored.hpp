@@ -17,7 +17,7 @@ namespace wgui
 		ShaderColored(prosper::Context &context,const std::string &identifier);
 		ShaderColored(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(prosper::Buffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants);
+		bool Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants);
 	protected:
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};

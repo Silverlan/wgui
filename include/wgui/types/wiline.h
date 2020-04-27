@@ -28,7 +28,7 @@ private:
 	Color m_colStart;
 	Color m_colEnd;
 	float m_dot;
-	std::shared_ptr<prosper::Buffer> m_bufColor = nullptr;
+	std::shared_ptr<prosper::IBuffer> m_bufColor = nullptr;
 	void UpdateColorBuffer();
 public:
 	WILine();

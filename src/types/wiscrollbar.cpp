@@ -9,6 +9,7 @@
 
 LINK_WGUI_TO_CLASS(WIScrollBar,WIScrollBar);
 
+#pragma optimize("",off)
 WIScrollBar::WIScrollBar()
 	: WIBase(),m_bHorizontal(false),m_offset(0),
 	m_numElements(0),m_numListed(0),
@@ -48,7 +49,12 @@ util::EventReply WIScrollBar::ScrollCallback(Vector2 offset)
 {
 	if(WIBase::ScrollCallback(offset) == util::EventReply::Handled)
 		return util::EventReply::Handled;
-	AddScrollOffset(static_cast<int>(-offset.y *static_cast<double>(GetScrollAmount())));
+	auto scrollAmount = GetScrollAmount();
+	auto &window = WGUI::GetInstance().GetContext().GetWindow();
+	auto isShiftDown = (window.GetKeyState(GLFW::Key::LeftShift) != GLFW::KeyState::Release || window.GetKeyState(GLFW::Key::RightShift) != GLFW::KeyState::Release) ? true : false;
+	if(isShiftDown)
+		scrollAmount = m_numListed;
+	AddScrollOffset(static_cast<int>(-offset.y *static_cast<double>(scrollAmount)));
 	return util::EventReply::Handled;
 }
 util::EventReply WIScrollBar::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
@@ -174,6 +180,8 @@ void WIScrollBar::UpdateSliderSize()
 			0;
 		if(h == 0)
 			h = 1;
+		auto minH = umath::min(slider->GetParent()->GetHeight(),20);
+		h = umath::max(h,minH);
 		slider->SetSliderSize(GetSliderWidth(),h);
 		slider->SetSliderPos(0,GetSliderWidth());
 	}
@@ -368,3 +376,4 @@ util::EventReply WIScrollBarSlider::ScrollCallback(Vector2 offset)
 		return util::EventReply::Handled;
 	return parent->ScrollCallback(offset);
 }
+#pragma optimize("",on)

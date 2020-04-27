@@ -12,6 +12,8 @@
 #include <image/prosper_texture.hpp>
 #include "wguidefinitions.h"
 
+namespace prosper {class IDescriptorSet;};
+
 class FontInfo;
 class FontManager;
 class DLLWGUI GlyphInfo
@@ -59,9 +61,9 @@ public:
 	uint32_t GetMaxGlyphBitmapHeight() const;
 	int32_t GetMaxGlyphTop() const;
 	std::shared_ptr<prosper::Texture> GetGlyphMap() const;
-	Anvil::DescriptorSet *GetGlyphMapDescriptorSet() const;
-	std::shared_ptr<prosper::Buffer> GetGlyphBoundsBuffer() const;
-	Anvil::DescriptorSet *GetGlyphBoundsDescriptorSet() const;
+	prosper::IDescriptorSet *GetGlyphMapDescriptorSet() const;
+	std::shared_ptr<prosper::IBuffer> GetGlyphBoundsBuffer() const;
+	prosper::IDescriptorSet *GetGlyphBoundsDescriptorSet() const;
 protected:
 	FontInfo()=default;
 	friend FontManager;
@@ -85,9 +87,9 @@ private:
 	uint32_t m_maxBitmapWidth = 0;
 	uint32_t m_maxBitmapHeight = 0;
 	std::shared_ptr<prosper::Texture> m_glyphMap = nullptr;
-	std::shared_ptr<prosper::DescriptorSetGroup> m_glyphMapDescSetGroup = nullptr;
-	std::shared_ptr<prosper::Buffer> m_glyphBoundsBuffer = nullptr;
-	std::shared_ptr<prosper::DescriptorSetGroup> m_glyphBoundsDsg = nullptr;
+	std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphMapDescSetGroup = nullptr;
+	std::shared_ptr<prosper::IBuffer> m_glyphBoundsBuffer = nullptr;
+	std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphBoundsDsg = nullptr;
 };
 
 class DLLWGUI FontManager

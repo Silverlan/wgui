@@ -14,27 +14,27 @@
 
 using namespace wgui;
 
-decltype(ShaderText::VERTEX_BINDING_VERTEX) ShaderText::VERTEX_BINDING_VERTEX = {Anvil::VertexInputRate::VERTEX};
+decltype(ShaderText::VERTEX_BINDING_VERTEX) ShaderText::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
 decltype(ShaderText::VERTEX_ATTRIBUTE_POSITION) ShaderText::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::util::get_square_vertex_format()};
 decltype(ShaderText::VERTEX_ATTRIBUTE_UV) ShaderText::VERTEX_ATTRIBUTE_UV = {VERTEX_BINDING_VERTEX,prosper::util::get_square_uv_format()};
 
-decltype(ShaderText::VERTEX_BINDING_GLYPH) ShaderText::VERTEX_BINDING_GLYPH = {Anvil::VertexInputRate::INSTANCE};
-decltype(ShaderText::VERTEX_ATTRIBUTE_GLYPH_INDEX) ShaderText::VERTEX_ATTRIBUTE_GLYPH_INDEX = {VERTEX_BINDING_GLYPH,Anvil::Format::R32_UINT};
-decltype(ShaderText::VERTEX_ATTRIBUTE_GLYPH_BOUNDS) ShaderText::VERTEX_ATTRIBUTE_GLYPH_BOUNDS = {VERTEX_BINDING_GLYPH,Anvil::Format::R32G32B32A32_SFLOAT};
+decltype(ShaderText::VERTEX_BINDING_GLYPH) ShaderText::VERTEX_BINDING_GLYPH = {prosper::VertexInputRate::Instance};
+decltype(ShaderText::VERTEX_ATTRIBUTE_GLYPH_INDEX) ShaderText::VERTEX_ATTRIBUTE_GLYPH_INDEX = {VERTEX_BINDING_GLYPH,prosper::Format::R32_UInt};
+decltype(ShaderText::VERTEX_ATTRIBUTE_GLYPH_BOUNDS) ShaderText::VERTEX_ATTRIBUTE_GLYPH_BOUNDS = {VERTEX_BINDING_GLYPH,prosper::Format::R32G32B32A32_SFloat};
 
 decltype(ShaderText::DESCRIPTOR_SET_TEXTURE) ShaderText::DESCRIPTOR_SET_TEXTURE = {
 	{
-		prosper::Shader::DescriptorSetInfo::Binding {
-			Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
-			Anvil::ShaderStageFlagBits::FRAGMENT_BIT
+		prosper::DescriptorSetInfo::Binding {
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
 		}
 	}
 };
 decltype(ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER) ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER = {
 	{
-		prosper::Shader::DescriptorSetInfo::Binding {
-			Anvil::DescriptorType::UNIFORM_BUFFER,
-			Anvil::ShaderStageFlagBits::VERTEX_BIT
+		prosper::DescriptorSetInfo::Binding {
+		prosper::DescriptorType::UniformBuffer,
+		prosper::ShaderStageFlags::VertexBit
 		}
 	}
 };
@@ -46,11 +46,11 @@ ShaderText::ShaderText(prosper::Context &context,const std::string &identifier,c
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-void ShaderText::InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx)
+void ShaderText::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
 {
 	CreateCachedRenderPass<ShaderText>({{{
-		Anvil::Format::R8_UNORM,Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,Anvil::AttachmentLoadOp::DONT_CARE,
-		Anvil::AttachmentStoreOp::STORE,Anvil::SampleCountFlagBits::_1_BIT,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL
+		prosper::Format::R8_UNorm,prosper::ImageLayout::ColorAttachmentOptimal,prosper::AttachmentLoadOp::DontCare,
+		prosper::AttachmentStoreOp::Store,prosper::SampleCountFlags::e1Bit,prosper::ImageLayout::ShaderReadOnlyOptimal
 	}}},outRenderPass,pipelineIdx);
 }
 
@@ -64,19 +64,18 @@ void ShaderText::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipeli
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_GLYPH_BOUNDS);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),Anvil::ShaderStageFlagBits::VERTEX_BIT);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit);
 }
 
 bool ShaderText::Draw(
-	prosper::Buffer &glyphBoundsIndexBuffer,
-	Anvil::DescriptorSet &descTextureSet,const PushConstants &pushConstants,
+	prosper::IBuffer &glyphBoundsIndexBuffer,
+	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 	uint32_t instanceCount
 )
 {
-	auto &dev = GetContext().GetDevice();
 	if(
 		RecordBindVertexBuffers({
-			&prosper::util::get_square_vertex_uv_buffer(dev)->GetAnvilBuffer(),&glyphBoundsIndexBuffer.GetAnvilBuffer()
+			prosper::util::get_square_vertex_uv_buffer(GetContext()).get(),&glyphBoundsIndexBuffer
 		}) == false ||
 		RecordBindDescriptorSets({&descTextureSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
@@ -96,15 +95,14 @@ ShaderTextRect::ShaderTextRect(prosper::Context &context,const std::string &iden
 {}
 
 bool ShaderTextRect::Draw(
-	prosper::Buffer &glyphBoundsIndexBuffer,
-	Anvil::DescriptorSet &descTextureSet,const PushConstants &pushConstants,
+	prosper::IBuffer &glyphBoundsIndexBuffer,
+	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 	uint32_t instanceCount
 )
 {
-	auto &dev = GetContext().GetDevice();
 	if(
 		RecordBindVertexBuffers({
-			&prosper::util::get_square_vertex_uv_buffer(dev)->GetAnvilBuffer(),&glyphBoundsIndexBuffer.GetAnvilBuffer()
+			prosper::util::get_square_vertex_uv_buffer(GetContext()).get(),&glyphBoundsIndexBuffer
 			}) == false ||
 		RecordBindDescriptorSets({&descTextureSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
@@ -114,11 +112,11 @@ bool ShaderTextRect::Draw(
 	return true;
 }
 
-void ShaderTextRect::InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx)
+void ShaderTextRect::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
 {
 	CreateCachedRenderPass<ShaderTextRect>({{{
-		Anvil::Format::R8G8B8A8_UNORM,Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,Anvil::AttachmentLoadOp::DONT_CARE,
-		Anvil::AttachmentStoreOp::STORE,Anvil::SampleCountFlagBits::_1_BIT,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL
+		prosper::Format::R8G8B8A8_UNorm,prosper::ImageLayout::ColorAttachmentOptimal,prosper::AttachmentLoadOp::DontCare,
+		prosper::AttachmentStoreOp::Store,prosper::SampleCountFlags::e1Bit,prosper::ImageLayout::ShaderReadOnlyOptimal
 	}}},outRenderPass,pipelineIdx);
 }
 
@@ -133,13 +131,13 @@ void ShaderTextRect::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pi
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_GLYPH_BOUNDS);
 	AddDescriptorSetGroup(pipelineInfo,ShaderText::DESCRIPTOR_SET_TEXTURE);
 	AddDescriptorSetGroup(pipelineInfo,ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),Anvil::ShaderStageFlagBits::VERTEX_BIT | Anvil::ShaderStageFlagBits::FRAGMENT_BIT);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
 
-decltype(ShaderTextRectColor::VERTEX_BINDING_COLOR) ShaderTextRectColor::VERTEX_BINDING_COLOR = {Anvil::VertexInputRate::INSTANCE};
-decltype(ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR) ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_COLOR,Anvil::Format::R32G32B32A32_SFLOAT};
+decltype(ShaderTextRectColor::VERTEX_BINDING_COLOR) ShaderTextRectColor::VERTEX_BINDING_COLOR = {prosper::VertexInputRate::Instance};
+decltype(ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR) ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_COLOR,prosper::Format::R32G32B32A32_SFloat};
 ShaderTextRectColor::ShaderTextRectColor(prosper::Context &context,const std::string &identifier)
 	: ShaderTextRectColor{context,identifier,"wgui/vs_wgui_text_cheap_color","wgui/fs_wgui_text_cheap_color"}
 {}
@@ -147,12 +145,12 @@ ShaderTextRectColor::ShaderTextRectColor(prosper::Context &context,const std::st
 	: ShaderTextRect{context,identifier,vsShader,fsShader,gsShader}
 {}
 bool ShaderTextRectColor::Draw(
-	prosper::Buffer &glyphBoundsIndexBuffer,prosper::Buffer &colorBuffer,
-	Anvil::DescriptorSet &descTextureSet,const PushConstants &pushConstants,
+	prosper::IBuffer &glyphBoundsIndexBuffer,prosper::IBuffer &colorBuffer,
+	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 	uint32_t instanceCount
 )
 {
-	return RecordBindVertexBuffers({&colorBuffer.GetAnvilBuffer()},2u) && ShaderTextRect::Draw(glyphBoundsIndexBuffer,descTextureSet,pushConstants,instanceCount);
+	return RecordBindVertexBuffers({&colorBuffer},2u) && ShaderTextRect::Draw(glyphBoundsIndexBuffer,descTextureSet,pushConstants,instanceCount);
 }
 void ShaderTextRectColor::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {

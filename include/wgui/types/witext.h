@@ -21,10 +21,11 @@
 
 namespace prosper
 {
-	class Buffer;
+	class IBuffer;
 	class Shader;
 	class BlurSet;
-	class UniformResizableBuffer;
+	class IUniformResizableBuffer;
+	class IDescriptorSet;
 };
 
 namespace util{namespace text{class FormattedText; class TextTag; class FormattedTextLine;};};
@@ -40,8 +41,8 @@ class DLLWGUI WITextBase
 public:
 	struct SubBufferInfo
 	{
-		std::shared_ptr<prosper::Buffer> buffer;
-		std::shared_ptr<prosper::Buffer> colorBuffer;
+		std::shared_ptr<prosper::IBuffer> buffer;
+		std::shared_ptr<prosper::IBuffer> colorBuffer;
 		util::text::TextLength numChars = 0u;
 		util::text::CharOffset charOffset = 0u;
 		util::text::LineIndex absLineIndex = 0;
@@ -60,7 +61,7 @@ private:
 		const Vector2i &absPos,const Mat4 &transform,
 		const Vector2i &origin,const Mat4 &matParent,Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants,
-		const std::function<void(const SubBufferInfo&,Anvil::DescriptorSet&)> &fDraw,
+		const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 		bool colorPass
 	) const;
 	void RenderLines(
@@ -229,7 +230,7 @@ private:
 		float blurSize;
 	};
 private:
-	static std::shared_ptr<prosper::UniformResizableBuffer> s_textBuffer;
+	static std::shared_ptr<prosper::IUniformResizableBuffer> s_textBuffer;
 	util::WeakHandle<prosper::Shader> m_shader = {};
 	std::shared_ptr<util::text::FormattedText> m_text = nullptr;
 	std::vector<LineInfo> m_lineInfos = {};

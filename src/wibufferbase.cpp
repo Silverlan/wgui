@@ -58,7 +58,7 @@ prosper::Shader *WIBufferBase::GetCheapShader() {return m_shaderCheap.get();}
 
 unsigned int WIBufferBase::GetVertexCount() {return 0;}
 
-void WIBufferBase::InitializeBufferData(prosper::Buffer &buffer)
+void WIBufferBase::InitializeBufferData(prosper::IBuffer &buffer)
 {
 	m_vertexBufferData = std::make_unique<WIElementVertexBufferData>();
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());

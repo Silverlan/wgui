@@ -14,7 +14,7 @@
 #include <optional>
 
 namespace util{namespace text{class TextTag; class FormattedTextLine; class AnchorPoint;};};
-namespace prosper {class UniformResizableBuffer;};
+namespace prosper {class IUniformResizableBuffer;};
 class WIText;
 struct DLLWGUI WITextTagArgument
 {
@@ -119,7 +119,7 @@ public:
 
 	std::optional<Vector4> GetColor() const;
 private:
-	static std::shared_ptr<prosper::UniformResizableBuffer> s_colorBuffer;
+	static std::shared_ptr<prosper::IUniformResizableBuffer> s_colorBuffer;
 };
 
 class DLLWGUI WITextTagTooltip

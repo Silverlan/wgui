@@ -12,17 +12,17 @@
 
 using namespace wgui;
 
-decltype(ShaderTextured::VERTEX_BINDING_VERTEX) ShaderTextured::VERTEX_BINDING_VERTEX = {Anvil::VertexInputRate::VERTEX};
+decltype(ShaderTextured::VERTEX_BINDING_VERTEX) ShaderTextured::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
 decltype(ShaderTextured::VERTEX_ATTRIBUTE_POSITION) ShaderTextured::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::util::get_square_vertex_format()};
 
-decltype(ShaderTextured::VERTEX_BINDING_UV) ShaderTextured::VERTEX_BINDING_UV = {Anvil::VertexInputRate::VERTEX};
+decltype(ShaderTextured::VERTEX_BINDING_UV) ShaderTextured::VERTEX_BINDING_UV = {prosper::VertexInputRate::Vertex};
 decltype(ShaderTextured::VERTEX_ATTRIBUTE_UV) ShaderTextured::VERTEX_ATTRIBUTE_UV = {VERTEX_BINDING_UV,prosper::util::get_square_uv_format()};
 
 decltype(ShaderTextured::DESCRIPTOR_SET_TEXTURE) ShaderTextured::DESCRIPTOR_SET_TEXTURE = {
 	{
-		prosper::Shader::DescriptorSetInfo::Binding {
-			Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
-			Anvil::ShaderStageFlagBits::FRAGMENT_BIT
+		prosper::DescriptorSetInfo::Binding {
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
 		}
 	}
 };
@@ -35,13 +35,13 @@ ShaderTextured::ShaderTextured(prosper::Context &context,const std::string &iden
 {}
 
 bool ShaderTextured::Draw(
-	const std::shared_ptr<prosper::Buffer> &vertBuffer,const std::shared_ptr<prosper::Buffer> &uvBuffer,
-	uint32_t vertCount,Anvil::DescriptorSet &descSetTexture,
+	const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &uvBuffer,
+	uint32_t vertCount,prosper::IDescriptorSet &descSetTexture,
 	const PushConstants &pushConstants
 )
 {
 	if(
-		RecordBindVertexBuffers({&vertBuffer->GetAnvilBuffer(),&uvBuffer->GetAnvilBuffer()}) == false ||
+		RecordBindVertexBuffers({vertBuffer.get(),uvBuffer.get()}) == false ||
 		RecordBindDescriptorSets({&descSetTexture}) == false ||
 		RecordPushConstants(pushConstants) == false ||
 		RecordDraw(vertCount) == false
@@ -58,7 +58,7 @@ void ShaderTextured::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pi
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_UV);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),Anvil::ShaderStageFlagBits::VERTEX_BIT | Anvil::ShaderStageFlagBits::FRAGMENT_BIT);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
@@ -70,11 +70,10 @@ ShaderTexturedRect::ShaderTexturedRect(prosper::Context &context,const std::stri
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,Anvil::DescriptorSet &descSet)
+bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet)
 {
-	auto &dev = WGUI::GetInstance().GetContext().GetDevice();
 	if(
-		RecordBindVertexBuffers({&prosper::util::get_square_vertex_buffer(dev)->GetAnvilBuffer(),&prosper::util::get_square_uv_buffer(dev)->GetAnvilBuffer()}) == false ||
+		RecordBindVertexBuffers({prosper::util::get_square_vertex_buffer(WGUI::GetInstance().GetContext()).get(),prosper::util::get_square_uv_buffer(WGUI::GetInstance().GetContext()).get()}) == false ||
 		RecordBindDescriptorSets({&descSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
 		RecordDraw(prosper::util::get_square_vertex_count()) == false
@@ -91,5 +90,5 @@ void ShaderTexturedRect::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,ShaderTextured::VERTEX_ATTRIBUTE_UV);
 	AddDescriptorSetGroup(pipelineInfo,ShaderTextured::DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),Anvil::ShaderStageFlagBits::VERTEX_BIT | Anvil::ShaderStageFlagBits::FRAGMENT_BIT);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }

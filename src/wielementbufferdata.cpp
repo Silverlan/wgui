@@ -14,6 +14,6 @@ WIElementVertexBufferData::~WIElementVertexBufferData()
 	if(m_buffer != nullptr)
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_buffer);
 }
-void WIElementVertexBufferData::SetBuffer(const std::shared_ptr<prosper::Buffer> &buffer) {m_buffer = buffer;}
+void WIElementVertexBufferData::SetBuffer(const std::shared_ptr<prosper::IBuffer> &buffer) {m_buffer = buffer;}
 void WIElementVertexBufferData::ClearBuffer() {m_buffer = nullptr;}
-std::shared_ptr<prosper::Buffer> WIElementVertexBufferData::GetBuffer() const {return m_buffer;}
+std::shared_ptr<prosper::IBuffer> WIElementVertexBufferData::GetBuffer() const {return m_buffer;}

@@ -13,14 +13,14 @@
 
 using namespace wgui;
 
-decltype(Shader::VERTEX_BINDING_VERTEX) Shader::VERTEX_BINDING_VERTEX = {Anvil::VertexInputRate::VERTEX};
+decltype(Shader::VERTEX_BINDING_VERTEX) Shader::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
 decltype(Shader::VERTEX_ATTRIBUTE_POSITION) Shader::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::util::get_square_vertex_format()};
 
 decltype(Shader::DESCRIPTOR_SET) Shader::DESCRIPTOR_SET = {
 	{
-		prosper::Shader::DescriptorSetInfo::Binding {
-			Anvil::DescriptorType::UNIFORM_BUFFER_DYNAMIC,
-			Anvil::ShaderStageFlagBits::FRAGMENT_BIT | Anvil::ShaderStageFlagBits::VERTEX_BIT
+		prosper::DescriptorSetInfo::Binding {
+			prosper::DescriptorType::UniformBufferDynamic,
+			prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit
 		}
 	}
 };
@@ -40,12 +40,12 @@ void Shader::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineIn
 
 size_t Shader::GetBaseTypeHashCode() const {return typeid(Shader).hash_code();}
 
-bool Shader::BeginDraw(const std::shared_ptr<prosper::PrimaryCommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx)
+bool Shader::BeginDraw(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx)
 {
-	if(ShaderGraphics::BeginDraw(cmdBuffer,pipelineIdx,RecordFlags::None) == false || prosper::util::record_set_viewport(cmdBuffer->GetAnvilCommandBuffer(),width,height) == false)
+	if(ShaderGraphics::BeginDraw(cmdBuffer,pipelineIdx,RecordFlags::None) == false || cmdBuffer->RecordSetViewport(width,height) == false)
 		return false;
 	uint32_t x,y,w,h;
 	WGUI::GetInstance().GetScissor(x,y,w,h);
-	return prosper::util::record_set_scissor(cmdBuffer->GetAnvilCommandBuffer(),w,h,x,y);
+	return cmdBuffer->RecordSetScissor(w,h,x,y);
 }
 
