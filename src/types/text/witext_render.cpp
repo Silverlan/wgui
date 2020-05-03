@@ -627,7 +627,7 @@ void WIText::RemoveDecorator(const WITextDecorator &decorator)
 	m_tagInfos.erase(it);
 }
 
-void WIText::InitializeTextBuffer(prosper::Context &context)
+void WIText::InitializeTextBuffer(prosper::IPrContext &context)
 {
 	if(s_textBuffer != nullptr)
 		return;

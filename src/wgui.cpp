@@ -26,7 +26,7 @@
 
 #pragma optimize("",off)
 static std::unique_ptr<WGUI> s_wgui = nullptr;
-WGUI &WGUI::Open(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager)
+WGUI &WGUI::Open(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager)
 {
 	s_wgui = nullptr;
 	s_wgui = std::make_unique<WGUI>(context,wpMatManager);
@@ -46,7 +46,7 @@ void WGUI::Close()
 bool WGUI::IsOpen() {return s_wgui != nullptr;}
 WGUI &WGUI::GetInstance() {return *s_wgui;}
 
-WGUI::WGUI(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager)
+WGUI::WGUI(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager)
 	: prosper::ContextObject(context),m_matManager(wpMatManager)
 {
 	SetMaterialLoadHandler([this](const std::string &path) -> Material* {
@@ -103,14 +103,14 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 	m_tLastThink = static_cast<double>(m_time());
 	auto &context = GetContext();
 	auto &shaderManager = context.GetShaderManager();
-	m_shaderColored = shaderManager.RegisterShader("wguicolored",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderColored(context,identifier);});
-	m_shaderColoredCheap = shaderManager.RegisterShader("wguicolored_cheap",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderColoredRect(context,identifier);});
-	m_shaderColoredLine = shaderManager.RegisterShader("wguicoloredline",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderColoredLine(context,identifier);});
-	m_shaderText = shaderManager.RegisterShader("wguitext",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderText(context,identifier);});
-	m_shaderTextCheap = shaderManager.RegisterShader("wguitext_cheap",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderTextRect(context,identifier);});
-	m_shaderTextCheapColor = shaderManager.RegisterShader("wguitext_cheap_color",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderTextRectColor(context,identifier);});
-	m_shaderTextured = shaderManager.RegisterShader("wguitextured",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderTextured(context,identifier);});
-	m_shaderTexturedCheap = shaderManager.RegisterShader("wguitextured_cheap",[](prosper::Context &context,const std::string &identifier) {return new wgui::ShaderTexturedRect(context,identifier);});
+	m_shaderColored = shaderManager.RegisterShader("wguicolored",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColored(context,identifier);});
+	m_shaderColoredCheap = shaderManager.RegisterShader("wguicolored_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColoredRect(context,identifier);});
+	m_shaderColoredLine = shaderManager.RegisterShader("wguicoloredline",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColoredLine(context,identifier);});
+	m_shaderText = shaderManager.RegisterShader("wguitext",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderText(context,identifier);});
+	m_shaderTextCheap = shaderManager.RegisterShader("wguitext_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextRect(context,identifier);});
+	m_shaderTextCheapColor = shaderManager.RegisterShader("wguitext_cheap_color",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextRectColor(context,identifier);});
+	m_shaderTextured = shaderManager.RegisterShader("wguitextured",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextured(context,identifier);});
+	m_shaderTexturedCheap = shaderManager.RegisterShader("wguitextured_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRect(context,identifier);});
 	
 	if(wgui::Shader::DESCRIPTOR_SET.IsValid() == false)
 		return ResultCode::ErrorInitializingShaders;

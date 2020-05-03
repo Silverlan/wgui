@@ -37,7 +37,6 @@ WILine::WILine()
 	};
 	auto &instance = WGUI::GetInstance();
 	auto &context = instance.GetContext();
-	auto &dev = context.GetDevice();
 	auto *pShader = instance.GetColoredLineShader();
 	if(pShader != nullptr)
 		SetShader(*pShader);

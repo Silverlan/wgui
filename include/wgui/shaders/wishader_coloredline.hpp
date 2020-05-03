@@ -17,7 +17,7 @@ namespace wgui
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_COLOR;
 
-		ShaderColoredLine(prosper::Context &context,const std::string &identifier);
+		ShaderColoredLine(prosper::IPrContext &context,const std::string &identifier);
 
 		bool Draw(const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &colorBuffer,uint32_t vertCount,float lineWidth,const wgui::ElementData &pushConstants);
 	protected:

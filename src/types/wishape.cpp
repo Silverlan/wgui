@@ -279,7 +279,6 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 	if(col.a <= 0.f)
 		return;
 	// Try to use cheap shader if no custom vertex buffer was used
-	auto &dev = WGUI::GetInstance().GetContext().GetDevice();
 	if((m_vertexBufferData == nullptr && m_uvBuffer == nullptr) || m_shader.expired())
 	{
 		auto *pShaderCheap = static_cast<wgui::ShaderTexturedRect*>(GetCheapShader());

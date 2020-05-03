@@ -38,8 +38,8 @@ namespace wgui
 		};
 #pragma pack(pop)
 
-		ShaderText(prosper::Context &context,const std::string &identifier);
-		ShaderText(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+		ShaderText(prosper::IPrContext &context,const std::string &identifier);
+		ShaderText(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
 		bool Draw(
 			prosper::IBuffer &glyphBoundsIndexBuffer,
@@ -68,8 +68,8 @@ namespace wgui
 		};
 #pragma pack(pop)
 
-		ShaderTextRect(prosper::Context &context,const std::string &identifier);
-		ShaderTextRect(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+		ShaderTextRect(prosper::IPrContext &context,const std::string &identifier);
+		ShaderTextRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
 		bool Draw(
 			prosper::IBuffer &glyphBoundsIndexBuffer,
@@ -89,8 +89,8 @@ namespace wgui
 	public:
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_COLOR;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_COLOR;
-		ShaderTextRectColor(prosper::Context &context,const std::string &identifier);
-		ShaderTextRectColor(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+		ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier);
+		ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
 		bool Draw(
 			prosper::IBuffer &glyphBoundsIndexBuffer,prosper::IBuffer &colorBuffer,

@@ -216,7 +216,7 @@ public:
 		std::shared_ptr<WITextDecorator> AddDecorator(TARGS&& ...args);
 	void RemoveDecorator(const WITextDecorator &decorator);
 
-	static void InitializeTextBuffer(prosper::Context &context);
+	static void InitializeTextBuffer(prosper::IPrContext &context);
 	static void ClearTextBuffer();
 private:
 	struct WITextShadowInfo

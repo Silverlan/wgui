@@ -15,7 +15,7 @@ using namespace wgui;
 
 decltype(ShaderColoredLine::VERTEX_BINDING_VERTEX) ShaderColoredLine::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
 decltype(ShaderColoredLine::VERTEX_ATTRIBUTE_COLOR) ShaderColoredLine::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_VERTEX,prosper::Format::R32G32B32A32_SFloat};
-ShaderColoredLine::ShaderColoredLine(prosper::Context &context,const std::string &identifier)
+ShaderColoredLine::ShaderColoredLine(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderColored(context,identifier,"wgui/vs_wgui_colored_vertex","wgui/fs_wgui_colored_vertex")
 {
 	SetBaseShader<ShaderColored>();

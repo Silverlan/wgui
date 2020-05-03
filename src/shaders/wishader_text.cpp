@@ -38,11 +38,11 @@ decltype(ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER) ShaderText::DESCRIPTOR_
 		}
 	}
 };
-ShaderText::ShaderText(prosper::Context &context,const std::string &identifier)
+ShaderText::ShaderText(prosper::IPrContext &context,const std::string &identifier)
 	: Shader(context,identifier,"wgui/vs_wgui_text","wgui/fs_wgui_text")
 {}
 
-ShaderText::ShaderText(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+ShaderText::ShaderText(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
@@ -87,10 +87,10 @@ bool ShaderText::Draw(
 
 ///////////////////////
 
-ShaderTextRect::ShaderTextRect(prosper::Context &context,const std::string &identifier)
+ShaderTextRect::ShaderTextRect(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderText(context,identifier,"wgui/vs_wgui_text_cheap","wgui/fs_wgui_text_cheap")
 {}
-ShaderTextRect::ShaderTextRect(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+ShaderTextRect::ShaderTextRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: ShaderText(context,identifier,vsShader,fsShader,gsShader)
 {}
 
@@ -138,10 +138,10 @@ void ShaderTextRect::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pi
 
 decltype(ShaderTextRectColor::VERTEX_BINDING_COLOR) ShaderTextRectColor::VERTEX_BINDING_COLOR = {prosper::VertexInputRate::Instance};
 decltype(ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR) ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_COLOR,prosper::Format::R32G32B32A32_SFloat};
-ShaderTextRectColor::ShaderTextRectColor(prosper::Context &context,const std::string &identifier)
+ShaderTextRectColor::ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderTextRectColor{context,identifier,"wgui/vs_wgui_text_cheap_color","wgui/fs_wgui_text_cheap_color"}
 {}
-ShaderTextRectColor::ShaderTextRectColor(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+ShaderTextRectColor::ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: ShaderTextRect{context,identifier,vsShader,fsShader,gsShader}
 {}
 bool ShaderTextRectColor::Draw(

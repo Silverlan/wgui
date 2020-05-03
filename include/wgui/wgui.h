@@ -73,12 +73,12 @@ public:
 		ErrorInitializingShaders,
 		FontNotFound,
 	};
-	WGUI(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager);
+	WGUI(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager);
 	WGUI(const WGUI&)=delete;
 	~WGUI();
 	WGUI &operator=(const WGUI&)=delete;
 
-	static WGUI &Open(prosper::Context &context,const std::weak_ptr<MaterialManager> &wpMatManager);
+	static WGUI &Open(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager);
 	static void Close();
 	static WGUI &GetInstance();
 	static bool IsOpen();

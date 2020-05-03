@@ -26,11 +26,11 @@ decltype(ShaderTextured::DESCRIPTOR_SET_TEXTURE) ShaderTextured::DESCRIPTOR_SET_
 		}
 	}
 };
-ShaderTextured::ShaderTextured(prosper::Context &context,const std::string &identifier)
+ShaderTextured::ShaderTextured(prosper::IPrContext &context,const std::string &identifier)
 	: Shader(context,identifier,"wgui/vs_wgui_textured","wgui/fs_wgui_textured")
 {}
 
-ShaderTextured::ShaderTextured(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+ShaderTextured::ShaderTextured(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
@@ -63,10 +63,10 @@ void ShaderTextured::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pi
 
 ///////////////////////
 
-ShaderTexturedRect::ShaderTexturedRect(prosper::Context &context,const std::string &identifier)
+ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context,const std::string &identifier)
 	: Shader(context,identifier,"wgui/vs_wgui_textured_cheap","wgui/fs_wgui_textured_cheap")
 {}
-ShaderTexturedRect::ShaderTexturedRect(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 

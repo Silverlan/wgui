@@ -70,7 +70,6 @@ void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 	auto col = drawInfo.GetColor(*this);
 	if(col.a <= 0.f)
 		return;
-	auto &dev = WGUI::GetInstance().GetContext().GetDevice();
 	if(m_vertexBufferData == nullptr || m_shader.expired())
 	{
 		if(m_shaderCheap.expired())

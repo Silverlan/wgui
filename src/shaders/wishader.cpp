@@ -24,11 +24,11 @@ decltype(Shader::DESCRIPTOR_SET) Shader::DESCRIPTOR_SET = {
 		}
 	}
 };
-Shader::Shader(prosper::Context &context,const std::string &identifier)
+Shader::Shader(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderGraphics(context,identifier,"wgui/vs_wgui_colored","wgui/fs_wgui_colored")
 {}
 
-Shader::Shader(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+Shader::Shader(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: ShaderGraphics(context,identifier,vsShader,fsShader,gsShader)
 {}
 

@@ -113,7 +113,6 @@ WITexturedRect::WITexturedRect()
 	: WITexturedShape()
 {
 	auto &context = WGUI::GetInstance().GetContext();
-	auto &dev = context.GetDevice();
 	//auto vertexBuffer = prosper::util::get_square_vertex_buffer(dev);
 	//auto uvBuffer = prosper::util::get_square_uv_buffer(dev);
 	//SetBuffer(*vertexBuffer);

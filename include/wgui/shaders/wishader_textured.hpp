@@ -45,8 +45,8 @@ namespace wgui
 		};
 #pragma pack(pop)
 
-		ShaderTextured(prosper::Context &context,const std::string &identifier);
-		ShaderTextured(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+		ShaderTextured(prosper::IPrContext &context,const std::string &identifier);
+		ShaderTextured(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
 		bool Draw(
 			const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &uvBuffer,uint32_t vertCount,
@@ -75,8 +75,8 @@ namespace wgui
 		};
 #pragma pack(pop)
 
-		ShaderTexturedRect(prosper::Context &context,const std::string &identifier);
-		ShaderTexturedRect(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+		ShaderTexturedRect(prosper::IPrContext &context,const std::string &identifier);
+		ShaderTexturedRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
 		bool Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet);
 	protected:

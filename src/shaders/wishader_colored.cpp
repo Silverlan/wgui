@@ -13,11 +13,11 @@
 
 using namespace wgui;
 
-ShaderColored::ShaderColored(prosper::Context &context,const std::string &identifier)
+ShaderColored::ShaderColored(prosper::IPrContext &context,const std::string &identifier)
 	: Shader(context,identifier,"wgui/vs_wgui_colored","wgui/fs_wgui_colored")
 {}
 
-ShaderColored::ShaderColored(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+ShaderColored::ShaderColored(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
@@ -44,11 +44,11 @@ void ShaderColored::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pip
 
 ///////////////////////
 
-ShaderColoredRect::ShaderColoredRect(prosper::Context &context,const std::string &identifier)
+ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context,const std::string &identifier)
 	: Shader(context,identifier,"wgui/vs_wgui_colored_cheap","wgui/fs_wgui_colored_cheap")
 {}
 
-ShaderColoredRect::ShaderColoredRect(prosper::Context &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
