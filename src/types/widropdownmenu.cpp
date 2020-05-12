@@ -22,6 +22,8 @@ WIDropDownMenu::WIDropDownMenu()
 {
 	RegisterCallback<void,unsigned int>("OnOptionSelected");
 	RegisterCallback<void>("OnValueChanged");
+	RegisterCallback<void>("OnMenuOpened");
+	RegisterCallback<void>("OnMenuClosed");
 }
 
 WIDropDownMenu::~WIDropDownMenu()
@@ -220,10 +222,10 @@ void WIDropDownMenu::OnOptionSelected(WIDropDownMenuOption *option)
 	SelectOption(option->GetIndex());
 }
 
-void WIDropDownMenu::AddOption(const std::string &option,const std::string &value)
+WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option,const std::string &value)
 {
 	if(!m_hList.IsValid())
-		return;
+		return nullptr;
 	WIDropDownMenuOption *pOption = WGUI::GetInstance().Create<WIDropDownMenuOption>(m_hList.get());
 	WIHandle hOption = pOption->GetHandle();
 	pOption->SetDropDownMenu(this);
@@ -267,12 +269,13 @@ void WIDropDownMenu::AddOption(const std::string &option,const std::string &valu
 	m_options.push_back(hOption);
 	if(m_hScrollBar.IsValid())
 		m_hScrollBar.get<WIScrollBar>()->SetUp(m_numListItems,static_cast<unsigned int>(m_options.size()));
+	return pOption;
 }
 
-void WIDropDownMenu::AddOption(const std::string &option)
+WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option)
 {
 	auto idx = m_options.size();
-	AddOption(option,std::to_string(idx));
+	return AddOption(option,std::to_string(idx));
 }
 
 void WIDropDownMenu::ClearOptions()
@@ -387,16 +390,18 @@ void WIDropDownMenu::OpenMenu()
 		pScrollBar->SetScrollOffset(idxSelected);
 		SetOptionOffset(idxSelected);
 	}
+	CallCallbacks("OnMenuOpened");
 }
 void WIDropDownMenu::CloseMenu()
 {
 	SetScrollInputEnabled(false);
-	if(!m_hList.IsValid())
-		return;
-	WIRect *pList = m_hList.get<WIRect>();
-	if(!pList->IsVisible())
-		return;
-	pList->SetVisible(false);
+	if(m_hList.IsValid())
+	{
+		WIRect *pList = m_hList.get<WIRect>();
+		if(pList->IsVisible())
+			pList->SetVisible(false);
+	}
+	CallCallbacks("OnMenuClosed");
 }
 bool WIDropDownMenu::IsMenuOpen()
 {

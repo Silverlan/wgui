@@ -41,30 +41,13 @@ class WGUIShaderTextured;
 class DLLWGUI WITexturedShape
 	: public WIShape
 {
-private:
-	util::WeakHandle<prosper::Shader> m_shader = {};
-	std::shared_ptr<prosper::IDescriptorSetGroup> m_descSetTextureGroup = nullptr;
-	void ClearTextureLoadCallback();
-	void InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture);
-protected:
-	virtual void DoUpdate() override;
-	MaterialHandle m_hMaterial;
-	std::shared_ptr<prosper::Texture> m_texture = nullptr;
-	std::shared_ptr<bool> m_texLoadCallback;
-	std::shared_ptr<prosper::IBuffer> m_uvBuffer = nullptr;
-	std::vector<Vector2> m_uvs;
-	std::array<wgui::ShaderTextured::Channel,4> m_channels = {
-		wgui::ShaderTextured::Channel::Red,
-		wgui::ShaderTextured::Channel::Green,
-		wgui::ShaderTextured::Channel::Blue,
-		wgui::ShaderTextured::Channel::Alpha
-	};
-	bool m_bAlphaOnly;
-	float m_lod = -1.f;
-
-	void ReloadDescriptorSet();
-	virtual void SetShader(prosper::Shader &shader,prosper::Shader *shaderCheap=nullptr) override;
 public:
+	enum class StateFlags : uint8_t
+	{
+		None = 0,
+		AlphaOnly = 1u,
+		ShaderOverride = AlphaOnly<<1u
+	};
 	WITexturedShape();
 	virtual ~WITexturedShape() override;
 	virtual unsigned int AddVertex(Vector2 vert) override;
@@ -86,9 +69,34 @@ public:
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
 	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw) override;
 	void SizeToTexture();
+	void SetShader(wgui::ShaderTextured &shader);
 
 	void SetChannelSwizzle(wgui::ShaderTextured::Channel dst,wgui::ShaderTextured::Channel src);
 	wgui::ShaderTextured::Channel GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const;
+protected:
+	virtual void DoUpdate() override;
+	MaterialHandle m_hMaterial;
+	std::shared_ptr<prosper::Texture> m_texture = nullptr;
+	std::shared_ptr<bool> m_texLoadCallback;
+	std::shared_ptr<prosper::IBuffer> m_uvBuffer = nullptr;
+	std::vector<Vector2> m_uvs;
+	std::array<wgui::ShaderTextured::Channel,4> m_channels = {
+		wgui::ShaderTextured::Channel::Red,
+		wgui::ShaderTextured::Channel::Green,
+		wgui::ShaderTextured::Channel::Blue,
+		wgui::ShaderTextured::Channel::Alpha
+	};
+	float m_lod = -1.f;
+
+	void ReloadDescriptorSet();
+	virtual void SetShader(prosper::Shader &shader,prosper::Shader *shaderCheap=nullptr) override;
+private:
+	StateFlags m_stateFlags = StateFlags::None;
+	util::WeakHandle<prosper::Shader> m_shader = {};
+	std::shared_ptr<prosper::IDescriptorSetGroup> m_descSetTextureGroup = nullptr;
+	void ClearTextureLoadCallback();
+	void InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture);
 };
+REGISTER_BASIC_BITWISE_OPERATORS(WITexturedShape::StateFlags)
 
 #endif

@@ -75,8 +75,8 @@ public:
 	void SetOptionValue(uint32_t idx,const std::string &val);
 	void SetText(const std::string_view &text);
 	unsigned int GetOptionCount();
-	void AddOption(const std::string &option,const std::string &value);
-	void AddOption(const std::string &option);
+	WIDropDownMenuOption *AddOption(const std::string &option,const std::string &value);
+	WIDropDownMenuOption *AddOption(const std::string &option);
 	void ClearOptions();
 	void SetOptions(const std::vector<std::string> &options);
 	void SetOptions(const std::unordered_map<std::string,std::string> &options);

@@ -74,7 +74,7 @@ WIOutlinedShape::WIOutlinedShape()
 ///////////////////
 
 WITexturedShape::WITexturedShape()
-	: WIShape(),m_hMaterial(),m_bAlphaOnly(false),m_texture(),
+	: WIShape(),m_hMaterial(),m_texture(),
 	m_uvBuffer(nullptr),m_shader(),m_descSetTextureGroup(nullptr),m_texLoadCallback(nullptr)
 {
 	auto &instance = WGUI::GetInstance();
@@ -106,8 +106,8 @@ void WITexturedShape::ReloadDescriptorSet()
 }
 prosper::IBuffer &WITexturedShape::GetUVBuffer() const {return *m_uvBuffer;}
 void WITexturedShape::SetUVBuffer(prosper::IBuffer &buffer) {m_uvBuffer = buffer.shared_from_this();}
-void WITexturedShape::SetAlphaOnly(bool b) {m_bAlphaOnly = b;}
-bool WITexturedShape::GetAlphaOnly() const {return m_bAlphaOnly;}
+void WITexturedShape::SetAlphaOnly(bool b) {umath::set_flag(m_stateFlags,StateFlags::AlphaOnly,b);}
+bool WITexturedShape::GetAlphaOnly() const {return umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly);}
 float WITexturedShape::GetLOD() const {return m_lod;}
 void WITexturedShape::SetLOD(float lod) {m_lod = lod;}
 void WITexturedShape::ClearTextureLoadCallback()
@@ -250,6 +250,11 @@ wgui::ShaderTextured::Channel WITexturedShape::GetChannelSwizzle(wgui::ShaderTex
 {
 	return m_channels.at(umath::to_integral(channel));
 }
+void WITexturedShape::SetShader(wgui::ShaderTextured &shader)
+{
+	m_shader = shader.GetHandle();
+	m_stateFlags |= StateFlags::ShaderOverride;
+}
 void WITexturedShape::SizeToTexture()
 {
 	if(m_texture || m_hMaterial.IsValid() == false)
@@ -279,7 +284,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 	if(col.a <= 0.f)
 		return;
 	// Try to use cheap shader if no custom vertex buffer was used
-	if((m_vertexBufferData == nullptr && m_uvBuffer == nullptr) || m_shader.expired())
+	if(umath::is_flag_set(m_stateFlags,StateFlags::ShaderOverride) == false && ((m_vertexBufferData == nullptr && m_uvBuffer == nullptr) || m_shader.expired()))
 	{
 		auto *pShaderCheap = static_cast<wgui::ShaderTexturedRect*>(GetCheapShader());
 		if(pShaderCheap == nullptr)
@@ -288,7 +293,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 		if(pShaderCheap->BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
 		{
 			pShaderCheap->Draw({
-				matDraw,col,m_bAlphaOnly ? 1 : 0,m_lod,
+				matDraw,col,umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)),
@@ -300,11 +305,14 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 	}
 	//
 
-	auto buf = (m_vertexBufferData != nullptr) ? m_vertexBufferData->GetBuffer() : nullptr;
-	if(buf == nullptr && m_uvBuffer == nullptr)
+	if(m_shader.expired())
 		return;
 	auto &shader = static_cast<wgui::ShaderTextured&>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
+	auto vbuf = (m_vertexBufferData != nullptr) ? m_vertexBufferData->GetBuffer() : prosper::util::get_square_vertex_buffer(context);
+	auto uvBuf = (m_uvBuffer != nullptr) ? m_uvBuffer : prosper::util::get_square_uv_buffer(context);
+	if(vbuf == nullptr || uvBuf == nullptr)
+		return;
 	if(shader.BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
 	{
 		wgui::ShaderTextured::PushConstants pushConstants {};
@@ -316,8 +324,8 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 		pushConstants.blue = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue));
 		pushConstants.alpha = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha));
 		shader.Draw(
-			(buf != nullptr) ? buf : prosper::util::get_square_vertex_buffer(context),
-			(m_uvBuffer != nullptr) ? m_uvBuffer : prosper::util::get_square_uv_buffer(context),
+			vbuf,
+			uvBuf,
 			GetVertexCount(),*m_descSetTextureGroup->GetDescriptorSet(0u),pushConstants
 		);
 		shader.EndDraw();
