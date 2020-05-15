@@ -21,7 +21,7 @@ namespace wgui
 
 		bool Draw(const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &colorBuffer,uint32_t vertCount,float lineWidth,const wgui::ElementData &pushConstants);
 	protected:
-		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 };
 

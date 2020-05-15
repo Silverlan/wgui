@@ -10,7 +10,6 @@
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
-#include <wrappers/memory_block.h>
 
 LINK_WGUI_TO_CLASS(WILine,WILine);
 

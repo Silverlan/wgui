@@ -19,7 +19,7 @@ namespace wgui
 
 		bool Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants);
 	protected:
-		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 
 	///////////////////////
@@ -33,7 +33,7 @@ namespace wgui
 
 		bool Draw(const ElementData &pushConstants);
 	protected:
-		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 };
 

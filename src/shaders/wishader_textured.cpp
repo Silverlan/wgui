@@ -4,11 +4,10 @@
 
 #include "stdafx_wgui.h"
 #include "wgui/shaders/wishader_textured.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
-#include <vulkan/vulkan.hpp>
 #include <prosper_util_square_shape.hpp>
-#include <wrappers/descriptor_set_group.h>
 
 using namespace wgui;
 
@@ -50,7 +49,7 @@ bool ShaderTextured::Draw(
 	return true;
 }
 
-void ShaderTextured::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void ShaderTextured::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
@@ -82,7 +81,7 @@ bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,prosper::IDescr
 	return true;
 }
 
-void ShaderTexturedRect::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void ShaderTexturedRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 

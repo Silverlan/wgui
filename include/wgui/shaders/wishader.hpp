@@ -24,7 +24,7 @@ namespace wgui
 		virtual size_t GetBaseTypeHashCode() const override;
 		using ShaderGraphics::BeginDraw;
 	protected:
-		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 };
 

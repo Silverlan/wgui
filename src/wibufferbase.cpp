@@ -10,7 +10,6 @@
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_util_square_shape.hpp>
 #include <prosper_command_buffer.hpp>
-#include <wrappers/memory_block.h>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 
 WIBufferBase::WIBufferBase()

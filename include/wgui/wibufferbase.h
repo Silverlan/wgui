@@ -6,8 +6,6 @@
 #define __WIBUFFERBASE_H__
 
 #include <sharedutils/util_weak_handle.hpp>
-#include <config.h>
-#include <wrappers/buffer.h>
 #include "wielementbufferdata.hpp"
 
 namespace prosper

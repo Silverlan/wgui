@@ -5,11 +5,10 @@
 #include "stdafx_wgui.h"
 #include "wgui/shaders/wishader_coloredline.hpp"
 #include "wgui/wielementdata.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_command_buffer.hpp>
-#include <vulkan/vulkan.hpp>
-#include <wrappers/descriptor_set_group.h>
 
 using namespace wgui;
 
@@ -21,12 +20,12 @@ ShaderColoredLine::ShaderColoredLine(prosper::IPrContext &context,const std::str
 	SetBaseShader<ShaderColored>();
 }
 
-void ShaderColoredLine::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void ShaderColoredLine::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	ShaderColored::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
-	pipelineInfo.set_primitive_topology(Anvil::PrimitiveTopology::LINE_LIST);
-	pipelineInfo.toggle_dynamic_states(true,{Anvil::DynamicState::LINE_WIDTH});
+	pipelineInfo.SetPrimitiveTopology(prosper::PrimitiveTopology::LineList);
+	pipelineInfo.ToggleDynamicStates(true,{prosper::DynamicState::LineWidth});
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_COLOR);
 }
 

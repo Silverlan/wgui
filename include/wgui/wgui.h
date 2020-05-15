@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <algorithm>
 #include <queue>
-#include <wrappers/buffer.h>
 #include <iglfw/glfw_window.h>
 #include <prosper_context_object.hpp>
 #include <sharedutils/chronotime.h>

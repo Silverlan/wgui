@@ -5,11 +5,10 @@
 #include "stdafx_wgui.h"
 #include "wgui/shaders/wishader_colored.hpp"
 #include "wgui/wielementdata.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_util_square_shape.hpp>
-#include <vulkan/vulkan.hpp>
-#include <wrappers/descriptor_set_group.h>
 
 using namespace wgui;
 
@@ -32,7 +31,7 @@ bool ShaderColored::Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const w
 	return true;
 }
 
-void ShaderColored::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void ShaderColored::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
@@ -63,7 +62,7 @@ bool ShaderColoredRect::Draw(const wgui::ElementData &pushConstants)
 	return true;
 }
 
-void ShaderColoredRect::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void ShaderColoredRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 

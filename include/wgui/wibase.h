@@ -15,8 +15,6 @@
 #include <algorithm>
 #include <chrono>
 #include <deque>
-#include <config.h>
-#include <wrappers/buffer.h>
 #include <iglfw/glfw_window.h>
 #include <sharedutils/property/util_property_vector.h>
 #include <sharedutils/property/util_property_color.hpp>

@@ -16,7 +16,6 @@
 #include <sharedutils/scope_guard.h>
 #include <atomic>
 #include <sharedutils/property/util_property_color.hpp>
-#include <misc/memory_allocator.h>
 
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 

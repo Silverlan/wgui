@@ -268,7 +268,7 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 		// Write glyph to font image map
 		auto xOffset = i *m_maxBitmapWidth;
 		uint32_t yOffset = 0;
-		copyInfo.dstOffset = vk::Offset3D(xOffset,yOffset,0);
+		copyInfo.dstOffset = prosper::Offset3D(xOffset,yOffset,0);
 		setupCmd->RecordCopyImage(copyInfo,*glyphImage,*glyphMapImage);
 
 		glyphCharacterBounds.push_back(GlyphBounds{});

@@ -5,12 +5,11 @@
 #include "stdafx_wgui.h"
 #include "wgui/shaders/wishader_text.hpp"
 #include "wgui/fontmanager.h"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_util.hpp>
 #include <prosper_util_square_shape.hpp>
-#include <vulkan/vulkan.hpp>
-#include <wrappers/descriptor_set_group.h>
 
 using namespace wgui;
 
@@ -54,7 +53,7 @@ void ShaderText::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &out
 	}}},outRenderPass,pipelineIdx);
 }
 
-void ShaderText::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void ShaderText::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
@@ -120,7 +119,7 @@ void ShaderTextRect::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> 
 	}}},outRenderPass,pipelineIdx);
 }
 
-void ShaderTextRect::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void ShaderTextRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
@@ -152,7 +151,7 @@ bool ShaderTextRectColor::Draw(
 {
 	return RecordBindVertexBuffers({&colorBuffer},2u) && ShaderTextRect::Draw(glyphBoundsIndexBuffer,descTextureSet,pushConstants,instanceCount);
 }
-void ShaderTextRectColor::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void ShaderTextRectColor::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	ShaderTextRect::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_COLOR);

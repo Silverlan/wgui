@@ -22,7 +22,6 @@
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_descriptor_set_group.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
-#include <misc/memory_allocator.h>
 
 #pragma optimize("",off)
 static std::unique_ptr<WGUI> s_wgui = nullptr;

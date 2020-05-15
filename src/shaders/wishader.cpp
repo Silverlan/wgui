@@ -4,12 +4,11 @@
 
 #include "stdafx_wgui.h"
 #include "wgui/shaders/wishader.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util_square_shape.hpp>
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
-#include <vulkan/vulkan.hpp>
-#include <wrappers/descriptor_set_group.h>
 
 using namespace wgui;
 
@@ -32,7 +31,7 @@ Shader::Shader(prosper::IPrContext &context,const std::string &identifier,const 
 	: ShaderGraphics(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-void Shader::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 	ToggleDynamicScissorState(pipelineInfo,true);

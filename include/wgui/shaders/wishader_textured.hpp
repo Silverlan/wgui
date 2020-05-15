@@ -53,7 +53,7 @@ namespace wgui
 			prosper::IDescriptorSet &descSetTexture,const PushConstants &pushConstants
 		);
 	protected:
-		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 
 	///////////////////////
@@ -80,7 +80,7 @@ namespace wgui
 
 		bool Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet);
 	protected:
-		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
 };
 
