@@ -288,6 +288,6 @@ if(WGUI_INCLUDE_DEPENDENCIES)
 	add_dependencies(prosper vfilesystem iglfw util_image)
 
 	add_dependencies(cmaterialsystem materialsystem prosper)
-	add_dependencies(wgui cmaterialsystem freetype glslang util_formatted_text)
+	add_dependencies(wgui cmaterialsystem freetype util_formatted_text)
 	add_dependencies(sample_application wgui)
 endif()
