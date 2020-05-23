@@ -151,10 +151,8 @@ if(WGUI_INCLUDE_DEPENDENCIES)
 	#
 
 	# squish
-	if(WIN32)
-		include_external_msproject(squish ${CMAKE_CURRENT_LIST_DIR}/third_party_libs/squish/vs9/squish/squish.vcproj)
-		set_target_properties(squish PROPERTIES FOLDER third_party_libs)
-	endif()
+	register_third_party_library(squish)
+	set_target_properties(squish PROPERTIES FOLDER third_party_libs)
 	#
 
 	# zlib
