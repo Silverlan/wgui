@@ -77,7 +77,8 @@ public:
 		AutoSizeToContentsY = AutoSizeToContentsX<<1u,
 		IsBeingRemoved = AutoSizeToContentsY<<1u,
 		IsBeingUpdated = IsBeingRemoved<<1u,
-		IsBackgroundElement = IsBeingUpdated<<1u
+		IsBackgroundElement = IsBeingUpdated<<1u,
+		FirstThink = IsBackgroundElement<<1u
 	};
 	struct DLLWGUI DrawInfo
 	{
@@ -322,6 +323,7 @@ protected:
 	void SetIndex(uint64_t idx);
 	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 	void UpdateParentAutoSizeToContents();
+	virtual void OnFirstThink();
 	virtual void DoUpdate();
 	virtual util::EventReply OnMousePressed();
 	virtual util::EventReply OnMouseReleased();

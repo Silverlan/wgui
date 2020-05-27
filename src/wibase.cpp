@@ -638,6 +638,7 @@ void WIBase::Update()
 	// Flag must be cleared after DoUpdate, in case DoUpdate has set it again!
 	umath::set_flag(m_stateFlags,StateFlags::UpdateScheduledBit,false);
 }
+void WIBase::OnFirstThink() {}
 void WIBase::DoUpdate() {}
 const util::PVector2iProperty &WIBase::GetPosProperty() const {return m_pos;}
 const Vector2i &WIBase::GetPos() const {return *m_pos;}
@@ -978,6 +979,11 @@ void WIBase::Think()
 		}
 	}
 	CallCallbacks<void>("Think");
+	if(umath::is_flag_set(m_stateFlags,StateFlags::FirstThink) == false)
+	{
+		umath::set_flag(m_stateFlags,StateFlags::FirstThink);
+		OnFirstThink();
+	}
 }
 void WIBase::CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize)
 {
@@ -1079,8 +1085,6 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 }
 void WIBase::Draw(const DrawInfo &drawInfo)
 {
-	if(GetClass() == "wiasseticon")
-		std::cout<<"";
 	auto scissorPos = GetPos();
 	auto scissorSize = drawInfo.size;
 	if(drawInfo.useScissor)
