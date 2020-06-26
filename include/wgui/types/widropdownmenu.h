@@ -66,6 +66,7 @@ public:
 	void SelectOption(const std::string &value);
 	void SelectOptionByText(const std::string &name);
 	void OnOptionSelected(WIDropDownMenuOption *option);
+	void ClearSelectedOption();
 	std::string_view GetText() const;
 	std::string GetValue();
 	int32_t GetSelectedOption() const;

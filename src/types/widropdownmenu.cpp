@@ -36,8 +36,10 @@ void WIDropDownMenu::OnTextChanged(const std::string &text,bool changedByUser)
 {
 	WITextEntry::OnTextChanged(text,changedByUser);
 	if(changedByUser)
-		m_selected = -1;
+		ClearSelectedOption();
 }
+
+void WIDropDownMenu::ClearSelectedOption() {m_selected = -1;}
 
 void WIDropDownMenu::Initialize()
 {
