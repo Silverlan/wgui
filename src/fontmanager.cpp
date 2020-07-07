@@ -16,7 +16,7 @@
 
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
-
+#pragma optimize("",off)
 enum class GlyphRange : uint32_t
 {
 	Start = 32,
@@ -500,3 +500,4 @@ uint32_t FontManager::GetTextSize(char c,uint32_t charOffset,const std::string &
 	std::string str{c,'\0'};
 	return GetTextSize(str,charOffset,font,width,height);
 }
+#pragma optimize("",on)

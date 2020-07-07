@@ -4,6 +4,7 @@
 #include <Windows.h>
 #undef MemoryBarrier
 #endif
+#include <glad/glad.h>
 #include <wgui/wgui.h>
 #include <wgui/types/wirect.h>
 #include <wgui/types/witext.h>
@@ -16,7 +17,81 @@
 #include <prosper_command_buffer.hpp>
 #include <debug/prosper_debug.hpp>
 #include <image/prosper_render_target.hpp>
+#include <sharedutils/util_library.hpp>
 
+#include <buffers/gl_buffer.hpp>
+#include <gl_framebuffer.hpp>
+#include <gl_context.hpp>
+#include <gl_command_buffer.hpp>
+#include <gl_descriptor_set_group.hpp>
+#include <prosper_util_square_shape.hpp>
+
+#pragma optimize("",off)
+
+#include <shader/prosper_pipeline_create_info.hpp>
+class ShaderTest
+	: public prosper::ShaderBaseImageProcessing
+{
+public:
+	ShaderTest(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader);
+	ShaderTest(prosper::IPrContext &context,const std::string &identifier);
+	static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
+	static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE2;
+	bool Draw(const Mat4 &modelMatrix);
+protected:
+	virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+};
+
+decltype(ShaderTest::DESCRIPTOR_SET_TEXTURE) ShaderTest::DESCRIPTOR_SET_TEXTURE = {
+	{
+		prosper::DescriptorSetInfo::Binding {
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
+		},
+		prosper::DescriptorSetInfo::Binding {
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
+		},
+		prosper::DescriptorSetInfo::Binding {
+			prosper::DescriptorType::UniformBuffer,
+			prosper::ShaderStageFlags::FragmentBit
+		}
+	}
+};
+
+decltype(ShaderTest::DESCRIPTOR_SET_TEXTURE2) ShaderTest::DESCRIPTOR_SET_TEXTURE2 = {
+	{
+		prosper::DescriptorSetInfo::Binding {
+	prosper::DescriptorType::CombinedImageSampler,
+	prosper::ShaderStageFlags::FragmentBit
+},
+prosper::DescriptorSetInfo::Binding {
+	prosper::DescriptorType::CombinedImageSampler,
+	prosper::ShaderStageFlags::FragmentBit
+}
+	}
+};
+ShaderTest::ShaderTest(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader)
+	: ShaderBaseImageProcessing(context,identifier,vsShader,fsShader)
+{}
+ShaderTest::ShaderTest(prosper::IPrContext &context,const std::string &identifier)
+	: ShaderTest(context,identifier,"screen/vs_screen_uv","screen/fs_test")
+{}
+void ShaderTest::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+{
+	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
+	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(Vector4),prosper::ShaderStageFlags::FragmentBit);
+	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
+	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE2);
+}
+bool ShaderTest::Draw(const Mat4 &modelMatrix)
+{
+	return ShaderBaseImageProcessing::Draw();
+}
+
+
+#if 0
 class RenderContext
 	: public prosper::Context
 {
@@ -66,26 +141,6 @@ protected:
 		});
 		GLFW::initialize();
 	}
-	void InitializeStagingTarget()
-	{
-		auto &dev = GetDevice();
-		prosper::util::ImageCreateInfo imgCreateInfo {};
-		imgCreateInfo.usage = Anvil::ImageUsageFlagBits::TRANSFER_DST_BIT | Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT | Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT;
-		imgCreateInfo.format = Anvil::Format::R8G8B8A8_UNORM;
-		imgCreateInfo.width = GetWindowWidth();
-		imgCreateInfo.height = GetWindowHeight();
-		imgCreateInfo.postCreateLayout = Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
-		auto stagingImg = prosper::util::create_image(dev,imgCreateInfo);
-		prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-		auto stagingTex = prosper::util::create_texture(dev,{},stagingImg,&imgViewCreateInfo);
-
-		auto rp = prosper::util::create_render_pass(dev,
-			prosper::util::RenderPassCreateInfo{{{Anvil::Format::R8G8B8A8_UNORM,Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,Anvil::AttachmentLoadOp::DONT_CARE,
-				Anvil::AttachmentStoreOp::STORE,Anvil::SampleCountFlagBits::_1_BIT,Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
-			}}}
-		);
-		m_stagingRenderTarget = prosper::util::create_render_target(dev,{stagingTex},rp);
-	}
 	virtual void OnClose() override
 	{
 		WaitIdle();
@@ -109,7 +164,6 @@ protected:
 	}
 private:
 	using prosper::Context::DrawFrame;
-	std::shared_ptr<prosper::RenderTarget> m_stagingRenderTarget = nullptr;
 	std::shared_ptr<CMaterialManager> m_materialManager = nullptr;
 	virtual void DrawFrame(prosper::PrimaryCommandBuffer &drawCmd,uint32_t iCurrentSwapchainImage) override
 	{
@@ -226,3 +280,591 @@ int main()
 	renderContext = nullptr;
 	return EXIT_SUCCESS;
 }
+#endif
+
+static size_t parse_definition(const std::string &glslShader,std::unordered_map<std::string,std::string> &outDefinitions,size_t startPos=0)
+{
+	auto pos = glslShader.find("#define ",startPos);
+	if(pos == std::string::npos)
+		return pos;
+	pos += 8;
+	auto nameStart = glslShader.find_first_not_of(" ",pos);
+	auto nameEnd = glslShader.find(' ',nameStart);
+	if(nameEnd == std::string::npos)
+		return nameEnd;
+	auto name = glslShader.substr(nameStart,nameEnd -nameStart);
+	auto valStart = glslShader.find_first_not_of(" ",nameEnd);
+	auto valEnd = glslShader.find('\n',valStart);
+	if(valEnd == std::string::npos)
+		return valEnd;
+	auto val = glslShader.substr(valStart,valEnd -valStart);
+	outDefinitions[name] = val;
+	return valEnd;
+}
+
+static void parse_definitions(const std::string &glslShader,std::unordered_map<std::string,std::string> &outDefinitions)
+{
+	auto nextPos = parse_definition(glslShader,outDefinitions);
+	while(nextPos != std::string::npos)
+		nextPos = parse_definition(glslShader,outDefinitions,nextPos);
+}
+
+#include <mpParser.h>
+#include <exprtk.hpp>
+static void parse_definitions(const std::string &glslShader,std::unordered_map<std::string,int32_t> &outDefinitions)
+{
+	std::unordered_map<std::string,std::string> definitions {};
+	parse_definitions(glslShader,definitions);
+
+	struct Expression
+	{
+		std::string expression;
+		mup::ParserX parser {};
+		std::optional<int> value {};
+
+		std::vector<std::string> variables {};
+	};
+	std::unordered_map<std::string,Expression> expressions {};
+	expressions.reserve(definitions.size());
+	for(auto &pair : definitions)
+	{
+		Expression expr {};
+		expr.expression = pair.second;
+		expr.parser.SetExpr(pair.second);
+		for(auto &a : expr.parser.GetExprVar())
+			expr.variables.push_back(a.first);
+		expressions.insert(std::make_pair(pair.first,expr));
+	}
+	std::function<bool(Expression&)> fParseExpression = nullptr;
+	fParseExpression = [&fParseExpression,&expressions](Expression &expr) {
+		for(auto &var : expr.variables)
+		{
+			auto it = expressions.find(var);
+			if(it == expressions.end())
+				return false;
+			if(it->second.value.has_value() == false && fParseExpression(it->second) == false)
+				return false;
+			if(expr.parser.IsConstDefined(var))
+				continue;
+			try
+			{
+				expr.parser.DefineConst(var,*it->second.value);
+			}
+			catch(const mup::ParserError &err)
+			{
+				return false;
+			}
+		}
+		try
+		{
+			expr.parser.SetExpr(expr.expression);
+			auto &val = expr.parser.Eval();
+			expr.value = val.GetFloat();
+		}
+		catch(const mup::ParserError &err)
+		{
+			return false;
+		}
+		return true;
+	};
+	for(auto &pair : expressions)
+	{
+		auto &expr = pair.second;
+		fParseExpression(expr);
+		if(pair.second.value.has_value() == false)
+			continue;
+		outDefinitions.insert(std::make_pair(pair.first,*pair.second.value));
+	}
+}
+
+struct ShaderDescriptorSetInfo
+{
+	struct BindingInfo
+	{
+		std::vector<std::pair<size_t,size_t>> shaderStringStartEndOffsets;
+	};
+	std::vector<BindingInfo> bindingPoints {};
+};
+static size_t parse_layout_binding(const std::string &glslShader,const std::unordered_map<std::string,int32_t> &definitions,std::vector<std::optional<ShaderDescriptorSetInfo>> &outDescSetInfos,size_t startPos)
+{
+	auto pos = glslShader.find("LAYOUT_ID(",startPos);
+	if(pos == std::string::npos)
+		return pos;
+	auto macroPos = pos;
+	pos += 10;
+	auto end = glslShader.find(")",pos);
+	if(end == std::string::npos)
+		return end;
+	auto macroEnd = end +1;
+	auto strArgs = glslShader.substr(pos,end -pos);
+	std::vector<std::string> args {};
+	ustring::explode(strArgs,",",args);
+	if(args.size() < 2)
+		return end;
+	auto &set = args.at(0);
+	auto &binding = args.at(1);
+	std::optional<uint32_t> setIndex {};
+	std::optional<uint32_t> bindingIndex {};
+	if(ustring::is_integer(set))
+		setIndex = ustring::to_int(set);
+	else
+	{
+		// Set is a definition
+		auto itSet = definitions.find(set);
+		if(itSet != definitions.end())
+			setIndex = itSet->second;
+	}
+	if(ustring::is_integer(binding))
+		bindingIndex = ustring::to_int(binding);
+	else
+	{
+		// Binding is a definition
+		auto itBinding = definitions.find(binding);
+		if(itBinding != definitions.end())
+			bindingIndex = itBinding->second;
+	}
+
+	if(setIndex.has_value() && bindingIndex.has_value())
+	{
+		if(*setIndex >= outDescSetInfos.size())
+			outDescSetInfos.resize(*setIndex +1);
+		auto &setInfo = outDescSetInfos.at(*setIndex);
+		if(setInfo.has_value() == false)
+			setInfo = ShaderDescriptorSetInfo{};
+		if(*bindingIndex >= setInfo->bindingPoints.size())
+			setInfo->bindingPoints.resize(*bindingIndex +1);
+		setInfo->bindingPoints.at(*bindingIndex).shaderStringStartEndOffsets.push_back({macroPos,macroEnd});
+	}
+	return end;
+}
+
+static void parse_layout_bindings(const std::string &glslShader)
+{
+	std::unordered_map<std::string,int32_t> definitions {};
+	parse_definitions(glslShader,definitions);
+
+	std::vector<std::optional<ShaderDescriptorSetInfo>> descSetInfos {};
+	auto nextPos = parse_layout_binding(glslShader,definitions,descSetInfos,0u);
+	while(nextPos != std::string::npos)
+		nextPos = parse_layout_binding(glslShader,definitions,descSetInfos,nextPos);
+
+	uint32_t descSetIdx = 0;
+	uint32_t bindingPointIdx = 0;
+	auto newGlslShader = glslShader;
+	int64_t offset = 0;
+	for(auto &dsInfo : descSetInfos)
+	{
+		if(dsInfo.has_value() == false)
+		{
+			std::cout<<"DescriptorSet "<<descSetIdx<<" not found!"<<std::endl;
+		}
+		for(auto &bp : dsInfo->bindingPoints)
+		{
+			if(bp.shaderStringStartEndOffsets.empty())
+				continue;
+			auto bindingPointIndex = bindingPointIdx++;
+			for(auto &pair : bp.shaderStringStartEndOffsets)
+			{
+				auto strStart = pair.first;
+				auto strEnd = pair.second;
+				auto oldLen = newGlslShader.length();
+				newGlslShader = newGlslShader.substr(0,strStart +offset) +std::to_string(bindingPointIndex) +newGlslShader.substr(strEnd +offset);
+				offset += (newGlslShader.length() -oldLen);
+			}
+		}
+		++descSetIdx;
+	}
+	auto f = FileManager::OpenSystemFile("E:/projects/pragma/build_winx64/output/shaders/compute/cs_forwardp_light_culling_new.gls","w");
+	f->WriteString(newGlslShader);
+	f = nullptr;
+}
+
+class GUIProgram
+{
+public:
+	static std::shared_ptr<GUIProgram> Create()
+	{
+		auto p = std::shared_ptr<GUIProgram>{new GUIProgram{}};
+		if(p->Initialize() == false)
+			return nullptr;
+		auto &context = p->GetContext();
+		while(context.GetWindow().ShouldClose() == false)
+			p->Draw();
+		return p;
+	}
+	~GUIProgram()
+	{
+		m_stagingRenderTarget = nullptr;
+		if(m_context)
+		{
+			m_context->Close();
+			m_context = nullptr;
+		}
+
+		m_libRenderAPI = nullptr; // Needs to be destroyed last!
+	}
+	void Draw()
+	{
+		m_context->DrawFrame();
+		GLFW::poll_events();
+		m_context->EndFrame();
+	}
+	prosper::IPrContext &GetContext() const {return *m_context;}
+private:
+	GUIProgram()=default;
+	bool Initialize()
+	{
+		auto lib = util::Library::Load("E:/projects/pragma/build_winx64/output/modules/graphics/opengl/pr_prosper_opengl.dll");
+		if(lib == nullptr)
+			return false;
+		m_libRenderAPI = lib;
+		auto *initRenderAPI = lib->FindSymbolAddress<bool(*)(const std::string&,bool,std::shared_ptr<prosper::IPrContext>&,std::string&)>("initialize_render_api");
+		if(initRenderAPI == nullptr)
+			return false;
+		std::shared_ptr<prosper::IPrContext> context;
+		std::string err;
+		if(initRenderAPI("WGUI Demo",true,context,err) == false)
+		{
+			std::cout<<err<<std::endl;
+			return false;
+		}
+		prosper::Callbacks callbacks {};
+		callbacks.validationCallback = [](prosper::DebugMessageSeverityFlags severityFlags,const std::string &message) {
+			std::cout<<"Validation message: "<<message<<std::endl;
+		};
+		callbacks.onWindowInitialized = []() {};
+		callbacks.onClose = []() {};
+		callbacks.onResolutionChanged = [](uint32_t w,uint32_t h) {};
+		callbacks.drawFrame = [this](prosper::IPrimaryCommandBuffer &drawCmd,uint32_t swapchainImageIdx) {
+			DrawFrame(drawCmd,swapchainImageIdx);
+		};
+		context->SetCallbacks(callbacks);
+
+		context->GetWindowCreationInfo().resizable = false;
+		prosper::Shader::SetLogCallback([](prosper::Shader &shader,prosper::ShaderStage stage,const std::string &infoLog,const std::string &debugInfoLog) {
+			std::cout<<"Unable to load shader '"<<shader.GetIdentifier()<<"':"<<std::endl;
+			std::cout<<"Shader Stage: "<<prosper::util::to_string(stage)<<std::endl;
+			std::cout<<infoLog<<std::endl<<std::endl;
+			std::cout<<debugInfoLog<<std::endl;
+			});
+		prosper::debug::set_debug_validation_callback([](prosper::DebugReportObjectTypeEXT objectType,const std::string &msg) {
+			std::cerr<<"[VK] "<<msg<<std::endl;
+			});
+		GLFW::initialize();
+
+		prosper::IPrContext::CreateInfo contextCreateInfo {};
+		contextCreateInfo.width = 1'280;
+		contextCreateInfo.height = 1'024;
+		context->GetWindowCreationInfo().decorated = true;
+		context->Initialize(contextCreateInfo);
+
+		auto matManager = std::make_shared<CMaterialManager>(*context);
+		m_matManager = matManager;
+
+		TextureManager::LoadInfo loadInfo {};
+		loadInfo.flags = TextureLoadFlags::LoadInstantly;
+		matManager->GetTextureManager().Load(*context,"error",loadInfo);
+
+		auto &gui = WGUI::Open(*context,matManager);
+		gui.SetMaterialLoadHandler([this](const std::string &path) -> Material* {
+			return m_matManager->Load(path,nullptr,nullptr,false,nullptr,true);
+		});
+		auto r = gui.Initialize(Vector2i{contextCreateInfo.width,contextCreateInfo.height});
+		if(r != WGUI::ResultCode::Ok)
+		{
+			std::cerr<<"ERROR: Unable to initialize GUI library: ";
+			switch(r)
+			{
+			case WGUI::ResultCode::UnableToInitializeFontManager:
+				std::cerr<<"Error initializing font manager!";
+				break;
+			case WGUI::ResultCode::ErrorInitializingShaders:
+				std::cerr<<"Error initializing shaders!";
+				break;
+			case WGUI::ResultCode::FontNotFound:
+				std::cerr<<"Font not found!";
+				break;
+			default:
+				std::cout<<"Unknown error!";
+				break;
+			}
+			matManager = nullptr;
+			context->Close();
+			std::this_thread::sleep_for(std::chrono::seconds(5));
+			return false;
+		}
+		m_context = context;
+		m_context->CalcBufferAlignment(prosper::BufferUsageFlags::IndexBufferBit);
+		InitializeStagingTarget();
+
+		auto el = gui.Create<WIRect>();
+		el->SetSize(512,512);
+		el->SetColor(Color::Lime);
+
+		auto elTex = gui.Create<WITexturedRect>();
+		elTex->SetMaterial("vulkan_logo");
+		elTex->SetSize(256,256);
+		m_elTest = elTex->GetHandle();
+
+		auto el2 = gui.Create<WIRect>();
+		el2->SetColor(Color::Aqua);
+
+		auto elText = gui.Create<WIText>();
+		elText->SetText("HellooOOoo");
+		elText->SetPos(200,200);
+		elText->SetColor(Color::White);
+		elText->SizeToContents();
+
+		el2->SetSize(elText->GetSize());
+		el2->SetPos(elText->GetPos());
+
+		if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+			exit(EXIT_FAILURE);
+
+		m_context->GetShaderManager().RegisterShader("test",[](prosper::IPrContext &context,const std::string &identifier) {return new ShaderTest(context,identifier);});
+
+		{
+			auto f = FileManager::OpenSystemFile("E:/projects/pragma/build_winx64/output/shaders/compute/cs_forwardp_light_culling.gls","r");
+			if(f)
+			{
+				auto contents = f->ReadString();
+				parse_layout_bindings(contents);
+				f = nullptr;
+			}
+		}
+
+		return true;
+	}
+	void DrawFrame(prosper::IPrimaryCommandBuffer &drawCmd,uint32_t swapchainImageIdx)
+	{
+		auto &gui = WGUI::GetInstance();
+		// Update GUI Logic
+		gui.Think();
+
+		drawCmd.RecordImageBarrier(
+			m_stagingRenderTarget->GetTexture().GetImage(),
+			prosper::ImageLayout::TransferSrcOptimal,prosper::ImageLayout::ColorAttachmentOptimal
+		);
+		auto &outputImg = m_stagingRenderTarget->GetTexture().GetImage();
+
+
+		//uimg::ImageBuffer::
+		static std::shared_ptr<prosper::Texture> texTest = nullptr;
+		static std::shared_ptr<prosper::IFramebuffer> framebuffer = nullptr;
+		static std::shared_ptr<prosper::IBuffer> buffer = nullptr;
+		if(texTest == nullptr)
+		{
+			prosper::util::ImageCreateInfo imgCreateInfo {};
+			imgCreateInfo.width = 128;
+			imgCreateInfo.height = 128;
+			imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+			imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+			imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit;
+			auto img = m_context->CreateImage(imgCreateInfo);
+			texTest = m_context->CreateTexture({},*img,prosper::util::ImageViewCreateInfo{},prosper::util::SamplerCreateInfo{});
+			framebuffer = m_context->CreateFramebuffer(imgCreateInfo.width,imgCreateInfo.height,1,{texTest->GetImageView()});
+
+			prosper::util::BufferCreateInfo bufCreateInfo {};
+			bufCreateInfo.size = sizeof(Vector4);
+			bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::CPUToGPU;//prosper::MemoryFeatureFlags::GPUBulk;
+			bufCreateInfo.usageFlags = prosper::BufferUsageFlags::UniformBufferBit | prosper::BufferUsageFlags::TransferSrcBit;
+			Vector4 color = Color::Red.ToVector4();
+			buffer = m_context->CreateBuffer(bufCreateInfo,&color);
+			color = {5,6,7,8};
+			buffer->Read(0,sizeof(color),&color);
+			std::cout<<"Color: "<<color<<std::endl;
+
+			//static_cast<WITexturedRect*>(m_elTest.get())->SetTexture(*texTest);
+		}
+
+		static std::shared_ptr<prosper::Texture> texTest2 = nullptr;
+		static std::shared_ptr<prosper::IFramebuffer> framebuffer2 = nullptr;
+		if(texTest2 == nullptr)
+		{
+			prosper::util::ImageCreateInfo imgCreateInfo {};
+			imgCreateInfo.width = 128;
+			imgCreateInfo.height = 128;
+			imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+			imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+			imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit;
+			auto img = m_context->CreateImage(imgCreateInfo);
+			texTest2 = m_context->CreateTexture({},*img,prosper::util::ImageViewCreateInfo{},prosper::util::SamplerCreateInfo{});
+			framebuffer2 = m_context->CreateFramebuffer(imgCreateInfo.width,imgCreateInfo.height,1,{texTest2->GetImageView()});
+
+			auto glyphMap = FontManager::GetFont("default")->GetGlyphMap();
+			texTest2 = glyphMap;
+			drawCmd.RecordClearImage(glyphMap->GetImage(),prosper::ImageLayout::TransferDstOptimal,std::array<float,4>{1.f,1.f,1.f,1.f});
+			static_cast<WITexturedRect*>(m_elTest.get())->SetTexture(*glyphMap);
+		}
+
+		auto *mat = m_matManager->Load("error");
+		if(mat)
+		{
+			static std::shared_ptr<prosper::IImage> imgTest3 = nullptr;
+			if(imgTest3 == nullptr)
+			{
+				prosper::util::ImageCreateInfo imgCreateInfo {};
+				imgCreateInfo.width = 128;
+				imgCreateInfo.height = 128;
+				imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+				imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+				imgCreateInfo.usage = prosper::ImageUsageFlags::TransferDstBit | prosper::ImageUsageFlags::TransferSrcBit | prosper::ImageUsageFlags::SampledBit;
+				imgCreateInfo.layers = 1;
+				imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
+				imgCreateInfo.format = prosper::Format::BC1_RGBA_UNorm_Block;
+				imgTest3 = m_context->CreateImage(imgCreateInfo);
+				static_cast<prosper::GLContext&>(*m_context).CheckResult();
+			}
+
+			auto *albedoMap = mat->GetAlbedoMap();
+			auto &tex = std::static_pointer_cast<Texture>(albedoMap->texture)->GetVkTexture();
+			static_cast<prosper::GLContext&>(*m_context).CheckResult();
+			//drawCmd.RecordClearImage(*imgTest3,prosper::ImageLayout::TransferDstOptimal,std::array<float,4>{1.f,1.f,1.f,1.f});
+			
+			static auto test = false;
+			if(test == false)
+			{
+				test = true;
+				//static_cast<WITexturedRect*>(m_elTest.get())->SetTexture(*tex);
+			}
+			// Is Black??
+		}
+		static_cast<prosper::GLContext&>(*m_context).CheckResult();
+		//drawCmd.RecordClearImage(texTest->GetImage(),prosper::ImageLayout::TransferDstOptimal,std::array<float,4>{1.f,0.f,0.f,1.f});
+		/*glBindFramebuffer(GL_FRAMEBUFFER,static_cast<prosper::GLFramebuffer&>(*framebuffer).GetGLFramebuffer());
+		glClearColor(1.0f, 1.0f, 0.0f, 1.0f );
+		glClear(GL_COLOR_BUFFER_BIT);
+		glBindFramebuffer(GL_FRAMEBUFFER,0);*/
+
+
+
+#if 0
+		glBindFramebuffer(GL_FRAMEBUFFER,static_cast<prosper::GLFramebuffer&>(*framebuffer2).GetGLFramebuffer());
+		glClearColor(1.0f, 0.0f, 1.0f, 1.0f );
+		glClear(GL_COLOR_BUFFER_BIT);
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+#endif
+		static_cast<prosper::GLContext&>(*m_context).CheckResult();
+
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		glClearColor(0.0f, 0.0f, 1.0f, 1.0f );
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);  
+
+		drawCmd.RecordBeginRenderPass(*m_stagingRenderTarget);
+
+		static_cast<prosper::GLContext&>(*m_context).CheckResult();
+
+		{
+			auto *shader = static_cast<ShaderTest*>(m_context->GetShaderManager().FindShader<ShaderTest>());
+
+			static std::shared_ptr<prosper::IDescriptorSetGroup> dsg = nullptr;
+			static std::shared_ptr<prosper::IDescriptorSetGroup> dsg2 = nullptr;
+			if(dsg == nullptr)
+			{
+				dsg = shader->CreateDescriptorSetGroup(0);
+				dsg->GetDescriptorSet(0)->SetBindingTexture(*texTest,0);
+				dsg->GetDescriptorSet(0)->SetBindingTexture(*texTest2,1);
+				dsg->GetDescriptorSet(0)->SetBindingUniformBuffer(*buffer,2);
+
+				dsg2 = shader->CreateDescriptorSetGroup(1);
+				dsg2->GetDescriptorSet(0)->SetBindingTexture(*texTest2,0);
+				dsg2->GetDescriptorSet(0)->SetBindingTexture(*texTest,1);
+			}
+
+			if(shader->BeginDraw(std::dynamic_pointer_cast<prosper::IPrimaryCommandBuffer>(drawCmd.shared_from_this())))
+			{
+				Vector4 color2 = Vector4{0.f,1.f,0.f,1.f};
+				shader->RecordPushConstants(color2);
+				auto &pcBuffer = static_cast<prosper::GLContext&>(GetContext()).GetPushConstantBuffer();
+
+				shader->RecordBindDescriptorSet(*dsg->GetDescriptorSet());
+				shader->RecordBindDescriptorSet(*dsg2->GetDescriptorSet(),1);
+				auto shaderPipelineId = dynamic_cast<prosper::GLCommandBuffer&>(drawCmd).GetBoundPipelineId();
+
+				auto &vertBuffer = dynamic_cast<prosper::GLBuffer&>(*prosper::util::get_square_vertex_buffer(GetContext()));
+				auto vertexbuffer = vertBuffer.GetGLBuffer();
+				//drawCmd.RecordBindVertexBuffers(*shader,{&vertBuffer});
+
+				shader->Draw(umat::identity());
+				glDisableVertexAttribArray(0); // TODO: Disable other vertex attrib arrays
+				shader->EndDraw();
+			}
+		}
+
+		// Draw GUI elements to staging image
+		gui.Draw();
+
+		drawCmd.RecordEndRenderPass();
+
+		drawCmd.RecordImageBarrier(
+			outputImg,
+			prosper::ImageLayout::ColorAttachmentOptimal,prosper::ImageLayout::TransferSrcOptimal
+		);
+
+		//glBindFramebuffer(GL_FRAMEBUFFER,static_cast<prosper::GLFramebuffer&>(m_stagingRenderTarget->GetFramebuffer()).GetGLFramebuffer());
+
+		auto &tex = m_stagingRenderTarget->GetTexture();
+		auto &img = tex.GetImage();
+
+		glBindFramebuffer(GL_FRAMEBUFFER,static_cast<prosper::GLFramebuffer&>(m_stagingRenderTarget->GetFramebuffer()).GetGLFramebuffer());
+		//drawCmd.RecordClearImage(m_stagingRenderTarget->GetTexture().GetImage(),prosper::ImageLayout::TransferDstOptimal,std::array<float,4>{1.f,0.f,0.f,1.f});
+		//drawCmd.RecordClearImage(m_stagingRenderTarget->GetTexture().GetImage(),prosper::ImageLayout::TransferDstOptimal,std::array<float,4>{0.f,1.f,0.f,1.f});
+		//glClearColor(1.f,0.f,0.f,1.f);
+		//glClear(GL_COLOR_BUFFER_BIT);
+		auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		glBlitNamedFramebuffer(
+			static_cast<prosper::GLFramebuffer&>(m_stagingRenderTarget->GetFramebuffer()).GetGLFramebuffer(),0,
+			0,0,img.GetWidth(),img.GetHeight(),
+			0,0,img.GetWidth(),img.GetHeight(),
+			GL_COLOR_BUFFER_BIT,GL_LINEAR
+		);
+		// TODO?
+
+		static_cast<prosper::GLContext&>(*m_context).CheckResult();
+#if 0
+		auto &swapchainImg = *m_swapchainPtr->get_image(swapchainImageIdx);
+
+		prosper::util::BarrierImageLayout srcInfo {prosper::PipelineStageFlags::TransferBit,prosper::ImageLayout::Undefined,prosper::AccessFlags{}};
+		prosper::util::BarrierImageLayout dstInfo {prosper::PipelineStageFlags::TransferBit,prosper::ImageLayout::TransferDstOptimal,prosper::AccessFlags::TransferWriteBit};
+		drawCmd.RecordImageBarrier(swapchainImg,srcInfo,dstInfo);
+		// Blit staging image to swapchain image
+		drawCmd.RecordBlitImage({},outputImg,swapchainImg);
+		srcInfo = {prosper::PipelineStageFlags::TransferBit,prosper::ImageLayout::TransferDstOptimal,prosper::AccessFlags::MemoryReadBit};
+		dstInfo = {prosper::PipelineStageFlags::TransferBit,prosper::ImageLayout::PresentSrcKHR,prosper::AccessFlags::TransferReadBit};
+		drawCmd.RecordImageBarrier(swapchainImg,srcInfo,dstInfo);
+#endif
+	}
+	void InitializeStagingTarget()
+	{
+		prosper::util::ImageCreateInfo imgCreateInfo {};
+		imgCreateInfo.usage = prosper::ImageUsageFlags::TransferDstBit | prosper::ImageUsageFlags::TransferSrcBit | prosper::ImageUsageFlags::ColorAttachmentBit;
+		imgCreateInfo.format = prosper::Format::R8G8B8A8_UNorm;
+		imgCreateInfo.width = m_context->GetWindowWidth();
+		imgCreateInfo.height = m_context->GetWindowHeight();
+		imgCreateInfo.postCreateLayout = prosper::ImageLayout::ColorAttachmentOptimal;
+		auto stagingImg = m_context->CreateImage(imgCreateInfo);
+		prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
+		auto stagingTex = m_context->CreateTexture({},*stagingImg,imgViewCreateInfo);
+
+		auto rp = m_context->CreateRenderPass(
+			prosper::util::RenderPassCreateInfo{{{prosper::Format::R8G8B8A8_UNorm,prosper::ImageLayout::ColorAttachmentOptimal,prosper::AttachmentLoadOp::DontCare,
+			prosper::AttachmentStoreOp::Store,prosper::SampleCountFlags::e1Bit,prosper::ImageLayout::ColorAttachmentOptimal
+		}}}
+		);
+		m_stagingRenderTarget = m_context->CreateRenderTarget({stagingTex},rp);
+	}
+	std::shared_ptr<prosper::RenderTarget> m_stagingRenderTarget = nullptr;
+	std::shared_ptr<prosper::IPrContext> m_context = nullptr;
+	std::shared_ptr<CMaterialManager> m_matManager = nullptr;
+	std::shared_ptr<util::Library> m_libRenderAPI = nullptr;
+	WIHandle m_elTest {};
+};
+
+int main()
+{
+	auto program = GUIProgram::Create();
+	program = nullptr;
+	return EXIT_SUCCESS;
+}
+#pragma optimize("",on)

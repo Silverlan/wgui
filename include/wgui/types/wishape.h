@@ -64,7 +64,7 @@ public:
 	void SetMaterial(Material *material);
 	void SetMaterial(const std::string &material);
 	Material *GetMaterial();
-	void SetTexture(prosper::Texture &tex,uint32_t layerIndex=0u);
+	void SetTexture(prosper::Texture &tex,std::optional<uint32_t> layerIndex={});
 	void ClearTexture();
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
 	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw) override;

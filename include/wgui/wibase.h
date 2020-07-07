@@ -314,6 +314,7 @@ public:
 	void EnableThinking();
 	void DisableThinking();
 	void SetThinkingEnabled(bool enabled);
+	void ApplySkin(WISkin *skin=nullptr);
 
 	uint64_t GetIndex() const;
 
@@ -369,7 +370,6 @@ protected:
 	void UpdateMouseInBounds();
 	void UpdateChildrenMouseInBounds();
 	virtual void OnVisibilityChanged(bool bVisible);
-	void ApplySkin(WISkin *skin=nullptr);
 	WISkin *GetSkin();
 	void SetAutoAlignToParent(bool bX,bool bY,bool bReload);
 	void SetAutoCenterToParentX(bool b,bool bReload);

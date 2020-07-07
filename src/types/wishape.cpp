@@ -17,7 +17,7 @@
 
 LINK_WGUI_TO_CLASS(WIShape,WIShape);
 LINK_WGUI_TO_CLASS(WITexturedShape,WITexturedShape);
-
+#pragma optimize("",off)
 WIShape::WIShape()
 	: WIBufferBase(),m_vertexBufferUpdateRequired(false)
 {}
@@ -176,13 +176,16 @@ void WITexturedShape::ClearTexture()
 	m_hMaterial = MaterialHandle();
 	m_texture = nullptr;
 }
-void WITexturedShape::SetTexture(prosper::Texture &tex,uint32_t layerIndex)
+void WITexturedShape::SetTexture(prosper::Texture &tex,std::optional<uint32_t> layerIndex)
 {
 	ClearTexture();
 	m_texture = tex.shared_from_this();
 	
 	ReloadDescriptorSet(); // Need to generate a new descriptor set and keep the old one alive, in case it was still in use
-	m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(tex,0u,layerIndex);
+	if(layerIndex.has_value())
+		m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(tex,0u,*layerIndex);
+	else
+		m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(tex,0u);
 }
 const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
 {
@@ -331,3 +334,4 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 		shader.EndDraw();
 	}
 }
+#pragma optimize("",on)
