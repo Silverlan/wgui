@@ -9,13 +9,12 @@
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_util.hpp>
-#include <prosper_util_square_shape.hpp>
 
 using namespace wgui;
 
 decltype(ShaderText::VERTEX_BINDING_VERTEX) ShaderText::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
-decltype(ShaderText::VERTEX_ATTRIBUTE_POSITION) ShaderText::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::util::get_square_vertex_format()};
-decltype(ShaderText::VERTEX_ATTRIBUTE_UV) ShaderText::VERTEX_ATTRIBUTE_UV = {VERTEX_BINDING_VERTEX,prosper::util::get_square_uv_format()};
+decltype(ShaderText::VERTEX_ATTRIBUTE_POSITION) ShaderText::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::CommonBufferCache::GetSquareVertexFormat()};
+decltype(ShaderText::VERTEX_ATTRIBUTE_UV) ShaderText::VERTEX_ATTRIBUTE_UV = {VERTEX_BINDING_VERTEX,prosper::CommonBufferCache::GetSquareUvFormat()};
 
 decltype(ShaderText::VERTEX_BINDING_GLYPH) ShaderText::VERTEX_BINDING_GLYPH = {prosper::VertexInputRate::Instance};
 decltype(ShaderText::VERTEX_ATTRIBUTE_GLYPH_INDEX) ShaderText::VERTEX_ATTRIBUTE_GLYPH_INDEX = {VERTEX_BINDING_GLYPH,prosper::Format::R32_UInt};
@@ -74,11 +73,11 @@ bool ShaderText::Draw(
 {
 	if(
 		RecordBindVertexBuffers({
-			prosper::util::get_square_vertex_uv_buffer(GetContext()).get(),&glyphBoundsIndexBuffer
+			GetContext().GetCommonBufferCache().GetSquareVertexUvBuffer().get(),&glyphBoundsIndexBuffer
 		}) == false ||
 		RecordBindDescriptorSets({&descTextureSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
-		RecordDraw(prosper::util::get_square_vertex_count(),instanceCount) == false
+		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount(),instanceCount) == false
 	)
 		return false;
 	return true;
@@ -101,11 +100,11 @@ bool ShaderTextRect::Draw(
 {
 	if(
 		RecordBindVertexBuffers({
-			prosper::util::get_square_vertex_uv_buffer(GetContext()).get(),&glyphBoundsIndexBuffer
+			GetContext().GetCommonBufferCache().GetSquareVertexUvBuffer().get(),&glyphBoundsIndexBuffer
 			}) == false ||
 		RecordBindDescriptorSets({&descTextureSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
-		RecordDraw(prosper::util::get_square_vertex_count(),instanceCount) == false
+		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount(),instanceCount) == false
 	)
 		return false;
 	return true;

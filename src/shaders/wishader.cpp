@@ -5,7 +5,6 @@
 #include "stdafx_wgui.h"
 #include "wgui/shaders/wishader.hpp"
 #include <shader/prosper_pipeline_create_info.hpp>
-#include <prosper_util_square_shape.hpp>
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
@@ -13,7 +12,7 @@
 using namespace wgui;
 
 decltype(Shader::VERTEX_BINDING_VERTEX) Shader::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
-decltype(Shader::VERTEX_ATTRIBUTE_POSITION) Shader::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::util::get_square_vertex_format()};
+decltype(Shader::VERTEX_ATTRIBUTE_POSITION) Shader::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::CommonBufferCache::GetSquareVertexFormat()};
 
 decltype(Shader::DESCRIPTOR_SET) Shader::DESCRIPTOR_SET = {
 	{

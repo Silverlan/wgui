@@ -8,7 +8,6 @@
 #include "wgui/wielementdata.hpp"
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
-#include <prosper_util_square_shape.hpp>
 #include <prosper_command_buffer.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 
@@ -26,6 +25,7 @@ WIBufferBase::WIBufferBase()
 		createInfo.usageFlags = Anvil::BufferUsageFlagBits::TRANSFER_SRC_BIT;
 		createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::HostAccessable;
 		createInfo.size = sizeof(Vector4) +sizeof(Mat4);
+		createInfo.flags |= prosper::util::BufferCreateInfo::Flags::Persistent;
 		s_stagingBuffer = prosper::util::create_buffer(WGUI::GetInstance().GetContext().GetDevice(),createInfo);
 		s_stagingBuffer->SetPermanentlyMapped(true);
 	}

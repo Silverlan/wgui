@@ -6,7 +6,6 @@
 #include "wgui/types/wirect.h"
 #include "cmaterialmanager.h"
 #include <prosper_context.hpp>
-#include <prosper_util_square_shape.hpp>
 
 LINK_WGUI_TO_CLASS(WIRect,WIRect);
 LINK_WGUI_TO_CLASS(WIOutlinedRect,WIOutlinedRect);
@@ -20,7 +19,7 @@ WIRect::WIRect()
 	auto &context = WGUI::GetInstance().GetContext();
 	//auto buf = prosper::util::get_square_vertex_buffer(context.GetDevice());
 	//SetBuffer(*buf);
-	m_vertices = prosper::util::get_square_vertices();
+	m_vertices = prosper::CommonBufferCache::GetSquareVertices();
 	//Update(); // No update required, updating would generate new buffers
 }
 
@@ -117,8 +116,8 @@ WITexturedRect::WITexturedRect()
 	//auto uvBuffer = prosper::util::get_square_uv_buffer(dev);
 	//SetBuffer(*vertexBuffer);
 	//SetUVBuffer(*uvBuffer);
-	m_vertices = prosper::util::get_square_vertices();
-	m_uvs = prosper::util::get_square_uv_coordinates();
+	m_vertices = prosper::CommonBufferCache::GetSquareVertices();
+	m_uvs = prosper::CommonBufferCache::GetSquareUvCoordinates();
 	//Update(); // No update required, updating would generate new buffers
 }
 

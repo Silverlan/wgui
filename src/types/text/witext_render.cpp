@@ -10,7 +10,6 @@
 #include <prosper_context.hpp>
 #include <image/prosper_sampler.hpp>
 #include <prosper_util.hpp>
-#include <prosper_util_square_shape.hpp>
 #include <shader/prosper_shader_blur.hpp>
 #include <prosper_command_buffer.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
@@ -637,6 +636,7 @@ void WIText::InitializeTextBuffer(prosper::IPrContext &context)
 	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
 	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 	createInfo.size = instanceSize *maxInstances;
+	createInfo.flags |= prosper::util::BufferCreateInfo::Flags::Persistent;
 	s_textBuffer = context.CreateUniformResizableBuffer(createInfo,instanceSize,createInfo.size *5u,0.05f);
 	s_textBuffer->SetPermanentlyMapped(true);
 	s_textBuffer->SetDebugName("text_glyph_bounds_info_buf");

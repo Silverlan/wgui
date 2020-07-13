@@ -7,15 +7,14 @@
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
-#include <prosper_util_square_shape.hpp>
 
 using namespace wgui;
 
 decltype(ShaderTextured::VERTEX_BINDING_VERTEX) ShaderTextured::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
-decltype(ShaderTextured::VERTEX_ATTRIBUTE_POSITION) ShaderTextured::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::util::get_square_vertex_format()};
+decltype(ShaderTextured::VERTEX_ATTRIBUTE_POSITION) ShaderTextured::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX,prosper::CommonBufferCache::GetSquareVertexFormat()};
 
 decltype(ShaderTextured::VERTEX_BINDING_UV) ShaderTextured::VERTEX_BINDING_UV = {prosper::VertexInputRate::Vertex};
-decltype(ShaderTextured::VERTEX_ATTRIBUTE_UV) ShaderTextured::VERTEX_ATTRIBUTE_UV = {VERTEX_BINDING_UV,prosper::util::get_square_uv_format()};
+decltype(ShaderTextured::VERTEX_ATTRIBUTE_UV) ShaderTextured::VERTEX_ATTRIBUTE_UV = {VERTEX_BINDING_UV,prosper::CommonBufferCache::GetSquareUvFormat()};
 
 decltype(ShaderTextured::DESCRIPTOR_SET_TEXTURE) ShaderTextured::DESCRIPTOR_SET_TEXTURE = {
 	{
@@ -72,10 +71,10 @@ ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context,const std::s
 bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet)
 {
 	if(
-		RecordBindVertexBuffers({prosper::util::get_square_vertex_buffer(WGUI::GetInstance().GetContext()).get(),prosper::util::get_square_uv_buffer(WGUI::GetInstance().GetContext()).get()}) == false ||
+		RecordBindVertexBuffers({WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer().get(),WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareUvBuffer().get()}) == false ||
 		RecordBindDescriptorSets({&descSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
-		RecordDraw(prosper::util::get_square_vertex_count()) == false
+		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
 	return true;

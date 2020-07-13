@@ -11,7 +11,6 @@
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_util.hpp>
-#include <prosper_util_square_shape.hpp>
 #include <prosper_descriptor_set_group.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 
@@ -312,8 +311,8 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 		return;
 	auto &shader = static_cast<wgui::ShaderTextured&>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	auto vbuf = (m_vertexBufferData != nullptr) ? m_vertexBufferData->GetBuffer() : prosper::util::get_square_vertex_buffer(context);
-	auto uvBuf = (m_uvBuffer != nullptr) ? m_uvBuffer : prosper::util::get_square_uv_buffer(context);
+	auto vbuf = (m_vertexBufferData != nullptr) ? m_vertexBufferData->GetBuffer() : context.GetCommonBufferCache().GetSquareVertexBuffer();
+	auto uvBuf = (m_uvBuffer != nullptr) ? m_uvBuffer : context.GetCommonBufferCache().GetSquareUvBuffer();
 	if(vbuf == nullptr || uvBuf == nullptr)
 		return;
 	if(shader.BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)

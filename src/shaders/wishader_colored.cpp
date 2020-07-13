@@ -8,7 +8,6 @@
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
-#include <prosper_util_square_shape.hpp>
 
 using namespace wgui;
 
@@ -55,8 +54,8 @@ bool ShaderColoredRect::Draw(const wgui::ElementData &pushConstants)
 {
 	if(
 		RecordPushConstants(pushConstants) == false ||
-		RecordBindVertexBuffer(*prosper::util::get_square_vertex_buffer(WGUI::GetInstance().GetContext())) == false ||
-		RecordDraw(prosper::util::get_square_vertex_count()) == false
+		RecordBindVertexBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false ||
+		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
 	return true;
