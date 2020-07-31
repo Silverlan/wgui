@@ -223,7 +223,7 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 	imgCreateInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
 	auto imgViewCreateInfo = prosper::util::ImageViewCreateInfo {};
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
-	auto glyphMapImage =context.CreateImage(imgCreateInfo);
+	auto glyphMapImage = context.CreateImage(imgCreateInfo);
 	m_glyphMap = context.CreateTexture({},*glyphMapImage,imgViewCreateInfo,samplerCreateInfo);
 	m_glyphMap->SetDebugName("glyph_map_tex");
 

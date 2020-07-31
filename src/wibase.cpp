@@ -487,7 +487,8 @@ void WIBase::SetBackgroundElement(bool backgroundElement,bool autoAlignToParent)
 		//SetPos(0,0);
 		//SetSize(GetParent()->GetSize());
 		//SetAnchor(0.f,0.f,1.f,1.f);
-		SetAutoAlignToParent(true);
+		if(HasAnchor() == false)
+			SetAutoAlignToParent(true);
 		SetZPos(-100);
 	}
 }
@@ -1400,10 +1401,13 @@ void WIBase::SetParent(WIBase *base,std::optional<uint32_t> childIndex)
 		UpdateVisibility();
 		return;
 	}
+
 	m_parent = base->GetHandle();
 	base->AddChild(this,childIndex);
-	if(GetAutoAlignToParent() == true)
-		SetAutoAlignToParent(true,true);
+
+	if((m_stateFlags &(StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit)) != StateFlags::None)
+		SetAutoAlignToParent(umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentXBit),umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentYBit),true);
+
 	if(umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentXBit) == true)
 		SetAutoCenterToParentX(true,true);
 	if(umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentYBit) == true)
