@@ -78,7 +78,8 @@ public:
 		IsBeingRemoved = AutoSizeToContentsY<<1u,
 		IsBeingUpdated = IsBeingRemoved<<1u,
 		IsBackgroundElement = IsBeingUpdated<<1u,
-		FirstThink = IsBackgroundElement<<1u
+		FirstThink = IsBackgroundElement<<1u,
+		DontRemoveOnParentRemoval = FirstThink<<1u
 	};
 	struct DLLWGUI DrawInfo
 	{
@@ -315,6 +316,8 @@ public:
 	void DisableThinking();
 	void SetThinkingEnabled(bool enabled);
 	void ApplySkin(WISkin *skin=nullptr);
+
+	void SetRemoveOnParentRemoval(bool b);
 
 	uint64_t GetIndex() const;
 

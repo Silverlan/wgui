@@ -894,6 +894,7 @@ void WIBase::ResetSkin()
 			hChild->ResetSkin();
 	}
 }
+void WIBase::SetRemoveOnParentRemoval(bool b) {umath::set_flag(m_stateFlags,StateFlags::DontRemoveOnParentRemoval,!b);}
 void WIBase::ApplySkin(WISkin *skin)
 {
 	if(umath::is_flag_set(m_stateFlags,StateFlags::SkinAppliedBit) == true)
@@ -1326,6 +1327,11 @@ void WIBase::Remove()
 	{
 		if(hChild.IsValid() == false)
 			continue;
+		if(umath::is_flag_set(hChild->m_stateFlags,StateFlags::DontRemoveOnParentRemoval))
+		{
+			hChild->ClearParent();
+			continue;
+		}
 		hChild->Remove();
 	}
 	auto hThis = GetHandle();
