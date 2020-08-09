@@ -1575,11 +1575,9 @@ util::EventReply WIBase::MouseCallback(GLFW::MouseButton button,GLFW::KeyState s
 		}
 	}
 
-	util::EventReply reply;
-	if(
-		CallCallbacksWithOptionalReturn<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent",reply,button,state,mods) == CallbackReturnType::HasReturnValue &&
-		reply == util::EventReply::Handled
-	)
+	auto reply = util::EventReply::Unhandled;
+	CallCallbacksWithOptionalReturn<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent",reply,button,state,mods);
+	if(reply == util::EventReply::Handled)
 		return util::EventReply::Handled;
 	if(!hThis.IsValid())
 		return util::EventReply::Unhandled;
