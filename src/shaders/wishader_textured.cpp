@@ -71,7 +71,7 @@ ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context,const std::s
 bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet)
 {
 	if(
-		RecordBindVertexBuffers({WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer().get(),WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareUvBuffer().get()}) == false ||
+		RecordBindRenderBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false ||
 		RecordBindDescriptorSets({&descSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
 		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
