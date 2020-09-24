@@ -61,6 +61,38 @@ void ShaderTextured::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &
 
 ///////////////////////
 
+ShaderTexturedRectExpensive::ShaderTexturedRectExpensive(prosper::IPrContext &context,const std::string &identifier)
+	: Shader(context,identifier,"wgui/vs_wgui_textured_expensive","wgui/fs_wgui_textured_expensive")
+{}
+ShaderTexturedRectExpensive::ShaderTexturedRectExpensive(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
+	: Shader(context,identifier,vsShader,fsShader,gsShader)
+{}
+
+bool ShaderTexturedRectExpensive::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet)
+{
+	if(
+		RecordBindRenderBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false ||
+		RecordBindDescriptorSets({&descSet}) == false ||
+		RecordPushConstants(pushConstants) == false ||
+		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
+	)
+		return false;
+	return true;
+}
+
+void ShaderTexturedRectExpensive::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+{
+	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
+
+	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
+	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
+	AddVertexAttribute(pipelineInfo,ShaderTextured::VERTEX_ATTRIBUTE_UV);
+	AddDescriptorSetGroup(pipelineInfo,ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+}
+
+///////////////////////
+
 ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context,const std::string &identifier)
 	: Shader(context,identifier,"wgui/vs_wgui_textured_cheap","wgui/fs_wgui_textured_cheap")
 {}

@@ -68,6 +68,7 @@ wgui::ShaderTextRect *WGUI::GetTextRectShader() {return static_cast<wgui::Shader
 wgui::ShaderTextRectColor *WGUI::GetTextRectColorShader() {return static_cast<wgui::ShaderTextRectColor*>(m_shaderTextCheapColor.get());}
 wgui::ShaderTextured *WGUI::GetTexturedShader() {return static_cast<wgui::ShaderTextured*>(m_shaderTextured.get());}
 wgui::ShaderTexturedRect *WGUI::GetTexturedRectShader() {return static_cast<wgui::ShaderTexturedRect*>(m_shaderTexturedCheap.get());}
+wgui::ShaderTexturedRectExpensive *WGUI::GetTexturedRectExpensiveShader() {return static_cast<wgui::ShaderTexturedRectExpensive*>(m_shaderTexturedExpensive.get());}
 
 static std::array<uint32_t,4> s_scissor = {0u,0,0u,0u};
 void WGUI::SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h)
@@ -110,6 +111,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 	m_shaderTextCheapColor = shaderManager.RegisterShader("wguitext_cheap_color",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextRectColor(context,identifier);});
 	m_shaderTextured = shaderManager.RegisterShader("wguitextured",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextured(context,identifier);});
 	m_shaderTexturedCheap = shaderManager.RegisterShader("wguitextured_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRect(context,identifier);});
+	m_shaderTexturedExpensive = shaderManager.RegisterShader("wguitextured_expensive",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRectExpensive(context,identifier);});
 	
 	if(wgui::Shader::DESCRIPTOR_SET.IsValid() == false)
 		return ResultCode::ErrorInitializingShaders;

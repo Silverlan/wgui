@@ -55,6 +55,36 @@ namespace wgui
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
+	
+	///////////////////////
+
+	class DLLWGUI ShaderTexturedRectExpensive
+		: public Shader
+	{
+	public:
+#pragma pack(push,1)
+		struct PushConstants
+		{
+			wgui::ElementData elementData;
+			int32_t alphaOnly;
+			float lod;
+			ShaderTextured::Channel red;
+			ShaderTextured::Channel green;
+			ShaderTextured::Channel blue;
+			ShaderTextured::Channel alpha;
+			AlphaMode alphaMode;
+			float alphaCutoff;
+		};
+		static_assert(sizeof(AlphaMode) == sizeof(uint32_t));
+#pragma pack(pop)
+
+		ShaderTexturedRectExpensive(prosper::IPrContext &context,const std::string &identifier);
+		ShaderTexturedRectExpensive(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+
+		bool Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet);
+	protected:
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+	};
 
 	///////////////////////
 

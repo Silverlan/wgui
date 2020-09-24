@@ -257,6 +257,14 @@ void WITexturedShape::SetShader(wgui::ShaderTextured &shader)
 	m_shader = shader.GetHandle();
 	m_stateFlags |= StateFlags::ShaderOverride;
 }
+void WITexturedShape::SetAlphaMode(AlphaMode alphaMode) {m_alphaMode = alphaMode; UpdateShaderState();}
+void WITexturedShape::SetAlphaCutoff(float alphaCutoff) {m_alphaCutoff = alphaCutoff;}
+AlphaMode WITexturedShape::GetAlphaMode() const {return m_alphaMode;}
+float WITexturedShape::GetAlphaCutoff() const {return m_alphaCutoff;}
+void WITexturedShape::UpdateShaderState()
+{
+	umath::set_flag(m_stateFlags,StateFlags::ExpensiveShaderRequired,m_alphaMode != AlphaMode::Blend);
+}
 void WITexturedShape::SizeToTexture()
 {
 	if(m_texture || m_hMaterial.IsValid() == false)
@@ -288,6 +296,26 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 	// Try to use cheap shader if no custom vertex buffer was used
 	if(umath::is_flag_set(m_stateFlags,StateFlags::ShaderOverride) == false && ((m_vertexBufferData == nullptr && m_uvBuffer == nullptr) || m_shader.expired()))
 	{
+		if(umath::is_flag_set(m_stateFlags,StateFlags::ExpensiveShaderRequired))
+		{
+			auto *pShaderExpensive = static_cast<wgui::ShaderTexturedRectExpensive*>(WGUI::GetInstance().GetTexturedRectExpensiveShader());
+			if(pShaderExpensive == nullptr)
+				return;
+			auto &context = WGUI::GetInstance().GetContext();
+			if(pShaderExpensive->BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
+			{
+				pShaderExpensive->Draw({
+					matDraw,col,umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
+					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
+					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)),
+					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)),
+					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha)),
+					GetAlphaMode(),GetAlphaCutoff()
+				},*m_descSetTextureGroup->GetDescriptorSet(0u));
+				pShaderExpensive->EndDraw();
+			}
+			return;
+		}
 		auto *pShaderCheap = static_cast<wgui::ShaderTexturedRect*>(GetCheapShader());
 		if(pShaderCheap == nullptr)
 			return;

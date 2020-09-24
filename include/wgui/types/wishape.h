@@ -9,6 +9,7 @@
 #include "wgui/wibufferbase.h"
 #include "wgui/shaders/wishader_textured.hpp"
 #include "wiline.h"
+#include <sharedutils/alpha_mode.hpp>
 #include <texturemanager/texture.h>
 
 class DLLWGUI WIShape
@@ -46,7 +47,8 @@ public:
 	{
 		None = 0,
 		AlphaOnly = 1u,
-		ShaderOverride = AlphaOnly<<1u
+		ShaderOverride = AlphaOnly<<1u,
+		ExpensiveShaderRequired = ShaderOverride<<1u
 	};
 	WITexturedShape();
 	virtual ~WITexturedShape() override;
@@ -71,15 +73,23 @@ public:
 	void SizeToTexture();
 	void SetShader(wgui::ShaderTextured &shader);
 
+	void SetAlphaMode(AlphaMode alphaMode);
+	void SetAlphaCutoff(float alphaCutoff);
+	AlphaMode GetAlphaMode() const;
+	float GetAlphaCutoff() const;
+
 	void SetChannelSwizzle(wgui::ShaderTextured::Channel dst,wgui::ShaderTextured::Channel src);
 	wgui::ShaderTextured::Channel GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const;
 protected:
+	void UpdateShaderState();
 	virtual void DoUpdate() override;
 	MaterialHandle m_hMaterial;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	std::shared_ptr<bool> m_texLoadCallback;
 	std::shared_ptr<prosper::IBuffer> m_uvBuffer = nullptr;
 	std::vector<Vector2> m_uvs;
+	AlphaMode m_alphaMode = AlphaMode::Blend;
+	float m_alphaCutoff = 1.f;
 	std::array<wgui::ShaderTextured::Channel,4> m_channels = {
 		wgui::ShaderTextured::Channel::Red,
 		wgui::ShaderTextured::Channel::Green,

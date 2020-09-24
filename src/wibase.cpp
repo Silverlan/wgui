@@ -1033,7 +1033,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIBase *child = m_children[i].get();
-		if(child != NULL && child->IsVisible())
+		if(child != NULL && child->IsSelfVisible())
 		{
 			auto bShouldScissor = (child->GetShouldScissor()) ? true : false;
 			Vector2i posScissor(scissorOffset.x,scissorOffset.y);
@@ -1094,6 +1094,7 @@ void WIBase::Draw(const DrawInfo &drawInfo)
 		scissorPos = {};
 		scissorSize = GetSize();
 	}
+	WGUI::GetInstance().SetScissor(scissorPos.x,scissorPos.y,scissorSize.x,scissorSize.y);
 	Draw(drawInfo,GetPos(),scissorPos,scissorSize);
 }
 void WIBase::Draw(int w,int h)

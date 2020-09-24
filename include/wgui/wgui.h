@@ -41,6 +41,7 @@ namespace wgui
 	class ShaderTextRectColor;
 	class ShaderTextured;
 	class ShaderTexturedRect;
+	class ShaderTexturedRectExpensive;
 };
 
 class DLLWGUI WGUI
@@ -134,6 +135,7 @@ public:
 	wgui::ShaderTextRectColor *GetTextRectColorShader();
 	wgui::ShaderTextured *GetTexturedShader();
 	wgui::ShaderTexturedRect *GetTexturedRectShader();
+	wgui::ShaderTexturedRectExpensive *GetTexturedRectExpensiveShader();
 
 	void GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h);
 	void SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h);
@@ -178,6 +180,7 @@ private:
 	util::WeakHandle<prosper::Shader> m_shaderTextCheapColor = {};
 	util::WeakHandle<prosper::Shader> m_shaderTextured = {};
 	util::WeakHandle<prosper::Shader> m_shaderTexturedCheap = {};
+	util::WeakHandle<prosper::Shader> m_shaderTexturedExpensive = {};
 
 	bool SetFocusedElement(WIBase *gui);
 	void ClearSkin();
