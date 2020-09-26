@@ -201,7 +201,9 @@ void WGUI::Think()
 		{
 			if(hEl.IsValid() == false)
 				continue;
-			if(hEl->IsVisible() == false)
+			if(umath::is_flag_set(hEl.get()->m_stateFlags,WIBase::StateFlags::UpdateScheduledBit) == false)
+				continue; // Update is no longer scheduled; Ignore this element
+			if(hEl->IsVisible() == false && hEl->ShouldThinkIfInvisible() == false)
 			{
 				// We don't want to update hidden elements, but we have to remember that we have to
 				// update them later!

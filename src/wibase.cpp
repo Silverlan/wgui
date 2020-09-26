@@ -150,6 +150,18 @@ void WIBase::UpdateAutoSizeToContents(bool updateX,bool updateY)
 		);
 	}
 }
+void WIBase::UpdateParentThink()
+{
+	auto *parent = GetParent();
+	umath::set_flag(m_stateFlags,StateFlags::ParentUpdateIfInvisibleBit,parent ? parent->ShouldThinkIfInvisible() : false);
+
+	for(auto &hChild : *GetChildren())
+	{
+		if(hChild.IsValid() == false)
+			continue;
+		hChild->UpdateParentThink();
+	}
+}
 void WIBase::UpdateVisibility()
 {
 	auto *parent = GetParent();
@@ -163,7 +175,7 @@ void WIBase::UpdateVisibility()
 	}
 
 	// If we just became visible and we have an update schedule, we need to inform the GUI instance
-	if(IsVisible() && umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit))
+	if(IsVisible() && (umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit) || ShouldThinkIfInvisible()))
 		WGUI::GetInstance().m_bGUIUpdateRequired = true;
 
 	UpdateThink();
@@ -928,7 +940,12 @@ WISkin *WIBase::GetSkin()
 	auto *parent = GetParent();
 	return parent ? parent->GetSkin() : WGUI::GetInstance().GetSkin();
 }
-void WIBase::SetThinkIfInvisible(bool bThinkIfInvisible) {umath::set_flag(m_stateFlags,StateFlags::ThinkIfInvisibleBit,bThinkIfInvisible);}
+void WIBase::SetThinkIfInvisible(bool bThinkIfInvisible)
+{
+	umath::set_flag(m_stateFlags,StateFlags::UpdateIfInvisibleBit,bThinkIfInvisible);
+	UpdateParentThink();
+}
+bool WIBase::ShouldThinkIfInvisible() const {return umath::is_flag_set(m_stateFlags,StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit);}
 void WIBase::SetRenderIfZeroAlpha(bool renderIfZeroAlpha) {umath::set_flag(m_stateFlags,StateFlags::RenderIfZeroAlpha,renderIfZeroAlpha);}
 void WIBase::Think()
 {
@@ -1371,8 +1388,8 @@ bool WIBase::ShouldThink() const
 	if(shouldThink == false)
 		return false;
 	if(IsSelfVisible() == false)
-		return m_fade != nullptr || umath::is_flag_set(m_stateFlags,StateFlags::ThinkIfInvisibleBit | StateFlags::RenderIfZeroAlpha);
-	return IsParentVisible();
+		return m_fade != nullptr || umath::is_flag_set(m_stateFlags,StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit | StateFlags::RenderIfZeroAlpha);
+	return IsParentVisible() || umath::is_flag_set(m_stateFlags,StateFlags::ParentUpdateIfInvisibleBit);
 }
 void WIBase::EnableThinking() {SetThinkingEnabled(true);}
 void WIBase::DisableThinking() {SetThinkingEnabled(false);}
@@ -1406,6 +1423,7 @@ void WIBase::SetParent(WIBase *base,std::optional<uint32_t> childIndex)
 		if(umath::is_flag_set(m_stateFlags,StateFlags::AutoCenterToParentYBit) == true)
 			SetAutoCenterToParentY(true,true);
 		UpdateVisibility();
+		UpdateParentThink();
 		return;
 	}
 
@@ -1421,6 +1439,7 @@ void WIBase::SetParent(WIBase *base,std::optional<uint32_t> childIndex)
 		SetAutoCenterToParentY(true,true);
 
 	UpdateVisibility();
+	UpdateParentThink();
 	base->UpdateAutoSizeToContents();
 }
 WIBase *WIBase::GetParent() const

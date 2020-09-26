@@ -67,13 +67,14 @@ public:
 		RemoveScheduledBit = UpdateScheduledBit<<1u,
 		SkinAppliedBit = RemoveScheduledBit<<1u,
 		ClickedBit = SkinAppliedBit<<1u,
-		ThinkIfInvisibleBit = ClickedBit<<1u,
-		IgnoreParentAlpha = ThinkIfInvisibleBit<<1u,
+		UpdateIfInvisibleBit = ClickedBit<<1u,
+		IgnoreParentAlpha = UpdateIfInvisibleBit<<1u,
 		RenderIfZeroAlpha = IgnoreParentAlpha<<1u,
 		UpdatingAnchorTransform = RenderIfZeroAlpha<<1u,
 		ThinkingEnabled = UpdatingAnchorTransform<<1u,
 		ParentVisible = ThinkingEnabled<<1u,
-		AutoSizeToContentsX = ParentVisible<<1u,
+		ParentUpdateIfInvisibleBit = ParentVisible<<1u,
+		AutoSizeToContentsX = ParentUpdateIfInvisibleBit<<1u,
 		AutoSizeToContentsY = AutoSizeToContentsX<<1u,
 		IsBeingRemoved = AutoSizeToContentsY<<1u,
 		IsBeingUpdated = IsBeingRemoved<<1u,
@@ -266,6 +267,7 @@ public:
 	bool ShouldIgnoreParentAlpha() const;
 
 	void SetThinkIfInvisible(bool bThinkIfInvisible);
+	bool ShouldThinkIfInvisible() const;
 	void SetRenderIfZeroAlpha(bool renderIfZeroAlpha);
 
 	virtual std::string GetDebugInfo() const;
@@ -332,6 +334,7 @@ protected:
 	virtual util::EventReply OnMousePressed();
 	virtual util::EventReply OnMouseReleased();
 	void UpdateVisibility();
+	void UpdateParentThink();
 	void UpdateAnchorTransform();
 	void UpdateAnchorTopLeftPixelOffsets();
 	void UpdateAnchorBottomRightPixelOffsets();
