@@ -332,7 +332,7 @@ void WIBase::TrapFocus(bool b)
 		m_focusTrapStack.push_back(this->GetHandle());
 	else
 	{
-		for(auto it=m_focusTrapStack.begin();it!=m_focusTrapStack.end();it++)
+		for(auto it=m_focusTrapStack.begin();it!=m_focusTrapStack.end();)
 		{
 			auto &hEl = *it;
 			if(!hEl.IsValid())
@@ -342,6 +342,8 @@ void WIBase::TrapFocus(bool b)
 				m_focusTrapStack.erase(it);
 				break;
 			}
+			else
+				++it;
 		}
 	}
 }
@@ -1551,7 +1553,7 @@ void WIBase::UpdateChildrenMouseInBounds()
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIHandle &hChild = m_children[i];
-		if(hChild.IsValid() && hChild->IsVisible())
+		if(hChild.IsValid() && (hChild->IsVisible() || hChild->ShouldThinkIfInvisible()))
 			hChild->UpdateChildrenMouseInBounds();
 	}
 }
@@ -1669,22 +1671,19 @@ WIBase *WIBase::FindDeepestChild(const std::function<bool(const WIBase&)> &predI
 	WIBase *r = nullptr;
 	if(predValidCandidate(*this))
 		r = this;
-	WIBase *childToInspect = nullptr;
 	for(auto &hChild : m_children)
 	{
 		if(hChild.IsValid() == false)
 			continue;
 		if(predInspect(*hChild.get()) == true && hChild.get()->GetZPos() > largestZPos)
 		{
-			childToInspect = hChild.get();
-			largestZPos = childToInspect->GetZPos();
+			auto *rChild = hChild->FindDeepestChild(predInspect,predValidCandidate);
+			if(rChild)
+			{
+				r = rChild;
+				largestZPos = hChild->GetZPos();
+			}
 		}
-	}
-	if(childToInspect != nullptr)
-	{
-		auto *rChild = childToInspect->FindDeepestChild(predInspect,predValidCandidate);
-		if(rChild != nullptr)
-			r = rChild;
 	}
 	return r;
 }

@@ -244,6 +244,8 @@ void WGUI::Think()
 
 void WGUI::ScheduleElementForUpdate(WIBase &el)
 {
+	if(umath::is_flag_set(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit))
+		return;
 	m_bGUIUpdateRequired = true;
 	umath::set_flag(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit,true);
 
