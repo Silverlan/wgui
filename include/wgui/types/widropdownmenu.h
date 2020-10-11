@@ -18,6 +18,7 @@ public:
 protected:
 	int m_index;
 
+	bool m_selected = false;
 	WIHandle m_hBackground;
 	WIHandle m_hText;
 	WIHandle m_dropDownMenu;
@@ -38,7 +39,9 @@ public:
 	virtual void SetSize(int x,int y) override;
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
+	virtual void OnVisibilityChanged(bool bVisible) override;
 	WIDropDownMenu *GetDropDownMenu();
+	bool IsSelected() const;
 };
 
 class DLLWGUI WIDropDownMenu
@@ -78,6 +81,8 @@ public:
 	unsigned int GetOptionCount();
 	WIDropDownMenuOption *AddOption(const std::string &option,const std::string &value);
 	WIDropDownMenuOption *AddOption(const std::string &option);
+	WIDropDownMenuOption *GetOptionElement(uint32_t idx);
+	WIDropDownMenuOption *FindOptionSelectedByCursor();
 	void ClearOptions();
 	void SetOptions(const std::vector<std::string> &options);
 	void SetOptions(const std::unordered_map<std::string,std::string> &options);

@@ -280,6 +280,24 @@ WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option)
 	return AddOption(option,std::to_string(idx));
 }
 
+WIDropDownMenuOption *WIDropDownMenu::GetOptionElement(uint32_t idx)
+{
+	if(idx >= m_options.size())
+		return nullptr;
+	return static_cast<WIDropDownMenuOption*>(m_options.at(idx).get());
+}
+
+WIDropDownMenuOption *WIDropDownMenu::FindOptionSelectedByCursor()
+{
+	for(auto &hOpt : m_options)
+	{
+		if(hOpt.IsValid() == false || static_cast<WIDropDownMenuOption*>(hOpt.get())->IsSelected() == false)
+			continue;
+		return static_cast<WIDropDownMenuOption*>(hOpt.get());
+	}
+	return nullptr;
+}
+
 void WIDropDownMenu::ClearOptions()
 {
 	for(auto it=m_options.begin();it!=m_options.end();it++)
@@ -457,7 +475,9 @@ void WIDropDownMenu::SetSize(int x,int y)
 
 WIDropDownMenuOption::WIDropDownMenuOption()
 	: WIBase(),m_index(-1)
-{}
+{
+	RegisterCallback<void,bool>("OnSelectionChanged");
+}
 
 void WIDropDownMenuOption::SetValue(const std::string &val) {m_value = val;}
 const std::string &WIDropDownMenuOption::GetValue() {return m_value;}
@@ -469,6 +489,7 @@ WIDropDownMenuOption::~WIDropDownMenuOption()
 {}
 
 void WIDropDownMenuOption::SetDropDownMenu(WIDropDownMenu *menu) {m_dropDownMenu = menu->GetHandle();}
+bool WIDropDownMenuOption::IsSelected() const {return m_selected;}
 WIDropDownMenu *WIDropDownMenuOption::GetDropDownMenu()
 {
 	if(!m_dropDownMenu.IsValid())
@@ -529,11 +550,21 @@ void WIDropDownMenuOption::OnCursorEntered()
 	WIBase::OnCursorEntered();
 	if(m_hBackground.IsValid())
 		m_hBackground->SetVisible(true);
+	m_selected = true;
+	CallCallbacks<void,bool>("OnSelectionChanged",true);
 }
 void WIDropDownMenuOption::OnCursorExited()
 {
 	WIBase::OnCursorExited();
 	if(m_hBackground.IsValid())
 		m_hBackground->SetVisible(false);
+	m_selected = false;
+	CallCallbacks<void,bool>("OnSelectionChanged",false);
+}
+void WIDropDownMenuOption::OnVisibilityChanged(bool bVisible)
+{
+	WIBase::OnVisibilityChanged(bVisible);
+	if(m_selected)
+		OnCursorExited();
 }
 #pragma optimize("",on)
