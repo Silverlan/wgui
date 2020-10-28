@@ -14,7 +14,6 @@
 
 LINK_WGUI_TO_CLASS(WIText,WIText);
 
-#pragma optimize("",off)
 decltype(WIText::s_textBuffer) WIText::s_textBuffer = nullptr;
 WIText::WIText()
 	: WIBase(),m_font(nullptr),m_breakHeight(0),m_wTexture(0),m_hTexture(0),
@@ -319,6 +318,10 @@ bool WIText::IsDirty() const {return umath::is_flag_set(m_flags,Flags::TextDirty
 
 void WIText::SizeToContents(bool x,bool y)
 {
+	int w,h;
+	GetTextSize(&w,&h);
+	if(w == GetWidth() && h == GetHeight())
+		return;
 	if(GetAutoBreakMode() != WIText::AutoBreak::NONE)
 	{
 		ScheduleRenderUpdate();
@@ -326,8 +329,6 @@ void WIText::SizeToContents(bool x,bool y)
 		//	UpdateSubLines();
 		return;
 	}
-	int w,h;
-	GetTextSize(&w,&h);
 	if(IsShadowEnabled() == true)
 	{
 		auto &shadowOffset = *GetShadowOffset();
@@ -376,4 +377,3 @@ std::string WIText::Substr(util::text::TextOffset startOffset,util::text::TextLe
 	return m_text->Substr(startOffset,len);
 }
 void WIText::Clear() {return m_text->Clear();}
-#pragma optimize("",on)

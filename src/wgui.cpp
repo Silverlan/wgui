@@ -23,7 +23,6 @@
 #include <prosper_descriptor_set_group.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 
-#pragma optimize("",off)
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 WGUI &WGUI::Open(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager)
 {
@@ -103,15 +102,25 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 	m_tLastThink = static_cast<double>(m_time());
 	auto &context = GetContext();
 	auto &shaderManager = context.GetShaderManager();
-	m_shaderColored = shaderManager.RegisterShader("wguicolored",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColored(context,identifier);});
-	m_shaderColoredCheap = shaderManager.RegisterShader("wguicolored_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColoredRect(context,identifier);});
-	m_shaderColoredLine = shaderManager.RegisterShader("wguicoloredline",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColoredLine(context,identifier);});
-	m_shaderText = shaderManager.RegisterShader("wguitext",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderText(context,identifier);});
-	m_shaderTextCheap = shaderManager.RegisterShader("wguitext_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextRect(context,identifier);});
-	m_shaderTextCheapColor = shaderManager.RegisterShader("wguitext_cheap_color",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextRectColor(context,identifier);});
-	m_shaderTextured = shaderManager.RegisterShader("wguitextured",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextured(context,identifier);});
-	m_shaderTexturedCheap = shaderManager.RegisterShader("wguitextured_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRect(context,identifier);});
-	m_shaderTexturedExpensive = shaderManager.RegisterShader("wguitextured_expensive",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRectExpensive(context,identifier);});
+	shaderManager.RegisterShader("wguicolored",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColored(context,identifier);});
+	shaderManager.RegisterShader("wguicolored_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColoredRect(context,identifier);});
+	shaderManager.RegisterShader("wguicoloredline",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColoredLine(context,identifier);});
+	shaderManager.RegisterShader("wguitext",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderText(context,identifier);});
+	shaderManager.RegisterShader("wguitext_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextRect(context,identifier);});
+	shaderManager.RegisterShader("wguitext_cheap_color",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextRectColor(context,identifier);});
+	shaderManager.RegisterShader("wguitextured",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextured(context,identifier);});
+	shaderManager.RegisterShader("wguitextured_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRect(context,identifier);});
+	shaderManager.RegisterShader("wguitextured_expensive",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRectExpensive(context,identifier);});
+
+	m_shaderColored = shaderManager.GetShader("wguicolored");
+	m_shaderColoredCheap = shaderManager.GetShader("wguicolored_cheap");
+	m_shaderColoredLine = shaderManager.GetShader("wguicoloredline");
+	m_shaderText = shaderManager.GetShader("wguitext");
+	m_shaderTextCheap = shaderManager.GetShader("wguitext_cheap");
+	m_shaderTextCheapColor = shaderManager.GetShader("wguitext_cheap_color");
+	m_shaderTextured = shaderManager.GetShader("wguitextured");
+	m_shaderTexturedCheap = shaderManager.GetShader("wguitextured_cheap");
+	m_shaderTexturedExpensive = shaderManager.GetShader("wguitextured_expensive");
 	
 	if(wgui::Shader::DESCRIPTOR_SET.IsValid() == false)
 		return ResultCode::ErrorInitializingShaders;
@@ -503,4 +512,3 @@ WIBase *WGUI::GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> 
 	GetMousePos(x,y);
 	return GetGUIElement(el,x,y,condition);
 }
-#pragma optimize("",on)

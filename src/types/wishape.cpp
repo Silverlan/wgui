@@ -16,7 +16,7 @@
 
 LINK_WGUI_TO_CLASS(WIShape,WIShape);
 LINK_WGUI_TO_CLASS(WITexturedShape,WITexturedShape);
-#pragma optimize("",off)
+
 WIShape::WIShape()
 	: WIBufferBase(),m_vertexBufferUpdateRequired(false)
 {}
@@ -267,7 +267,7 @@ void WITexturedShape::UpdateShaderState()
 }
 void WITexturedShape::SizeToTexture()
 {
-	if(m_texture || m_hMaterial.IsValid() == false)
+	if(m_texture == nullptr && m_hMaterial.IsValid() == false)
 		return;
 	uint32_t width,height;
 	if(m_texture)
@@ -361,4 +361,3 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 		shader.EndDraw();
 	}
 }
-#pragma optimize("",on)

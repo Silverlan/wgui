@@ -15,9 +15,8 @@ static float MARGIN = 5.f;
 static int MARGIN_LEFT = 4;
 static int OPTION_HEIGHT = 18;
 
-#pragma optimize("",off)
 WIDropDownMenu::WIDropDownMenu()
-	: WITextEntry(),m_numListItems(5),m_listOffset(0),
+	: WITextEntry(),m_numListItems(15),m_listOffset(0),
 	m_selected(-1)
 {
 	RegisterCallback<void,unsigned int>("OnOptionSelected");
@@ -31,6 +30,8 @@ WIDropDownMenu::~WIDropDownMenu()
 	if(m_hList.IsValid())
 		m_hList->Remove();
 }
+
+void WIDropDownMenu::SetListItemCount(uint32_t n) {m_numListItems = n;}
 
 void WIDropDownMenu::OnTextChanged(const std::string &text,bool changedByUser)
 {
@@ -567,4 +568,3 @@ void WIDropDownMenuOption::OnVisibilityChanged(bool bVisible)
 	if(m_selected)
 		OnCursorExited();
 }
-#pragma optimize("",on)

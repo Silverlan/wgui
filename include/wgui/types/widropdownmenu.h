@@ -65,6 +65,7 @@ public:
 	WIDropDownMenu();
 	virtual ~WIDropDownMenu() override;
 	virtual void Initialize() override;
+	void SetListItemCount(uint32_t n);
 	void SelectOption(unsigned int idx);
 	void SelectOption(const std::string &value);
 	void SelectOptionByText(const std::string &name);

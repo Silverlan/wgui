@@ -19,7 +19,6 @@
 
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 
-#pragma optimize("",off)
 Vector4 WIBase::DrawInfo::GetColor(WIBase &el) const
 {
 	Vector4 color;
@@ -1753,7 +1752,7 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton 
 	auto it = std::find_if(__lastMouseGUIElements.begin(),__lastMouseGUIElements.end(),[&el](const std::pair<GLFW::MouseButton,WIHandle> &p) {
 		return (p.second.get() == &el) ? true : false;
 		});
-	if(it != __lastMouseGUIElements.end() && !it->second.IsValid())
+	if(it != __lastMouseGUIElements.end() && (!it->second.IsValid() || state == GLFW::KeyState::Release))
 		__lastMouseGUIElements.erase(it);
 	if(hFocused.IsValid() && hEl.IsValid() && &el != pFocused && !pFocused->MouseInBounds())
 	{
@@ -1834,7 +1833,7 @@ bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyS
 				auto it = std::find_if(__lastKeyboardGUIElements.begin(),__lastKeyboardGUIElements.end(),[gui](const std::pair<GLFW::Key,WIHandle> &p) {
 					return (p.second.get() == gui) ? true : false;
 					});
-				if(it != __lastKeyboardGUIElements.end() && !it->second.IsValid())
+				if(it != __lastKeyboardGUIElements.end() && (!it->second.IsValid() || state == GLFW::KeyState::Release))
 					__lastKeyboardGUIElements.erase(it);
 				if(result == util::EventReply::Handled)
 					return true;
@@ -1902,4 +1901,3 @@ bool WIBase::IsFadingOut() const
 }
 void WIBase::SetIgnoreParentAlpha(bool ignoreParentAlpha) {umath::set_flag(m_stateFlags,StateFlags::IgnoreParentAlpha,ignoreParentAlpha);}
 bool WIBase::ShouldIgnoreParentAlpha() const {return umath::is_flag_set(m_stateFlags,StateFlags::IgnoreParentAlpha);}
-#pragma optimize("",on)

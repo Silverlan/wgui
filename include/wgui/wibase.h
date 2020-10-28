@@ -217,7 +217,6 @@ public:
 	void Draw(const DrawInfo &drawInfo);
 	virtual void SetParent(WIBase *base,std::optional<uint32_t> childIndex={});
 	WIBase *GetParent() const;
-	void ClearParent();
 	void RemoveChild(WIBase *child);
 	void AddChild(WIBase *child,std::optional<uint32_t> childIndex={});
 	bool HasChild(WIBase *child);
@@ -329,6 +328,7 @@ protected:
 	void SetIndex(uint64_t idx);
 	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 	void UpdateParentAutoSizeToContents();
+	void ClearParent();
 	virtual void OnFirstThink();
 	virtual void DoUpdate();
 	virtual util::EventReply OnMousePressed();
