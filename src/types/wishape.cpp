@@ -286,7 +286,7 @@ void WITexturedShape::SizeToTexture()
 	}
 	SetSize(width,height);
 }
-void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
+void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
 {
 	if(m_hMaterial.IsValid() == false && m_texture == nullptr)
 		return;

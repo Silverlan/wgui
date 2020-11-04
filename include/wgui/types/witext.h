@@ -52,14 +52,14 @@ public:
 		float sy = 0.f;
 	};
 
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw) override;
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f}) override;
 	void InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h);
 	void SetTextElement(WIText &elText);
 private:
 	bool RenderLines(
 		wgui::ShaderTextRect &shader,int32_t width,int32_t height,
 		const Vector2i &absPos,const Mat4 &transform,
-		const Vector2i &origin,const Mat4 &matParent,Vector2i &inOutSize,
+		const Vector2i &origin,const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 		const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 		bool colorPass
@@ -67,7 +67,7 @@ private:
 	void RenderLines(
 		int32_t width,int32_t height,
 		const Vector2i &absPos,const Mat4 &transform,
-		const Vector2i &origin,const Mat4 &matParent,Vector2i &inOutSize,
+		const Vector2i &origin,const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants
 	) const;
 	WIHandle m_hTexture = {};
@@ -207,7 +207,6 @@ public:
 	virtual void SelectShader();
 	virtual void Think() override;
 	virtual void SizeToContents(bool x=true,bool y=true) override;
-	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const override;
 
 	void SetCacheEnabled(bool bEnabled);
 	bool IsCacheEnabled() const;

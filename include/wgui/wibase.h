@@ -213,7 +213,7 @@ public:
 	void SetSize(const Vector2i &size);
 	virtual void SetSize(int x,int y);
 	virtual void Draw(int w,int h);
-	void Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize);
+	void Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale);
 	void Draw(const DrawInfo &drawInfo);
 	virtual void SetParent(WIBase *base,std::optional<uint32_t> childIndex={});
 	WIBase *GetParent() const;
@@ -221,7 +221,7 @@ public:
 	void AddChild(WIBase *child,std::optional<uint32_t> childIndex={});
 	bool HasChild(WIBase *child);
 	std::optional<uint32_t> FindChildIndex(WIBase &child) const;
-	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const;
+	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,const Vector2 &scale={1.f,1.f}) const;
 	Mat4 GetTransformedMatrix(int w,int h,Mat4 mat) const;
 	Mat4 GetTransformedMatrix(int w,int h) const;
 	Mat4 GetTranslatedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const;
@@ -234,6 +234,7 @@ public:
 	const util::PBoolProperty &GetMouseInBoundsProperty() const;
 	bool MouseInBounds() const;
 	void ScheduleUpdate();
+	bool IsUpdateScheduled() const;
 	virtual void OnCursorEntered();
 	virtual void OnCursorExited();
 	virtual void OnCursorMoved(int x,int y);
@@ -322,12 +323,18 @@ public:
 
 	uint64_t GetIndex() const;
 
+	void SetScale(const Vector2 &scale);
+	void SetScale(float x,float y);
+	const Vector2 &GetScale() const;
+	const util::PVector2Property &GetScaleProperty() const;
+
 	// Handles
 	WIHandle GetHandle() const;
 protected:
 	void SetIndex(uint64_t idx);
 	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 	void UpdateParentAutoSizeToContents();
+	void UpdateCursorMove(int x,int y);
 	void ClearParent();
 	virtual void OnFirstThink();
 	virtual void DoUpdate();
@@ -363,7 +370,7 @@ protected:
 	int m_lastMouseY = 0;
 	std::vector<WIHandle> m_children;
 	mutable WIHandle m_parent = {};
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw);
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f});
 	void UpdateChildOrder(WIBase *child=NULL);
 	template<class TElement>
 		WIHandle CreateChild();
@@ -374,7 +381,7 @@ protected:
 	template<class THandle>
 		void InitializeHandle();
 	void UpdateMouseInBounds();
-	void UpdateChildrenMouseInBounds();
+	void UpdateChildrenMouseInBounds(bool ignoreVisibility=false);
 	virtual void OnVisibilityChanged(bool bVisible);
 	WISkin *GetSkin();
 	void SetAutoAlignToParent(bool bX,bool bY,bool bReload);
@@ -394,6 +401,7 @@ private:
 	util::PBoolProperty m_bMouseInBounds = nullptr;
 	util::PBoolProperty m_bVisible = nullptr;
 	util::PBoolProperty m_bHasFocus = nullptr;
+	util::PVector2Property m_scale = nullptr;
 private:
 	std::vector<std::string> m_styleClasses;
 	WISkin *m_skin = nullptr;

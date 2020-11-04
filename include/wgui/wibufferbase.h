@@ -18,7 +18,7 @@ class DLLWGUI WIBufferBase
 public:
 	virtual ~WIBufferBase() override;
 	virtual unsigned int GetVertexCount();
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw) override;
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale) override;
 protected:
 	WIBufferBase();
 

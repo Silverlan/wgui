@@ -63,7 +63,7 @@ void WIBufferBase::InitializeBufferData(prosper::IBuffer &buffer)
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }
 
-void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
+void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
 {
 	// Try to use cheap shader if no custom vertex buffer was used
 	auto col = drawInfo.GetColor(*this);

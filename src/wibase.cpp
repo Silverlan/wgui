@@ -16,7 +16,7 @@
 #include <sharedutils/scope_guard.h>
 #include <atomic>
 #include <sharedutils/property/util_property_color.hpp>
-
+#pragma optimize("",off)
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 
 Vector4 WIBase::DrawInfo::GetColor(WIBase &el) const
@@ -42,7 +42,8 @@ WIBase::WIBase()
 	m_size(util::Vector2iProperty::Create()),
 	m_bVisible(util::BoolProperty::Create(true)),
 	m_bHasFocus(util::BoolProperty::Create(false)),
-	m_bMouseInBounds(util::BoolProperty::Create(false))
+	m_bMouseInBounds(util::BoolProperty::Create(false)),
+	m_scale{util::Vector2Property::Create(Vector2{1.f,1.f})}
 {
 	RegisterCallback<void>("OnFocusGained");
 	RegisterCallback<void>("OnFocusKilled");
@@ -55,6 +56,7 @@ WIBase::WIBase()
 	RegisterCallback<void,WIBase*>("OnChildRemoved");
 	RegisterCallback<void>("OnCursorEntered");
 	RegisterCallback<void>("OnCursorExited");
+	RegisterCallback<void>("OnUpdated");
 	RegisterCallbackWithOptionalReturn<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMousePressed");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMouseReleased");
@@ -207,6 +209,7 @@ void WIBase::ScheduleUpdate()
 	//	return;
 	WGUI::GetInstance().ScheduleElementForUpdate(*this);
 }
+bool WIBase::IsUpdateScheduled() const {return umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit);}
 void WIBase::SetAutoAlignToParent(bool bX,bool bY,bool bReload)
 {
 	if(bReload == false && bX == umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentXBit) && bY == umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentYBit))
@@ -651,6 +654,8 @@ void WIBase::Update()
 	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated,false);
 	// Flag must be cleared after DoUpdate, in case DoUpdate has set it again!
 	umath::set_flag(m_stateFlags,StateFlags::UpdateScheduledBit,false);
+
+	CallCallbacks("OnUpdated");
 }
 void WIBase::OnFirstThink() {}
 void WIBase::DoUpdate() {}
@@ -824,15 +829,21 @@ void WIBase::SetSize(int x,int y)
 #endif
 	*m_size = Vector2i{x,y};
 }
-Mat4 WIBase::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const
+Mat4 WIBase::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,const Vector2 &scale) const
 {
 	Mat4 r = glm::translate(mat,Vector3(
 		-((w -(*m_size)->x) /float(w)) +(origin.x /float(w)) *2,
 		-((h -(*m_size)->y) /float(h)) +(origin.y /float(h)) *2,//-1 -(origin.y /float(h)) *2.f,//((h -m_size.y) /float(h)) -((origin.y /float(h)) *2),
 		0
 	));
+	if(scale.x != 1.f || scale.y != 1.f)
+		r = r *glm::scale(Mat4(1.f),Vector3{scale,1.f});
 	return GetScaledMatrix(w,h,r);
 }
+void WIBase::SetScale(const Vector2 &scale) {*m_scale = scale;}
+void WIBase::SetScale(float x,float y) {SetScale(Vector2{x,y});}
+const Vector2 &WIBase::GetScale() const {return *m_scale;}
+const util::PVector2Property &WIBase::GetScaleProperty() const {return m_scale;}
 Mat4 WIBase::GetTransformedMatrix(int w,int h,Mat4 mat) const {return GetTransformedMatrix(*m_pos,w,h,mat);}
 Mat4 WIBase::GetTransformedMatrix(int w,int h) const
 {
@@ -866,7 +877,7 @@ Mat4 WIBase::GetScaledMatrix(int w,int h) const
 	Mat4 mat(1.0f);
 	return GetScaledMatrix(w,h,mat);
 }
-void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
+void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
 {
 }
 const std::string &WIBase::GetName() const {return m_name;}
@@ -948,6 +959,17 @@ void WIBase::SetThinkIfInvisible(bool bThinkIfInvisible)
 }
 bool WIBase::ShouldThinkIfInvisible() const {return umath::is_flag_set(m_stateFlags,StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit);}
 void WIBase::SetRenderIfZeroAlpha(bool renderIfZeroAlpha) {umath::set_flag(m_stateFlags,StateFlags::RenderIfZeroAlpha,renderIfZeroAlpha);}
+void WIBase::UpdateCursorMove(int x,int y)
+{
+	if(umath::is_flag_set(m_stateFlags,StateFlags::MouseCheckEnabledBit) == false)
+		return;
+	if(x != m_lastMouseX || y != m_lastMouseY)
+	{
+		OnCursorMoved(x,y);
+		m_lastMouseX = x;
+		m_lastMouseY = y;
+	}
+}
 void WIBase::Think()
 {
 	if(umath::is_flag_set(m_stateFlags,StateFlags::RemoveScheduledBit) == true)
@@ -963,16 +985,11 @@ void WIBase::Think()
 			UpdateChildrenMouseInBounds();
 	}
 	
-	if(umath::is_flag_set(m_stateFlags,StateFlags::MouseCheckEnabledBit) == true)
+	if(umath::is_flag_set(m_stateFlags,StateFlags::MouseCheckEnabledBit) && IsVisible())
 	{
 		int x,y;
 		GetMousePos(&x,&y);
-		if(x != m_lastMouseX || y != m_lastMouseY)
-		{
-			OnCursorMoved(x,y);
-			m_lastMouseX = x;
-			m_lastMouseY = y;
-		}
+		UpdateCursorMove(x,y);
 	}
 	if(m_fade != NULL)
 	{
@@ -1013,7 +1030,7 @@ void WIBase::CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vec
 		(h -((-mat[3][1] *h) +outSize.y)) /2.f
 	);
 }
-void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize)
+void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale)
 {
 	const auto w = drawInfo.size.x;
 	const auto h = drawInfo.size.y;
@@ -1023,7 +1040,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 	const auto bUseScissor = drawInfo.useScissor;
 	const auto &matPostTransform = drawInfo.postTransform;
 
-	auto matDraw = GetTransformedMatrix(origin,w,h,mat);
+	auto matDraw = GetTransformedMatrix(origin,w,h,mat,scale);
 	if(matPostTransform.has_value())
 		matDraw = *matPostTransform *matDraw;
 
@@ -1044,7 +1061,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 			return; // Outside of scissor rect; Skip rendering
 	}
 
-	Render(drawInfo,matDraw);
+	Render(drawInfo,matDraw,scale);
 	mat = GetTranslatedMatrix(origin,w,h,mat);
 	auto &context = WGUI::GetInstance().GetContext();
 	auto drawCmd = context.GetDrawCommandBuffer();
@@ -1098,7 +1115,8 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 			childDrawInfo.offset = *child->m_pos;
 			childDrawInfo.transform = mat;
 			childDrawInfo.useScissor = bShouldScissor;
-			child->Draw(childDrawInfo,offsetParentNew,posScissor,szScissor);
+			auto scaleChild = scale *child->GetScale();
+			child->Draw(childDrawInfo,offsetParentNew,posScissor,szScissor,scaleChild);
 			WIBase::RENDER_ALPHA = aOriginal;
 		}
 	}
@@ -1113,7 +1131,7 @@ void WIBase::Draw(const DrawInfo &drawInfo)
 		scissorSize = GetSize();
 	}
 	WGUI::GetInstance().SetScissor(scissorPos.x,scissorPos.y,scissorSize.x,scissorSize.y);
-	Draw(drawInfo,GetPos(),scissorPos,scissorSize);
+	Draw(drawInfo,GetPos(),scissorPos,scissorSize,GetScale());
 }
 void WIBase::Draw(int w,int h)
 {
@@ -1545,15 +1563,17 @@ void WIBase::UpdateMouseInBounds()
 		OnCursorEntered();
 	else OnCursorExited();
 }
-void WIBase::UpdateChildrenMouseInBounds()
+void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility)
 {
+	if(ignoreVisibility == false && IsVisible() == false)
+		return;
 	if(umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit) == true)
 		UpdateMouseInBounds();
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIHandle &hChild = m_children[i];
 		if(hChild.IsValid() && (hChild->IsVisible() || hChild->ShouldThinkIfInvisible()))
-			hChild->UpdateChildrenMouseInBounds();
+			hChild->UpdateChildrenMouseInBounds(ignoreVisibility);
 	}
 }
 void WIBase::OnCursorEntered()
@@ -1688,8 +1708,20 @@ WIBase *WIBase::FindDeepestChild(const std::function<bool(const WIBase&)> &predI
 }
 void WIBase::InjectMouseMoveInput(int32_t x,int32_t y)
 {
+	std::function<void(WIBase&,int,int)> iterateChildren = nullptr;
+	iterateChildren = [&iterateChildren](WIBase &el,int x,int y) {
+		el.UpdateCursorMove(x,y);
+		for(auto &hChild : el.m_children)
+		{
+			if(hChild.IsValid() == false)
+				continue;
+			iterateChildren(*hChild.get(),x -hChild->GetX(),y -hChild->GetY());
+		}
+	};
+	iterateChildren(*this,x,y);
+
 	OnCursorMoved(x,y);
-	UpdateChildrenMouseInBounds();
+	UpdateChildrenMouseInBounds(true);
 }
 util::EventReply WIBase::InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
@@ -1901,3 +1933,4 @@ bool WIBase::IsFadingOut() const
 }
 void WIBase::SetIgnoreParentAlpha(bool ignoreParentAlpha) {umath::set_flag(m_stateFlags,StateFlags::IgnoreParentAlpha,ignoreParentAlpha);}
 bool WIBase::ShouldIgnoreParentAlpha() const {return umath::is_flag_set(m_stateFlags,StateFlags::IgnoreParentAlpha);}
+#pragma optimize("",on)

@@ -149,19 +149,6 @@ void WIText::SelectShader()
 {
 	// Deprecated?
 }
-Mat4 WIText::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const
-{
-	return WIBase::GetTransformedMatrix(origin,w,h,mat);
-	/*
-	mat = glm::translate(mat,Vector3(
-		(m_pos.x /float(w)) *2,
-		-((m_pos.y /float(h)) *2),
-		0
-	));
-	mat = glm::translate(mat,Vector3(-1,1,0));
-	//mat = glm::translate(mat,Vector3(-1,1 -((m_font->GetSize()) /float(h) *2.f),0));
-	return mat;*/
-}
 
 void WIText::UpdateRenderTexture()
 {
@@ -670,7 +657,7 @@ void WITextBase::InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h)
 bool WITextBase::RenderLines(
 	wgui::ShaderTextRect &shader,int32_t width,int32_t height,
 	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
-	const Mat4 &matParent,Vector2i &inOutSize,
+	const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 	const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 	bool colorPass
@@ -724,7 +711,7 @@ bool WITextBase::RenderLines(
 
 			// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
 			// This will be reset further below.
-			auto matText = GetTransformedMatrix(origin,width,height,matParent);
+			auto matText = GetTransformedMatrix(origin,width,height,matParent,scale);
 			inOutPushConstants.elementData.modelMatrix = matText;
 
 			inOutPushConstants.fontInfo.yOffset = bufInfo.absLineIndex *lineHeight;
@@ -739,23 +726,23 @@ bool WITextBase::RenderLines(
 void WITextBase::RenderLines(
 	int32_t width,int32_t height,
 	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
-	const Mat4 &matParent,Vector2i &inOutSize,
+	const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants
 ) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
-	auto bHasColorBuffers = RenderLines(*pShaderTextRect,width,height,absPos,transform,origin,matParent,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+	auto bHasColorBuffers = RenderLines(*pShaderTextRect,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars);
 	},false);
 	if(bHasColorBuffers == false)
 		return;
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
-	RenderLines(*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+	RenderLines(*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars);
 	},true);
 }
 
-void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
+void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
 {
 	WIBase::Render(drawInfo,matDraw);
 	if(m_hText.IsValid() == false)
@@ -801,8 +788,8 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 		};
 		Vector2i absPos,absSize;
 		CalcBounds(matDraw,drawInfo.size.x,drawInfo.size.y,absPos,absSize);
-		const auto fDraw = [&context,&drawCmd,&pushConstants,&size,&drawInfo,&matDraw,pFont,this,&textEl,&absPos,&absSize](bool bClear) {
-			RenderLines(drawInfo.size.x,drawInfo.size.y,absPos,matDraw,drawInfo.offset,drawInfo.transform /* parent transform */,size,pushConstants);
+		const auto fDraw = [&context,&drawCmd,&pushConstants,&size,&drawInfo,&matDraw,pFont,this,&textEl,&absPos,&absSize,&scale](bool bClear) {
+			RenderLines(drawInfo.size.x,drawInfo.size.y,absPos,matDraw,drawInfo.offset,drawInfo.transform /* parent transform */,scale,size,pushConstants);
 		};
 
 		// Render Shadow
@@ -821,7 +808,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
 				}
 				auto tmpMatrix = pushConstants.elementData.modelMatrix;
 				auto tmpColor = pushConstants.elementData.color;
-				pushConstants.elementData.modelMatrix = GetTransformedMatrix(drawInfo.offset,drawInfo.size.x,drawInfo.size.y,drawInfo.transform /* parent transform */);
+				pushConstants.elementData.modelMatrix = GetTransformedMatrix(drawInfo.offset,drawInfo.size.x,drawInfo.size.y,drawInfo.transform /* parent transform */,scale);
 				if(pShadowColor != nullptr)
 					pushConstants.elementData.color = *pShadowColor;
 				fDraw(true); // TODO: Render text shadow shadow at the same time? (Single framebuffer)

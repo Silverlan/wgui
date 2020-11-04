@@ -109,7 +109,7 @@ const Color &WILine::GetStartColor() const {return m_colStart;}
 const Color &WILine::GetEndColor() const {return m_colEnd;}
 
 unsigned int WILine::GetVertexCount() {return 2;}
-Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const
+Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,const Vector2 &scale) const
 {
 	auto &posStart = GetStartPos();
 	auto &posEnd = GetEndPos();
@@ -125,10 +125,12 @@ Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) c
 		0
 	));
 	mat = glm::scale(mat,size);
+	if(scale.x != 1.f || scale.y != 1.f)
+		mat = mat *glm::scale(Mat4(1.f),Vector3{scale,1.f});
 	return mat;
 }
 
-void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw)
+void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
 {
 	auto *pShader = GetShader();
 	auto col = drawInfo.GetColor(*this);
