@@ -69,6 +69,9 @@ public:
 	void SelectOption(unsigned int idx);
 	void SelectOption(const std::string &value);
 	void SelectOptionByText(const std::string &name);
+	const WIDropDownMenuOption *FindOptionByValue(const std::string &value) const;
+	WIDropDownMenuOption *FindOptionByValue(const std::string &value);
+	bool HasOption(const std::string &value) const;
 	void OnOptionSelected(WIDropDownMenuOption *option);
 	void ClearSelectedOption();
 	std::string_view GetText() const;

@@ -127,7 +127,8 @@ void WIDropDownMenu::SelectOption(unsigned int idx)
 	CallCallbacks<void>("OnValueChanged");
 }
 
-void WIDropDownMenu::SelectOption(const std::string &value)
+const WIDropDownMenuOption *WIDropDownMenu::FindOptionByValue(const std::string &value) const {return const_cast<WIDropDownMenu*>(this)->FindOptionByValue(value);}
+WIDropDownMenuOption *WIDropDownMenu::FindOptionByValue(const std::string &value)
 {
 	for(auto it=m_options.begin();it!=m_options.end();it++)
 	{
@@ -135,12 +136,19 @@ void WIDropDownMenu::SelectOption(const std::string &value)
 		{
 			auto *pOption = it->get<WIDropDownMenuOption>();
 			if(pOption->GetValue() == value)
-			{
-				SelectOption(pOption->GetIndex());
-				break;
-			}
+				return pOption;
 		}
 	}
+	return nullptr;
+}
+bool WIDropDownMenu::HasOption(const std::string &value) const {return FindOptionByValue(value) != nullptr;}
+
+void WIDropDownMenu::SelectOption(const std::string &value)
+{
+	auto *option = FindOptionByValue(value);
+	if(option == nullptr)
+		return;
+	SelectOption(option->GetIndex());
 }
 
 void WIDropDownMenu::SelectOptionByText(const std::string &name)
