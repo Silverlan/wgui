@@ -625,7 +625,7 @@ void WIText::InitializeTextBuffer(prosper::IPrContext &context)
 	createInfo.size = instanceSize *maxInstances;
 	createInfo.flags |= prosper::util::BufferCreateInfo::Flags::Persistent;
 	s_textBuffer = context.CreateUniformResizableBuffer(createInfo,instanceSize,createInfo.size *5u,0.05f);
-	s_textBuffer->SetPermanentlyMapped(true);
+	s_textBuffer->SetPermanentlyMapped(true,prosper::IBuffer::MapFlags::WriteBit);
 	s_textBuffer->SetDebugName("text_glyph_bounds_info_buf");
 }
 void WIText::ClearTextBuffer()

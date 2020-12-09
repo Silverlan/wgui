@@ -54,7 +54,7 @@ void WITextTagColor::Apply()
 		createInfo.size = instanceSize *maxInstances;
 		createInfo.flags |= prosper::util::BufferCreateInfo::Flags::Persistent;
 		s_colorBuffer = WGUI::GetInstance().GetContext().CreateUniformResizableBuffer(createInfo,instanceSize,createInfo.size *5u,0.05f);
-		s_colorBuffer->SetPermanentlyMapped(true);
+		s_colorBuffer->SetPermanentlyMapped(true,prosper::IBuffer::MapFlags::ReadBit);
 		s_colorBuffer->SetDebugName("text_color_buf");
 	}
 
