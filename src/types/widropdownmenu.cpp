@@ -368,6 +368,24 @@ void WIDropDownMenu::SetOptionOffset(unsigned int offset)
 	m_listOffset = offset;
 }
 
+void WIDropDownMenu::ScrollToOption(uint32_t offset,bool center)
+{
+	if(center)
+	{
+		unsigned int numOptions = static_cast<unsigned int>(m_options.size());
+		offset = std::max<int>(std::min<int>(
+			offset -static_cast<int>(ceilf(float(m_numListItems) /2.f)) +1,
+			static_cast<int>(numOptions) -static_cast<int>(m_numListItems)
+		),0);
+	}
+	if(m_hScrollBar.IsValid())
+	{
+		WIScrollBar *pScrollBar = m_hScrollBar.get<WIScrollBar>();
+		pScrollBar->SetScrollOffset(offset);
+		SetOptionOffset(offset);
+	}
+}
+
 void WIDropDownMenu::OpenMenu()
 {
 	if(!m_hList.IsValid())
@@ -389,6 +407,12 @@ void WIDropDownMenu::OpenMenu()
 		numList = m_numListItems;
 	pList->SetHeight(OPTION_HEIGHT *numList);
 
+	auto *elBase = WGUI::GetInstance().GetBaseElement();
+	// If menu bounds exceed screen bounds, put it on top of the drop down
+	// field instead
+	if(elBase && pos.y +y +pList->GetHeight() >= elBase->GetHeight())
+		pList->SetY(pos.y -pList->GetHeight());
+
 	int marginRight = 0;
 	if(m_hScrollBar.IsValid())
 	{
@@ -409,16 +433,7 @@ void WIDropDownMenu::OpenMenu()
 			pOption->SetWidth(w);
 		}
 	}
-	unsigned int idxSelected = std::max<int>(std::min<int>(
-		m_selected -static_cast<int>(ceilf(float(m_numListItems) /2.f)) +1,
-		static_cast<int>(numOptions) -static_cast<int>(m_numListItems)
-	),0);
-	if(m_hScrollBar.IsValid())
-	{
-		WIScrollBar *pScrollBar = m_hScrollBar.get<WIScrollBar>();
-		pScrollBar->SetScrollOffset(idxSelected);
-		SetOptionOffset(idxSelected);
-	}
+	ScrollToOption(m_selected,true);
 	CallCallbacks("OnMenuOpened");
 }
 void WIDropDownMenu::CloseMenu()

@@ -93,6 +93,7 @@ public:
 	void SetOptionOffset(unsigned int offset);
 	void OpenMenu();
 	void CloseMenu();
+	void ScrollToOption(uint32_t offset,bool center=false);
 	bool IsMenuOpen();
 	void ToggleMenu();
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
