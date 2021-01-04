@@ -39,7 +39,7 @@ class WIHandle;
 class WISkin;
 class WGUI;
 namespace util {class ColorProperty;};
-namespace prosper {class IBuffer;};
+namespace prosper {class IBuffer; class ICommandBuffer;};
 class DLLWGUI WIBase
 	: public CallbackHandler
 {
@@ -84,11 +84,15 @@ public:
 	};
 	struct DLLWGUI DrawInfo
 	{
+		DrawInfo(std::shared_ptr<prosper::ICommandBuffer> &cmdBuf)
+			: commandBuffer{cmdBuf}
+		{}
 		Vector2i offset = {};
 		Vector2i size = {};
 		std::optional<Vector4> color = {};
 		Mat4 transform = umat::identity();
 		std::optional<Mat4> postTransform = {};
+		std::shared_ptr<prosper::ICommandBuffer> &commandBuffer;
 		bool useScissor = true;
 
 		Vector4 GetColor(WIBase &el) const;
@@ -212,7 +216,7 @@ public:
 	void GetSize(int *w,int *h);
 	void SetSize(const Vector2i &size);
 	virtual void SetSize(int x,int y);
-	virtual void Draw(int w,int h);
+	virtual void Draw(int w,int h,std::shared_ptr<prosper::ICommandBuffer> &cmdBuf);
 	void Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale);
 	void Draw(const DrawInfo &drawInfo);
 	virtual void SetParent(WIBase *base,std::optional<uint32_t> childIndex={});

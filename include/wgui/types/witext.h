@@ -57,6 +57,7 @@ public:
 	void SetTextElement(WIText &elText);
 private:
 	bool RenderLines(
+		std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 		wgui::ShaderTextRect &shader,int32_t width,int32_t height,
 		const Vector2i &absPos,const Mat4 &transform,
 		const Vector2i &origin,const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
@@ -65,6 +66,7 @@ private:
 		bool colorPass
 	) const;
 	void RenderLines(
+		std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 		int32_t width,int32_t height,
 		const Vector2i &absPos,const Mat4 &transform,
 		const Vector2i &origin,const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,

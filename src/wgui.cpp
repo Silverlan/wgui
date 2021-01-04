@@ -21,8 +21,9 @@
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_descriptor_set_group.hpp>
+#include <prosper_command_buffer.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
-
+#pragma optimize("",off)
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 WGUI &WGUI::Open(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager)
 {
@@ -275,16 +276,16 @@ void WGUI::ScheduleElementForUpdate(WIBase &el)
 	m_updateQueue.push_back(el.GetHandle());
 }
 
-void WGUI::Draw()
+void WGUI::Draw(prosper::IRenderPass &rp,prosper::IFramebuffer &fb,prosper::ICommandBuffer &drawCmd)
 {
-	auto &context = GetContext();
-	auto drawCmd = context.GetDrawCommandBuffer();
 	WIBase::RENDER_ALPHA = 1.f;
 	if(!m_base.IsValid())
 		return;
+
+	auto baseCmd = drawCmd.shared_from_this();
 	auto *p = m_base.get();
 	if(p->IsVisible())
-		p->Draw(p->GetWidth(),p->GetHeight());
+		p->Draw(p->GetWidth(),p->GetHeight(),baseCmd);
 }
 
 WIBase *WGUI::Create(std::string classname,WIBase *parent)
@@ -512,3 +513,4 @@ WIBase *WGUI::GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> 
 	GetMousePos(x,y);
 	return GetGUIElement(el,x,y,condition);
 }
+#pragma optimize("",on)

@@ -75,7 +75,7 @@ void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vec
 			return;
 		auto *pShader = static_cast<wgui::ShaderColoredRect*>(m_shaderCheap.get());
 		auto &context = WGUI::GetInstance().GetContext();
-		if(pShader->BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
+		if(pShader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y) == true)
 		{
 			pShader->Draw({matDraw,col});
 			pShader->EndDraw();
@@ -89,7 +89,7 @@ void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vec
 		return;
 	auto &shader = static_cast<wgui::ShaderColored&>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(context.GetDrawCommandBuffer(),drawInfo.size.x,drawInfo.size.y) == true)
+	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y) == true)
 	{
 		shader.Draw(*buf,GetVertexCount(),wgui::ElementData{matDraw,col});
 		shader.EndDraw();

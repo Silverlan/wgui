@@ -1064,7 +1064,6 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 	Render(drawInfo,matDraw,scale);
 	mat = GetTranslatedMatrix(origin,w,h,mat);
 	auto &context = WGUI::GetInstance().GetContext();
-	auto drawCmd = context.GetDrawCommandBuffer();
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIBase *child = m_children[i].get();
@@ -1133,11 +1132,11 @@ void WIBase::Draw(const DrawInfo &drawInfo)
 	WGUI::GetInstance().SetScissor(scissorPos.x,scissorPos.y,scissorSize.x,scissorSize.y);
 	Draw(drawInfo,GetPos(),scissorPos,scissorSize,GetScale());
 }
-void WIBase::Draw(int w,int h)
+void WIBase::Draw(int w,int h,std::shared_ptr<prosper::ICommandBuffer> &cmdBuf)
 {
 	if(!IsVisible())
 		return;
-	DrawInfo drawInfo {};
+	DrawInfo drawInfo {cmdBuf};
 	drawInfo.offset = GetPos();
 	drawInfo.useScissor = GetShouldScissor();
 	drawInfo.size = {w,h};

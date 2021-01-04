@@ -28,6 +28,9 @@ namespace prosper
 	class IBuffer;
 	class IDescriptorSetGroup;
 	class Shader;
+	class IRenderPass;
+	class IFramebuffer;
+	class ISecondaryCommandBuffer;
 };
 
 namespace wgui
@@ -96,7 +99,7 @@ public:
 	WIBase *FindByFilter(const std::function<bool(WIBase&)> &filter) const;
 	WIBase *FindByIndex(uint64_t index) const;
 	void Think();
-	void Draw();
+	void Draw(prosper::IRenderPass &rp,prosper::IFramebuffer &fb,prosper::ICommandBuffer &drawCmd);
 	bool HandleJoystickInput(GLFW::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
 	bool HandleMouseInput(GLFW::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
 	bool HandleKeyboardInput(GLFW::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);

@@ -38,7 +38,7 @@ void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipeline
 
 size_t Shader::GetBaseTypeHashCode() const {return typeid(Shader).hash_code();}
 
-bool Shader::BeginDraw(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx)
+bool Shader::BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx)
 {
 	if(ShaderGraphics::BeginDraw(cmdBuffer,pipelineIdx,RecordFlags::None) == false || cmdBuffer->RecordSetViewport(width,height) == false)
 		return false;

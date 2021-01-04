@@ -655,6 +655,7 @@ void WITextBase::InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h)
 }
 
 bool WITextBase::RenderLines(
+	std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 	wgui::ShaderTextRect &shader,int32_t width,int32_t height,
 	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
 	const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
@@ -665,7 +666,6 @@ bool WITextBase::RenderLines(
 {
 	auto &textEl = static_cast<WIText&>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	auto &drawCmd = context.GetDrawCommandBuffer();
 	if(shader.BeginDraw(drawCmd,width,height) == false)
 		return false;
 	uint32_t xScissor,yScissor,wScissor,hScissor;
@@ -724,6 +724,7 @@ bool WITextBase::RenderLines(
 }
 
 void WITextBase::RenderLines(
+	std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 	int32_t width,int32_t height,
 	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
 	const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
@@ -731,13 +732,13 @@ void WITextBase::RenderLines(
 ) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
-	auto bHasColorBuffers = RenderLines(*pShaderTextRect,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars);
 	},false);
 	if(bHasColorBuffers == false)
 		return;
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
-	RenderLines(*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+	RenderLines(drawCmd,*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars);
 	},true);
 }
@@ -768,7 +769,6 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vecto
 			}
 		}
 
-		auto drawCmd = context.GetDrawCommandBuffer();
 		auto glyphMap = pFont->GetGlyphMap();
 		auto glyphMapExtents = glyphMap->GetImage().GetExtents();
 		auto maxGlyphBitmapWidth = pFont->GetMaxGlyphBitmapWidth();
@@ -788,8 +788,9 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vecto
 		};
 		Vector2i absPos,absSize;
 		CalcBounds(matDraw,drawInfo.size.x,drawInfo.size.y,absPos,absSize);
-		const auto fDraw = [&context,&drawCmd,&pushConstants,&size,&drawInfo,&matDraw,pFont,this,&textEl,&absPos,&absSize,&scale](bool bClear) {
-			RenderLines(drawInfo.size.x,drawInfo.size.y,absPos,matDraw,drawInfo.offset,drawInfo.transform /* parent transform */,scale,size,pushConstants);
+		auto &commandBuffer = drawInfo.commandBuffer;
+		const auto fDraw = [&context,&commandBuffer,&pushConstants,&size,&drawInfo,&matDraw,pFont,this,&textEl,&absPos,&absSize,&scale](bool bClear) {
+			RenderLines(commandBuffer,drawInfo.size.x,drawInfo.size.y,absPos,matDraw,drawInfo.offset,drawInfo.transform /* parent transform */,scale,size,pushConstants);
 		};
 
 		// Render Shadow
