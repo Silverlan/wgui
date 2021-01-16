@@ -551,7 +551,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 	auto bufferOffset = 0u;
 	for(auto &subStrInfo : subStrings)
 	{
-		ScopeGuard sg{[this,&subStrInfo,&bufferOffset]() {
+		util::ScopeGuard sg{[this,&subStrInfo,&bufferOffset]() {
 			++bufferOffset;
 		}};
 
