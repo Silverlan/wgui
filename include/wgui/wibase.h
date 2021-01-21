@@ -84,7 +84,7 @@ public:
 	};
 	struct DLLWGUI DrawInfo
 	{
-		DrawInfo(std::shared_ptr<prosper::ICommandBuffer> &cmdBuf)
+		DrawInfo(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuf)
 			: commandBuffer{cmdBuf}
 		{}
 		Vector2i offset = {};
@@ -92,7 +92,7 @@ public:
 		std::optional<Vector4> color = {};
 		Mat4 transform = umat::identity();
 		std::optional<Mat4> postTransform = {};
-		std::shared_ptr<prosper::ICommandBuffer> &commandBuffer;
+		mutable std::shared_ptr<prosper::ICommandBuffer> commandBuffer;
 		bool useScissor = true;
 
 		Vector4 GetColor(WIBase &el) const;
