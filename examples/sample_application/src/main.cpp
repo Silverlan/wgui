@@ -4,7 +4,6 @@
 #include <Windows.h>
 #undef MemoryBarrier
 #endif
-#include <glad/glad.h>
 #include <wgui/wgui.h>
 #include <wgui/types/wirect.h>
 #include <wgui/types/witext.h>
@@ -13,18 +12,13 @@
 #include <cmaterialmanager.h>
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
+#include <buffers/prosper_buffer.hpp>
 #include <shader/prosper_shader.hpp>
 #include <prosper_command_buffer.hpp>
 #include <debug/prosper_debug.hpp>
 #include <image/prosper_render_target.hpp>
 #include <sharedutils/util_library.hpp>
-
-#include <buffers/gl_buffer.hpp>
-#include <gl_framebuffer.hpp>
-#include <gl_context.hpp>
-#include <gl_command_buffer.hpp>
-#include <gl_descriptor_set_group.hpp>
-#include <prosper_util_square_shape.hpp>
+#include <sharedutils/util.h>
 
 #pragma optimize("",off)
 
@@ -317,7 +311,7 @@ private:
 	GUIProgram()=default;
 	bool Initialize()
 	{
-		auto lib = util::Library::Load("E:/projects/pragma/build_winx64/output/modules/graphics/opengl/pr_prosper_opengl.dll");
+		auto lib = util::Library::Load(util::get_program_path() +"/pr_prosper_vulkan.dll");//pr_prosper_opengl.dll");
 		if(lib == nullptr)
 			return false;
 		m_libRenderAPI = lib;
@@ -326,15 +320,15 @@ private:
 			return false;
 		std::shared_ptr<prosper::IPrContext> context;
 		std::string err;
-		if(initRenderAPI("WGUI Demo",true,context,err) == false)
+		if(initRenderAPI("WGUI Demo",false /* validation */,context,err) == false)
 		{
 			std::cout<<err<<std::endl;
 			return false;
 		}
 		prosper::Callbacks callbacks {};
-		callbacks.validationCallback = [](prosper::DebugMessageSeverityFlags severityFlags,const std::string &message) {
+		/*callbacks.validationCallback = [](prosper::DebugMessageSeverityFlags severityFlags,const std::string &message) {
 			std::cout<<"Validation message: "<<message<<std::endl;
-		};
+		};*/
 		callbacks.onWindowInitialized = []() {};
 		callbacks.onClose = []() {};
 		callbacks.onResolutionChanged = [](uint32_t w,uint32_t h) {};
@@ -350,14 +344,15 @@ private:
 			std::cout<<infoLog<<std::endl<<std::endl;
 			std::cout<<debugInfoLog<<std::endl;
 			});
-		prosper::debug::set_debug_validation_callback([](prosper::DebugReportObjectTypeEXT objectType,const std::string &msg) {
+		/*prosper::debug::set_debug_validation_callback([](prosper::DebugReportObjectTypeEXT objectType,const std::string &msg) {
 			std::cerr<<"[VK] "<<msg<<std::endl;
-			});
+			});*/
 		GLFW::initialize();
 
 		prosper::IPrContext::CreateInfo contextCreateInfo {};
 		contextCreateInfo.width = 1'280;
 		contextCreateInfo.height = 1'024;
+		contextCreateInfo.presentMode = prosper::PresentModeKHR::Mailbox;
 		context->GetWindowCreationInfo().decorated = true;
 		context->Initialize(contextCreateInfo);
 
@@ -421,14 +416,12 @@ private:
 		el2->SetSize(elText->GetSize());
 		el2->SetPos(elText->GetPos());
 
-		if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-			exit(EXIT_FAILURE);
-
 		m_context->GetShaderManager().RegisterShader("test",[](prosper::IPrContext &context,const std::string &identifier) {return new ShaderTest(context,identifier);});
 		return true;
 	}
 	void DrawFrame(prosper::IPrimaryCommandBuffer &drawCmd,uint32_t swapchainImageIdx)
 	{
+#if 0
 		auto &gui = WGUI::GetInstance();
 		// Update GUI Logic
 		gui.Think();
@@ -505,12 +498,10 @@ private:
 				imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
 				imgCreateInfo.format = prosper::Format::BC1_RGBA_UNorm_Block;
 				imgTest3 = m_context->CreateImage(imgCreateInfo);
-				static_cast<prosper::GLContext&>(*m_context).CheckResult();
 			}
 
 			auto *albedoMap = mat->GetAlbedoMap();
 			auto &tex = std::static_pointer_cast<Texture>(albedoMap->texture)->GetVkTexture();
-			static_cast<prosper::GLContext&>(*m_context).CheckResult();
 			//drawCmd.RecordClearImage(*imgTest3,prosper::ImageLayout::TransferDstOptimal,std::array<float,4>{1.f,1.f,1.f,1.f});
 			
 			static auto test = false;
@@ -521,7 +512,6 @@ private:
 			}
 			// Is Black??
 		}
-		static_cast<prosper::GLContext&>(*m_context).CheckResult();
 		//drawCmd.RecordClearImage(texTest->GetImage(),prosper::ImageLayout::TransferDstOptimal,std::array<float,4>{1.f,0.f,0.f,1.f});
 		/*glBindFramebuffer(GL_FRAMEBUFFER,static_cast<prosper::GLFramebuffer&>(*framebuffer).GetGLFramebuffer());
 		glClearColor(1.0f, 1.0f, 0.0f, 1.0f );
@@ -536,7 +526,6 @@ private:
 		glClear(GL_COLOR_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 #endif
-		static_cast<prosper::GLContext&>(*m_context).CheckResult();
 
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glClearColor(0.0f, 0.0f, 1.0f, 1.0f );
@@ -544,8 +533,6 @@ private:
 		glDisable(GL_DEPTH_TEST);  
 
 		drawCmd.RecordBeginRenderPass(*m_stagingRenderTarget);
-
-		static_cast<prosper::GLContext&>(*m_context).CheckResult();
 
 		{
 			auto *shader = static_cast<ShaderTest*>(m_context->GetShaderManager().FindShader<ShaderTest>());
@@ -613,7 +600,6 @@ private:
 		);
 		// TODO?
 
-		static_cast<prosper::GLContext&>(*m_context).CheckResult();
 #if 0
 		auto &swapchainImg = *m_swapchainPtr->get_image(swapchainImageIdx);
 
@@ -625,6 +611,7 @@ private:
 		srcInfo = {prosper::PipelineStageFlags::TransferBit,prosper::ImageLayout::TransferDstOptimal,prosper::AccessFlags::MemoryReadBit};
 		dstInfo = {prosper::PipelineStageFlags::TransferBit,prosper::ImageLayout::PresentSrcKHR,prosper::AccessFlags::TransferReadBit};
 		drawCmd.RecordImageBarrier(swapchainImg,srcInfo,dstInfo);
+#endif
 #endif
 	}
 	void InitializeStagingTarget()

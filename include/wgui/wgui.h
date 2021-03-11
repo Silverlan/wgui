@@ -31,6 +31,7 @@ namespace prosper
 	class IRenderPass;
 	class IFramebuffer;
 	class ISecondaryCommandBuffer;
+	class ICommandBuffer;
 };
 
 namespace wgui
