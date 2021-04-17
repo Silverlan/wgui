@@ -15,6 +15,7 @@
 #include <prosper_util.hpp>
 #include <sharedutils/scope_guard.h>
 #include <atomic>
+#include <prosper_window.hpp>
 #include <sharedutils/property/util_property_color.hpp>
 #pragma optimize("",off)
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
@@ -457,12 +458,15 @@ void WIBase::SetAlpha(float alpha)
 }
 void WIBase::GetMousePos(int *x,int *y) const
 {
-	auto &context = WGUI::GetInstance().GetContext();
-	auto &window = context.GetWindow();
-	auto cursorPos = window.GetCursorPos();
-	Vector2i cur = GetAbsolutePos();
-	cursorPos.x -= cur.x;
-	cursorPos.y -= cur.y;
+	auto *window = GetRootWindow();
+	Vector2 cursorPos {};
+	if(window)
+	{
+		cursorPos = (*window)->GetCursorPos();
+		Vector2i cur = GetAbsolutePos();
+		cursorPos.x -= cur.x;
+		cursorPos.y -= cur.y;
+	}
 	if(x != nullptr)
 		*x = static_cast<int>(cursorPos.x);
 	if(y != nullptr)
@@ -514,7 +518,8 @@ void WIBase::RequestFocus()
 {
 	if(HasFocus())
 		return;
-	if(!WGUI::GetInstance().SetFocusedElement(this))
+	auto *window = GetRootWindow();
+	if(window && !WGUI::GetInstance().SetFocusedElement(this,window))
 		return;
 	*m_bHasFocus = true;
 	OnFocusGained();
@@ -525,7 +530,9 @@ void WIBase::KillFocus(bool bForceKill)
 	if(!HasFocus() || (bForceKill == false && IsFocusTrapped() && IsVisible()))
 		return;
 	*m_bHasFocus = false;
-	WGUI::GetInstance().SetFocusedElement(NULL);
+	auto *window = GetRootWindow();
+	if(window)
+		WGUI::GetInstance().SetFocusedElement(NULL,window);
 	if(bForceKill == false)
 	{
 		for(auto it=m_focusTrapStack.rbegin();it!=m_focusTrapStack.rend();)
@@ -577,7 +584,7 @@ bool WIBase::IsDescendantOf(WIBase *el) {return el->IsDescendant(this);}
 bool WIBase::IsAncestor(WIBase *el)
 {
 	WIBase *parent = GetParent();
-	WIBase *root = WGUI::GetInstance().GetBaseElement();
+	WIBase *root = el->GetRootElement();
 	while(parent != NULL && parent != root)
 	{
 		if(parent == el)
@@ -623,6 +630,20 @@ bool WIBase::IsVisible() const
 	) ? true : false;
 }
 void WIBase::OnVisibilityChanged(bool) {}
+WIBase *WIBase::GetRootElement()
+{
+	auto *parent = GetParent();
+	if(parent)
+		return parent->GetRootElement();
+	return this;
+}
+prosper::Window *WIBase::GetRootWindow()
+{
+	auto *el = GetRootElement();
+	if(!el)
+		return nullptr;
+	return WGUI::GetInstance().FindWindow(*el);
+}
 void WIBase::SetVisible(bool b)
 {
 	if(*m_bVisible == b || umath::is_flag_set(m_stateFlags,StateFlags::RemoveScheduledBit))
@@ -632,7 +653,7 @@ void WIBase::SetVisible(bool b)
 	if(b == false)
 	{
 		UpdateMouseInBounds();
-		WIBase *el = WGUI::GetInstance().GetFocusedElement();
+		WIBase *el = WGUI::GetInstance().GetFocusedElement(GetRootWindow());
 		if(el != NULL && (el == this || el->IsDescendantOf(this)))
 		{
 			bool bTrapped = el->IsFocusTrapped();
@@ -980,8 +1001,8 @@ void WIBase::Think()
 	//if(*m_bHasFocus == true)
 	{
 		auto &context = WGUI::GetInstance().GetContext();
-		auto &window = context.GetWindow();
-		if(window.IsFocused())
+		auto *window = GetRootWindow();
+		if(window && (*window)->IsFocused())
 			UpdateChildrenMouseInBounds();
 	}
 	
@@ -1542,8 +1563,8 @@ const util::PBoolProperty &WIBase::GetMouseInBoundsProperty() const {return m_bM
 bool WIBase::MouseInBounds() const
 {
 	auto &context = WGUI::GetInstance().GetContext();
-	auto &window = context.GetWindow();
-	auto cursorPos = window.GetCursorPos();
+	auto *window = GetRootWindow();
+	auto cursorPos = window ? (*window)->GetCursorPos() : Vector2{};
 	return PosInBounds(static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y));
 }
 bool WIBase::GetMouseInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit);}
@@ -1775,7 +1796,7 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton 
 {
 	auto hEl = el.GetHandle();
 
-	WIBase *pFocused = WGUI::GetInstance().GetFocusedElement();
+	WIBase *pFocused = WGUI::GetInstance().GetFocusedElement(el.GetRootWindow());
 	auto hFocused = pFocused ? pFocused->GetHandle() : WIHandle{};
 	__lastMouseGUIElements.insert(std::unordered_map<GLFW::MouseButton,WIHandle>::value_type(button,el.GetHandle()));
 	auto result = el.MouseCallback(button,state,mods);
@@ -1793,7 +1814,7 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton 
 	}
 	return result;
 }
-bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
+bool WIBase::__wiMouseButtonCallback(prosper::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
 	auto i = __lastMouseGUIElements.find(button);
 	if(i != __lastMouseGUIElements.end())
@@ -1808,9 +1829,9 @@ bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton butt
 		if(pContextMenu && pContextMenu->IsCursorInMenuBounds() == false)
 			WIContextMenu::CloseContextMenu();
 
-		auto cursorPos = window.GetCursorPos();
-		WIBase *p = WGUI::GetInstance().GetFocusedElement();
-		WIBase *gui = (p == nullptr || !p->IsFocusTrapped()) ? WGUI::GetInstance().GetBaseElement() : p;
+		auto cursorPos = window->GetCursorPos();
+		WIBase *p = WGUI::GetInstance().GetFocusedElement(&window);
+		WIBase *gui = (p == nullptr || !p->IsFocusTrapped()) ? WGUI::GetInstance().GetBaseElement(&window) : p;
 		auto hP = p ? p->GetHandle() : WIHandle{};
 		auto hGui = gui->GetHandle();
 		if(hGui.IsValid() && gui->IsVisible())
@@ -1822,7 +1843,7 @@ bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton butt
 				hGui = elChild->GetHandle();
 				auto result = InjectMouseButtonCallback(*elChild,button,state,mods);
 				return (result == util::EventReply::Handled) ? true : false;
-			});
+			},&window);
 			if(gui)
 				return true;
 		}
@@ -1831,13 +1852,13 @@ bool WIBase::__wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton butt
 }
 
 static std::unordered_map<GLFW::Key,WIHandle> __lastKeyboardGUIElements;
-bool WIBase::__wiJoystickCallback(GLFW::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state)
+bool WIBase::__wiJoystickCallback(prosper::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state)
 {
 	
 	// TODO
 	return false;
 }
-bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods)
+bool WIBase::__wiKeyCallback(prosper::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods)
 {
 	auto it = __lastKeyboardGUIElements.find(key);
 	if(it != __lastKeyboardGUIElements.end())
@@ -1848,7 +1869,7 @@ bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyS
 	}
 	if(state == GLFW::KeyState::Press || state == GLFW::KeyState::Repeat)
 	{
-		WIBase *gui = WGUI::GetInstance().GetFocusedElement();
+		WIBase *gui = WGUI::GetInstance().GetFocusedElement(&window);
 		while(gui)
 		{
 			if(key == GLFW::Key::Escape && !gui->IsFocusTrapped())
@@ -1876,9 +1897,9 @@ bool WIBase::__wiKeyCallback(GLFW::Window&,GLFW::Key key,int scanCode,GLFW::KeyS
 	return false;
 }
 
-bool WIBase::__wiCharCallback(GLFW::Window&,unsigned int c)
+bool WIBase::__wiCharCallback(prosper::Window &window,unsigned int c)
 {
-	WIBase *gui = WGUI::GetInstance().GetFocusedElement();
+	WIBase *gui = WGUI::GetInstance().GetFocusedElement(&window);
 	if(gui != NULL)
 	{
 		if(gui->GetKeyboardInputEnabled())
@@ -1887,13 +1908,13 @@ bool WIBase::__wiCharCallback(GLFW::Window&,unsigned int c)
 	return false;
 }
 
-bool WIBase::__wiScrollCallback(GLFW::Window &window,Vector2 offset)
+bool WIBase::__wiScrollCallback(prosper::Window &window,Vector2 offset)
 {
-	auto cursorPos = window.GetCursorPos();
-	WIBase *gui = WGUI::GetInstance().GetBaseElement();
+	auto cursorPos = window->GetCursorPos();
+	WIBase *gui = WGUI::GetInstance().GetBaseElement(&window);
 	if(gui->IsVisible())
 	{
-		gui = WGUI::GetInstance().GetGUIElement(gui,static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y),[](WIBase *elChild) -> bool {return elChild->GetScrollInputEnabled();});
+		gui = WGUI::GetInstance().GetGUIElement(gui,static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y),[](WIBase *elChild) -> bool {return elChild->GetScrollInputEnabled();},&window);
 		while(gui != nullptr)
 		{
 			if(gui->GetScrollInputEnabled())

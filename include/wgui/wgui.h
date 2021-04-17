@@ -18,6 +18,7 @@
 #include <sharedutils/chronotime.h>
 
 #undef GetClassName
+#undef FindWindow
 class WIBase;
 class WISkin;
 class WIHandle;
@@ -32,6 +33,7 @@ namespace prosper
 	class IFramebuffer;
 	class ISecondaryCommandBuffer;
 	class ICommandBuffer;
+	class Window;
 };
 
 namespace wgui
@@ -95,22 +97,31 @@ public:
 	WIBase *Create(std::string classname,WIBase *parent=nullptr);
 	void RemoveSafely(WIBase &gui);
 	void Remove(WIBase &gui);
-	WIBase *GetBaseElement();
-	WIBase *GetFocusedElement();
-	WIBase *FindByFilter(const std::function<bool(WIBase&)> &filter) const;
+	const std::vector<WIHandle> &GetBaseElements() const {return m_rootElements;}
+	WIBase *GetBaseElement(const prosper::Window *optWindow=nullptr);
+	WIBase *AddBaseElement(const prosper::Window *optWindow=nullptr);
+	WIBase *GetFocusedElement(const prosper::Window *optWindow=nullptr);
+	WIBase *FindByFilter(const std::function<bool(WIBase&)> &filter,const prosper::Window *optWindow=nullptr) const;
 	WIBase *FindByIndex(uint64_t index) const;
+	prosper::Window *FindWindow(WIBase &elRoot);
+	const prosper::Window *FindWindow(WIBase &elRoot) const {return const_cast<WGUI*>(this)->FindWindow(elRoot);}
 	void Think();
-	void Draw(prosper::IRenderPass &rp,prosper::IFramebuffer &fb,prosper::ICommandBuffer &drawCmd);
-	bool HandleJoystickInput(GLFW::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
-	bool HandleMouseInput(GLFW::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
-	bool HandleKeyboardInput(GLFW::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
-	bool HandleCharInput(GLFW::Window &window,unsigned int c);
-	bool HandleScrollInput(GLFW::Window &window,Vector2 offset);
+	void Draw(const prosper::Window &window,prosper::ICommandBuffer &drawCmd);
+	void Draw(WIBase &el,prosper::IRenderPass &rp,prosper::IFramebuffer &fb,prosper::ICommandBuffer &drawCmd);
+	bool HandleJoystickInput(prosper::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
+	bool HandleMouseInput(prosper::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
+	bool HandleKeyboardInput(prosper::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
+	bool HandleCharInput(prosper::Window &window,unsigned int c);
+	bool HandleScrollInput(prosper::Window &window,Vector2 offset);
 	void SetHandleFactory(const std::function<std::shared_ptr<WIHandle>(WIBase&)> &handleFactory);
 	void SetCreateCallback(const std::function<void(WIBase&)> &onCreate);
 	void SetRemoveCallback(const std::function<void(WIBase&)> &onRemove);
 	void SetFocusCallback(const std::function<void(WIBase*,WIBase*)> &onFocusChanged);
-	void GetMousePos(int &x,int &y);
+	void GetMousePos(int &x,int &y,const prosper::Window *optWindow=nullptr);
+	prosper::Window *FindFocusedWindow();
+	WIBase *FindFocusedWindowRootElement();
+	prosper::Window *FindWindowUnderCursor();
+	WIBase *FindRootElementUnderCursor();
 	template<class TSkin>
 		TSkin *RegisterSkin(std::string id,bool bReload=false);
 	void SetSkin(std::string skin);
@@ -126,8 +137,8 @@ public:
 	MaterialManager &GetMaterialManager();
 	void SetMaterialLoadHandler(const std::function<Material*(const std::string&)> &handler);
 	const std::function<Material*(const std::string&)> &GetMaterialLoadHandler() const;
-	WIBase *GetGUIElement(WIBase *el,int32_t x,int32_t y,const std::function<bool(WIBase*)> &condition);
-	WIBase *GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> &condition);
+	WIBase *GetGUIElement(WIBase *el,int32_t x,int32_t y,const std::function<bool(WIBase*)> &condition,const prosper::Window *optWindow=nullptr);
+	WIBase *GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> &condition,const prosper::Window *optWindow=nullptr);
 	double GetDeltaTime() const;
 	//prosper::util::record_set_scissor(*drawCmd,szScissor[0],szScissor[1],posScissor[0],posScissor[1]); // Use parent scissor values
 
@@ -155,8 +166,19 @@ private:
 	std::weak_ptr<MaterialManager> m_matManager = {};
 	std::function<Material*(const std::string&)> m_materialLoadHandler = nullptr;
 	std::shared_ptr<prosper::IUniformResizableBuffer> m_elementBuffer = nullptr;
-	WIHandle m_base = {};
-	WIHandle m_focused = {};
+	std::vector<WIHandle> m_rootElements {};
+	struct WindowRootPair
+	{
+		std::weak_ptr<const prosper::Window> window {};
+		WIHandle rootElement {};
+		WIHandle elFocused = {};
+	};
+	WindowRootPair *FindWindowRootPair(const prosper::Window &window);
+	WindowRootPair *FindFocusedWindowRootPair();
+	WindowRootPair *FindWindowRootPairUnderCursor();
+	const prosper::Window *GetWindow(const prosper::Window *window) const {return const_cast<WGUI*>(this)->GetWindow(const_cast<prosper::Window*>(window));}
+	prosper::Window *GetWindow(prosper::Window *window);
+	std::vector<WindowRootPair> m_windowRootElements {};
 	uint64_t m_nextGuiElementIndex = 0u;
 
 	// In general very few elements actually need to apply any continuous logic,
@@ -186,7 +208,7 @@ private:
 	util::WeakHandle<prosper::Shader> m_shaderTexturedCheap = {};
 	util::WeakHandle<prosper::Shader> m_shaderTexturedExpensive = {};
 
-	bool SetFocusedElement(WIBase *gui);
+	bool SetFocusedElement(WIBase *gui,prosper::Window *optWindow=nullptr);
 	void ClearSkin();
 };
 REGISTER_BASIC_ARITHMETIC_OPERATORS(WGUI::ElementBuffer);
@@ -229,8 +251,12 @@ template<class TElement>
 		el.InitializeHandle();
 	if(parent != nullptr)
 		el.SetParent(parent);
-	else if(m_base.IsValid())
-		el.SetParent(m_base.get());
+	else
+	{
+		auto *elBase = GetBaseElement();
+		if(elBase)
+			el.SetParent(elBase);
+	}
 	auto *map = GetWGUIClassMap();
 	std::string classname;
 	if(map->GetClassName(typeid(TElement),&classname))

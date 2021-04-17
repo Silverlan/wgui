@@ -6,6 +6,7 @@
 #include "wgui/types/wiscrollbar.h"
 #include "wgui/types/wirect.h"
 #include "wgui/types/wibutton.h"
+#include <prosper_window.hpp>
 
 LINK_WGUI_TO_CLASS(WIScrollBar,WIScrollBar);
 
@@ -50,7 +51,7 @@ util::EventReply WIScrollBar::ScrollCallback(Vector2 offset)
 		return util::EventReply::Handled;
 	auto scrollAmount = GetScrollAmount();
 	auto &window = WGUI::GetInstance().GetContext().GetWindow();
-	auto isShiftDown = (window.GetKeyState(GLFW::Key::LeftShift) != GLFW::KeyState::Release || window.GetKeyState(GLFW::Key::RightShift) != GLFW::KeyState::Release) ? true : false;
+	auto isShiftDown = (window->GetKeyState(GLFW::Key::LeftShift) != GLFW::KeyState::Release || window->GetKeyState(GLFW::Key::RightShift) != GLFW::KeyState::Release) ? true : false;
 	if(isShiftDown)
 		scrollAmount = m_numListed;
 	AddScrollOffset(static_cast<int>(-offset.y *static_cast<double>(scrollAmount)));

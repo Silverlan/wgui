@@ -39,7 +39,7 @@ class WIHandle;
 class WISkin;
 class WGUI;
 namespace util {class ColorProperty;};
-namespace prosper {class IBuffer; class ICommandBuffer;};
+namespace prosper {class IBuffer; class ICommandBuffer; class Window;};
 class DLLWGUI WIBase
 	: public CallbackHandler
 {
@@ -332,6 +332,11 @@ public:
 	const Vector2 &GetScale() const;
 	const util::PVector2Property &GetScaleProperty() const;
 
+	WIBase *GetRootElement();
+	const WIBase *GetRootElement() const {return const_cast<WIBase*>(this)->GetRootElement();}
+	prosper::Window *GetRootWindow();
+	const prosper::Window *GetRootWindow() const {return const_cast<WIBase*>(this)->GetRootWindow();}
+
 	// Handles
 	WIHandle GetHandle() const;
 protected:
@@ -410,11 +415,11 @@ private:
 	std::vector<std::string> m_styleClasses;
 	WISkin *m_skin = nullptr;
 	ChronoTimePoint m_clickStart;
-	static bool __wiJoystickCallback(GLFW::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
-	static bool __wiKeyCallback(GLFW::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
-	static bool __wiCharCallback(GLFW::Window &window,unsigned int c);
-	static bool __wiMouseButtonCallback(GLFW::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
-	static bool __wiScrollCallback(GLFW::Window &window,Vector2 offset);
+	static bool __wiJoystickCallback(prosper::Window &window,const GLFW::Joystick &joystick,uint32_t key,GLFW::KeyState state);
+	static bool __wiKeyCallback(prosper::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
+	static bool __wiCharCallback(prosper::Window &window,unsigned int c);
+	static bool __wiMouseButtonCallback(prosper::Window &window,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
+	static bool __wiScrollCallback(prosper::Window &window,Vector2 offset);
 	static util::EventReply InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)

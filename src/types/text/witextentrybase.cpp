@@ -11,6 +11,7 @@
 #include <util_formatted_text.hpp>
 #include <util_formatted_text_line.hpp>
 #include <prosper_context.hpp>
+#include <prosper_window.hpp>
 
 LINK_WGUI_TO_CLASS(WITextEntryBase,WITextEntryBase);
 
@@ -241,7 +242,7 @@ void WITextEntryBase::Think()
 		}
 		auto &context = WGUI::GetInstance().GetContext();
 		auto &window = context.GetWindow();
-		if(window.GetMouseButtonState(GLFW::MouseButton::Left) == GLFW::KeyState::Press && m_bWasDoubleClick == false)
+		if(window->GetMouseButtonState(GLFW::MouseButton::Left) == GLFW::KeyState::Press && m_bWasDoubleClick == false)
 		{
 			if(m_selectStart != -1)
 			{
@@ -760,7 +761,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 					RemoveSelectedText();
 					auto &context = WGUI::GetInstance().GetContext();
 					auto &window = context.GetWindow();
-					InsertText(window.GetClipboardString());
+					InsertText(window->GetClipboardString());
 				}
 				break;
 			}
@@ -775,7 +776,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 						auto &window = context.GetWindow();
 						auto *pText = GetTextElement();
 						if(pText == nullptr || pText->IsTextHidden())
-							window.SetClipboardString("");
+							window->SetClipboardString("");
 						else
 						{
 							if(pText)
@@ -784,7 +785,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 								int st,en;
 								GetSelectionBounds(&st,&en);
 								std::string sub = text.substr(st,en -st);
-								window.SetClipboardString(sub);
+								window->SetClipboardString(sub);
 							}
 						}
 						if(key == GLFW::Key::X && IsEditable())
