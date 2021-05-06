@@ -139,6 +139,7 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 			return;
 		auto &descSet = *hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet();
 		descSet.SetBindingTexture(*texture->GetVkTexture(),0u);
+		descSet.Update();
 	});
 }
 void WITexturedShape::SetMaterial(Material *material)
@@ -185,6 +186,7 @@ void WITexturedShape::SetTexture(prosper::Texture &tex,std::optional<uint32_t> l
 		m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(tex,0u,*layerIndex);
 	else
 		m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(tex,0u);
+	m_descSetTextureGroup->GetDescriptorSet()->Update();
 }
 const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
 {
