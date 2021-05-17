@@ -40,7 +40,13 @@ void WIDropDownMenu::OnTextChanged(const std::string &text,bool changedByUser)
 		ClearSelectedOption();
 }
 
-void WIDropDownMenu::ClearSelectedOption() {m_selected = -1;}
+void WIDropDownMenu::ClearSelectedOption()
+{
+	if(m_selected == -1)
+		return;
+	m_selected = -1;
+	CallCallbacks<void,unsigned int>("OnOptionSelected",std::numeric_limits<uint32_t>::max());
+}
 
 void WIDropDownMenu::Initialize()
 {
