@@ -8,6 +8,7 @@
 #include "cmaterialmanager.h"
 #include "textureinfo.h"
 #include "wgui/shaders/wishader_textured.hpp"
+#include <sharedutils/scope_guard.h>
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_util.hpp>
@@ -133,14 +134,43 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 	m_texLoadCallback = std::make_shared<bool>(true);
 	auto bLoadCallback = m_texLoadCallback;
 	texture->CallOnLoaded([hThis,bLoadCallback](std::shared_ptr<Texture> texture) {
-		if((bLoadCallback != nullptr && *bLoadCallback == false) || !hThis.IsValid() || texture->HasValidVkTexture() == false)
+		if(!hThis.IsValid() || hThis.get<WITexturedShape>()->m_descSetTextureGroup == nullptr)
 			return;
-		if(hThis.get<WITexturedShape>()->m_descSetTextureGroup == nullptr)
+
+		if((bLoadCallback != nullptr && *bLoadCallback == false) || texture->HasValidVkTexture() == false)
+		{
+			hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(*WGUI::GetInstance().GetContext().GetDummyTexture(),0u);
 			return;
+		}
 		auto &descSet = *hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet();
 		descSet.SetBindingTexture(*texture->GetVkTexture(),0u);
 		descSet.Update();
+		hThis.get<WITexturedShape>()->m_texUpdateCountRef = texture->GetUpdateCount();
 	});
+}
+void WITexturedShape::UpdateMaterialDescriptorSetTexture()
+{
+	if(!m_descSetTextureGroup)
+		return;
+	util::ScopeGuard sgDummy {[this]() {
+		auto &descSet = *m_descSetTextureGroup->GetDescriptorSet();
+		descSet.SetBindingTexture(*WGUI::GetInstance().GetContext().GetDummyTexture(),0u);
+		descSet.Update();
+	}};
+	if(!m_hMaterial.IsValid() || !m_descSetTextureGroup)
+		return;
+	auto *diffuseMap = m_hMaterial->GetDiffuseMap();
+	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
+		return;
+	auto diffuseTexture = std::static_pointer_cast<Texture>(diffuseMap->texture);
+	if(diffuseTexture == nullptr)
+		return;
+	sgDummy.dismiss();
+	auto &prTex = diffuseTexture->GetVkTexture();
+	auto &descSet = *m_descSetTextureGroup->GetDescriptorSet();
+	descSet.SetBindingTexture(*prTex,0u);
+	descSet.Update();
+	m_texUpdateCountRef = diffuseTexture->GetUpdateCount();
 }
 void WITexturedShape::SetMaterial(Material *material)
 {
@@ -295,6 +325,16 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 	auto col = drawInfo.GetColor(*this);
 	if(col.a <= 0.f)
 		return;
+	if(m_hMaterial.IsValid())
+	{
+		auto *map = m_hMaterial->GetDiffuseMap();
+		if(!map || !map->texture)
+			return;
+		auto *tex = static_cast<Texture*>(map->texture.get());
+		if(tex->GetUpdateCount() != m_texUpdateCountRef)
+			UpdateMaterialDescriptorSetTexture();
+	}
+
 	// Try to use cheap shader if no custom vertex buffer was used
 	if(umath::is_flag_set(m_stateFlags,StateFlags::ShaderOverride) == false && ((m_vertexBufferData == nullptr && m_uvBuffer == nullptr) || m_shader.expired()))
 	{

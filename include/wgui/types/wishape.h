@@ -104,6 +104,8 @@ private:
 	StateFlags m_stateFlags = StateFlags::None;
 	util::WeakHandle<prosper::Shader> m_shader = {};
 	std::shared_ptr<prosper::IDescriptorSetGroup> m_descSetTextureGroup = nullptr;
+	uint32_t m_texUpdateCountRef = std::numeric_limits<uint32_t>::max();
+	void UpdateMaterialDescriptorSetTexture();
 	void ClearTextureLoadCallback();
 	void InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture);
 };
