@@ -33,4 +33,4 @@ set_target_properties(sharedutils-static PROPERTIES FOLDER external_libs)
 set_target_properties(materialsystem PROPERTIES FOLDER external_libs/materialsystem)
 set_target_properties(cmaterialsystem PROPERTIES FOLDER external_libs/materialsystem)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)

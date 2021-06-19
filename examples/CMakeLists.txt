@@ -16,4 +16,4 @@ endfunction(register_example)
 
 register_example(sample_application)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)

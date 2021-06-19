@@ -52,7 +52,7 @@ set(PROJ_NAME sample_application)
 
 project(${PROJ_NAME} CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 link_external_library(sharedutils)
 link_external_library(mathutil)
