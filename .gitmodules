@@ -40,9 +40,6 @@
 [submodule "third_party_libs/exprtk"]
 	path = third_party_libs/exprtk
 	url = https://github.com/ArashPartow/exprtk.git
-[submodule "external_libs/util_image"]
-	path = external_libs/util_image
-	url = https://github.com/Silverlan/util_image.git
 [submodule "third_party_libs/libpng"]
 	path = third_party_libs/libpng
 	url = https://github.com/glennrp/libpng.git
