@@ -142,6 +142,7 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 			hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(*WGUI::GetInstance().GetContext().GetDummyTexture(),0u);
 			return;
 		}
+		WGUI::GetInstance().GetContext().WaitIdle(); // Mustn't update the descriptor set if it may still be in use by a command buffer
 		auto &descSet = *hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet();
 		descSet.SetBindingTexture(*texture->GetVkTexture(),0u);
 		descSet.Update();
@@ -153,6 +154,7 @@ void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 	if(!m_descSetTextureGroup)
 		return;
 	util::ScopeGuard sgDummy {[this]() {
+		 // Mustn't update the descriptor set if it may still be in use by a command buffer
 		auto &descSet = *m_descSetTextureGroup->GetDescriptorSet();
 		descSet.SetBindingTexture(*WGUI::GetInstance().GetContext().GetDummyTexture(),0u);
 		descSet.Update();
@@ -167,6 +169,7 @@ void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 		return;
 	sgDummy.dismiss();
 	auto &prTex = diffuseTexture->GetVkTexture();
+	 // Mustn't update the descriptor set if it may still be in use by a command buffer
 	auto &descSet = *m_descSetTextureGroup->GetDescriptorSet();
 	descSet.SetBindingTexture(*prTex,0u);
 	descSet.Update();
@@ -211,6 +214,7 @@ void WITexturedShape::SetTexture(prosper::Texture &tex,std::optional<uint32_t> l
 	ClearTexture();
 	m_texture = tex.shared_from_this();
 	
+	// Mustn't update the descriptor set if it may still be in use by a command buffer
 	ReloadDescriptorSet(); // Need to generate a new descriptor set and keep the old one alive, in case it was still in use
 	if(layerIndex.has_value())
 		m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(tex,0u,*layerIndex);
