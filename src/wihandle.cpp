@@ -5,5 +5,3 @@
 #include "stdafx_wgui.h"
 #include "wgui/wihandle.h"
 #include "wgui/wibase.h"
-
-DEFINE_BASE_HANDLE(DLLWGUI,WIBase,WI);

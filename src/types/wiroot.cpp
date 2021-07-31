@@ -67,7 +67,7 @@ void WIRoot::OnCursorMoved(int x,int y)
 	auto *el = WGUI::GetInstance().GetGUIElement(this,x,y,[](WIBase *elChild) -> bool {return elChild->HasTooltip();});
 	if(el == nullptr || el == this)
 	{
-		m_hTooltipTarget = {};
+		m_hTooltipTarget = WIHandle{};
 		pTooltip->SetVisible(false);
 		//pTooltip->SetAlpha(0.f);
 		return;

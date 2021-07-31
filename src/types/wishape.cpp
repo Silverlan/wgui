@@ -133,20 +133,20 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 	auto hThis = GetHandle();
 	m_texLoadCallback = std::make_shared<bool>(true);
 	auto bLoadCallback = m_texLoadCallback;
-	texture->CallOnLoaded([hThis,bLoadCallback](std::shared_ptr<Texture> texture) {
-		if(!hThis.IsValid() || hThis.get<WITexturedShape>()->m_descSetTextureGroup == nullptr)
+	texture->CallOnLoaded([hThis,bLoadCallback](std::shared_ptr<Texture> texture) mutable {
+		if(!hThis.IsValid() || static_cast<WITexturedShape*>(hThis.get())->m_descSetTextureGroup == nullptr)
 			return;
 
 		if((bLoadCallback != nullptr && *bLoadCallback == false) || texture->HasValidVkTexture() == false)
 		{
-			hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(*WGUI::GetInstance().GetContext().GetDummyTexture(),0u);
+			static_cast<WITexturedShape*>(hThis.get())->m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(*WGUI::GetInstance().GetContext().GetDummyTexture(),0u);
 			return;
 		}
 		WGUI::GetInstance().GetContext().WaitIdle(); // Mustn't update the descriptor set if it may still be in use by a command buffer
-		auto &descSet = *hThis.get<WITexturedShape>()->m_descSetTextureGroup->GetDescriptorSet();
+		auto &descSet = *static_cast<WITexturedShape*>(hThis.get())->m_descSetTextureGroup->GetDescriptorSet();
 		descSet.SetBindingTexture(*texture->GetVkTexture(),0u);
 		descSet.Update();
-		hThis.get<WITexturedShape>()->m_texUpdateCountRef = texture->GetUpdateCount();
+		static_cast<WITexturedShape*>(hThis.get())->m_texUpdateCountRef = texture->GetUpdateCount();
 	});
 }
 void WITexturedShape::UpdateMaterialDescriptorSetTexture()

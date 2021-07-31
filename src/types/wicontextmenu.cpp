@@ -122,7 +122,7 @@ bool WIContextMenu::IsCursorInMenuBounds() const
 WIMenuItem *WIContextMenu::GetSelectedItem()
 {
 	auto itItem = std::find_if(m_items.begin(),m_items.end(),[](const WIHandle &hItem) {
-		return hItem.IsValid() && static_cast<WIMenuItem*>(hItem.get())->IsSelected();
+		return hItem.IsValid() && static_cast<const WIMenuItem*>(hItem.get())->IsSelected();
 	});
 	if(itItem != m_items.end())
 		return static_cast<WIMenuItem*>(itItem->get());
@@ -161,7 +161,7 @@ WIMenuItem *WIContextMenu::AddItem(const std::string &name,const std::function<b
 		if(s_contextMenu == hThis.get())
 			CloseContextMenu();
 		else
-			hThis.get()->RemoveSafely();
+			const_cast<WIBase*>(hThis.get())->RemoveSafely();
 	});
 	m_items.push_back(pItem->GetHandle());
 	return pItem;
@@ -173,7 +173,7 @@ std::pair<WIContextMenu*,WIMenuItem*> WIContextMenu::AddSubMenu(const std::strin
 		return {nullptr,nullptr};
 	auto *pSubMenu = WGUI::GetInstance().Create<WIContextMenu>();
 	auto hSubMenu = pSubMenu->GetHandle();
-	pItem->AddCallback("OnCursorEntered",FunctionCallback<void>::Create([hSubMenu,pItem]() {
+	pItem->AddCallback("OnCursorEntered",FunctionCallback<void>::Create([hSubMenu,pItem]() mutable {
 		if(hSubMenu.IsValid() == false)
 			return;
 		auto *pSubMenu = static_cast<WIContextMenu*>(hSubMenu.get());
@@ -182,7 +182,7 @@ std::pair<WIContextMenu*,WIMenuItem*> WIContextMenu::AddSubMenu(const std::strin
 		pSubMenu->SetX(pos.x +pItem->GetWidth());
 		pSubMenu->SetY(pos.y);
 	}));
-	pItem->AddCallback("OnCursorExited",FunctionCallback<void>::Create([hSubMenu,pItem]() {
+	pItem->AddCallback("OnCursorExited",FunctionCallback<void>::Create([hSubMenu,pItem]() mutable {
 		if(hSubMenu.IsValid() == false)
 			return;
 		auto *pSubMenu = static_cast<WIContextMenu*>(hSubMenu.get());
@@ -194,7 +194,7 @@ std::pair<WIContextMenu*,WIMenuItem*> WIContextMenu::AddSubMenu(const std::strin
 		else
 			pSubMenu->SetVisible(false);
 	}));
-	pSubMenu->AddCallback("OnCursorExited",FunctionCallback<void>::Create([this,hSubMenu]() {
+	pSubMenu->AddCallback("OnCursorExited",FunctionCallback<void>::Create([this,hSubMenu]() mutable {
 		if(hSubMenu.IsValid() == false)
 			return;
 		auto *pSubMenu = static_cast<WIContextMenu*>(hSubMenu.get());
@@ -244,7 +244,7 @@ WIMenuItem *WIContextMenu::SelectItem(uint32_t idx)
 std::optional<uint32_t> WIContextMenu::GetSelectedItemIndex() const
 {
 	auto itItem = std::find_if(m_items.begin(),m_items.end(),[](const WIHandle &hItem) {
-		return hItem.IsValid() && static_cast<WIMenuItem*>(hItem.get())->IsSelected();
+		return hItem.IsValid() && static_cast<const WIMenuItem*>(hItem.get())->IsSelected();
 	});
 	if(itItem == m_items.end())
 		return {};

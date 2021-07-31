@@ -29,7 +29,7 @@ WIOutlinedRect::WIOutlinedRect()
 	: WIBase(),m_lineWidth(1)
 {
 	for(auto &hLine : m_lines)
-		hLine = {};
+		hLine = WIHandle{};
 }
 
 void WIOutlinedRect::Initialize()
@@ -60,7 +60,7 @@ void WIOutlinedRect::UpdateLines()
 		auto &hLine = m_lines[i];
 		if(!hLine.IsValid())
 			continue;
-		auto *pRect = hLine.get<WIRect>();
+		auto *pRect = static_cast<WIRect*>(hLine.get());
 		switch(i)
 		{
 		case 0:

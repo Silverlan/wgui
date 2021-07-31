@@ -16,12 +16,11 @@
 #include <iglfw/glfw_window.h>
 #include <prosper_context_object.hpp>
 #include <sharedutils/chronotime.h>
+#include "types.hpp"
 
 #undef GetClassName
 #undef FindWindow
-class WIBase;
-class WISkin;
-class WIHandle;
+
 namespace GLFW {class Joystick;};
 namespace prosper
 {
@@ -113,7 +112,6 @@ public:
 	bool HandleKeyboardInput(prosper::Window &window,GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
 	bool HandleCharInput(prosper::Window &window,unsigned int c);
 	bool HandleScrollInput(prosper::Window &window,Vector2 offset);
-	void SetHandleFactory(const std::function<std::shared_ptr<WIHandle>(WIBase&)> &handleFactory);
 	void SetCreateCallback(const std::function<void(WIBase&)> &onCreate);
 	void SetRemoveCallback(const std::function<void(WIBase&)> &onRemove);
 	void SetFocusCallback(const std::function<void(WIBase*,WIBase*)> &onFocusChanged);
@@ -187,7 +185,6 @@ private:
 
 	std::vector<WIHandle> m_updateQueue;
 	std::queue<WIHandle> m_removeQueue;
-	std::function<std::shared_ptr<WIHandle>(WIBase&)> m_handleFactory = nullptr;
 	std::vector<std::unique_ptr<GLFW::Cursor>> m_cursors;
 	GLFW::Cursor::Shape m_cursor = GLFW::Cursor::Shape::Arrow;
 	GLFW::CursorHandle m_customCursor = {};
@@ -239,16 +236,7 @@ template<class TElement>
 	void WGUI::Setup(WIBase &el,WIBase *parent)
 {
 	el.SetIndex(m_nextGuiElementIndex++);
-	if(m_handleFactory != nullptr)
-	{
-		auto handle = m_handleFactory(el);
-		if(handle != nullptr && handle->IsValid())
-			el.InitializeHandle(std::move(handle));
-		else
-			el.InitializeHandle();
-	}
-	else
-		el.InitializeHandle();
+	el.InitializeHandle();
 	if(parent != nullptr)
 		el.SetParent(parent);
 	else

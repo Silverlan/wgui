@@ -67,7 +67,7 @@ util::EventReply WIScrollBar::MouseCallback(GLFW::MouseButton button,GLFW::KeySt
 		{
 			int mouseX,mouseY;
 			GetMousePos(&mouseX,&mouseY);
-			WIScrollBarSlider *slider = m_slider.get<WIScrollBarSlider>();
+			WIScrollBarSlider *slider = static_cast<WIScrollBarSlider*>(m_slider.get());
 			if(IsHorizontal())
 			{
 				int x = slider->GetX();
@@ -122,7 +122,7 @@ void WIScrollBar::SetSize(int x,int y)
 	WIBase::SetSize(x,y);
 	if(m_buttonUp.IsValid())
 	{
-		WIButton *button = m_buttonUp.get<WIButton>();
+		WIButton *button = static_cast<WIButton*>(m_buttonUp.get());
 		if(m_bHorizontal)
 			button->SetSize(y,y);
 		else
@@ -130,7 +130,7 @@ void WIScrollBar::SetSize(int x,int y)
 	}
 	if(m_buttonDown.IsValid())
 	{
-		WIButton *button = m_buttonDown.get<WIButton>();
+		WIButton *button = static_cast<WIButton*>(m_buttonDown.get());
 		if(m_bHorizontal)
 			button->SetSize(y,y);
 		else
@@ -142,7 +142,7 @@ void WIScrollBar::SetSize(int x,int y)
 	}
 	if(m_slider.IsValid())
 	{
-		WIScrollBarSlider *slider = m_slider.get<WIScrollBarSlider>();
+		WIScrollBarSlider *slider = static_cast<WIScrollBarSlider*>(m_slider.get());
 		if(m_bHorizontal)
 		{
 			slider->SetHeight(y);
@@ -163,7 +163,7 @@ void WIScrollBar::UpdateSliderOffset()
 	{
 		int h = GetSliderHeight();
 		int w = GetSliderWidth();
-		WIScrollBarSlider *slider = m_slider.get<WIScrollBarSlider>();
+		WIScrollBarSlider *slider = static_cast<WIScrollBarSlider*>(m_slider.get());
 		int hSlide = (h -w *2) -slider->GetSliderHeight();
 		slider->SetSliderY(
 			w +static_cast<int>(static_cast<float>(m_offset) /static_cast<float>(static_cast<int>(m_numElements) -static_cast<int>(m_numListed)) *static_cast<float>(hSlide))
@@ -174,7 +174,7 @@ void WIScrollBar::UpdateSliderSize()
 {
 	if(m_slider.IsValid())
 	{
-		WIScrollBarSlider *slider = m_slider.get<WIScrollBarSlider>();
+		WIScrollBarSlider *slider = static_cast<WIScrollBarSlider*>(m_slider.get());
 		int h = (m_numElements > 0u) ?
 			static_cast<int>(static_cast<float>(GetSliderHeight()) *(static_cast<float>(m_numListed) /static_cast<float>(m_numElements))) :
 			0;
@@ -201,7 +201,7 @@ void WIScrollBar::SetHorizontal(bool b)
 	m_bHorizontal = b;
 	if(m_slider.IsValid())
 	{
-		WIScrollBarSlider *slider = m_slider.get<WIScrollBarSlider>();
+		WIScrollBarSlider *slider = static_cast<WIScrollBarSlider*>(m_slider.get());
 		slider->SetHorizontal(b);
 	}
 }
@@ -213,25 +213,25 @@ void WIScrollBar::Initialize()
 	WIBase::Initialize();
 	SetVisible(false);
 	m_buttonUp = CreateChild<WIButton>();
-	WIButton *buttonUp = m_buttonUp.get<WIButton>();
+	WIButton *buttonUp = static_cast<WIButton*>(m_buttonUp.get());
 	buttonUp->AddCallback("OnPressed",FunctionCallback<>::Create(std::bind([](WIHandle hScrollBar) {
 		if(!hScrollBar.IsValid())
 			return;
-		WIScrollBar *sb = hScrollBar.get<WIScrollBar>();
+		WIScrollBar *sb = static_cast<WIScrollBar*>(hScrollBar.get());
 		sb->AddScrollOffset(-1);
 	},this->GetHandle())));
 
 	m_buttonDown = CreateChild<WIButton>();
-	WIButton *buttonDown = m_buttonDown.get<WIButton>();
+	WIButton *buttonDown = static_cast<WIButton*>(m_buttonDown.get());
 	buttonDown->AddCallback("OnPressed",FunctionCallback<>::Create(std::bind([](WIHandle hScrollBar) {
 		if(!hScrollBar.IsValid())
 			return;
-		WIScrollBar *sb = hScrollBar.get<WIScrollBar>();
+		WIScrollBar *sb = static_cast<WIScrollBar*>(hScrollBar.get());
 		sb->AddScrollOffset(1);
 	},this->GetHandle())));
 
 	m_slider = CreateChild<WIScrollBarSlider>();
-	WIScrollBarSlider *slider = m_slider.get<WIScrollBarSlider>();
+	WIScrollBarSlider *slider = static_cast<WIScrollBarSlider*>(m_slider.get());
 	slider->SetColor(0.75f,0.75f,0.75f,1.f);
 	slider->AddCallback("OnPressed",FunctionCallback<>::Create(std::bind([](WIHandle hScrollBar) {
 		if(!hScrollBar.IsValid())
@@ -241,10 +241,10 @@ void WIScrollBar::Initialize()
 	slider->AddCallback("OnDrag",FunctionCallback<>::Create(std::bind([](WIHandle hScrollBar) {
 		if(!hScrollBar.IsValid())
 			return;
-		WIScrollBar *sb = hScrollBar.get<WIScrollBar>();
+		WIScrollBar *sb = static_cast<WIScrollBar*>(hScrollBar.get());
 		if(!sb->m_slider.IsValid())
 			return;
-		WIScrollBarSlider *slider = sb->m_slider.get<WIScrollBarSlider>();
+		WIScrollBarSlider *slider = static_cast<WIScrollBarSlider*>(sb->m_slider.get());
 		int y = slider->GetSliderY();
 		int hSlide = sb->GetSliderHeight() -sb->GetSliderWidth() *2 -slider->GetSliderHeight();
 		float scale = (y -sb->GetSliderWidth()) /float(hSlide);

@@ -31,7 +31,7 @@ void WIButton::SetText(std::string text)
 {
 	if(!m_text.IsValid())
 		return;
-	WIText *pText = m_text.get<WIText>();
+	auto *pText = static_cast<WIText*>(m_text.get());
 	pText->SetText(text);
 	pText->SizeToContents();
 }
@@ -39,7 +39,7 @@ std::string WIButton::GetText()
 {
 	if(!m_text.IsValid())
 		return "";
-	return m_text.get<WIText>()->GetText();
+	return static_cast<WIText*>(m_text.get())->GetText();
 }
 util::EventReply WIButton::MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
@@ -66,7 +66,7 @@ void WIButton::SizeToContents(bool x,bool y)
 {
 	if(!m_text.IsValid())
 		return;
-	auto *pText = m_text.get<WIText>();
+	auto *pText = static_cast<WIText*>(m_text.get());
 	auto w = pText->GetWidth();
 	auto h = pText->GetHeight();
 	if(x && y)

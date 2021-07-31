@@ -40,5 +40,5 @@ const std::string &WITooltip::GetText() const
 		static std::string r;
 		return r;
 	}
-	return static_cast<WIText*>(m_hText.get())->GetText();
+	return static_cast<const WIText*>(m_hText.get())->GetText();
 }

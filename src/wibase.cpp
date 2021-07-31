@@ -113,8 +113,6 @@ WIBase::~WIBase()
 		m_cbAutoCenterY.Remove();
 	if(m_cbAutoCenterYOwn.IsValid())
 		m_cbAutoCenterYOwn.Remove();
-	m_handle->Invalidate();
-	m_handle = nullptr;
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		if(m_children[i].IsValid())
@@ -124,7 +122,7 @@ WIBase::~WIBase()
 }
 void WIBase::UpdateParentAutoSizeToContents()
 {
-	if(m_parent == nullptr || umath::is_flag_set(m_parent->m_stateFlags,StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY) == false || IsBackgroundElement())
+	if(m_parent.expired() || umath::is_flag_set(m_parent->m_stateFlags,StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY) == false || IsBackgroundElement())
 		return;
 	auto updateX = true;
 	auto updateY = true;
@@ -201,7 +199,7 @@ void WIBase::RemoveOnRemoval(WIBase *other)
 	CallOnRemove(FunctionCallback<void>::Create([hOther]() {
 		if(hOther.IsValid() == false)
 			return;
-		hOther.get()->Remove();
+		const_cast<WIBase*>(hOther.get())->Remove();
 	}));
 }
 void WIBase::ScheduleUpdate()
@@ -225,7 +223,7 @@ void WIBase::SetAutoAlignToParent(bool bX,bool bY,bool bReload)
 	if(parent == nullptr)
 		return;
 	auto hEl = GetHandle();
-	m_cbAutoAlign = parent->AddCallback("SetSize",FunctionCallback<>::Create([hEl]() {
+	m_cbAutoAlign = parent->AddCallback("SetSize",FunctionCallback<>::Create([hEl]() mutable {
 		if(!hEl.IsValid())
 			return;
 		auto *p = hEl.get();
@@ -259,7 +257,7 @@ void WIBase::SetAutoCenterToParentX(bool b,bool bReload)
 	if(parent == nullptr)
 		return;
 	auto hEl = GetHandle();
-	auto cb = [hEl]() {
+	auto cb = [hEl]() mutable {
 		if(!hEl.IsValid())
 			return;
 		auto *p = hEl.get();
@@ -284,7 +282,7 @@ void WIBase::SetAutoCenterToParentY(bool b,bool bReload)
 	if(parent == nullptr)
 		return;
 	auto hEl = GetHandle();
-	auto cb = [hEl]() {
+	auto cb = [hEl]() mutable {
 		if(!hEl.IsValid())
 			return;
 		auto *p = hEl.get();
@@ -311,11 +309,7 @@ void WIBase::SetMouseMovementCheckEnabled(bool b)
 void WIBase::Initialize() {}
 void WIBase::InitializeHandle()
 {
-	InitializeHandle<WIHandle>();
-}
-void WIBase::InitializeHandle(std::shared_ptr<WIHandle> handle)
-{
-	m_handle = handle;
+	m_handle = util::to_shared_handle<WIBase>(std::shared_ptr<WIBase>{this,[](WIBase*) {}}); // Deletion is handled by WGUI class
 }
 const std::shared_ptr<void> &WIBase::GetUserData() {return m_userData.at(0);}
 const std::shared_ptr<void> &WIBase::GetUserData2() {return m_userData.at(1);}
@@ -325,7 +319,7 @@ void WIBase::SetUserData(const std::shared_ptr<void> &userData) {m_userData.at(0
 void WIBase::SetUserData2(const std::shared_ptr<void> &userData) {m_userData.at(1) = userData;}
 void WIBase::SetUserData3(const std::shared_ptr<void> &userData) {m_userData.at(2) = userData;}
 void WIBase::SetUserData4(const std::shared_ptr<void> &userData) {m_userData.at(3) = userData;}
-WIHandle WIBase::GetHandle() const {return *m_handle;}
+WIHandle WIBase::GetHandle() const {return util::TWeakSharedHandle<WIBase>{m_handle};}
 void WIBase::TrapFocus(bool b)
 {
 	if(umath::is_flag_set(m_stateFlags,StateFlags::TrapFocusBit) == b)
@@ -363,7 +357,7 @@ void WIBase::SetZPos(int zpos)
 }
 static void InsertGUIElement(std::vector<WIHandle> &elements,const WIHandle &hElement,std::optional<uint32_t> index)
 {
-	WIBase *pChild = hElement.get();
+	const WIBase *pChild = hElement.get();
 	if(elements.empty() || (index.has_value() && *index >= elements.size()))
 		elements.push_back(hElement);
 	else if(index.has_value())

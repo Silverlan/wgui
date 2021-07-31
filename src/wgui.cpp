@@ -221,8 +221,6 @@ WIBase *WGUI::FindRootElementUnderCursor()
 	return pair->rootElement.get();
 }
 
-void WGUI::SetHandleFactory(const std::function<std::shared_ptr<WIHandle>(WIBase&)> &handleFactory) {m_handleFactory = handleFactory;}
-
 void WGUI::Think()
 {
 	while(!m_removeQueue.empty())
@@ -303,7 +301,7 @@ void WGUI::ScheduleElementForUpdate(WIBase &el)
 		{
 			// We don't erase the element from the vector because that would re-order the entire vector, which is expensive.
 			// Instead we'll just invalidate it, the vector will be cleared during the next ::Think anyway!
-			*it = {};
+			*it = WIHandle{};
 		}
 	}
 	m_updateQueue.push_back(el.GetHandle());
@@ -413,7 +411,7 @@ bool WGUI::SetFocusedElement(WIBase *gui,prosper::Window *window)
 	if(gui == NULL)
 	{
 		(*window)->SetCursorInputMode(GLFW::CursorMode::Hidden);
-		pair->elFocused = {};
+		pair->elFocused = WIHandle{};
 		if(m_onFocusChangedCallback != nullptr)
 			m_onFocusChangedCallback(pPrevFocused,pair->elFocused.get());
 		return true;

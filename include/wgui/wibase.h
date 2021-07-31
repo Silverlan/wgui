@@ -8,10 +8,11 @@
 #include "wiincludes.h"
 #include "wguifactories.h"
 #include <sharedutils/callback_handler.h>
+#include <sharedutils/util_shared_handle.hpp>
 #include <mathutil/umath.h>
-#include "wgui/wihandle.h"
 #include "wgui/wiattachment.hpp"
 #include "wgui/wianchor.hpp"
+#include "types.hpp"
 #include <algorithm>
 #include <chrono>
 #include <deque>
@@ -35,7 +36,6 @@ struct DLLWGUI WIFadeInfo
 using ChronoTimePoint = util::Clock::time_point;
 using ChronoDuration = util::Clock::duration;
 
-class WIHandle;
 class WISkin;
 class WGUI;
 namespace util {class ColorProperty;};
@@ -47,7 +47,6 @@ protected:
 	static float RENDER_ALPHA;
 	static std::deque<WIHandle> m_focusTrapStack;
 public:
-	friend WIHandle;
 	friend WGUI;
 public:
 	enum class StateFlags : uint32_t
@@ -357,7 +356,7 @@ protected:
 	uint64_t m_index = std::numeric_limits<uint64_t>::max();
 	StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 	std::array<std::shared_ptr<void>,4> m_userData;
-	std::shared_ptr<WIHandle> m_handle = nullptr;
+	util::TSharedHandle<WIBase> m_handle {};
 	std::string m_class = "WIBase";
 	std::string m_name;
 	std::string m_toolTip;
@@ -383,12 +382,7 @@ protected:
 	void UpdateChildOrder(WIBase *child=NULL);
 	template<class TElement>
 		WIHandle CreateChild();
-	virtual void InitializeHandle();
-	template<class TWrapper>
-		void InitializeWrapper();
-	void InitializeHandle(std::shared_ptr<WIHandle> handle);
-	template<class THandle>
-		void InitializeHandle();
+	void InitializeHandle();
 	void UpdateMouseInBounds();
 	void UpdateChildrenMouseInBounds(bool ignoreVisibility=false);
 	virtual void OnVisibilityChanged(bool bVisible);
@@ -425,12 +419,6 @@ private:
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)
 
 #include "wgui.h"
-
-template<class THandle>
-	void WIBase::InitializeHandle()
-{
-	m_handle = std::make_shared<THandle>(new PtrWI(this));
-}
 
 template<class TElement>
 	WIHandle WIBase::CreateChild()

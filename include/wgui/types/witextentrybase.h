@@ -60,13 +60,13 @@ public:
 	bool IsSelectable() const;
 	void SetSelectable(bool bSelectable);
 
-	void GetSelectionBounds(int *start,int *end);
+	void GetSelectionBounds(int *start,int *end) const;
 	void SetSelectionBounds(int start,int end);
 	void ClearSelection();
 	bool RemoveSelectedText();
 	void OnEnter();
 	void SetMaxLength(int length);
-	int GetMaxLength();
+	int GetMaxLength() const;
 protected:
 	virtual void OnTextContentsChanged();
 	std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;

@@ -26,7 +26,7 @@ void WITextEntry::SetInputHidden(bool b)
 {
 	if(!m_hBase.IsValid())
 		return;
-	m_hBase.get<WITextEntryBase>()->SetInputHidden(b);
+	static_cast<WITextEntryBase*>(m_hBase.get())->SetInputHidden(b);
 }
 
 WIText *WITextEntry::GetTextElement()
@@ -88,50 +88,50 @@ void WITextEntry::Initialize()
 	SetSize(128,25);
 	Vector2i size = GetSize();
 	m_hBg = CreateChild<WIRect>();
-	WIRect *pBg = m_hBg.get<WIRect>();
+	WIRect *pBg = static_cast<WIRect*>(m_hBg.get());
 	pBg->SetName("background");
 	pBg->SetColor(1,1,1,1);
 	pBg->SetSize(size.x,size.y);
 	pBg->SetAnchor(0,0,1,1);
 
 	m_hBase = CreateChild<WITextEntryBase>();
-	WITextEntryBase *pBase = m_hBase.get<WITextEntryBase>();
+	WITextEntryBase *pBase = static_cast<WITextEntryBase*>(m_hBase.get());
 	pBase->SetSize(size.x,size.y);
 	pBase->AddCallback("OnTextEntered",FunctionCallback<>::Create(std::bind([](WIHandle hTextEntry) {
 		if(!hTextEntry.IsValid())
 			return;
-		WITextEntry *te = hTextEntry.get<WITextEntry>();
+		WITextEntry *te = static_cast<WITextEntry*>(hTextEntry.get());
 		te->OnTextEntered();
 	},this->GetHandle())));
 	pBase->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const std::string>,bool>::Create(std::bind([](WIHandle hTextEntry,std::reference_wrapper<const std::string> text,bool changedByUser) {
 		if(!hTextEntry.IsValid())
 			return;
-		WITextEntry *te = hTextEntry.get<WITextEntry>();
+		WITextEntry *te = static_cast<WITextEntry*>(hTextEntry.get());
 		te->OnTextChanged(text,changedByUser);
 	},this->GetHandle(),std::placeholders::_1,std::placeholders::_2)));
 	pBase->AddCallback("OnContentsChanged",FunctionCallback<void>::Create(std::bind([](WIHandle hTextEntry) {
 		if(!hTextEntry.IsValid())
 			return;
-		WITextEntry *te = hTextEntry.get<WITextEntry>();
+		WITextEntry *te = static_cast<WITextEntry*>(hTextEntry.get());
 		te->OnContentsChanged();
 	},this->GetHandle())));
 	pBase->AddCallback("OnFocusGained",FunctionCallback<>::Create(std::bind([](WIHandle hTextEntry) {
 		if(!hTextEntry.IsValid())
 			return;
-		WITextEntry *te = hTextEntry.get<WITextEntry>();
+		WITextEntry *te = static_cast<WITextEntry*>(hTextEntry.get());
 		te->OnFocusGained();
 	},this->GetHandle())));
 	pBase->AddCallback("OnFocusKilled",FunctionCallback<>::Create(std::bind([](WIHandle hTextEntry) {
 		if(!hTextEntry.IsValid())
 			return;
-		WITextEntry *te = hTextEntry.get<WITextEntry>();
+		WITextEntry *te = static_cast<WITextEntry*>(hTextEntry.get());
 		te->OnFocusKilled();
 	},this->GetHandle())));
 	pBase->SetMouseInputEnabled(GetMouseInputEnabled());
 	pBase->SetKeyboardInputEnabled(GetKeyboardInputEnabled());
 
 	m_hOutline = CreateChild<WIOutlinedRect>();
-	WIOutlinedRect *pORect = m_hOutline.get<WIOutlinedRect>();
+	WIOutlinedRect *pORect = static_cast<WIOutlinedRect*>(m_hOutline.get());
 	pORect->SetName("background_outline");
 	pORect->SetOutlineWidth(1);
 	pORect->WIBase::SetSize(size.x,size.y);
@@ -170,7 +170,7 @@ void WITextEntry::SetSize(int x,int y)
 	WIBase::SetSize(x,y);
 	if(m_hBase.IsValid())
 	{
-		auto *pBase = m_hBase.get<WITextEntryBase>();
+		auto *pBase = static_cast<WITextEntryBase*>(m_hBase.get());
 		auto *pText = pBase->GetTextElement();
 		if(IsMultiLine() == false)
 		{
@@ -192,12 +192,12 @@ void WITextEntry::SetSize(int x,int y)
 	}
 	if(m_hOutline.IsValid())
 	{
-		WIOutlinedRect *pRect = m_hOutline.get<WIOutlinedRect>();
+		WIOutlinedRect *pRect = static_cast<WIOutlinedRect*>(m_hOutline.get());
 		pRect->SetSize(x,y);
 	}
 	if(m_hBg.IsValid())
 	{
-		WIRect *pBg = m_hBg.get<WIRect>();
+		WIRect *pBg = static_cast<WIRect*>(m_hBg.get());
 		pBg->SetSize(x,y);
 	}
 }
@@ -206,50 +206,50 @@ void WITextEntry::SetMaxLength(int length)
 {
 	if(!m_hBase.IsValid())
 		return;
-	m_hBase.get<WITextEntryBase>()->SetMaxLength(length);
+	static_cast<WITextEntryBase*>(m_hBase.get())->SetMaxLength(length);
 }
 int WITextEntry::GetMaxLength() const
 {
 	if(!m_hBase.IsValid())
 		return -1;
-	return m_hBase.get<WITextEntryBase>()->GetMaxLength();
+	return static_cast<const WITextEntryBase*>(m_hBase.get())->GetMaxLength();
 }
 
 std::string_view WITextEntry::GetText() const
 {
 	if(!m_hBase.IsValid())
 		return {};
-	return static_cast<WITextEntryBase*>(m_hBase.get())->GetText();
+	return static_cast<const WITextEntryBase*>(m_hBase.get())->GetText();
 }
 void WITextEntry::SetText(std::string_view text)
 {
 	if(!m_hBase.IsValid())
 		return;
-	m_hBase.get<WITextEntryBase>()->SetText(text);
+	static_cast<WITextEntryBase*>(m_hBase.get())->SetText(text);
 }
 void WITextEntry::InsertText(std::string_view instext,int pos)
 {
 	if(!m_hBase.IsValid())
 		return;
-	m_hBase.get<WITextEntryBase>()->InsertText(instext,pos);
+	static_cast<WITextEntryBase*>(m_hBase.get())->InsertText(instext,pos);
 }
 void WITextEntry::InsertText(std::string_view text)
 {
 	if(!m_hBase.IsValid())
 		return;
-	m_hBase.get<WITextEntryBase>()->InsertText(text);
+	static_cast<WITextEntryBase*>(m_hBase.get())->InsertText(text);
 }
 int WITextEntry::GetCaretPos() const
 {
 	if(!m_hBase.IsValid())
 		return 0;
-	return m_hBase.get<WITextEntryBase>()->GetCaretPos();
+	return static_cast<const WITextEntryBase*>(m_hBase.get())->GetCaretPos();
 }
 void WITextEntry::SetCaretPos(int pos)
 {
 	if(!m_hBase.IsValid())
 		return;
-	m_hBase.get<WITextEntryBase>()->SetCaretPos(pos);
+	static_cast<WITextEntryBase*>(m_hBase.get())->SetCaretPos(pos);
 }
 WIRect *WITextEntry::GetCaretElement()
 {
@@ -260,37 +260,37 @@ bool WITextEntry::IsMultiLine() const
 {
 	if(!m_hBase.IsValid())
 		return false;
-	return m_hBase.get<WITextEntryBase>()->IsMultiLine();
+	return static_cast<const WITextEntryBase*>(m_hBase.get())->IsMultiLine();
 }
 void WITextEntry::SetMultiLine(bool bMultiLine)
 {
 	if(!m_hBase.IsValid())
 		return;
-	m_hBase.get<WITextEntryBase>()->SetMultiLine(bMultiLine);
+	static_cast<WITextEntryBase*>(m_hBase.get())->SetMultiLine(bMultiLine);
 }
 bool WITextEntry::IsEditable() const
 {
 	if(!m_hBase.IsValid())
 		return false;
-	return m_hBase.get<WITextEntryBase>()->IsEditable();
+	return static_cast<const WITextEntryBase*>(m_hBase.get())->IsEditable();
 }
 void WITextEntry::SetEditable(bool bEditable)
 {
 	if(!m_hBase.IsValid())
 		return;
-	return m_hBase.get<WITextEntryBase>()->SetEditable(bEditable);
+	return static_cast<WITextEntryBase*>(m_hBase.get())->SetEditable(bEditable);
 }
 bool WITextEntry::IsSelectable() const
 {
 	if(!m_hBase.IsValid())
 		return false;
-	return m_hBase.get<WITextEntryBase>()->IsSelectable();
+	return static_cast<const WITextEntryBase*>(m_hBase.get())->IsSelectable();
 }
 void WITextEntry::SetSelectable(bool bSelectable)
 {
 	if(!m_hBase.IsValid())
 		return;
-	return m_hBase.get<WITextEntryBase>()->SetSelectable(bSelectable);
+	return static_cast<WITextEntryBase*>(m_hBase.get())->SetSelectable(bSelectable);
 }
 void WITextEntry::GetSelectionBounds(int *start,int *end) const
 {
@@ -300,25 +300,25 @@ void WITextEntry::GetSelectionBounds(int *start,int *end) const
 		*end = 0;
 		return;
 	}
-	return m_hBase.get<WITextEntryBase>()->GetSelectionBounds(start,end);
+	return static_cast<const WITextEntryBase*>(m_hBase.get())->GetSelectionBounds(start,end);
 }
 void WITextEntry::SetSelectionBounds(int start,int end)
 {
 	if(!m_hBase.IsValid())
 		return;
-	return m_hBase.get<WITextEntryBase>()->SetSelectionBounds(start,end);
+	return static_cast<WITextEntryBase*>(m_hBase.get())->SetSelectionBounds(start,end);
 }
 void WITextEntry::ClearSelection()
 {
 	if(!m_hBase.IsValid())
 		return;
-	return m_hBase.get<WITextEntryBase>()->ClearSelection();
+	return static_cast<WITextEntryBase*>(m_hBase.get())->ClearSelection();
 }
 void WITextEntry::RemoveSelection()
 {
 	if(!m_hBase.IsValid())
 		return;
-	m_hBase.get<WITextEntryBase>()->RemoveSelectedText();
+	static_cast<WITextEntryBase*>(m_hBase.get())->RemoveSelectedText();
 }
 
 ///////////////////////////////////

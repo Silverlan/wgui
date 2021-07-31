@@ -71,7 +71,7 @@ void WIDropDownMenu::Initialize()
 	}));
 
 	m_hOutline = CreateChild<WIOutlinedRect>();
-	WIOutlinedRect *pOutline = m_hOutline.get<WIOutlinedRect>();
+	WIOutlinedRect *pOutline = static_cast<WIOutlinedRect*>(m_hOutline.get());
 	pOutline->SetOutlineWidth(1);
 	pOutline->SetColor(0.f,0.f,0.f,1.f);
 
@@ -87,7 +87,7 @@ void WIDropDownMenu::Initialize()
 	}));
 	
 	m_hArrow = WGUI::GetInstance().Create<WIArrow>(pArrowContainer)->GetHandle();
-	auto *pArrow = m_hArrow.get<WIArrow>();
+	auto *pArrow = static_cast<WIArrow*>(m_hArrow.get());
 	pArrow->CenterToParent();
 	pArrow->SetAnchor(0.5f,0.5f,0.5f,0.5f);
 
@@ -102,7 +102,7 @@ void WIDropDownMenu::Initialize()
 	pList->AddCallback("OnFocusKilled",FunctionCallback<>::Create(std::bind([](WIHandle hThis) {
 		if(!hThis.IsValid())
 			return;
-		WIDropDownMenu *t = hThis.get<WIDropDownMenu>();
+		WIDropDownMenu *t = static_cast<WIDropDownMenu*>(hThis.get());
 		t->CloseMenu();
 	},this->GetHandle())));
 
@@ -112,7 +112,7 @@ void WIDropDownMenu::Initialize()
 	pScrollBar->AddCallback("OnScrollOffsetChanged",FunctionCallback<void,unsigned int>::Create(std::bind([](WIHandle hThis,unsigned int offset) {
 		if(!hThis.IsValid())
 			return;
-		WIDropDownMenu *t = hThis.get<WIDropDownMenu>();
+		WIDropDownMenu *t = static_cast<WIDropDownMenu*>(hThis.get());
 		t->SetOptionOffset(offset);
 	},this->GetHandle(),std::placeholders::_1)));
 
@@ -126,7 +126,7 @@ void WIDropDownMenu::SelectOption(unsigned int idx)
 	WIHandle &hOption = m_options[idx];
 	if(!hOption.IsValid())
 		return;
-	WIDropDownMenuOption *pOption = hOption.get<WIDropDownMenuOption>();
+	WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption*>(hOption.get());
 	m_selected = idx;
 	SetText(pOption->GetText());
 	CallCallbacks<void,unsigned int>("OnOptionSelected",idx);
@@ -140,7 +140,7 @@ WIDropDownMenuOption *WIDropDownMenu::FindOptionByValue(const std::string &value
 	{
 		if(it->IsValid())
 		{
-			auto *pOption = it->get<WIDropDownMenuOption>();
+			auto *pOption = static_cast<WIDropDownMenuOption*>(it->get());
 			if(pOption->GetValue() == value)
 				return pOption;
 		}
@@ -160,7 +160,7 @@ void WIDropDownMenu::SelectOption(const std::string &value)
 void WIDropDownMenu::SelectOptionByText(const std::string &name)
 {
 	auto it = std::find_if(m_options.begin(),m_options.end(),[&name](const WIHandle &hOption) {
-		return (hOption.IsValid() && static_cast<WIDropDownMenuOption*>(hOption.get())->GetText() == name) ? true : false;
+		return (hOption.IsValid() && static_cast<const WIDropDownMenuOption*>(hOption.get())->GetText() == name) ? true : false;
 	});
 	if(it == m_options.end())
 		return;
@@ -171,7 +171,7 @@ std::string_view WIDropDownMenu::GetOptionText(uint32_t idx)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return {};
-	WIDropDownMenuOption *pOption = m_options[idx].get<WIDropDownMenuOption>();
+	WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption*>(m_options[idx].get());
 	return pOption->GetText();
 }
 
@@ -179,7 +179,7 @@ std::string WIDropDownMenu::GetOptionValue(uint32_t idx)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return "";
-	WIDropDownMenuOption *pOption = m_options[idx].get<WIDropDownMenuOption>();
+	WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption*>(m_options[idx].get());
 	return pOption->GetValue();
 }
 void WIDropDownMenu::SetOptionText(uint32_t idx,const std::string &text)
@@ -202,7 +202,7 @@ std::string WIDropDownMenu::GetValue()
 	auto idx = m_selected;
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return IsEditable() ? std::string{GetText()} : "";
-	WIDropDownMenuOption *pOption = m_options[idx].get<WIDropDownMenuOption>();
+	WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption*>(m_options[idx].get());
 	return pOption->GetValue();
 }
 
@@ -252,25 +252,25 @@ WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option,const 
 	pOption->SetValue(value);
 	pOption->SetVisible(false);
 	auto hMenu = GetHandle();
-	pOption->AddCallback("OnScroll",FunctionCallback<util::EventReply,Vector2>::CreateWithOptionalReturn([hMenu](util::EventReply *reply,Vector2 offset) -> CallbackReturnType {
+	pOption->AddCallback("OnScroll",FunctionCallback<util::EventReply,Vector2>::CreateWithOptionalReturn([hMenu](util::EventReply *reply,Vector2 offset) mutable -> CallbackReturnType {
 		if(!hMenu.IsValid())
 		{
 			*reply = util::EventReply::Handled;
 			return CallbackReturnType::HasReturnValue;
 		}
-		WIDropDownMenu *dm = hMenu.get<WIDropDownMenu>();
+		WIDropDownMenu *dm = static_cast<WIDropDownMenu*>(hMenu.get());
 		dm->InjectScrollInput(offset);
 		*reply = util::EventReply::Handled;
 		return CallbackReturnType::HasReturnValue;
 	}));
 	pOption->AddCallback("OnMouseEvent",FunctionCallback<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>::CreateWithOptionalReturn(
-		[hOption](util::EventReply *reply,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier) -> CallbackReturnType {
+		[hOption](util::EventReply *reply,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier) mutable -> CallbackReturnType {
 		if(!hOption.IsValid())
 		{
 			*reply = util::EventReply::Handled;
 			return CallbackReturnType::HasReturnValue;
 		}
-		WIDropDownMenuOption *pOption = hOption.get<WIDropDownMenuOption>();
+		WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption*>(hOption.get());
 		if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press)
 		{
 			WIDropDownMenu *dm = pOption->GetDropDownMenu();
@@ -285,7 +285,7 @@ WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option,const 
 	}));
 	m_options.push_back(hOption);
 	if(m_hScrollBar.IsValid())
-		m_hScrollBar.get<WIScrollBar>()->SetUp(m_numListItems,static_cast<unsigned int>(m_options.size()));
+		static_cast<WIScrollBar*>(m_hScrollBar.get())->SetUp(m_numListItems,static_cast<unsigned int>(m_options.size()));
 	return pOption;
 }
 
@@ -364,7 +364,7 @@ void WIDropDownMenu::SetOptionOffset(unsigned int offset)
 		WIHandle &hOption = m_options[i];
 		if(hOption.IsValid())
 		{
-			WIDropDownMenuOption *pOption = hOption.get<WIDropDownMenuOption>();
+			WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption*>(hOption.get());
 			pOption->SetVisible(true);
 			pOption->SetY(y);
 
@@ -386,7 +386,7 @@ void WIDropDownMenu::ScrollToOption(uint32_t offset,bool center)
 	}
 	if(m_hScrollBar.IsValid())
 	{
-		WIScrollBar *pScrollBar = m_hScrollBar.get<WIScrollBar>();
+		WIScrollBar *pScrollBar = static_cast<WIScrollBar*>(m_hScrollBar.get());
 		pScrollBar->SetScrollOffset(offset);
 		SetOptionOffset(offset);
 	}
@@ -396,7 +396,7 @@ void WIDropDownMenu::OpenMenu()
 {
 	if(!m_hList.IsValid())
 		return;
-	WIRect *pList = m_hList.get<WIRect>();
+	WIRect *pList = static_cast<WIRect*>(m_hList.get());
 	if(pList->IsVisible())
 		return;
 	SetScrollInputEnabled(true);
@@ -422,7 +422,7 @@ void WIDropDownMenu::OpenMenu()
 	int marginRight = 0;
 	if(m_hScrollBar.IsValid())
 	{
-		WIScrollBar *pScrollBar = m_hScrollBar.get<WIScrollBar>();
+		WIScrollBar *pScrollBar = static_cast<WIScrollBar*>(m_hScrollBar.get());
 		pScrollBar->SetHeight(pList->GetHeight());
 		pScrollBar->SetX(pList->GetWidth() -pScrollBar->GetWidth());
 		if(pScrollBar->IsVisible())
@@ -435,7 +435,7 @@ void WIDropDownMenu::OpenMenu()
 		WIHandle &hOption = m_options[i];
 		if(hOption.IsValid())
 		{
-			WIDropDownMenuOption *pOption = hOption.get<WIDropDownMenuOption>();
+			WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption*>(hOption.get());
 			pOption->SetWidth(w);
 		}
 	}
@@ -447,7 +447,7 @@ void WIDropDownMenu::CloseMenu()
 	SetScrollInputEnabled(false);
 	if(m_hList.IsValid())
 	{
-		WIRect *pList = m_hList.get<WIRect>();
+		WIRect *pList = static_cast<WIRect*>(m_hList.get());
 		if(pList->IsVisible())
 			pList->SetVisible(false);
 	}
@@ -482,7 +482,7 @@ util::EventReply WIDropDownMenu::ScrollCallback(Vector2 offset)
 {
 	if(WITextEntry::ScrollCallback(offset) == util::EventReply::Handled || !m_hScrollBar.IsValid())
 		return util::EventReply::Handled;
-	m_hScrollBar.get<WIScrollBar>()->ScrollCallback(offset);
+	static_cast<WIScrollBar*>(m_hScrollBar.get())->ScrollCallback(offset);
 	return util::EventReply::Handled;
 }
 void WIDropDownMenu::SetSize(int x,int y)
@@ -490,7 +490,7 @@ void WIDropDownMenu::SetSize(int x,int y)
 	WITextEntry::SetSize(x,y);
 	if(m_hOutline.IsValid())
 	{
-		WIOutlinedRect *pOutline = m_hOutline.get<WIOutlinedRect>();
+		WIOutlinedRect *pOutline = static_cast<WIOutlinedRect*>(m_hOutline.get());
 		pOutline->SetSize(x,y);
 	}
 	/*if(m_hArrow.IsValid())
@@ -524,14 +524,14 @@ WIDropDownMenu *WIDropDownMenuOption::GetDropDownMenu()
 {
 	if(!m_dropDownMenu.IsValid())
 		return NULL;
-	return m_dropDownMenu.get<WIDropDownMenu>();
+	return static_cast<WIDropDownMenu*>(m_dropDownMenu.get());
 }
 
 void WIDropDownMenuOption::Initialize()
 {
 	WIBase::Initialize();
 	m_hBackground = CreateChild<WIRect>();
-	WIRect *pBackground = m_hBackground.get<WIRect>();
+	WIRect *pBackground = static_cast<WIRect*>(m_hBackground.get());
 	pBackground->SetColor(COLOR_SELECTED);
 	pBackground->SetVisible(false);
 
@@ -545,7 +545,7 @@ void WIDropDownMenuOption::SetText(const std::string_view &text)
 {
 	if(!m_hText.IsValid())
 		return;
-	WIText *pText = m_hText.get<WIText>();
+	WIText *pText = static_cast<WIText*>(m_hText.get());
 	pText->SetText(text);
 	pText->SetX(MARGIN_LEFT);
 	pText->SizeToContents();
@@ -556,7 +556,7 @@ std::string_view WIDropDownMenuOption::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};
-	return static_cast<WIText*>(m_hText.get())->GetText();
+	return static_cast<const WIText*>(m_hText.get())->GetText();
 }
 
 void WIDropDownMenuOption::UpdateTextPos()
@@ -570,7 +570,7 @@ void WIDropDownMenuOption::SetSize(int x,int y)
 	WIBase::SetSize(x,y);
 	if(m_hBackground.IsValid())
 	{
-		WIRect *pBackground = m_hBackground.get<WIRect>();
+		WIRect *pBackground = static_cast<WIRect*>(m_hBackground.get());
 		pBackground->SetSize(x,y);
 	}
 	UpdateTextPos();

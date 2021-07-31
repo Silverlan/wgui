@@ -227,7 +227,7 @@ void WIText::UpdateRenderTexture()
 	}
 	if(m_baseTextShadow.IsValid())
 	{
-		WITexturedRect *text = m_baseTextShadow.get<WITexturedRect>();
+		WITexturedRect *text = static_cast<WITexturedRect*>(m_baseTextShadow.get());
 		if(text != NULL)
 		{
 			text->SetSize(w,h);
@@ -664,7 +664,7 @@ bool WITextBase::RenderLines(
 	bool colorPass
 ) const
 {
-	auto &textEl = static_cast<WIText&>(*m_hText.get());
+	auto &textEl = static_cast<const WIText&>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	if(shader.BeginDraw(drawCmd,width,height) == false)
 		return false;

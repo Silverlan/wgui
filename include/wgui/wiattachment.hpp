@@ -6,6 +6,7 @@
 #define __WIATTACHMENT_HPP__
 
 #include "wguidefinitions.h"
+#include "types.hpp"
 #include <sharedutils/property/util_property_vector.h>
 
 class DLLWGUI WIAttachment

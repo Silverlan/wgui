@@ -53,7 +53,7 @@ void WITextEntryBase::SetInputHidden(bool b)
 		return;
 	static_cast<WIText*>(m_hText.get())->HideText(b);
 }
-bool WITextEntryBase::IsInputHidden() const {return m_hText.IsValid() ? static_cast<WIText*>(m_hText.get())->IsTextHidden() : false;}
+bool WITextEntryBase::IsInputHidden() const {return m_hText.IsValid() ? static_cast<const WIText*>(m_hText.get())->IsTextHidden() : false;}
 
 WIText *WITextEntryBase::GetTextElement() {return static_cast<WIText*>(m_hText.get());}
 
@@ -89,32 +89,32 @@ void WITextEntryBase::UpdateTextPosition()
 void WITextEntryBase::Initialize()
 {
 	m_hText = CreateChild<WIText>();
-	WIText *pText = m_hText.get<WIText>();
+	WIText *pText = static_cast<WIText*>(m_hText.get());
 	pText->SetColor(0,0,0,1);
 	pText->SetZPos(2);
 	pText->SetAutoSizeToText(true);
 
 	auto hTe = GetHandle();
-	pText->AddCallback("OnFontChanged",FunctionCallback<>::Create([hTe]() {
+	pText->AddCallback("OnFontChanged",FunctionCallback<>::Create([hTe]() mutable {
 		if(!hTe.IsValid())
 			return;
-		hTe.get<WITextEntryBase>()->UpdateTextPosition();
+		static_cast<WITextEntryBase*>(hTe.get())->UpdateTextPosition();
 	}));
-	pText->AddCallback("OnContentsChanged",FunctionCallback<void>::Create([hTe]() {
+	pText->AddCallback("OnContentsChanged",FunctionCallback<void>::Create([hTe]() mutable {
 		if(!hTe.IsValid())
 			return;
-		WITextEntryBase *te = hTe.get<WITextEntryBase>();
+		WITextEntryBase *te = static_cast<WITextEntryBase*>(hTe.get());
 		te->OnTextContentsChanged();
 	}));
 	pText->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const std::string>>::Create(std::bind([](WIHandle hTeBase,std::reference_wrapper<const std::string> text) {
 		if(!hTeBase.IsValid())
 			return;
-		WITextEntryBase *te = hTeBase.get<WITextEntryBase>();
+		WITextEntryBase *te = static_cast<WITextEntryBase*>(hTeBase.get());
 		te->OnTextChanged(false);
 	},this->GetHandle(),std::placeholders::_1)));
 
 	m_hCaret = CreateChild<WIRect>();
-	WIRect *pRect = m_hCaret.get<WIRect>();
+	WIRect *pRect = static_cast<WIRect*>(m_hCaret.get());
 	pRect->SetColor(0,0,0,1);
 	pRect->SetVisible(false);
 	pRect->SetZPos(2);
@@ -135,7 +135,7 @@ void WITextEntryBase::SetMaxLength(int length)
 	pText->GetFormattedTextObject().RemoveText(length,util::text::END_OF_TEXT);
 	OnTextChanged(false);
 }
-int WITextEntryBase::GetMaxLength() {return m_maxLength;}
+int WITextEntryBase::GetMaxLength() const {return m_maxLength;}
 
 WITextEntryBase::~WITextEntryBase()
 {
@@ -152,7 +152,7 @@ void WITextEntryBase::SetSize(int x,int y)
 	WIBase::SetSize(x,y);
 	if(m_hText.IsValid())
 	{
-		WIText *pText = m_hText.get<WIText>();
+		WIText *pText = static_cast<WIText*>(m_hText.get());
 		if(pText->ShouldAutoSizeToText() == false)
 			pText->SetSize(x,y);
 		else
@@ -161,7 +161,7 @@ void WITextEntryBase::SetSize(int x,int y)
 		{
 			auto *font = pText->GetFont();
 			if(font != NULL)
-				m_hCaret.get<WIRect>()->SetSize(2,font->GetSize());
+				static_cast<WIRect*>(m_hCaret.get())->SetSize(2,font->GetSize());
 		}
 		UpdateTextPosition();
 		SetCaretPos(m_posCaret);
@@ -180,7 +180,7 @@ void WITextEntryBase::OnFocusGained()
 	WIBase::OnFocusGained();
 	if(m_hCaret.IsValid())
 	{
-		WIRect *pRect = m_hCaret.get<WIRect>();
+		WIRect *pRect = static_cast<WIRect*>(m_hCaret.get());
 		pRect->SetVisible(true);
 		m_tBlink = GLFW::get_time();
 	}
@@ -192,7 +192,7 @@ void WITextEntryBase::OnFocusKilled()
 	WIBase::OnFocusKilled();
 	if(m_hCaret.IsValid())
 	{
-		WIRect *pRect = m_hCaret.get<WIRect>();
+		WIRect *pRect = static_cast<WIRect*>(m_hCaret.get());
 		pRect->SetVisible(false);
 	}
 	DisableThinking();
@@ -202,7 +202,7 @@ std::string_view WITextEntryBase::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};
-	return static_cast<WIText*>(m_hText.get())->GetText();
+	return static_cast<const WIText*>(m_hText.get())->GetText();
 }
 
 void WITextEntryBase::SetText(std::string_view text)
@@ -232,7 +232,7 @@ void WITextEntryBase::Think()
 	{
 		if(m_hCaret.IsValid())
 		{
-			WIRect *pCaret = m_hCaret.get<WIRect>();
+			WIRect *pCaret = static_cast<WIRect*>(m_hCaret.get());
 			auto t = GLFW::get_time();
 			auto tDelta = static_cast<uint32_t>((t -m_tBlink) *1.8);
 			if(int(tDelta) % 2 == 0)
@@ -276,10 +276,10 @@ void WITextEntryBase::SetCaretPos(int pos)
 	m_posCaret = pos;
 	if(m_hCaret.IsValid())
 	{
-		WIRect *pCaret = m_hCaret.get<WIRect>();
+		WIRect *pCaret = static_cast<WIRect*>(m_hCaret.get());
 		if(m_hText.IsValid())
 		{
-			WIText *pText = m_hText.get<WIText>();
+			WIText *pText = static_cast<WIText*>(m_hText.get());
 			auto &lines = pText->GetLines();
 			int x = 0;
 			int y = 0;
@@ -342,13 +342,13 @@ int WITextEntryBase::GetCharPos(int x,int y) const
 {
 	if(m_hText.IsValid())
 	{
-		WIText *pText = m_hText.get<WIText>();
+		const WIText *pText = static_cast<const WIText*>(m_hText.get());
 		x -= pText->GetX(); // Account for text offset to the left / right
 		int lHeight = pText->GetLineHeight();
 		auto &lines = pText->GetLines();
 		int line = y /lHeight;
 
-		TextLineIterator lineIt{*pText};
+		TextLineIterator lineIt{const_cast<WIText&>(*pText)};
 		auto itLine = std::find_if(lineIt.begin(),lineIt.end(),[line](const TextLineIteratorBase::Info &lineInfo) {
 			return lineInfo.absSubLineIndex == line;
 		});
@@ -371,7 +371,7 @@ int WITextEntryBase::GetCharPos(int x,int y) const
 				return charIdx;
 			}
 
-			CharIterator charIt{*pText,lineInfo,true /* updatePixelWidth */};
+			CharIterator charIt{const_cast<WIText&>(*pText),lineInfo,true /* updatePixelWidth */};
 			auto itChar = std::find_if(charIt.begin(),charIt.end(),[x](const CharIteratorBase::Info &charInfo) {
 				return x < charInfo.pxOffset +charInfo.pxWidth *0.5f;
 			});
@@ -465,7 +465,7 @@ int WITextEntryBase::GetLineFromPos(int pos)
 {
 	if(!m_hText.IsValid())
 		return 0;
-	WIText *pText = m_hText.get<WIText>();
+	WIText *pText = static_cast<WIText*>(m_hText.get());
 	auto &lines = pText->GetLines();
 	int numLines = static_cast<int>(lines.size());
 	for(int i=0;i<numLines;i++)
@@ -537,7 +537,7 @@ void WITextEntryBase::SetSelectionBounds(int start,int end)
 		UpdateSelection();
 }
 
-void WITextEntryBase::GetSelectionBounds(int *start,int *end)
+void WITextEntryBase::GetSelectionBounds(int *start,int *end) const
 {
 	*start = m_selectStart;
 	*end = m_selectEnd;
@@ -554,9 +554,9 @@ std::pair<util::text::LineIndex,util::text::LineIndex> WITextEntryBase::GetLineI
 {
 	if(!m_hText.IsValid())
 		return {util::text::INVALID_LINE_INDEX,util::text::INVALID_LINE_INDEX};
-	WIText *pText = m_hText.get<WIText>();
+	const WIText *pText = static_cast<const WIText*>(m_hText.get());
 
-	TextLineIterator lineIt{*pText};
+	TextLineIterator lineIt{const_cast<WIText&>(*pText)};
 	for(auto &lineInfo : lineIt)
 	{
 		if(lineInfo.line == nullptr)
@@ -676,7 +676,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 			{
 				if(m_hText.IsValid())
 				{
-					WIText *pText = m_hText.get<WIText>();
+					WIText *pText = static_cast<WIText*>(m_hText.get());
 					auto &lines = pText->GetLines();
 					int pos = GetCaretPos();
 					std::string_view line;
