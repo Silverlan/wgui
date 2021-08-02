@@ -60,6 +60,25 @@ WGUI::WGUI(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wp
 
 WGUI::~WGUI() {}
 
+void WGUI::RegisterElement(WIBase &el,const std::string &className,WIBase *parent)
+{
+	el.SetIndex(m_nextGuiElementIndex++);
+	el.InitializeHandle();
+	if(parent != nullptr)
+		el.SetParent(parent);
+	else
+	{
+		auto *elBase = GetBaseElement();
+		if(elBase)
+			el.SetParent(elBase);
+	}
+	el.m_class = className;
+	el.AddStyleClass(el.GetClass());
+	el.Initialize();
+	if(m_createCallback != nullptr)
+		m_createCallback(el);
+}
+
 void WGUI::SetMaterialLoadHandler(const std::function<Material*(const std::string&)> &handler) {m_materialLoadHandler = handler;}
 const std::function<Material*(const std::string&)> &WGUI::GetMaterialLoadHandler() const {return m_materialLoadHandler;}
 

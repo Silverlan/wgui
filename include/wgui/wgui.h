@@ -93,6 +93,7 @@ public:
 		TElement *Create(WIBase *parent=nullptr);
 	template<class TElement>
 		void Setup(WIBase &el,WIBase *parent=nullptr);
+	void RegisterElement(WIBase &el,const std::string &className,WIBase *parent=nullptr);
 	WIBase *Create(std::string classname,WIBase *parent=nullptr);
 	void RemoveSafely(WIBase &gui);
 	void Remove(WIBase &gui);
@@ -235,24 +236,11 @@ template<class TSkin>
 template<class TElement>
 	void WGUI::Setup(WIBase &el,WIBase *parent)
 {
-	el.SetIndex(m_nextGuiElementIndex++);
-	el.InitializeHandle();
-	if(parent != nullptr)
-		el.SetParent(parent);
-	else
-	{
-		auto *elBase = GetBaseElement();
-		if(elBase)
-			el.SetParent(elBase);
-	}
-	auto *map = GetWGUIClassMap();
 	std::string classname;
+	auto *map = GetWGUIClassMap();
 	if(map->GetClassName(typeid(TElement),&classname))
 		el.m_class = classname;
-	el.AddStyleClass(el.GetClass());
-	el.Initialize();
-	if(m_createCallback != nullptr)
-		m_createCallback(el);
+	RegisterElement(el,classname,parent);
 }
 
 template<class TElement>
