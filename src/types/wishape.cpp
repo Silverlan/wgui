@@ -322,8 +322,11 @@ void WITexturedShape::SizeToTexture()
 	}
 	SetSize(width,height);
 }
-void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
+void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale)
 {
+	auto matDraw = matDrawRoot;
+	if(m_localRenderTransform)
+		matDraw *= m_localRenderTransform->ToMatrix();
 	if(m_hMaterial.IsValid() == false && m_texture == nullptr)
 		return;
 	auto col = drawInfo.GetColor(*this);

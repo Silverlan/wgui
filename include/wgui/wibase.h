@@ -10,6 +10,7 @@
 #include <sharedutils/callback_handler.h>
 #include <sharedutils/util_shared_handle.hpp>
 #include <mathutil/umath.h>
+#include <mathutil/transform.hpp>
 #include "wgui/wiattachment.hpp"
 #include "wgui/wianchor.hpp"
 #include "types.hpp"
@@ -336,6 +337,11 @@ public:
 	prosper::Window *GetRootWindow();
 	const prosper::Window *GetRootWindow() const {return const_cast<WIBase*>(this)->GetRootWindow();}
 
+	void SetLocalRenderTransform(const umath::ScaledTransform &transform);
+	void ClearLocalRenderTransform();
+	umath::ScaledTransform *GetLocalRenderTransform();
+	const umath::ScaledTransform *GetLocalRenderTransform() const {return const_cast<WIBase*>(this)->GetLocalRenderTransform();}
+
 	// Handles
 	WIHandle GetHandle() const;
 protected:
@@ -356,6 +362,7 @@ protected:
 	uint64_t m_index = std::numeric_limits<uint64_t>::max();
 	StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 	std::array<std::shared_ptr<void>,4> m_userData;
+	std::unique_ptr<umath::ScaledTransform> m_localRenderTransform = nullptr;
 	util::TSharedHandle<WIBase> m_handle {};
 	std::string m_class = "WIBase";
 	std::string m_name;

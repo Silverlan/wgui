@@ -120,6 +120,11 @@ WIBase::~WIBase()
 	}
 	m_fade = nullptr;
 }
+
+void WIBase::SetLocalRenderTransform(const umath::ScaledTransform &transform) {m_localRenderTransform = std::make_unique<umath::ScaledTransform>(transform);}
+void WIBase::ClearLocalRenderTransform() {m_localRenderTransform = nullptr;}
+umath::ScaledTransform *WIBase::GetLocalRenderTransform() {return m_localRenderTransform.get();}
+
 void WIBase::UpdateParentAutoSizeToContents()
 {
 	if(m_parent.expired() || umath::is_flag_set(m_parent->m_stateFlags,StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY) == false || IsBackgroundElement())

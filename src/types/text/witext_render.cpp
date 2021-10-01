@@ -743,8 +743,11 @@ void WITextBase::RenderLines(
 	},true);
 }
 
-void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
+void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale)
 {
+	auto matDraw = matDrawRoot;
+	if(m_localRenderTransform)
+		matDraw *= m_localRenderTransform->ToMatrix();
 	WIBase::Render(drawInfo,matDraw);
 	if(m_hText.IsValid() == false)
 		return;
