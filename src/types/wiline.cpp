@@ -130,7 +130,7 @@ Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,co
 	return mat;
 }
 
-void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
+void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
 	auto *pShader = GetShader();
 	auto col = drawInfo.GetColor(*this);
@@ -141,10 +141,10 @@ void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &
 		return;
 	auto &shader = static_cast<wgui::ShaderColoredLine&>(*pShader);
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y) == true)
+	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 	{
 		wgui::ElementData pushConstants {matDraw,col};
-		shader.Draw(s_lineBuffer,m_bufColor,GetVertexCount(),GetLineWidth(),pushConstants);
+		shader.Draw(s_lineBuffer,m_bufColor,GetVertexCount(),GetLineWidth(),pushConstants,testStencilLevel);
 		shader.EndDraw();
 	}
 }

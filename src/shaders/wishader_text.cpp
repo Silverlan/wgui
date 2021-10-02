@@ -54,7 +54,7 @@ void ShaderText::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &out
 
 void ShaderText::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
-	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
+	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx,false);
 
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_UV);
@@ -68,7 +68,7 @@ void ShaderText::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipe
 bool ShaderText::Draw(
 	prosper::IBuffer &glyphBoundsIndexBuffer,
 	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-	uint32_t instanceCount
+	uint32_t instanceCount,uint32_t testStencilLevel
 )
 {
 	if(
@@ -77,6 +77,7 @@ bool ShaderText::Draw(
 		}) == false ||
 		RecordBindDescriptorSets({&descTextureSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
 		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount(),instanceCount) == false
 	)
 		return false;
@@ -95,7 +96,7 @@ ShaderTextRect::ShaderTextRect(prosper::IPrContext &context,const std::string &i
 bool ShaderTextRect::Draw(
 	prosper::IBuffer &glyphBoundsIndexBuffer,
 	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-	uint32_t instanceCount
+	uint32_t instanceCount,uint32_t testStencilLevel
 )
 {
 	if(
@@ -104,6 +105,7 @@ bool ShaderTextRect::Draw(
 			}) == false ||
 		RecordBindDescriptorSets({&descTextureSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
 		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount(),instanceCount) == false
 	)
 		return false;
@@ -112,17 +114,14 @@ bool ShaderTextRect::Draw(
 
 void ShaderTextRect::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
 {
-	CreateCachedRenderPass<ShaderTextRect>({{{
-		prosper::Format::R8G8B8A8_UNorm,prosper::ImageLayout::ColorAttachmentOptimal,prosper::AttachmentLoadOp::DontCare,
-		prosper::AttachmentStoreOp::Store,prosper::SampleCountFlags::e1Bit,prosper::ImageLayout::ShaderReadOnlyOptimal
-	}}},outRenderPass,pipelineIdx);
+	Shader::InitializeRenderPass(outRenderPass,pipelineIdx);
 }
 
 void ShaderTextRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
+	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
-	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	AddVertexAttribute(pipelineInfo,ShaderText::VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,ShaderText::VERTEX_ATTRIBUTE_UV);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_GLYPH_INDEX);
@@ -145,10 +144,10 @@ ShaderTextRectColor::ShaderTextRectColor(prosper::IPrContext &context,const std:
 bool ShaderTextRectColor::Draw(
 	prosper::IBuffer &glyphBoundsIndexBuffer,prosper::IBuffer &colorBuffer,
 	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-	uint32_t instanceCount
+	uint32_t instanceCount,uint32_t testStencilLevel
 )
 {
-	return RecordBindVertexBuffers({&colorBuffer},2u) && ShaderTextRect::Draw(glyphBoundsIndexBuffer,descTextureSet,pushConstants,instanceCount);
+	return RecordBindVertexBuffers({&colorBuffer},2u) && ShaderTextRect::Draw(glyphBoundsIndexBuffer,descTextureSet,pushConstants,instanceCount,testStencilLevel);
 }
 void ShaderTextRectColor::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {

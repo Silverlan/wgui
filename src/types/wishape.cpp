@@ -322,7 +322,7 @@ void WITexturedShape::SizeToTexture()
 	}
 	SetSize(width,height);
 }
-void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale)
+void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
 	auto matDraw = matDrawRoot;
 	if(m_localRenderTransform)
@@ -351,7 +351,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,co
 			if(pShaderExpensive == nullptr)
 				return;
 			auto &context = WGUI::GetInstance().GetContext();
-			if(pShaderExpensive->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y) == true)
+			if(pShaderExpensive->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 			{
 				pShaderExpensive->Draw({
 					matDraw,col,umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
@@ -360,7 +360,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,co
 					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)),
 					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha)),
 					GetAlphaMode(),GetAlphaCutoff()
-				},*m_descSetTextureGroup->GetDescriptorSet(0u));
+				},*m_descSetTextureGroup->GetDescriptorSet(0u),testStencilLevel);
 				pShaderExpensive->EndDraw();
 			}
 			return;
@@ -369,7 +369,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,co
 		if(pShaderCheap == nullptr)
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
-		if(pShaderCheap->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y) == true)
+		if(pShaderCheap->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 		{
 			pShaderCheap->Draw({
 				matDraw,col,umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
@@ -377,7 +377,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,co
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha))
-			},*m_descSetTextureGroup->GetDescriptorSet(0u));
+			},*m_descSetTextureGroup->GetDescriptorSet(0u),testStencilLevel);
 			pShaderCheap->EndDraw();
 		}
 		return;
@@ -392,7 +392,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,co
 	auto uvBuf = (m_uvBuffer != nullptr) ? m_uvBuffer : context.GetCommonBufferCache().GetSquareUvBuffer();
 	if(vbuf == nullptr || uvBuf == nullptr)
 		return;
-	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y) == true)
+	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 	{
 		wgui::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = matDraw;
@@ -405,7 +405,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,co
 		shader.Draw(
 			vbuf,
 			uvBuf,
-			GetVertexCount(),*m_descSetTextureGroup->GetDescriptorSet(0u),pushConstants
+			GetVertexCount(),*m_descSetTextureGroup->GetDescriptorSet(0u),pushConstants,testStencilLevel
 		);
 		shader.EndDraw();
 	}

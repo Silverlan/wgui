@@ -498,6 +498,8 @@ void WIBase::SizeToContents(bool x,bool y)
 	else if(y)
 		SetHeight(height);
 }
+void WIBase::SetStencilEnabled(bool enabled) {umath::set_flag(m_stateFlags,StateFlags::StencilEnabled,enabled);}
+bool WIBase::IsStencilEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::StencilEnabled);}
 void WIBase::SetBackgroundElement(bool backgroundElement,bool autoAlignToParent)
 {
 	umath::set_flag(m_stateFlags,StateFlags::IsBackgroundElement,backgroundElement);
@@ -897,7 +899,7 @@ Mat4 WIBase::GetScaledMatrix(int w,int h) const
 	Mat4 mat(1.0f);
 	return GetScaledMatrix(w,h,mat);
 }
-void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
+void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
 }
 const std::string &WIBase::GetName() const {return m_name;}
@@ -1050,7 +1052,7 @@ void WIBase::CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vec
 		(h -((-mat[3][1] *h) +outSize.y)) /2.f
 	);
 }
-void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale)
+void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale,uint32_t testStencilLevel)
 {
 	const auto w = drawInfo.size.x;
 	const auto h = drawInfo.size.y;
@@ -1081,7 +1083,16 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 			return; // Outside of scissor rect; Skip rendering
 	}
 
-	Render(drawInfo,matDraw,scale);
+	uint32_t stencilLevel = testStencilLevel;
+	auto newStencilLevel = stencilLevel;
+	std::array<uint32_t,4> oldScissor;
+	if(IsStencilEnabled())
+	{
+		WGUI::GetInstance().GetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
+		++newStencilLevel;
+	}
+	auto useStencil = (newStencilLevel > stencilLevel);
+	Render(drawInfo,matDraw,scale,stencilLevel,useStencil ? StencilPipeline::Increment : StencilPipeline::Test);
 	mat = GetTranslatedMatrix(origin,w,h,mat);
 	auto &context = WGUI::GetInstance().GetContext();
 	for(unsigned int i=0;i<m_children.size();i++)
@@ -1135,9 +1146,15 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 			childDrawInfo.transform = mat;
 			childDrawInfo.useScissor = bShouldScissor;
 			auto scaleChild = scale *child->GetScale();
-			child->Draw(childDrawInfo,offsetParentNew,posScissor,szScissor,scaleChild);
+			child->Draw(childDrawInfo,offsetParentNew,posScissor,szScissor,scaleChild,newStencilLevel);
 			WIBase::RENDER_ALPHA = aOriginal;
 		}
+	}
+	if(useStencil) // Undo stencil
+	{
+		// Reset scissor
+		WGUI::GetInstance().SetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
+		Render(drawInfo,matDraw,scale,newStencilLevel,StencilPipeline::Decrement);
 	}
 }
 void WIBase::Draw(const DrawInfo &drawInfo)

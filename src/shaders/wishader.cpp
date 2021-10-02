@@ -7,6 +7,8 @@
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
+#include <prosper_window.hpp>
+#include <prosper_render_pass.hpp>
 #include <prosper_command_buffer.hpp>
 
 using namespace wgui;
@@ -24,19 +26,35 @@ decltype(Shader::DESCRIPTOR_SET) Shader::DESCRIPTOR_SET = {
 };
 Shader::Shader(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderGraphics(context,identifier,"wgui/vs_wgui_colored","wgui/fs_wgui_colored")
-{}
+{
+	SetPipelineCount(umath::to_integral(WIBase::StencilPipeline::Count));
+}
 
 Shader::Shader(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: ShaderGraphics(context,identifier,vsShader,fsShader,gsShader)
-{}
+{
+	SetPipelineCount(umath::to_integral(WIBase::StencilPipeline::Count));
+}
 
-void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx,bool enableStencilTest)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 	ToggleDynamicScissorState(pipelineInfo,true);
+	if(enableStencilTest)
+		wgui::initialize_stencil_properties(pipelineInfo,pipelineIdx);
+}
+
+void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+{
+	InitializeGfxPipeline(pipelineInfo,pipelineIdx,true);
 }
 
 size_t Shader::GetBaseTypeHashCode() const {return typeid(Shader).hash_code();}
+
+void Shader::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
+{
+	wgui::get_render_pass(GetContext(),outRenderPass);
+}
 
 bool Shader::BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx)
 {
@@ -47,3 +65,77 @@ bool Shader::BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer
 	return cmdBuffer->RecordSetScissor(w,h,x,y);
 }
 
+bool Shader::RecordSetStencilReference(uint32_t testStencilLevel)
+{
+	auto *cmd = GetCurrentCommandBuffer();
+	if(!cmd)
+		return false;
+	return cmd->RecordSetStencilReference(prosper::StencilFaceFlags::FrontBit,testStencilLevel);
+}
+
+//////////////////////
+
+prosper::IRenderPass &wgui::get_render_pass(prosper::IPrContext &context)
+{
+	return context.GetWindow().GetStagingRenderPass();
+}
+
+void wgui::get_render_pass(prosper::IPrContext &context,std::shared_ptr<prosper::IRenderPass> &outRenderPass)
+{
+	outRenderPass = get_render_pass(context).shared_from_this();
+}
+
+void wgui::initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+{
+	pipelineInfo.ToggleStencilTest(true);
+	pipelineInfo.ToggleDynamicState(true,prosper::DynamicState::StencilReference);
+	switch(static_cast<WIBase::StencilPipeline>(pipelineIdx))
+	{
+	case WIBase::StencilPipeline::Test:
+		pipelineInfo.SetStencilTestProperties(
+			true,
+			prosper::StencilOp::Keep, /* fail */
+			prosper::StencilOp::Keep, /* pass */
+			prosper::StencilOp::Keep, /* depth fail */
+			prosper::CompareOp::Equal,
+			~0,0,
+			0
+		);
+		break;
+	case WIBase::StencilPipeline::Increment:
+		pipelineInfo.SetStencilTestProperties(
+			true,
+			prosper::StencilOp::Keep, /* fail */
+			prosper::StencilOp::IncrementAndClamp, /* pass */
+			prosper::StencilOp::Keep, /* depth fail */
+			prosper::CompareOp::Equal,
+			~0,~0,
+			0
+		);
+		break;
+	case WIBase::StencilPipeline::Decrement:
+		pipelineInfo.SetStencilTestProperties(
+			true,
+			prosper::StencilOp::Keep, /* fail */
+			prosper::StencilOp::DecrementAndClamp, /* pass */
+			prosper::StencilOp::Keep, /* depth fail */
+			prosper::CompareOp::Equal,
+			~0,~0,
+			0
+		);
+
+		bool blendingEnabled;
+		prosper::BlendOp blendOpColor;
+		prosper::BlendOp blendOpAlpha;
+		prosper::BlendFactor srcColorBlendFactor;
+		prosper::BlendFactor dstColorBlendFactor;
+		prosper::BlendFactor srcAlphaBlendFactor;
+		prosper::BlendFactor dstAlphaBlendFactor;
+		pipelineInfo.GetColorBlendAttachmentProperties(0,&blendingEnabled,&blendOpColor,&blendOpAlpha,&srcColorBlendFactor,&dstColorBlendFactor,&srcAlphaBlendFactor,&dstAlphaBlendFactor,nullptr);
+		// Disable color write
+		pipelineInfo.SetColorBlendAttachmentProperties(
+			0,&blendingEnabled,blendOpColor,blendOpAlpha,srcColorBlendFactor,dstColorBlendFactor,srcAlphaBlendFactor,dstAlphaBlendFactor,prosper::ColorComponentFlags::None
+		);
+		break;
+	}
+}

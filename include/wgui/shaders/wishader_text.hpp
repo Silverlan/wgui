@@ -44,7 +44,7 @@ namespace wgui
 		bool Draw(
 			prosper::IBuffer &glyphBoundsIndexBuffer,
 			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-			uint32_t instanceCount
+			uint32_t instanceCount,uint32_t testStencilLevel
 		);
 		using Shader::BeginDraw;
 		using ShaderGraphics::BeginDraw;
@@ -74,7 +74,7 @@ namespace wgui
 		bool Draw(
 			prosper::IBuffer &glyphBoundsIndexBuffer,
 			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-			uint32_t instanceCount
+			uint32_t instanceCount,uint32_t testStencilLevel
 		);
 	protected:
 		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
@@ -95,7 +95,7 @@ namespace wgui
 		bool Draw(
 			prosper::IBuffer &glyphBoundsIndexBuffer,prosper::IBuffer &colorBuffer,
 			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-			uint32_t instanceCount
+			uint32_t instanceCount,uint32_t testStencilLevel
 		);
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;

@@ -10,6 +10,9 @@
 
 namespace wgui
 {
+	DLLWGUI prosper::IRenderPass &get_render_pass(prosper::IPrContext &context);
+	DLLWGUI void get_render_pass(prosper::IPrContext &context,std::shared_ptr<prosper::IRenderPass> &outRenderPass);
+	DLLWGUI void initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx);
 	class DLLWGUI Shader
 		: public prosper::ShaderGraphics
 	{
@@ -24,7 +27,10 @@ namespace wgui
 		virtual size_t GetBaseTypeHashCode() const override;
 		using ShaderGraphics::BeginDraw;
 	protected:
+		bool RecordSetStencilReference(uint32_t testStencilLevel);
+		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx,bool enableStencilTest);
 	};
 };
 

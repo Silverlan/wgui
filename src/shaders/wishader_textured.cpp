@@ -6,6 +6,7 @@
 #include "wgui/shaders/wishader_textured.hpp"
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
+#include <prosper_command_buffer.hpp>
 #include <buffers/prosper_buffer.hpp>
 
 using namespace wgui;
@@ -35,13 +36,14 @@ ShaderTextured::ShaderTextured(prosper::IPrContext &context,const std::string &i
 bool ShaderTextured::Draw(
 	const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &uvBuffer,
 	uint32_t vertCount,prosper::IDescriptorSet &descSetTexture,
-	const PushConstants &pushConstants
+	const PushConstants &pushConstants,uint32_t testStencilLevel
 )
 {
 	if(
 		RecordBindVertexBuffers({vertBuffer.get(),uvBuffer.get()}) == false ||
 		RecordBindDescriptorSets({&descSetTexture}) == false ||
 		RecordPushConstants(pushConstants) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
 		RecordDraw(vertCount) == false
 	)
 		return false;
@@ -50,9 +52,9 @@ bool ShaderTextured::Draw(
 
 void ShaderTextured::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
+	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
-	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_UV);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
@@ -68,12 +70,13 @@ ShaderTexturedRectExpensive::ShaderTexturedRectExpensive(prosper::IPrContext &co
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderTexturedRectExpensive::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet)
+bool ShaderTexturedRectExpensive::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet,uint32_t testStencilLevel)
 {
 	if(
 		RecordBindRenderBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false ||
 		RecordBindDescriptorSets({&descSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
 		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
@@ -82,9 +85,9 @@ bool ShaderTexturedRectExpensive::Draw(const PushConstants &pushConstants,prospe
 
 void ShaderTexturedRectExpensive::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
+	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
-	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,ShaderTextured::VERTEX_ATTRIBUTE_UV);
 	AddDescriptorSetGroup(pipelineInfo,ShaderTextured::DESCRIPTOR_SET_TEXTURE);
@@ -100,12 +103,13 @@ ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context,const std::s
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet)
+bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet,uint32_t testStencilLevel)
 {
 	if(
 		RecordBindRenderBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false ||
 		RecordBindDescriptorSets({&descSet}) == false ||
 		RecordPushConstants(pushConstants) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
 		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
@@ -114,9 +118,9 @@ bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,prosper::IDescr
 
 void ShaderTexturedRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
+	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
-	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,ShaderTextured::VERTEX_ATTRIBUTE_UV);
 	AddDescriptorSetGroup(pipelineInfo,ShaderTextured::DESCRIPTOR_SET_TEXTURE);

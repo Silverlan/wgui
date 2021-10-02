@@ -50,7 +50,7 @@ namespace wgui
 
 		bool Draw(
 			const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &uvBuffer,uint32_t vertCount,
-			prosper::IDescriptorSet &descSetTexture,const PushConstants &pushConstants
+			prosper::IDescriptorSet &descSetTexture,const PushConstants &pushConstants,uint32_t testStencilLevel
 		);
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
@@ -81,7 +81,7 @@ namespace wgui
 		ShaderTexturedRectExpensive(prosper::IPrContext &context,const std::string &identifier);
 		ShaderTexturedRectExpensive(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet);
+		bool Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet,uint32_t testStencilLevel);
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
@@ -108,7 +108,7 @@ namespace wgui
 		ShaderTexturedRect(prosper::IPrContext &context,const std::string &identifier);
 		ShaderTexturedRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet);
+		bool Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet,uint32_t testStencilLevel);
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};

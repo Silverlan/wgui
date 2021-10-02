@@ -63,7 +63,7 @@ void WIBufferBase::InitializeBufferData(prosper::IBuffer &buffer)
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }
 
-void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale)
+void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
 	// Try to use cheap shader if no custom vertex buffer was used
 	auto col = drawInfo.GetColor(*this);
@@ -75,9 +75,9 @@ void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vec
 			return;
 		auto *pShader = static_cast<wgui::ShaderColoredRect*>(m_shaderCheap.get());
 		auto &context = WGUI::GetInstance().GetContext();
-		if(pShader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y) == true)
+		if(pShader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 		{
-			pShader->Draw({matDraw,col});
+			pShader->Draw({matDraw,col},testStencilLevel);
 			pShader->EndDraw();
 		}
 		return;
@@ -89,9 +89,9 @@ void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vec
 		return;
 	auto &shader = static_cast<wgui::ShaderColored&>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y) == true)
+	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 	{
-		shader.Draw(*buf,GetVertexCount(),wgui::ElementData{matDraw,col});
+		shader.Draw(*buf,GetVertexCount(),wgui::ElementData{matDraw,col},testStencilLevel);
 		shader.EndDraw();
 	}
 }

@@ -50,6 +50,14 @@ protected:
 public:
 	friend WGUI;
 public:
+	enum class StencilPipeline : uint8_t
+	{
+		Test = 0u,
+		Increment,
+		Decrement,
+
+		Count
+	};
 	enum class StateFlags : uint32_t
 	{
 		None = 0u,
@@ -80,7 +88,8 @@ public:
 		IsBeingUpdated = IsBeingRemoved<<1u,
 		IsBackgroundElement = IsBeingUpdated<<1u,
 		FirstThink = IsBackgroundElement<<1u,
-		DontRemoveOnParentRemoval = FirstThink<<1u
+		DontRemoveOnParentRemoval = FirstThink<<1u,
+		StencilEnabled = DontRemoveOnParentRemoval<<1u
 	};
 	struct DLLWGUI DrawInfo
 	{
@@ -217,7 +226,7 @@ public:
 	void SetSize(const Vector2i &size);
 	virtual void SetSize(int x,int y);
 	virtual void Draw(int w,int h,std::shared_ptr<prosper::ICommandBuffer> &cmdBuf);
-	void Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale);
+	void Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale,uint32_t testStencilLevel=0u);
 	void Draw(const DrawInfo &drawInfo);
 	virtual void SetParent(WIBase *base,std::optional<uint32_t> childIndex={});
 	WIBase *GetParent() const;
@@ -248,6 +257,9 @@ public:
 	virtual util::EventReply KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods);
 	virtual util::EventReply CharCallback(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None);
 	virtual util::EventReply ScrollCallback(Vector2 offset);
+
+	void SetStencilEnabled(bool enabled);
+	bool IsStencilEnabled() const;
 
 	void SetBackgroundElement(bool backgroundElement,bool autoAlignToParent=true);
 	bool IsBackgroundElement() const;
@@ -385,7 +397,7 @@ protected:
 	int m_lastMouseY = 0;
 	std::vector<WIHandle> m_children;
 	mutable WIHandle m_parent = {};
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f});
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,StencilPipeline stencilPipeline=StencilPipeline::Test);
 	void UpdateChildOrder(WIBase *child=NULL);
 	template<class TElement>
 		WIHandle CreateChild();

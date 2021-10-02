@@ -18,7 +18,7 @@ class DLLWGUI WIBufferBase
 public:
 	virtual ~WIBufferBase() override;
 	virtual unsigned int GetVertexCount();
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale) override;
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,StencilPipeline stencilPipeline=StencilPipeline::Test) override;
 protected:
 	WIBufferBase();
 

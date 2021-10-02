@@ -19,11 +19,12 @@ ShaderColored::ShaderColored(prosper::IPrContext &context,const std::string &ide
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderColored::Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants)
+bool ShaderColored::Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants,uint32_t testStencilLevel)
 {
 	if(
 		RecordBindVertexBuffer(vertBuffer) == false ||
 		RecordPushConstants(pushConstants) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
 		RecordDraw(vertCount) == false
 	)
 		return false;
@@ -32,9 +33,9 @@ bool ShaderColored::Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const w
 
 void ShaderColored::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
+	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
-	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
 	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
@@ -50,11 +51,12 @@ ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context,const std::str
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderColoredRect::Draw(const wgui::ElementData &pushConstants)
+bool ShaderColoredRect::Draw(const wgui::ElementData &pushConstants,uint32_t testStencilLevel)
 {
 	if(
 		RecordPushConstants(pushConstants) == false ||
 		RecordBindVertexBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
 		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
@@ -63,9 +65,9 @@ bool ShaderColoredRect::Draw(const wgui::ElementData &pushConstants)
 
 void ShaderColoredRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
+	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
-	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
 	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);

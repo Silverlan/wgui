@@ -366,7 +366,7 @@ void WIText::RenderText(Mat4&)
 				drawCmd->RecordSetViewport(vpWidth,vpHeight);
 				drawCmd->RecordSetScissor(vpWidth,vpHeight);
 				auto descSet = m_font->GetGlyphMapDescriptorSet();
-				shader.Draw(*bufBounds,*descSet,pushConstants,numChars);
+				shader.Draw(*bufBounds,*descSet,pushConstants,numChars,0u /* stencil level*/);
 				shader.EndDraw();
 			}
 		drawCmd->RecordEndRenderPass();
@@ -661,12 +661,12 @@ bool WITextBase::RenderLines(
 	const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 	const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
-	bool colorPass
+	bool colorPass,StencilPipeline stencilPipeline
 ) const
 {
 	auto &textEl = static_cast<const WIText&>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(drawCmd,width,height) == false)
+	if(shader.BeginDraw(drawCmd,width,height,umath::to_integral(stencilPipeline)) == false)
 		return false;
 	uint32_t xScissor,yScissor,wScissor,hScissor;
 	WGUI::GetInstance().GetScissor(xScissor,yScissor,wScissor,hScissor);
@@ -728,23 +728,25 @@ void WITextBase::RenderLines(
 	int32_t width,int32_t height,
 	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
 	const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
-	wgui::ShaderTextRect::PushConstants &inOutPushConstants
+	wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,StencilPipeline stencilPipeline
 ) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
-	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
-		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars);
-	},false);
+	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
+	},false,stencilPipeline);
 	if(bHasColorBuffers == false)
 		return;
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
-	RenderLines(drawCmd,*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
-		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars);
-	},true);
+	RenderLines(drawCmd,*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
+	},true,stencilPipeline);
 }
 
-void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale)
+void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
+	if(stencilPipeline != StencilPipeline::Test)
+		return; // Stencil writing is not supported for text elements
 	auto matDraw = matDrawRoot;
 	if(m_localRenderTransform)
 		matDraw *= m_localRenderTransform->ToMatrix();
@@ -792,8 +794,8 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const V
 		Vector2i absPos,absSize;
 		CalcBounds(matDraw,drawInfo.size.x,drawInfo.size.y,absPos,absSize);
 		auto &commandBuffer = drawInfo.commandBuffer;
-		const auto fDraw = [&context,&commandBuffer,&pushConstants,&size,&drawInfo,&matDraw,pFont,this,&textEl,&absPos,&absSize,&scale](bool bClear) {
-			RenderLines(commandBuffer,drawInfo.size.x,drawInfo.size.y,absPos,matDraw,drawInfo.offset,drawInfo.transform /* parent transform */,scale,size,pushConstants);
+		const auto fDraw = [&context,&commandBuffer,&pushConstants,&size,&drawInfo,&matDraw,pFont,this,&textEl,&absPos,&absSize,&scale,testStencilLevel,stencilPipeline](bool bClear) {
+			RenderLines(commandBuffer,drawInfo.size.x,drawInfo.size.y,absPos,matDraw,drawInfo.offset,drawInfo.transform /* parent transform */,scale,size,pushConstants,testStencilLevel,stencilPipeline);
 		};
 
 		// Render Shadow

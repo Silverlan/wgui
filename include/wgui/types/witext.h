@@ -52,7 +52,7 @@ public:
 		float sy = 0.f;
 	};
 
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f}) override;
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,StencilPipeline stencilPipeline=StencilPipeline::Test) override;
 	void InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h);
 	void SetTextElement(WIText &elText);
 private:
@@ -63,14 +63,14 @@ private:
 		const Vector2i &origin,const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 		const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
-		bool colorPass
+		bool colorPass,StencilPipeline stencilPipeline
 	) const;
 	void RenderLines(
 		std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 		int32_t width,int32_t height,
 		const Vector2i &absPos,const Mat4 &transform,
 		const Vector2i &origin,const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
-		wgui::ShaderTextRect::PushConstants &inOutPushConstants
+		wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,StencilPipeline stencilPipeline
 	) const;
 	WIHandle m_hTexture = {};
 	WIHandle m_hText = {};

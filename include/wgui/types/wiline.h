@@ -52,7 +52,7 @@ public:
 	const Color &GetEndColor() const;
 	virtual void SizeToContents(bool x=true,bool y=true) override;
 	virtual unsigned int GetVertexCount() override;
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale) override;
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,StencilPipeline stencilPipeline=StencilPipeline::Test) override;
 	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,const Vector2 &scale) const override;
 };
 

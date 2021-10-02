@@ -31,7 +31,7 @@ void ShaderColoredLine::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInf
 
 bool ShaderColoredLine::Draw(
 	const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &colorBuffer,
-	uint32_t vertCount,float lineWidth,const wgui::ElementData &pushConstants
+	uint32_t vertCount,float lineWidth,const wgui::ElementData &pushConstants,uint32_t testStencilLevel
 )
 {
 	auto drawCmd = GetCurrentCommandBuffer();
@@ -41,6 +41,7 @@ bool ShaderColoredLine::Draw(
 	if(
 		RecordBindVertexBuffers({vertBuffer.get(),colorBuffer.get()}) == false ||
 		RecordPushConstants(pushConstants) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
 		RecordDraw(vertCount) == false
 	)
 		return false;
