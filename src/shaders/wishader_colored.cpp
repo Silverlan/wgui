@@ -72,3 +72,71 @@ void ShaderColoredRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInf
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
 	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
 }
+
+///////////////////////
+
+ShaderStencil::ShaderStencil(prosper::IPrContext &context,const std::string &identifier)
+	: Shader(context,identifier,"wgui/vs_wgui_colored_cheap","wgui/fs_wgui_stencil")
+{}
+
+bool ShaderStencil::Draw(const wgui::ElementData &pushConstants,uint32_t testStencilLevel)
+{
+	if(
+		RecordPushConstants(pushConstants) == false ||
+		RecordBindVertexBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false ||
+		RecordSetStencilReference(testStencilLevel) == false ||
+		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
+	)
+		return false;
+	return true;
+}
+
+void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+{
+	pipelineInfo.ToggleStencilTest(true);
+	pipelineInfo.ToggleDynamicState(true,prosper::DynamicState::StencilReference);
+
+	bool blendingEnabled;
+	prosper::BlendOp blendOpColor;
+	prosper::BlendOp blendOpAlpha;
+	prosper::BlendFactor srcColorBlendFactor;
+	prosper::BlendFactor dstColorBlendFactor;
+	prosper::BlendFactor srcAlphaBlendFactor;
+	prosper::BlendFactor dstAlphaBlendFactor;
+	pipelineInfo.GetColorBlendAttachmentProperties(0,&blendingEnabled,&blendOpColor,&blendOpAlpha,&srcColorBlendFactor,&dstColorBlendFactor,&srcAlphaBlendFactor,&dstAlphaBlendFactor,nullptr);
+	// Disable color write
+	pipelineInfo.SetColorBlendAttachmentProperties(
+		0,&blendingEnabled,blendOpColor,blendOpAlpha,srcColorBlendFactor,dstColorBlendFactor,srcAlphaBlendFactor,dstAlphaBlendFactor,prosper::ColorComponentFlags::None
+	);
+
+	switch(static_cast<WIBase::StencilPipeline>(pipelineIdx))
+	{
+	case WIBase::StencilPipeline::Test:
+	case WIBase::StencilPipeline::Increment:
+		pipelineInfo.SetStencilTestProperties(
+			true,
+			prosper::StencilOp::Keep, /* fail */
+			prosper::StencilOp::IncrementAndClamp, /* pass */
+			prosper::StencilOp::Keep, /* depth fail */
+			prosper::CompareOp::Equal,
+			~0,~0,
+			0
+		);
+		break;
+	case WIBase::StencilPipeline::Decrement:
+		pipelineInfo.SetStencilTestProperties(
+			true,
+			prosper::StencilOp::Keep, /* fail */
+			prosper::StencilOp::DecrementAndClamp, /* pass */
+			prosper::StencilOp::Keep, /* depth fail */
+			prosper::CompareOp::Equal,
+			~0,~0,
+			0
+		);
+		break;
+	}
+
+	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
+	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
+}

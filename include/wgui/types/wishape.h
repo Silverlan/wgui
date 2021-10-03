@@ -23,8 +23,10 @@ public:
 	void InvertVertexPositions(bool x=true,bool y=true);
 	virtual void ClearVertices();
 	virtual unsigned int GetVertexCount() override;
+	void SetBuffer(prosper::IBuffer &buffer,uint32_t numVerts);
 protected:
 	virtual void DoUpdate() override;
+	std::optional<uint32_t> m_bufferVertexCount {};
 	std::vector<Vector2> m_vertices;
 	uint8_t m_vertexBufferUpdateRequired;
 };

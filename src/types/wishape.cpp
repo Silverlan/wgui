@@ -51,7 +51,12 @@ void WIShape::DoUpdate()
 	buf->SetDebugName("gui_shape_vertex_buf");
 	InitializeBufferData(*buf);
 }
-unsigned int WIShape::GetVertexCount() {return static_cast<unsigned int>(m_vertices.size());}
+void WIShape::SetBuffer(prosper::IBuffer &buffer,uint32_t numVerts)
+{
+	WIBufferBase::SetBuffer(buffer);
+	m_bufferVertexCount = numVerts;
+}
+unsigned int WIShape::GetVertexCount() {return m_bufferVertexCount.has_value() ? *m_bufferVertexCount : static_cast<unsigned int>(m_vertices.size());}
 void WIShape::InvertVertexPositions(bool x,bool y)
 {
 	for(auto &v : m_vertices)
@@ -394,6 +399,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 		wgui::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = matDraw;
 		pushConstants.elementData.color = col;
+		pushConstants.elementData.viewportSize = wgui::ElementData::ToViewportSize(drawInfo.size);
 		pushConstants.lod = m_lod;
 		pushConstants.red = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red));
 		pushConstants.green = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green));

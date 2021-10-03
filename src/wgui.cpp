@@ -93,6 +93,7 @@ wgui::ShaderTextRectColor *WGUI::GetTextRectColorShader() {return static_cast<wg
 wgui::ShaderTextured *WGUI::GetTexturedShader() {return static_cast<wgui::ShaderTextured*>(m_shaderTextured.get());}
 wgui::ShaderTexturedRect *WGUI::GetTexturedRectShader() {return static_cast<wgui::ShaderTexturedRect*>(m_shaderTexturedCheap.get());}
 wgui::ShaderTexturedRectExpensive *WGUI::GetTexturedRectExpensiveShader() {return static_cast<wgui::ShaderTexturedRectExpensive*>(m_shaderTexturedExpensive.get());}
+wgui::ShaderStencil *WGUI::GetStencilShader() {return static_cast<wgui::ShaderStencil*>(m_shaderStencil.get());}
 
 static std::array<uint32_t,4> s_scissor = {0u,0,0u,0u};
 void WGUI::SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h)
@@ -136,6 +137,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 	shaderManager.RegisterShader("wguitextured",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTextured(context,identifier);});
 	shaderManager.RegisterShader("wguitextured_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRect(context,identifier);});
 	shaderManager.RegisterShader("wguitextured_expensive",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderTexturedRectExpensive(context,identifier);});
+	shaderManager.RegisterShader("wguistencil",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderStencil(context,identifier);});
 
 	m_shaderColored = shaderManager.GetShader("wguicolored");
 	m_shaderColoredCheap = shaderManager.GetShader("wguicolored_cheap");
@@ -146,6 +148,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 	m_shaderTextured = shaderManager.GetShader("wguitextured");
 	m_shaderTexturedCheap = shaderManager.GetShader("wguitextured_cheap");
 	m_shaderTexturedExpensive = shaderManager.GetShader("wguitextured_expensive");
+	m_shaderStencil = shaderManager.GetShader("wguistencil");
 	
 	if(wgui::Shader::DESCRIPTOR_SET.IsValid() == false)
 		return ResultCode::ErrorInitializingShaders;

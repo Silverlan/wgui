@@ -63,6 +63,16 @@ void WIBufferBase::InitializeBufferData(prosper::IBuffer &buffer)
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }
 
+prosper::IBuffer *WIBufferBase::GetBuffer()
+{
+	return m_vertexBufferData ? m_vertexBufferData->GetBuffer().get() : nullptr;
+}
+void WIBufferBase::SetBuffer(prosper::IBuffer &buffer)
+{
+	m_vertexBufferData = std::make_unique<WIElementVertexBufferData>();
+	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
+}
+
 void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
 	// Try to use cheap shader if no custom vertex buffer was used

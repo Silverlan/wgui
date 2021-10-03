@@ -746,12 +746,10 @@ void WITextBase::RenderLines(
 
 void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
-	if(stencilPipeline != StencilPipeline::Test)
-		return; // Stencil writing is not supported for text elements
 	auto matDraw = matDrawRoot;
 	if(m_localRenderTransform)
 		matDraw *= m_localRenderTransform->ToMatrix();
-	WIBase::Render(drawInfo,matDraw);
+	// WIBase::Render(drawInfo,matDraw);
 	if(m_hText.IsValid() == false)
 		return;
 	auto &textEl = static_cast<WIText&>(*m_hText.get());

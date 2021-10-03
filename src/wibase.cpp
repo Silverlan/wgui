@@ -10,6 +10,7 @@
 #include "wgui/wgui.h"
 #include "wgui/wihandle.h"
 #include "wgui/shaders/wishader.hpp"
+#include "wgui/shaders/wishader_colored.hpp"
 #include "wgui/types/wicontextmenu.hpp"
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
@@ -904,6 +905,18 @@ Mat4 WIBase::GetScaledMatrix(int w,int h) const
 }
 void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
+	if(stencilPipeline == StencilPipeline::Test)
+		return;
+
+	// We don't actually render the element, but it still needs to be drawn to the stencil buffer
+	auto *shader = WGUI::GetInstance().GetStencilShader();
+	assert(shader != nullptr);
+	auto &context = WGUI::GetInstance().GetContext();
+	if(shader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
+	{
+		shader->Draw({matDraw,Vector4{},wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
+		shader->EndDraw();
+	}
 }
 const std::string &WIBase::GetName() const {return m_name;}
 void WIBase::SetName(const std::string &name) {m_name = name;}

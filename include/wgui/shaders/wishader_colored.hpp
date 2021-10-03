@@ -35,6 +35,19 @@ namespace wgui
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
+
+	///////////////////////
+
+	class DLLWGUI ShaderStencil
+		: public Shader
+	{
+	public:
+		ShaderStencil(prosper::IPrContext &context,const std::string &identifier);
+
+		bool Draw(const ElementData &pushConstants,uint32_t testStencilLevel);
+	protected:
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+	};
 };
 
 #endif
