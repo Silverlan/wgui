@@ -851,48 +851,76 @@ void WIBase::SetSize(int x,int y)
 #endif
 	*m_size = Vector2i{x,y};
 }
-Mat4 WIBase::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,const Vector2 &scale) const
+Mat4 WIBase::GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &poseParent,const Vector2 &scale) const
 {
-	Mat4 r = glm::translate(mat,Vector3(
-		-((w -(*m_size)->x) /float(w)) +(origin.x /float(w)) *2,
-		-((h -(*m_size)->y) /float(h)) +(origin.y /float(h)) *2,//-1 -(origin.y /float(h)) *2.f,//((h -m_size.y) /float(h)) -((origin.y /float(h)) *2),
-		0
-	));
-	if(scale.x != 1.f || scale.y != 1.f)
-		r = r *glm::scale(Mat4(1.f),Vector3{scale,1.f});
-	return GetScaledMatrix(w,h,r);
+	umath::ScaledTransform pose {};
+	pose.SetOrigin(Vector3{(origin.x) *2,-(origin.y) *2,0.f});
+	Vector3 s {(*m_size)->x *scale.x,(*m_size)->y *scale.y,0};
+	pose.SetScale(s);
+
+	if(m_rotationMatrix)
+	{
+		Mat4 t {1.f};
+		t = glm::translate(t,Vector3{(origin.x) *2,(origin.y) *2,0.f});
+
+		Mat4 s {1.f};
+		s = glm::scale(s,Vector3{(*m_size)->x *scale.x,(*m_size)->y *scale.y,0});
+
+		Mat4 r {1.f};
+		Vector3 pivot {};//-(*m_size)->x,-(*m_size)->y,0.f}; // Top-left corner of self
+
+		r = glm::translate(pivot);
+		r = r *(*m_rotationMatrix);
+		//r = r *umat::create(uquat::create(EulerAngles{0.f,0.f,m_angle}));
+		r = r *glm::translate(-pivot);
+
+
+		auto m = t *r *s;
+		return poseParent *m;
+		/*auto w = GetWidth();
+		auto h = GetHeight();
+		umath::ScaledTransform x;
+		x.SetOrigin(Vector3(-GetX() +m_parent->GetWidth() -w,-GetY() +m_parent->GetHeight() -h,0));
+	
+		umath::ScaledTransform xx;
+		xx.SetRotation(uquat::create(EulerAngles{0.f,0.f,m_angle}));
+		
+		pose = pose *(x *xx *x.GetInverse());*/
+	}
+	return poseParent *pose.ToMatrix();
+	/*
+	//if(m_localRenderTransform)
+	//	r *= m_localRenderTransform->ToMatrix();
+	//return r;
+	*/
 }
 void WIBase::SetScale(const Vector2 &scale) {*m_scale = scale;}
 void WIBase::SetScale(float x,float y) {SetScale(Vector2{x,y});}
 const Vector2 &WIBase::GetScale() const {return *m_scale;}
 const util::PVector2Property &WIBase::GetScaleProperty() const {return m_scale;}
-Mat4 WIBase::GetTransformedMatrix(int w,int h,Mat4 mat) const {return GetTransformedMatrix(*m_pos,w,h,mat);}
-Mat4 WIBase::GetTransformedMatrix(int w,int h) const
+Mat4 WIBase::GetTransformPose(int w,int h,const Mat4 &poseParent) const {return GetTransformPose(*m_pos,w,h,poseParent);}
+Mat4 WIBase::GetTransformPose(int w,int h) const
 {
-	Mat4 mat(1.0f);
-	return GetTransformedMatrix(*m_pos,w,h,mat);
+	return GetTransformPose(*m_pos,w,h,umat::identity());
 }
-Mat4 WIBase::GetTranslatedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const
+Mat4 WIBase::GetTranslationPose(const Vector2i &origin,int w,int h,const Mat4 &poseParent) const
 {
-	return glm::translate(mat,Vector3(
-		(origin.x /float(w)) *2,
-		(origin.y /float(h)) *2,//0.f,//-((origin.y /float(h)) *2),
-		0
-	));
+	umath::ScaledTransform pose {};
+	pose.SetOrigin(Vector3{(origin.x) *2,(origin.y) *2,0.f});
+	return poseParent *pose.ToMatrix();
 }
-Mat4 WIBase::GetTranslatedMatrix(int w,int h,Mat4 mat) const
+Mat4 WIBase::GetTranslationPose(int w,int h,const Mat4 &poseParent) const
 {
-	return GetTranslatedMatrix(*m_pos,w,h,mat);
+	return GetTranslationPose(*m_pos,w,h,poseParent);
 }
-Mat4 WIBase::GetTranslatedMatrix(int w,int h) const
+Mat4 WIBase::GetTranslationPose(int w,int h) const
 {
-	Mat4 mat(1.0f);
-	return GetTranslatedMatrix(w,h,mat);
+	return GetTranslationPose(w,h,umat::identity());
 }
-Mat4 WIBase::GetScaledMatrix(int w,int h,Mat4 mat) const
+Mat4 WIBase::GetScaledMatrix(int w,int h,const Mat4 &poseParent) const
 {
-	Vector3 scale((*m_size)->x /float(w),(*m_size)->y /float(h),0);
-	return glm::scale(mat,scale);
+	Vector3 scale((*m_size)->x,(*m_size)->y,0);
+	return glm::scale(poseParent,scale);
 }
 Mat4 WIBase::GetScaledMatrix(int w,int h) const
 {
@@ -1046,26 +1074,60 @@ void WIBase::Think()
 }
 void WIBase::CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize)
 {
-	outSize = Vector2i(mat[0][0] *w,mat[1][1] *h);
+	outSize = Vector2i(mat[0][0],mat[1][1]);
 	outPos = Vector2i(
-		(w -((-mat[3][0] *w) +outSize.x)) /2.f,
-		(h -((-mat[3][1] *h) +outSize.y)) /2.f
+		(w -((-mat[3][0]) +outSize.x)) /2.f,
+		(h -((-mat[3][1]) +outSize.y)) /2.f
 	);
 }
+void WIBase::ResetRotation() {m_rotationMatrix = nullptr;}
+void WIBase::SetRotation(umath::Degree angle,const Vector2 &pivot)
+{
+	Mat4 r = glm::translate(Vector3{pivot *2.f,0.f});
+	r = r *umat::create(uquat::create(EulerAngles{0.f,0.f,angle}));
+	r = r *glm::translate(Vector3{-pivot *2.f,0.f});
+	SetRotation(r);
+}
+void WIBase::SetRotation(const Mat4 &rotationMatrix) {m_rotationMatrix = std::make_unique<Mat4>(rotationMatrix);}
+const Mat4 *WIBase::GetRotationMatrix() const {return m_rotationMatrix.get();}
+
 void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale,uint32_t testStencilLevel)
 {
+	const_cast<DrawInfo&>(drawInfo).useScissor = false;
 	const auto w = drawInfo.size.x;
 	const auto h = drawInfo.size.y;
 	const auto &origin = drawInfo.offset;
 
-	auto mat = drawInfo.transform;
+	auto rootPose = drawInfo.transform;
+	if(m_rotationMatrix)
+	{
+		const_cast<DrawInfo&>(drawInfo).useScissor = false;
+		const_cast<DrawInfo&>(drawInfo).useStencil = true;
+	}
 	const auto bUseScissor = drawInfo.useScissor;
-	const auto &matPostTransform = drawInfo.postTransform;
+	const auto &postTransform = drawInfo.postTransform;
 
-	auto matDraw = GetTransformedMatrix(origin,w,h,mat,scale);
-	if(matPostTransform.has_value())
-		matDraw = *matPostTransform *matDraw;
+	auto poseDraw = GetTransformPose(origin,w,h,rootPose,scale);
+	if(postTransform.has_value())
+		poseDraw = *postTransform *poseDraw;
 
+	//if(IsAngled())
+	//{
+		/*auto rot = uquat::create(EulerAngles(0,0,GetAngle()));
+
+		auto x = matDraw[3][0];
+		auto y = matDraw[3][1];
+		matDraw[3][0] = 0.f;
+		matDraw[3][1] = 0.f;
+		auto tmpMat = umat::create(rot);//glm::translate(Mat4{1.f},Vector3{GetParent()->GetWidth() /float(w) /2.f,GetParent()->GetHeight() /float(w) /2.f,0});
+		//tmpMat = tmpMat *umat::create(rot);
+		//tmpMat = tmpMat *glm::translate(Mat4{1.f},-Vector3{GetParent()->GetWidth() /float(w) /2.f,GetParent()->GetHeight() /float(w) /2.f,0});
+		matDraw = matDraw *tmpMat;
+		matDraw[3][0] += x;
+		matDraw[3][1] += y;*/
+	//}
+
+	auto matDraw = poseDraw;
 	if(bUseScissor == true)
 	{
 		// Check if the element is outside the scissor bounds.
@@ -1082,25 +1144,83 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 		if(boundsEnd.x < scissorOffset.x || boundsEnd.y < scissorOffset.y || boundsStart.x > scissorEnd.x || boundsStart.y > scissorEnd.y)
 			return; // Outside of scissor rect; Skip rendering
 	}
-
+	
+	auto &context = WGUI::GetInstance().GetContext();
 	uint32_t stencilLevel = testStencilLevel;
 	auto newStencilLevel = stencilLevel;
 	std::array<uint32_t,4> oldScissor;
-	if(IsStencilEnabled())
+	if(IsStencilEnabled() || drawInfo.useStencil)
 	{
 		WGUI::GetInstance().GetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
+		WGUI::GetInstance().SetScissor(0u,0u,context.GetWindowWidth(),context.GetWindowHeight());
 		++newStencilLevel;
 	}
 	auto useStencil = (newStencilLevel > stencilLevel);
 	Render(drawInfo,matDraw,scale,stencilLevel,useStencil ? StencilPipeline::Increment : StencilPipeline::Test);
-	mat = GetTranslatedMatrix(origin,w,h,mat);
-	auto &context = WGUI::GetInstance().GetContext();
+
+	if(m_rotationMatrix)
+	{
+		/*Mat4 r {1.f};
+		Vector3 pivot {-(*m_size)->x,-(*m_size)->y,0.f}; // Top-left corner of self
+
+		r = glm::translate(pivot);
+		r = r *(*m_rotationMatrix);
+		//r = r *umat::create(uquat::create(EulerAngles{0.f,0.f,m_angle}));
+		r = r *glm::translate(-pivot);
+
+
+		auto m = GetTranslationPose(origin,w,h,Mat4{1.f}) *r;
+		rootPose = rootPose *m;*/
+		/*auto w = GetWidth();
+		auto h = GetHeight();
+		umath::ScaledTransform x;
+		x.SetOrigin(Vector3(-GetX() +m_parent->GetWidth() -w,-GetY() +m_parent->GetHeight() -h,0));
+	
+		umath::ScaledTransform xx;
+		xx.SetRotation(uquat::create(EulerAngles{0.f,0.f,m_angle}));
+		
+		pose = pose *(x *xx *x.GetInverse());*/
+	}
+	//else
+		rootPose = GetTranslationPose(origin,w,h,rootPose);
+
+	if(m_rotationMatrix)
+		rootPose = rootPose **m_rotationMatrix;
+
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIBase *child = m_children[i].get();
 		if(child != NULL && child->IsSelfVisible())
 		{
-			auto bShouldScissor = (child->GetShouldScissor()) ? true : false;
+			auto relPose = rootPose;
+			if(m_rotationMatrix)
+			{
+				Mat4 r {1.f};
+				Vector3 pivot {}; // Top-left corner of self
+
+				r = glm::translate(pivot);
+				r = r *(*m_rotationMatrix);
+				r = r *glm::translate(-pivot);
+
+
+				auto m = GetTranslationPose(origin,w,h,Mat4{1.f}) *r;
+				//relPose = relPose *m;
+				/*auto w = GetWidth();
+				auto h = GetHeight();
+				umath::ScaledTransform x;
+				x.SetOrigin(Vector3(-GetX() +m_parent->GetWidth() -w,-GetY() +m_parent->GetHeight() -h,0));
+	
+				umath::ScaledTransform xx;
+				xx.SetRotation(uquat::create(EulerAngles{0.f,0.f,m_angle}));
+		
+				pose = pose *(x *xx *x.GetInverse());*/
+			}
+
+
+
+
+
+			auto bShouldScissor = (drawInfo.useScissor && child->GetShouldScissor()) ? true : false;
 			Vector2i posScissor(scissorOffset.x,scissorOffset.y);
 			Vector2i szScissor(scissorSize.x,scissorSize.y);
 			Vector2i posScissorEnd(posScissor[0] +szScissor[0],posScissor[1] +szScissor[1]);
@@ -1143,7 +1263,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 			}
 			auto childDrawInfo = drawInfo;
 			childDrawInfo.offset = *child->m_pos;
-			childDrawInfo.transform = mat;
+			childDrawInfo.transform = relPose;
 			childDrawInfo.useScissor = bShouldScissor;
 			auto scaleChild = scale *child->GetScale();
 			child->Draw(childDrawInfo,offsetParentNew,posScissor,szScissor,scaleChild,newStencilLevel);

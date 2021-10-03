@@ -657,8 +657,8 @@ void WITextBase::InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h)
 bool WITextBase::RenderLines(
 	std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 	wgui::ShaderTextRect &shader,int32_t width,int32_t height,
-	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
-	const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
+	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2i &origin,
+	const umath::ScaledTransform &poseParent,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 	const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 	bool colorPass,StencilPipeline stencilPipeline
@@ -711,8 +711,8 @@ bool WITextBase::RenderLines(
 
 			// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
 			// This will be reset further below.
-			auto matText = GetTransformedMatrix(origin,width,height,matParent,scale);
-			inOutPushConstants.elementData.modelMatrix = matText;
+			auto poseText = GetTransformPose(origin,width,height,poseParent.ToMatrix(),scale);
+			inOutPushConstants.elementData.modelMatrix = poseText;
 
 			inOutPushConstants.fontInfo.yOffset = bufInfo.absLineIndex *lineHeight;
 
@@ -726,19 +726,19 @@ bool WITextBase::RenderLines(
 void WITextBase::RenderLines(
 	std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 	int32_t width,int32_t height,
-	const Vector2i &absPos,const Mat4 &transform,const Vector2i &origin,
-	const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
+	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2i &origin,
+	const umath::ScaledTransform &poseParent,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,StencilPipeline stencilPipeline
 ) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
-	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,width,height,absPos,transform,origin,poseParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
 	},false,stencilPipeline);
 	if(bHasColorBuffers == false)
 		return;
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
-	RenderLines(drawCmd,*pShaderTextRectColor,width,height,absPos,transform,origin,matParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+	RenderLines(drawCmd,*pShaderTextRectColor,width,height,absPos,transform,origin,poseParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
 	},true,stencilPipeline);
 }
@@ -814,7 +814,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const V
 				}
 				auto tmpMatrix = pushConstants.elementData.modelMatrix;
 				auto tmpColor = pushConstants.elementData.color;
-				pushConstants.elementData.modelMatrix = GetTransformedMatrix(drawInfo.offset,drawInfo.size.x,drawInfo.size.y,drawInfo.transform /* parent transform */,scale);
+				pushConstants.elementData.modelMatrix = GetTransformPose(drawInfo.offset,drawInfo.size.x,drawInfo.size.y,drawInfo.transform /* parent transform */,scale);
 				if(pShadowColor != nullptr)
 					pushConstants.elementData.color = *pShadowColor;
 				fDraw(true); // TODO: Render text shadow shadow at the same time? (Single framebuffer)

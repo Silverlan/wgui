@@ -59,8 +59,8 @@ private:
 	bool RenderLines(
 		std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 		wgui::ShaderTextRect &shader,int32_t width,int32_t height,
-		const Vector2i &absPos,const Mat4 &transform,
-		const Vector2i &origin,const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
+		const Vector2i &absPos,const umath::ScaledTransform &transform,
+		const Vector2i &origin,const umath::ScaledTransform &poseParent,const Vector2 &scale,Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 		const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 		bool colorPass,StencilPipeline stencilPipeline
@@ -68,8 +68,8 @@ private:
 	void RenderLines(
 		std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 		int32_t width,int32_t height,
-		const Vector2i &absPos,const Mat4 &transform,
-		const Vector2i &origin,const Mat4 &matParent,const Vector2 &scale,Vector2i &inOutSize,
+		const Vector2i &absPos,const umath::ScaledTransform &transform,
+		const Vector2i &origin,const umath::ScaledTransform &poseParent,const Vector2 &scale,Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,StencilPipeline stencilPipeline
 	) const;
 	WIHandle m_hTexture = {};

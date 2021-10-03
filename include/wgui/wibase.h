@@ -103,6 +103,7 @@ public:
 		std::optional<Mat4> postTransform = {};
 		mutable std::shared_ptr<prosper::ICommandBuffer> commandBuffer;
 		bool useScissor = true;
+		bool useStencil = false;
 
 		Vector4 GetColor(WIBase &el) const;
 	};
@@ -234,13 +235,13 @@ public:
 	void AddChild(WIBase *child,std::optional<uint32_t> childIndex={});
 	bool HasChild(WIBase *child);
 	std::optional<uint32_t> FindChildIndex(WIBase &child) const;
-	virtual Mat4 GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,const Vector2 &scale={1.f,1.f}) const;
-	Mat4 GetTransformedMatrix(int w,int h,Mat4 mat) const;
-	Mat4 GetTransformedMatrix(int w,int h) const;
-	Mat4 GetTranslatedMatrix(const Vector2i &origin,int w,int h,Mat4 mat) const;
-	Mat4 GetTranslatedMatrix(int w,int h,Mat4 mat) const;
-	Mat4 GetTranslatedMatrix(int w,int h) const;
-	Mat4 GetScaledMatrix(int w,int h,Mat4 mat) const;
+	virtual Mat4 GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &poseParent,const Vector2 &scale={1.f,1.f}) const;
+	Mat4 GetTransformPose(int w,int h,const Mat4 &poseParent) const;
+	Mat4 GetTransformPose(int w,int h) const;
+	Mat4 GetTranslationPose(const Vector2i &origin,int w,int h,const Mat4 &poseParent) const;
+	Mat4 GetTranslationPose(int w,int h,const Mat4 &poseParent) const;
+	Mat4 GetTranslationPose(int w,int h) const;
+	Mat4 GetScaledMatrix(int w,int h,const Mat4 &poseParent) const;
 	Mat4 GetScaledMatrix(int w,int h) const;
 	bool PosInBounds(int x,int y) const;
 	bool PosInBounds(Vector2i pos) const;
@@ -344,6 +345,11 @@ public:
 	const Vector2 &GetScale() const;
 	const util::PVector2Property &GetScaleProperty() const;
 
+	void ResetRotation();
+	void SetRotation(umath::Degree angle,const Vector2 &pivot);
+	void SetRotation(const Mat4 &rotationMatrix);
+	const Mat4 *GetRotationMatrix() const;
+
 	WIBase *GetRootElement();
 	const WIBase *GetRootElement() const {return const_cast<WIBase*>(this)->GetRootElement();}
 	prosper::Window *GetRootWindow();
@@ -379,6 +385,7 @@ protected:
 	std::string m_class = "WIBase";
 	std::string m_name;
 	std::string m_toolTip;
+	std::unique_ptr<Mat4> m_rotationMatrix = nullptr;
 	std::optional<WIAnchor> m_anchor = {};
 	std::unordered_map<std::string,std::shared_ptr<WIAttachment>> m_attachments = {};
 	std::unique_ptr<WIFadeInfo> m_fade = nullptr;

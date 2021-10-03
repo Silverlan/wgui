@@ -322,11 +322,8 @@ void WITexturedShape::SizeToTexture()
 	}
 	SetSize(width,height);
 }
-void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
+void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
 {
-	auto matDraw = matDrawRoot;
-	if(m_localRenderTransform)
-		matDraw *= m_localRenderTransform->ToMatrix();
 	if(m_hMaterial.IsValid() == false && m_texture == nullptr)
 		return;
 	auto col = drawInfo.GetColor(*this);

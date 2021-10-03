@@ -109,7 +109,7 @@ const Color &WILine::GetStartColor() const {return m_colStart;}
 const Color &WILine::GetEndColor() const {return m_colEnd;}
 
 unsigned int WILine::GetVertexCount() {return 2;}
-Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,const Vector2 &scale) const
+Mat4 WILine::GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &poseParent,const Vector2 &scale) const
 {
 	auto &posStart = GetStartPos();
 	auto &posEnd = GetEndPos();
@@ -119,15 +119,14 @@ Mat4 WILine::GetTransformedMatrix(const Vector2i &origin,int w,int h,Mat4 mat,co
 		0
 	);
 	auto offset = origin -GetPos();
-	mat = glm::translate(mat,Vector3(
+	umath::ScaledTransform pose {};
+	pose.SetOrigin(Vector3(
 		-1.f +((offset.x +posStart.x) /float(w)) *2.f,
 		-1.f +((offset.y +posStart.y) /float(h)) *2.f,
 		0
 	));
-	mat = glm::scale(mat,size);
-	if(scale.x != 1.f || scale.y != 1.f)
-		mat = mat *glm::scale(Mat4(1.f),Vector3{scale,1.f});
-	return mat;
+	pose.SetScale(size *Vector3{scale,1.f});
+	return poseParent *pose.ToMatrix();
 }
 
 void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
