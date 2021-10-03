@@ -853,26 +853,21 @@ void WIBase::SetSize(int x,int y)
 }
 Mat4 WIBase::GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &poseParent,const Vector2 &scale) const
 {
-	umath::ScaledTransform pose {};
-	pose.SetOrigin(Vector3{(origin.x) *2,(origin.y) *2,0.f});
-	Vector3 s {(*m_size)->x *scale.x,(*m_size)->y *scale.y,0};
-	pose.SetScale(s);
+	Vector3 normOrigin {(origin.x) *2,(origin.y) *2,0.f};
+	Vector3 normScale {(*m_size)->x *scale.x,(*m_size)->y *scale.y,0};
+
+	if(!m_rotationMatrix)
+		return poseParent *glm::scale(glm::translate(normOrigin),normScale);
 
 	if(m_rotationMatrix)
 	{
-		Mat4 t {1.f};
-		t = glm::translate(t,Vector3{(origin.x) *2,(origin.y) *2,0.f});
-
-		Mat4 s {1.f};
-		s = glm::scale(s,Vector3{(*m_size)->x *scale.x,(*m_size)->y *scale.y,0});
-
-		Mat4 r {1.f};
-		r = (*m_rotationMatrix);
-
+		auto t = glm::translate(normOrigin);
+		auto s = glm::scale(normScale);
+		auto &r = *m_rotationMatrix;
 		auto m = t *r *s;
 		return poseParent *m;
 	}
-	return poseParent *pose.ToMatrix();
+	
 }
 void WIBase::SetScale(const Vector2 &scale) {*m_scale = scale;}
 void WIBase::SetScale(float x,float y) {SetScale(Vector2{x,y});}
@@ -1078,12 +1073,13 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 	const auto &origin = drawInfo.offset;
 
 	auto rootPose = drawInfo.transform;
+	auto useScissor = drawInfo.useScissor;
+	auto useStencilGlobal = drawInfo.useStencil;
 	if(m_rotationMatrix)
 	{
-		const_cast<DrawInfo&>(drawInfo).useScissor = false;
-		const_cast<DrawInfo&>(drawInfo).useStencil = true;
+		useScissor = false;
+		useStencilGlobal = true;
 	}
-	const auto bUseScissor = drawInfo.useScissor;
 	const auto &postTransform = drawInfo.postTransform;
 
 	auto poseDraw = GetTransformPose(origin,w,h,rootPose,scale);
@@ -1091,7 +1087,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 		poseDraw = *postTransform *poseDraw;
 
 	auto matDraw = poseDraw;
-	if(bUseScissor == true)
+	if(useScissor == true)
 	{
 		// Check if the element is outside the scissor bounds.
 		// If that's the case, we can skip rendering it (and
@@ -1112,7 +1108,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 	uint32_t stencilLevel = testStencilLevel;
 	auto newStencilLevel = stencilLevel;
 	std::array<uint32_t,4> oldScissor;
-	if(IsStencilEnabled() || drawInfo.useStencil)
+	if(IsStencilEnabled() || useStencilGlobal)
 	{
 		WGUI::GetInstance().GetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
 		WGUI::GetInstance().SetScissor(0u,0u,context.GetWindowWidth(),context.GetWindowHeight());
@@ -1130,7 +1126,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 		WIBase *child = m_children[i].get();
 		if(child != NULL && child->IsSelfVisible())
 		{
-			auto bShouldScissor = (drawInfo.useScissor && child->GetShouldScissor()) ? true : false;
+			auto useScissorChild = (useScissor && child->GetShouldScissor()) ? true : false;
 			Vector2i posScissor(scissorOffset.x,scissorOffset.y);
 			Vector2i szScissor(scissorSize.x,scissorSize.y);
 			Vector2i posScissorEnd(posScissor[0] +szScissor[0],posScissor[1] +szScissor[1]);
@@ -1146,9 +1142,9 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 				if(posChildEnd[j] > posScissorEnd[j])
 					posChildEnd[j] = posScissorEnd[j];
 			}
-			if(bUseScissor == false)
+			if(useScissor == false)
 				WGUI::GetInstance().SetScissor(0u,0u,context.GetWindowWidth(),context.GetWindowHeight());
-			else if(bShouldScissor == false)
+			else if(useScissorChild == false)
 				WGUI::GetInstance().SetScissor(umath::max(posScissor[0],0),umath::max(posScissor[1],0),umath::max(szScissor[0],0),umath::max(szScissor[1],0)); // Use parent scissor values
 
 			posScissor = posChild;
@@ -1156,7 +1152,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 
 			//auto yScissor = context.GetHeight() -(posScissor[1] +szScissor[1]); // Move origin to top left (OpenGL)
 			//drawCmd->SetScissor(posScissor[0],yScissor,szScissor[0],szScissor[1]);
-			if(bUseScissor == true && bShouldScissor == true)
+			if(useScissor == true && useScissorChild == true)
 				WGUI::GetInstance().SetScissor(umath::max(posScissor[0],0),umath::max(posScissor[1],0),umath::max(szScissor[0],0),umath::max(szScissor[1],0));
 
 			float aOriginal = WIBase::RENDER_ALPHA;
@@ -1174,7 +1170,8 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 			auto childDrawInfo = drawInfo;
 			childDrawInfo.offset = *child->m_pos;
 			childDrawInfo.transform = rootPose;
-			childDrawInfo.useScissor = bShouldScissor;
+			childDrawInfo.useScissor = useScissorChild;
+			childDrawInfo.useStencil = useStencilGlobal;
 			auto scaleChild = scale *child->GetScale();
 			child->Draw(childDrawInfo,offsetParentNew,posScissor,szScissor,scaleChild,newStencilLevel);
 			WIBase::RENDER_ALPHA = aOriginal;
