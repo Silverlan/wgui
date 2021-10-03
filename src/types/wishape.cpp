@@ -351,7 +351,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 			if(pShaderExpensive->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 			{
 				pShaderExpensive->Draw({
-					matDraw,col,umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
+					matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size),std::array<uint32_t,3>{},umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
 					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
 					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)),
 					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)),
@@ -369,7 +369,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 		if(pShaderCheap->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 		{
 			pShaderCheap->Draw({
-				matDraw,col,umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
+				matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size),std::array<uint32_t,3>{},umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)),

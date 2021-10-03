@@ -713,6 +713,7 @@ bool WITextBase::RenderLines(
 			// This will be reset further below.
 			auto poseText = GetTransformPose(origin,width,height,poseParent.ToMatrix(),scale);
 			inOutPushConstants.elementData.modelMatrix = poseText;
+			inOutPushConstants.elementData.viewportSize = wgui::ElementData::ToViewportSize(Vector2i{width,height});
 
 			inOutPushConstants.fontInfo.yOffset = bufInfo.absLineIndex *lineHeight;
 

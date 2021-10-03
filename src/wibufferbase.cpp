@@ -77,7 +77,7 @@ void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vec
 		auto &context = WGUI::GetInstance().GetContext();
 		if(pShader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
 		{
-			pShader->Draw({matDraw,col},testStencilLevel);
+			pShader->Draw({matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
 			pShader->EndDraw();
 		}
 		return;
