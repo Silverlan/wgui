@@ -219,6 +219,8 @@ public:
 	virtual void SetColor(float r,float g,float b,float a=1.f);
 	float GetAlpha() const;
 	virtual void SetAlpha(float alpha);
+	float GetLocalAlpha() const {return m_localAlpha;}
+	void SetLocalAlpha(float a) {m_localAlpha = a;}
 	int GetWidth() const;
 	int GetHeight() const;
 	const util::PVector2iProperty &GetSizeProperty() const;
@@ -244,7 +246,7 @@ public:
 	Mat4 GetScaledMatrix(int w,int h,const Mat4 &poseParent) const;
 	Mat4 GetScaledMatrix(int w,int h) const;
 	bool PosInBounds(int x,int y) const;
-	bool PosInBounds(Vector2i pos) const;
+	bool PosInBounds(const Vector2i &pos) const;
 	const util::PBoolProperty &GetMouseInBoundsProperty() const;
 	bool MouseInBounds() const;
 	void ScheduleUpdate();
@@ -363,6 +365,7 @@ public:
 	// Handles
 	WIHandle GetHandle() const;
 protected:
+	virtual bool PosInBounds(const Vector2i &pos,const Mat4 *rotation) const;
 	void SetIndex(uint64_t idx);
 	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 	void UpdateParentAutoSizeToContents();
@@ -393,6 +396,7 @@ protected:
 	CallbackHandle m_callbackFocusGained = {};
 	CallbackHandle m_callbackFocusKilled = {};
 	Mat4 m_mvpLast = umat::identity();
+	float m_localAlpha = 1.f;
 	Vector4 m_colorLast = {0.f,0.f,0.f,1.f};
 	int m_zpos = -1;
 	CallbackHandle m_cbAutoAlign = {};
@@ -409,8 +413,8 @@ protected:
 	template<class TElement>
 		WIHandle CreateChild();
 	void InitializeHandle();
-	void UpdateMouseInBounds();
-	void UpdateChildrenMouseInBounds(bool ignoreVisibility=false);
+	void UpdateMouseInBounds(bool forceFalse=false);
+	void UpdateChildrenMouseInBounds(bool ignoreVisibility=false,bool forceFalse=false);
 	virtual void OnVisibilityChanged(bool bVisible);
 	WISkin *GetSkin();
 	void SetAutoAlignToParent(bool bX,bool bY,bool bReload);

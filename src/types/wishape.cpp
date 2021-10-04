@@ -18,9 +18,82 @@
 LINK_WGUI_TO_CLASS(WIShape,WIShape);
 LINK_WGUI_TO_CLASS(WITexturedShape,WITexturedShape);
 
+class CachedBuffers
+{
+public:
+	struct BufferInfo
+	{
+		std::shared_ptr<prosper::IBuffer> buffer = nullptr;
+		std::shared_ptr<prosper::IBuffer> uvBuffer = nullptr;
+		uint32_t vertexCount = 0;
+	};
+	BufferInfo &GetBuffer(const std::string &identifier);
+private:
+	std::unordered_map<std::string,BufferInfo> m_cache;
+};
+
+CachedBuffers::BufferInfo &CachedBuffers::GetBuffer(const std::string &identifier)
+{
+	auto it = m_cache.find(identifier);
+	if(it != m_cache.end())
+		return it->second;
+	if(identifier == "circle")
+	{
+		std::vector<Vector2> verts;
+		auto addSegment = [this,&verts](float deg0,float deg1,float minDist,float maxDist) {
+			auto r0 = umath::deg_to_rad(deg0);
+			auto r1 = umath::deg_to_rad(deg1);
+
+			verts.push_back(Vector2{umath::sin(r0) *maxDist,-umath::cos(r0) *maxDist});
+			verts.push_back(Vector2{umath::sin(r0) *minDist,-umath::cos(r0) *minDist});
+			verts.push_back(Vector2{umath::sin(r1) *maxDist,-umath::cos(r1) *maxDist});
+
+			verts.push_back(Vector2{umath::sin(r0) *minDist,-umath::cos(r0) *minDist});
+			verts.push_back(Vector2{umath::sin(r1) *minDist,-umath::cos(r1) *minDist});
+			verts.push_back(Vector2{umath::sin(r1) *maxDist,-umath::cos(r1) *maxDist});
+		};
+
+		auto degRange = 360.f;
+		auto minDist = 0.f;
+		auto maxDist = 1.f;
+
+		float stepSize = 8.f;
+		verts.reserve(umath::ceil(degRange /stepSize));
+		for(auto i=-degRange /2.f;i<=(degRange /2.f -stepSize);i+=stepSize)
+			addSegment(i,i +stepSize,minDist,maxDist);
+
+		std::vector<Vector2> uvs;
+		uvs.reserve(verts.size());
+		for(auto &v : verts)
+		{
+			Vector2 uv{v.x +1.f,v.y +1.f};
+			if(uv.x != 0.f) uv.x /= 2.f;
+			if(uv.y != 0.f) uv.y /= 2.f;
+			uvs.push_back(uv);
+		}
+
+		BufferInfo info {};
+		info.vertexCount = verts.size();
+		info.buffer = WIShape::CreateBuffer(verts);
+		info.uvBuffer = WIShape::CreateBuffer(uvs);
+		return (m_cache[identifier] = info);
+	}
+	throw std::runtime_error{"Invalid buffer type!"};
+}
+
+static std::unique_ptr<CachedBuffers> g_cache = nullptr;
+static uint32_t g_count = 0;
 WIShape::WIShape()
 	: WIBufferBase(),m_vertexBufferUpdateRequired(false)
-{}
+{
+	if(g_count++ == 0)
+		g_cache = std::make_unique<CachedBuffers>();
+}
+WIShape::~WIShape()
+{
+	if(--g_count == 0)
+		g_cache = nullptr;
+}
 unsigned int WIShape::AddVertex(Vector2 vert)
 {
 	m_vertices.push_back(vert);
@@ -35,6 +108,43 @@ void WIShape::SetVertexPos(unsigned int vertID,Vector2 pos)
 	m_vertexBufferUpdateRequired |= 1;
 }
 void WIShape::ClearVertices() {m_vertices.clear(); m_vertexBufferUpdateRequired |= 1;}
+bool WIShape::PosInBounds(const Vector2i &pos,const Mat4 *rotation) const
+{
+	if(m_checkInBounds)
+		return m_checkInBounds(*this,pos);
+	return WIBufferBase::PosInBounds(pos,rotation);
+}
+void WIShape::SetShape(BasicShape shape)
+{
+	switch(shape)
+	{
+	case BasicShape::Rectangle:
+		SetBoundsCheckFunction(nullptr);
+		ClearVertices();
+		ClearBuffer();
+		break;
+	case BasicShape::Circle:
+		SetBoundsCheckFunction([](const WIShape &el,const Vector2i &pos) -> bool {
+			Vector2 lpos {pos};
+			auto ratio = el.GetWidth() /static_cast<float>(el.GetHeight());
+			lpos -= Vector2{el.GetHalfWidth(),el.GetHalfHeight()};
+			lpos.y *= ratio;
+
+			auto d = glm::length2(lpos);
+			auto r = el.GetHalfWidth();
+			return d < (r *r);
+		});
+
+		auto &info = g_cache->GetBuffer("circle");
+		ClearVertices();
+		SetBuffer(*info.buffer,info.vertexCount);
+		auto *texShape = dynamic_cast<WITexturedShape*>(this);
+		if(texShape)
+			texShape->SetUVBuffer(*info.uvBuffer);
+		break;
+	}
+}
+void WIShape::SetBoundsCheckFunction(const std::function<bool(const WIShape&,const Vector2i&)> &func) {m_checkInBounds = func;}
 void WIShape::DoUpdate()
 {
 	WIBase::DoUpdate();
@@ -42,14 +152,19 @@ void WIShape::DoUpdate()
 		return;
 	m_vertexBufferUpdateRequired &= ~1;
 	
+	auto buf = CreateBuffer(m_vertices);
+	InitializeBufferData(*buf);
+}
+std::shared_ptr<prosper::IBuffer> WIShape::CreateBuffer(const std::vector<Vector2> &verts)
+{
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::util::BufferCreateInfo createInfo {};
-	createInfo.size = m_vertices.size() *sizeof(Vector2);
+	createInfo.size = verts.size() *sizeof(Vector2);
 	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
 	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
-	auto buf = context.CreateBuffer(createInfo,m_vertices.data());
+	auto buf = context.CreateBuffer(createInfo,verts.data());
 	buf->SetDebugName("gui_shape_vertex_buf");
-	InitializeBufferData(*buf);
+	return buf;
 }
 void WIShape::SetBuffer(prosper::IBuffer &buffer,uint32_t numVerts)
 {
@@ -88,6 +203,11 @@ WITexturedShape::WITexturedShape()
 	if(pShader != nullptr)
 		SetShader(*pShader,pShaderCheap);
 	ReloadDescriptorSet();
+}
+void WITexturedShape::ClearBuffer()
+{
+	WIBufferBase::ClearBuffer();
+	m_uvBuffer = nullptr;
 }
 void WITexturedShape::SetShader(prosper::Shader &shader,prosper::Shader *shaderCheap)
 {
@@ -271,19 +391,22 @@ unsigned int WITexturedShape::AddVertex(Vector2 vert,Vector2 uv)
 	m_vertexBufferUpdateRequired |= 2;
 	return WIShape::AddVertex(vert);
 }
+std::shared_ptr<prosper::IBuffer> WITexturedShape::CreateUvBuffer(const std::vector<Vector2> &uvs)
+{
+	auto &context = WGUI::GetInstance().GetContext();
+	prosper::util::BufferCreateInfo createInfo {};
+	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
+	createInfo.size = uvs.size() *sizeof(Vector2);
+	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+	return context.CreateBuffer(createInfo,uvs.data());
+}
 void WITexturedShape::DoUpdate()
 {
 	WIShape::DoUpdate();
 	if(!(m_vertexBufferUpdateRequired &2) || m_uvs.size() == 0)
 		return;
 	m_vertexBufferUpdateRequired &= ~2;
-
-	auto &context = WGUI::GetInstance().GetContext();
-	prosper::util::BufferCreateInfo createInfo {};
-	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
-	createInfo.size = m_uvs.size() *sizeof(Vector2);
-	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
-	m_uvBuffer = context.CreateBuffer(createInfo,m_uvs.data());
+	m_uvBuffer = CreateUvBuffer(m_uvs);
 }
 void WITexturedShape::SetChannelSwizzle(wgui::ShaderTextured::Channel dst,wgui::ShaderTextured::Channel src)
 {
@@ -334,6 +457,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 	auto col = drawInfo.GetColor(*this);
 	if(col.a <= 0.f)
 		return;
+	col.a *= GetLocalAlpha();
 	if(m_hMaterial.IsValid())
 	{
 		auto *map = m_hMaterial->GetDiffuseMap();

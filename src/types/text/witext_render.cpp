@@ -780,7 +780,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const V
 		auto col = drawInfo.GetColor(*this);
 		if(col.a <= 0.f && umath::is_flag_set(m_stateFlags,StateFlags::RenderIfZeroAlpha) == false)
 			return;
-
+		col.a *= GetLocalAlpha();
 		auto currentSize = GetSizeProperty()->GetValue();
 		auto &size = GetSizeProperty()->GetValue();
 

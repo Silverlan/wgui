@@ -1608,9 +1608,67 @@ bool WIBase::PosInBounds(int x,int y) const
 {
 	return PosInBounds(Vector2i(x,y));
 }
-bool WIBase::PosInBounds(Vector2i pos) const
+bool WIBase::PosInBounds(const Vector2i &pos) const
 {
-	pos -= GetAbsolutePos();
+	//if(m_rotationMatrix)
+	{
+		std::vector<WIBase*> parents;
+
+		parents.push_back(const_cast<WIBase*>(this));
+		auto *parent = GetParent();
+		while(parent)
+		{
+			parents.push_back(parent);
+			parent = parent->GetParent();
+		}
+		
+		Vector4 p {pos.x,pos.y,0.f,0.f};
+		for(auto it=parents.rbegin();it!=parents.rend();++it)
+		{
+			auto &parent = **it;
+			auto ppos = parent.GetPos();
+			p.x -= ppos.x;
+			p.y -= ppos.y;
+			auto rotMat = parent.GetRotationMatrix() ? *parent.GetRotationMatrix() : umat::identity();//*;
+			p = glm::inverse(rotMat) *p;
+		}
+
+		/*std::function<void(Vector4&,WIBase&)> frec = nullptr;
+		frec = [&frec](Vector4 &p,WIBase &parent) {
+			auto lpos = parent.GetPos();
+			p.x -= lpos.x;
+			p.y -= lpos.y;
+			auto *pparent = parent.GetParent();
+			if(pparent)
+				frec(p,*pparent);
+			auto rotMat = parent.GetRotationMatrix() ? *parent.GetRotationMatrix() : umat::identity();//*;
+			p = glm::inverse(rotMat) *p;
+		};
+		frec(p,const_cast<WIBase&>(*this));*/
+		return PosInBounds(Vector2i{p.x,p.y},static_cast<const Mat4*>(nullptr));
+
+
+		/*auto tmp = pos -GetAbsolutePos();
+		auto rotMat = m_rotationMatrix ? *m_rotationMatrix : umat::identity();//*;
+		p = glm::inverse(rotMat) *p;
+
+		auto *par = GetParent();
+		while(par)
+		{
+			auto *x = par->GetRotationMatrix();
+			if(x)
+				rotMat = *x *rotMat;
+			par = par->GetParent();
+		}
+
+		
+		// TODO: Use Vector2 instead of Vector2i
+		return PosInBounds(Vector2i{p.x,p.y},static_cast<const Mat4*>(nullptr));*/
+	}
+	return PosInBounds(pos -GetAbsolutePos(),static_cast<const Mat4*>(nullptr));
+}
+bool WIBase::PosInBounds(const Vector2i &pos,const Mat4 *rotation) const
+{
 	const Vector2i &size = GetSize();
 	return (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) ? false : true;
 }
@@ -1626,30 +1684,34 @@ bool WIBase::MouseInBounds() const
 bool WIBase::GetMouseInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit);}
 bool WIBase::GetKeyboardInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptKeyboardInputBit);}
 bool WIBase::GetScrollInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptScrollInputBit);}
-void WIBase::UpdateMouseInBounds()
+void WIBase::UpdateMouseInBounds(bool forceFalse)
 {
 	bool old = *m_bMouseInBounds;
-	if(umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit) == false)
+	if(forceFalse)
 		*m_bMouseInBounds = false;
 	else
 		*m_bMouseInBounds = MouseInBounds();
-	if(old == *m_bMouseInBounds)
+	if(old == *m_bMouseInBounds || !umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit))
 		return;
 	if(*m_bMouseInBounds == true)
 		OnCursorEntered();
 	else OnCursorExited();
 }
-void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility)
+void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility,bool forceFalse)
 {
 	if(ignoreVisibility == false && IsVisible() == false)
 		return;
-	if(umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit) == true)
-		UpdateMouseInBounds();
+	auto wasInBounds = **m_bMouseInBounds;
+	UpdateMouseInBounds(forceFalse);
+	if(*m_bMouseInBounds == wasInBounds && *m_bMouseInBounds == false)
+		return;
+	if(*m_bMouseInBounds == false)
+		forceFalse = true;
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIHandle &hChild = m_children[i];
 		if(hChild.IsValid() && (hChild->IsVisible() || hChild->ShouldThinkIfInvisible()))
-			hChild->UpdateChildrenMouseInBounds(ignoreVisibility);
+			hChild->UpdateChildrenMouseInBounds(ignoreVisibility,forceFalse);
 	}
 }
 void WIBase::OnCursorEntered()

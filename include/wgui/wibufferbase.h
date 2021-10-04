@@ -22,6 +22,8 @@ public:
 
 	prosper::IBuffer *GetBuffer();
 	void SetBuffer(prosper::IBuffer &buffer);
+
+	virtual void ClearBuffer();
 protected:
 	WIBufferBase();
 
