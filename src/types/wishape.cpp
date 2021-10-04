@@ -108,11 +108,11 @@ void WIShape::SetVertexPos(unsigned int vertID,Vector2 pos)
 	m_vertexBufferUpdateRequired |= 1;
 }
 void WIShape::ClearVertices() {m_vertices.clear(); m_vertexBufferUpdateRequired |= 1;}
-bool WIShape::PosInBounds(const Vector2i &pos,const Mat4 *rotation) const
+bool WIShape::DoPosInBounds(const Vector2i &pos) const
 {
 	if(m_checkInBounds)
 		return m_checkInBounds(*this,pos);
-	return WIBufferBase::PosInBounds(pos,rotation);
+	return WIBufferBase::DoPosInBounds(pos);
 }
 void WIShape::SetShape(BasicShape shape)
 {

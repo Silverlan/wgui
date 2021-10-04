@@ -34,7 +34,7 @@ public:
 	void SetBoundsCheckFunction(const std::function<bool(const WIShape&,const Vector2i&)> &func);
 protected:
 	virtual void DoUpdate() override;
-	virtual bool PosInBounds(const Vector2i &pos,const Mat4 *rotation) const override;
+	virtual bool DoPosInBounds(const Vector2i &pos) const override;
 	std::function<bool(const WIShape&,const Vector2i&)> m_checkInBounds = nullptr;
 	std::optional<uint32_t> m_bufferVertexCount {};
 	std::vector<Vector2> m_vertices;

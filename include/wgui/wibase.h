@@ -198,8 +198,11 @@ public:
 	float GetAspectRatio() const;
 	void SetWidth(int w,bool keepRatio=false);
 	void SetHeight(int h,bool keepRatio=false);
-	Vector2i GetAbsolutePos() const;
-	void SetAbsolutePos(Vector2i pos);
+	Mat4 GetAbsolutePose() const;
+	Vector2 GetAbsolutePos(const Vector2 &localPos,bool includeRotation=true) const;
+	Vector2 GetAbsolutePos(bool includeRotation=true) const;
+	void SetAbsolutePos(const Vector2 &pos);
+	Vector2 GetRelativePos(const Vector2 &absPos) const;
 	std::vector<WIHandle> *GetChildren();
 	void GetChildren(const std::string &className,std::vector<WIHandle> &children);
 	WIBase *GetFirstChild(const std::string &className);
@@ -365,7 +368,10 @@ public:
 	// Handles
 	WIHandle GetHandle() const;
 protected:
-	virtual bool PosInBounds(const Vector2i &pos,const Mat4 *rotation) const;
+	virtual bool DoPosInBounds(const Vector2i &pos) const;
+	Mat4 GetAbsolutePose(float x,float y) const;
+	Mat4 GetRelativePose(float x,float y) const;
+	void AbsolutePosToRelative(Vector2 &pos) const;
 	void SetIndex(uint64_t idx);
 	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 	void UpdateParentAutoSizeToContents();
@@ -414,6 +420,7 @@ protected:
 		WIHandle CreateChild();
 	void InitializeHandle();
 	void UpdateMouseInBounds(bool forceFalse=false);
+	void DoUpdateChildrenMouseInBounds(const Mat4 &parentPose,const Vector2 &cursorPos,bool ignoreVisibility,bool forceFalse);
 	void UpdateChildrenMouseInBounds(bool ignoreVisibility=false,bool forceFalse=false);
 	virtual void OnVisibilityChanged(bool bVisible);
 	WISkin *GetSkin();
@@ -427,6 +434,7 @@ protected:
 	bool ShouldThink() const;
 private:
 	void UpdateThink();
+	void UpdateMouseInBounds(const Vector2 &relPos,bool forceFalse);
 	WIBase *FindDeepestChild(const std::function<bool(const WIBase&)> &predInspect,const std::function<bool(const WIBase&)> &predValidCandidate);
 	util::PVector2iProperty m_pos = nullptr;
 	util::PVector2iProperty m_size = nullptr;

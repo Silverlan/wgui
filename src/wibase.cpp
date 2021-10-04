@@ -724,20 +724,52 @@ void WIBase::CenterToParentY()
 Vector2 WIBase::GetHalfSize() const {return Vector2{GetHalfWidth(),GetHalfHeight()};}
 float WIBase::GetHalfWidth() const {return GetWidth() *0.5f;}
 float WIBase::GetHalfHeight() const {return GetHeight() *0.5f;}
-Vector2i WIBase::GetAbsolutePos() const
+Mat4 WIBase::GetRelativePose(float x,float y) const
 {
-	Vector2i pos = GetPos();
-	WIBase *parent = GetParent();
-	if(parent != NULL)
-		pos += parent->GetAbsolutePos();
-	return pos;
+	Vector4 pos {x *2.f,y *2.f,0.f,1.f};
+	if(m_rotationMatrix)
+		return (*m_rotationMatrix *glm::translate(Vector3{pos.x,pos.y,pos.z}));
+	return  glm::translate(Vector3{pos.x,pos.y,pos.z});
 }
-void WIBase::SetAbsolutePos(Vector2i pos)
+Mat4 WIBase::GetAbsolutePose(float x,float y) const
 {
-	WIBase *parent = GetParent();
-	if(parent != NULL)
-		pos -= parent->GetAbsolutePos();
-	SetPos(pos);
+	auto *parent = GetParent();
+	if(!parent)
+		return GetRelativePose(x,y);
+	return parent->GetAbsolutePose(GetX(),GetY()) *GetRelativePose(x,y);
+}
+Mat4 WIBase::GetAbsolutePose() const {return GetAbsolutePose(0.f,0.f);}
+Vector2 WIBase::GetRelativePos(const Vector2 &absPos) const
+{
+	auto tmp = absPos;
+	AbsolutePosToRelative(tmp);
+	return tmp;
+}
+Vector2 WIBase::GetAbsolutePos(const Vector2 &localPos,bool includeRotation) const
+{
+	if(!includeRotation)
+		return GetAbsolutePos(includeRotation) +localPos;
+	auto pose = GetAbsolutePose() *glm::translate(Vector3{localPos *2.f,0.f});
+	return Vector2{pose[3][0],pose[3][1]} /2.f;
+}
+Vector2 WIBase::GetAbsolutePos(bool includeRotation) const
+{
+	if(!includeRotation)
+	{
+		auto pos = GetPos();
+		auto *parent = GetParent();
+		if(parent)
+			pos += parent->GetAbsolutePos(includeRotation);
+		return pos;
+	}
+	auto pose = GetAbsolutePose();
+	return Vector2{pose[3][0],pose[3][1]} /2.f;
+}
+void WIBase::SetAbsolutePos(const Vector2 &pos)
+{
+	auto tmp = pos;
+	AbsolutePosToRelative(tmp);
+	SetPos(tmp);
 }
 std::vector<WIHandle> *WIBase::GetChildren() {return &m_children;}
 void WIBase::GetChildren(const std::string &className,std::vector<WIHandle> &children)
@@ -1610,64 +1642,11 @@ bool WIBase::PosInBounds(int x,int y) const
 }
 bool WIBase::PosInBounds(const Vector2i &pos) const
 {
-	//if(m_rotationMatrix)
-	{
-		std::vector<WIBase*> parents;
-
-		parents.push_back(const_cast<WIBase*>(this));
-		auto *parent = GetParent();
-		while(parent)
-		{
-			parents.push_back(parent);
-			parent = parent->GetParent();
-		}
-		
-		Vector4 p {pos.x,pos.y,0.f,0.f};
-		for(auto it=parents.rbegin();it!=parents.rend();++it)
-		{
-			auto &parent = **it;
-			auto ppos = parent.GetPos();
-			p.x -= ppos.x;
-			p.y -= ppos.y;
-			auto rotMat = parent.GetRotationMatrix() ? *parent.GetRotationMatrix() : umat::identity();//*;
-			p = glm::inverse(rotMat) *p;
-		}
-
-		/*std::function<void(Vector4&,WIBase&)> frec = nullptr;
-		frec = [&frec](Vector4 &p,WIBase &parent) {
-			auto lpos = parent.GetPos();
-			p.x -= lpos.x;
-			p.y -= lpos.y;
-			auto *pparent = parent.GetParent();
-			if(pparent)
-				frec(p,*pparent);
-			auto rotMat = parent.GetRotationMatrix() ? *parent.GetRotationMatrix() : umat::identity();//*;
-			p = glm::inverse(rotMat) *p;
-		};
-		frec(p,const_cast<WIBase&>(*this));*/
-		return PosInBounds(Vector2i{p.x,p.y},static_cast<const Mat4*>(nullptr));
-
-
-		/*auto tmp = pos -GetAbsolutePos();
-		auto rotMat = m_rotationMatrix ? *m_rotationMatrix : umat::identity();//*;
-		p = glm::inverse(rotMat) *p;
-
-		auto *par = GetParent();
-		while(par)
-		{
-			auto *x = par->GetRotationMatrix();
-			if(x)
-				rotMat = *x *rotMat;
-			par = par->GetParent();
-		}
-
-		
-		// TODO: Use Vector2 instead of Vector2i
-		return PosInBounds(Vector2i{p.x,p.y},static_cast<const Mat4*>(nullptr));*/
-	}
-	return PosInBounds(pos -GetAbsolutePos(),static_cast<const Mat4*>(nullptr));
+	Vector2 tmp {pos};
+	AbsolutePosToRelative(tmp);
+	return DoPosInBounds(tmp);
 }
-bool WIBase::PosInBounds(const Vector2i &pos,const Mat4 *rotation) const
+bool WIBase::DoPosInBounds(const Vector2i &pos) const
 {
 	const Vector2i &size = GetSize();
 	return (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) ? false : true;
@@ -1684,25 +1663,40 @@ bool WIBase::MouseInBounds() const
 bool WIBase::GetMouseInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit);}
 bool WIBase::GetKeyboardInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptKeyboardInputBit);}
 bool WIBase::GetScrollInputEnabled() const {return umath::is_flag_set(m_stateFlags,StateFlags::AcceptScrollInputBit);}
-void WIBase::UpdateMouseInBounds(bool forceFalse)
+void WIBase::AbsolutePosToRelative(Vector2 &pos) const
+{
+	pos = glm::inverse(GetAbsolutePose()) *Vector4{pos *2.f,0.f,1.f};
+	pos /= 2.f;
+}
+void WIBase::UpdateMouseInBounds(const Vector2 &relPos,bool forceFalse)
 {
 	bool old = *m_bMouseInBounds;
 	if(forceFalse)
 		*m_bMouseInBounds = false;
 	else
-		*m_bMouseInBounds = MouseInBounds();
+		*m_bMouseInBounds = DoPosInBounds(relPos);
 	if(old == *m_bMouseInBounds || !umath::is_flag_set(m_stateFlags,StateFlags::AcceptMouseInputBit))
 		return;
 	if(*m_bMouseInBounds == true)
 		OnCursorEntered();
 	else OnCursorExited();
 }
-void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility,bool forceFalse)
+void WIBase::UpdateMouseInBounds(bool forceFalse)
+{
+	auto &context = WGUI::GetInstance().GetContext();
+	auto *window = GetRootWindow();
+	auto cursorPos = window ? (*window)->GetCursorPos() : Vector2{};
+	AbsolutePosToRelative(cursorPos);
+	return UpdateMouseInBounds(cursorPos,forceFalse);
+}
+void WIBase::DoUpdateChildrenMouseInBounds(const Mat4 &parentPose,const Vector2 &cursorPos,bool ignoreVisibility,bool forceFalse)
 {
 	if(ignoreVisibility == false && IsVisible() == false)
 		return;
+	auto localPose = parentPose *GetRelativePose(0.f,0.f);
+	auto relCursorPos = glm::inverse(localPose) *Vector4{cursorPos *2.f,0.f,1.f};
 	auto wasInBounds = **m_bMouseInBounds;
-	UpdateMouseInBounds(forceFalse);
+	UpdateMouseInBounds(Vector2{relCursorPos} /2.f,forceFalse);
 	if(*m_bMouseInBounds == wasInBounds && *m_bMouseInBounds == false)
 		return;
 	if(*m_bMouseInBounds == false)
@@ -1711,8 +1705,15 @@ void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility,bool forceFalse)
 	{
 		WIHandle &hChild = m_children[i];
 		if(hChild.IsValid() && (hChild->IsVisible() || hChild->ShouldThinkIfInvisible()))
-			hChild->UpdateChildrenMouseInBounds(ignoreVisibility,forceFalse);
+			hChild->DoUpdateChildrenMouseInBounds(parentPose *GetRelativePose(hChild->GetX(),hChild->GetY()),cursorPos,ignoreVisibility,forceFalse);
 	}
+}
+void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility,bool forceFalse)
+{
+	auto &context = WGUI::GetInstance().GetContext();
+	auto *window = GetRootWindow();
+	auto cursorPos = window ? (*window)->GetCursorPos() : Vector2{};
+	DoUpdateChildrenMouseInBounds(Mat4{1.f},cursorPos,ignoreVisibility,forceFalse);
 }
 void WIBase::OnCursorEntered()
 {
