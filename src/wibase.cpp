@@ -1713,7 +1713,7 @@ void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility,bool forceFalse)
 	auto &context = WGUI::GetInstance().GetContext();
 	auto *window = GetRootWindow();
 	auto cursorPos = window ? (*window)->GetCursorPos() : Vector2{};
-	DoUpdateChildrenMouseInBounds(Mat4{1.f},cursorPos,ignoreVisibility,forceFalse);
+	DoUpdateChildrenMouseInBounds(GetAbsolutePose(),cursorPos,ignoreVisibility,forceFalse);
 }
 void WIBase::OnCursorEntered()
 {
