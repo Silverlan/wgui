@@ -32,6 +32,7 @@ public:
 	void SetBuffer(prosper::IBuffer &buffer,uint32_t numVerts);
 	void SetShape(BasicShape shape);
 	void SetBoundsCheckFunction(const std::function<bool(const WIShape&,const Vector2i&)> &func);
+	virtual void ClearBuffer() override;
 protected:
 	virtual void DoUpdate() override;
 	virtual bool DoPosInBounds(const Vector2i &pos) const override;

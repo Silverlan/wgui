@@ -69,6 +69,7 @@ prosper::IBuffer *WIBufferBase::GetBuffer()
 }
 void WIBufferBase::SetBuffer(prosper::IBuffer &buffer)
 {
+	ClearBuffer();
 	m_vertexBufferData = std::make_unique<WIElementVertexBufferData>();
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }

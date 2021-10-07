@@ -171,6 +171,11 @@ void WIShape::SetBuffer(prosper::IBuffer &buffer,uint32_t numVerts)
 	WIBufferBase::SetBuffer(buffer);
 	m_bufferVertexCount = numVerts;
 }
+void WIShape::ClearBuffer()
+{
+	WIBufferBase::ClearBuffer();
+	m_bufferVertexCount = {};
+}
 unsigned int WIShape::GetVertexCount() {return m_bufferVertexCount.has_value() ? *m_bufferVertexCount : static_cast<unsigned int>(m_vertices.size());}
 void WIShape::InvertVertexPositions(bool x,bool y)
 {
@@ -206,7 +211,7 @@ WITexturedShape::WITexturedShape()
 }
 void WITexturedShape::ClearBuffer()
 {
-	WIBufferBase::ClearBuffer();
+	WIShape::ClearBuffer();
 	m_uvBuffer = nullptr;
 }
 void WITexturedShape::SetShader(prosper::Shader &shader,prosper::Shader *shaderCheap)
