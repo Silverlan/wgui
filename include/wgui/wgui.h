@@ -102,6 +102,8 @@ public:
 	WIBase *GetBaseElement(const prosper::Window *optWindow=nullptr);
 	WIBase *AddBaseElement(const prosper::Window *optWindow=nullptr);
 	WIBase *GetFocusedElement(const prosper::Window *optWindow=nullptr);
+	uint32_t GetFocusCount(const prosper::Window *optWindow=nullptr);
+	void IncrementFocusCount(const prosper::Window *optWindow=nullptr);
 	WIBase *FindByFilter(const std::function<bool(WIBase&)> &filter,const prosper::Window *optWindow=nullptr) const;
 	WIBase *FindByIndex(uint64_t index) const;
 	prosper::Window *FindWindow(WIBase &elRoot);
@@ -173,6 +175,7 @@ private:
 		std::weak_ptr<const prosper::Window> window {};
 		WIHandle rootElement {};
 		WIHandle elFocused = {};
+		uint32_t focusCount = 0; // Used to detect changes
 	};
 	WindowRootPair *FindWindowRootPair(const prosper::Window &window);
 	WindowRootPair *FindFocusedWindowRootPair();

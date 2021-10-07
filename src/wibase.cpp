@@ -34,6 +34,11 @@ Vector4 WIBase::DrawInfo::GetColor(WIBase &el) const
 
 /////////////
 
+static bool is_valid(const WIHandle &hEl)
+{
+	return hEl.IsValid() && !hEl->IsRemovalScheduled();
+}
+
 std::deque<WIHandle> WIBase::m_focusTrapStack;
 float WIBase::RENDER_ALPHA = 1.f;
 
@@ -89,7 +94,7 @@ WIBase::WIBase()
 		CallCallbacks<void>("SetSize");
 		for(auto &hChild : m_children)
 		{
-			if(hChild.IsValid() == false)
+			if(is_valid(hChild) == false)
 				continue;
 			hChild->UpdateAnchorTransform();
 		}
@@ -163,7 +168,7 @@ void WIBase::UpdateParentThink()
 
 	for(auto &hChild : *GetChildren())
 	{
-		if(hChild.IsValid() == false)
+		if(is_valid(hChild) == false)
 			continue;
 		hChild->UpdateParentThink();
 	}
@@ -175,7 +180,7 @@ void WIBase::UpdateVisibility()
 
 	for(auto &hChild : *GetChildren())
 	{
-		if(hChild.IsValid() == false)
+		if(is_valid(hChild) == false)
 			continue;
 		hChild->UpdateVisibility();
 	}
@@ -203,7 +208,7 @@ void WIBase::RemoveOnRemoval(WIBase *other)
 		return;
 	auto hOther = other->GetHandle();
 	CallOnRemove(FunctionCallback<void>::Create([hOther]() {
-		if(hOther.IsValid() == false)
+		if(is_valid(hOther) == false)
 			return;
 		const_cast<WIBase*>(hOther.get())->Remove();
 	}));
@@ -215,6 +220,7 @@ void WIBase::ScheduleUpdate()
 	WGUI::GetInstance().ScheduleElementForUpdate(*this);
 }
 bool WIBase::IsUpdateScheduled() const {return umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit);}
+bool WIBase::IsRemovalScheduled() const {return umath::is_flag_set(m_stateFlags,StateFlags::RemoveScheduledBit);}
 void WIBase::SetAutoAlignToParent(bool bX,bool bY,bool bReload)
 {
 	if(bReload == false && bX == umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentXBit) && bY == umath::is_flag_set(m_stateFlags,StateFlags::AutoAlignToParentYBit))
@@ -230,7 +236,7 @@ void WIBase::SetAutoAlignToParent(bool bX,bool bY,bool bReload)
 		return;
 	auto hEl = GetHandle();
 	m_cbAutoAlign = parent->AddCallback("SetSize",FunctionCallback<>::Create([hEl]() mutable {
-		if(!hEl.IsValid())
+		if(!is_valid(hEl))
 			return;
 		auto *p = hEl.get();
 		auto *parent = p->GetParent();
@@ -264,7 +270,7 @@ void WIBase::SetAutoCenterToParentX(bool b,bool bReload)
 		return;
 	auto hEl = GetHandle();
 	auto cb = [hEl]() mutable {
-		if(!hEl.IsValid())
+		if(!is_valid(hEl))
 			return;
 		auto *p = hEl.get();
 		p->CenterToParentX();
@@ -289,7 +295,7 @@ void WIBase::SetAutoCenterToParentY(bool b,bool bReload)
 		return;
 	auto hEl = GetHandle();
 	auto cb = [hEl]() mutable {
-		if(!hEl.IsValid())
+		if(!is_valid(hEl))
 			return;
 		auto *p = hEl.get();
 		p->CenterToParentY();
@@ -338,7 +344,7 @@ void WIBase::TrapFocus(bool b)
 		for(auto it=m_focusTrapStack.begin();it!=m_focusTrapStack.end();)
 		{
 			auto &hEl = *it;
-			if(!hEl.IsValid())
+			if(!is_valid(hEl))
 				it = m_focusTrapStack.erase(it);
 			else if(hEl.get() == this)
 			{
@@ -374,7 +380,7 @@ static void InsertGUIElement(std::vector<WIHandle> &elements,const WIHandle &hEl
 		int numElements = static_cast<int>(elements.size());
 		for(int i=numElements -1;i>=0;i--)
 		{
-			if(elements[i].IsValid())
+			if(is_valid(elements[i]))
 			{
 				WIBase *p = elements[i].get();
 				if(zpos >= p->GetZPos())
@@ -479,7 +485,7 @@ void WIBase::SizeToContents(bool x,bool y)
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIHandle &child = m_children[i];
-		if(child.IsValid() == false || child->IsBackgroundElement())
+		if(is_valid(child) == false || child->IsBackgroundElement())
 			continue;
 		WIBase *gui = child.get();
 		int xChild,yChild,wChild,hChild;
@@ -518,9 +524,12 @@ bool WIBase::IsBackgroundElement() const {return umath::is_flag_set(m_stateFlags
 bool WIBase::HasFocus() {return *m_bHasFocus;}
 void WIBase::RequestFocus()
 {
-	if(HasFocus())
-		return;
 	auto *window = GetRootWindow();
+	if(HasFocus())
+	{
+		WGUI::GetInstance().IncrementFocusCount(window);
+		return;
+	}
 	if(window && !WGUI::GetInstance().SetFocusedElement(this,window))
 		return;
 	*m_bHasFocus = true;
@@ -541,7 +550,7 @@ void WIBase::KillFocus(bool bForceKill)
 		{
 			auto &hEl = *it;
 			++it;
-			if(!hEl.IsValid())
+			if(!is_valid(hEl))
 				it = std::deque<WIHandle>::reverse_iterator(m_focusTrapStack.erase(it.base()));
 			else if(hEl.get() != this && hEl->IsVisible())
 			{
@@ -1704,7 +1713,7 @@ void WIBase::DoUpdateChildrenMouseInBounds(const Mat4 &parentPose,const Vector2 
 	for(unsigned int i=0;i<m_children.size();i++)
 	{
 		WIHandle &hChild = m_children[i];
-		if(hChild.IsValid() && (hChild->IsVisible() || hChild->ShouldThinkIfInvisible()))
+		if(is_valid(hChild) && (hChild->IsVisible() || hChild->ShouldThinkIfInvisible()))
 			hChild->DoUpdateChildrenMouseInBounds(parentPose *GetRelativePose(hChild->GetX(),hChild->GetY()),cursorPos,ignoreVisibility,forceFalse);
 	}
 }
@@ -1915,7 +1924,10 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton 
 {
 	auto hEl = el.GetHandle();
 
-	WIBase *pFocused = WGUI::GetInstance().GetFocusedElement(el.GetRootWindow());
+	auto &wgui = WGUI::GetInstance();
+	auto *window = el.GetRootWindow();
+	WIBase *pFocused = wgui.GetFocusedElement(window);
+	auto c = wgui.GetFocusCount(window);
 	auto hFocused = pFocused ? pFocused->GetHandle() : WIHandle{};
 	__lastMouseGUIElements.insert(std::unordered_map<GLFW::MouseButton,WIHandle>::value_type(button,el.GetHandle()));
 	auto result = el.MouseCallback(button,state,mods);
@@ -1923,13 +1935,19 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton 
 	auto it = std::find_if(__lastMouseGUIElements.begin(),__lastMouseGUIElements.end(),[&el](const std::pair<GLFW::MouseButton,WIHandle> &p) {
 		return (p.second.get() == &el) ? true : false;
 		});
-	if(it != __lastMouseGUIElements.end() && (!it->second.IsValid() || state == GLFW::KeyState::Release))
+	if(it != __lastMouseGUIElements.end() && (!is_valid(it->second) || state == GLFW::KeyState::Release))
 		__lastMouseGUIElements.erase(it);
-	if(hFocused.IsValid() && hEl.IsValid() && &el != pFocused && !pFocused->MouseInBounds())
+
+	if(wgui.GetFocusCount() != c)
+		; // Focus was already changed by callback
+	else
 	{
-		pFocused->KillFocus(); // Make sure to kill the focus AFTER the mouse callback.
-		if(hEl.IsValid())
-			el.RequestFocus();
+		if(is_valid(hFocused) && is_valid(hEl) && &el != pFocused && !pFocused->MouseInBounds())
+		{
+			pFocused->KillFocus(); // Make sure to kill the focus AFTER the mouse callback.
+			if(is_valid(hEl))
+				el.RequestFocus();
+		}
 	}
 	return result;
 }
@@ -1938,7 +1956,7 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window,GLFW::MouseButton b
 	auto i = __lastMouseGUIElements.find(button);
 	if(i != __lastMouseGUIElements.end())
 	{
-		if(i->second.IsValid() && i->second->IsVisible() && i->second->GetMouseInputEnabled())
+		if(is_valid(i->second) && i->second->IsVisible() && i->second->GetMouseInputEnabled())
 			i->second->MouseCallback(button,GLFW::KeyState::Release,mods);
 		__lastMouseGUIElements.erase(i);
 	}
@@ -1953,7 +1971,7 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window,GLFW::MouseButton b
 		WIBase *gui = (p == nullptr || !p->IsFocusTrapped()) ? WGUI::GetInstance().GetBaseElement(&window) : p;
 		auto hP = p ? p->GetHandle() : WIHandle{};
 		auto hGui = gui->GetHandle();
-		if(hGui.IsValid() && gui->IsVisible())
+		if(is_valid(hGui) && gui->IsVisible())
 		{
 			gui = WGUI::GetInstance().GetGUIElement(gui,static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y),
 				[&hGui,&hP,p,button,state,mods](WIBase *elChild) -> bool {
@@ -1982,7 +2000,7 @@ bool WIBase::__wiKeyCallback(prosper::Window &window,GLFW::Key key,int scanCode,
 	auto it = __lastKeyboardGUIElements.find(key);
 	if(it != __lastKeyboardGUIElements.end())
 	{
-		if(it->second.IsValid() && it->second->GetKeyboardInputEnabled())
+		if(is_valid(it->second) && it->second->GetKeyboardInputEnabled())
 			it->second->KeyboardCallback(key,scanCode,GLFW::KeyState::Release,mods);
 		__lastKeyboardGUIElements.erase(it);
 	}
@@ -2004,7 +2022,7 @@ bool WIBase::__wiKeyCallback(prosper::Window &window,GLFW::Key key,int scanCode,
 				auto it = std::find_if(__lastKeyboardGUIElements.begin(),__lastKeyboardGUIElements.end(),[gui](const std::pair<GLFW::Key,WIHandle> &p) {
 					return (p.second.get() == gui) ? true : false;
 					});
-				if(it != __lastKeyboardGUIElements.end() && (!it->second.IsValid() || state == GLFW::KeyState::Release))
+				if(it != __lastKeyboardGUIElements.end() && (!is_valid(it->second) || state == GLFW::KeyState::Release))
 					__lastKeyboardGUIElements.erase(it);
 				if(result == util::EventReply::Handled)
 					return true;

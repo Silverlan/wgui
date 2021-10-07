@@ -254,6 +254,7 @@ public:
 	bool MouseInBounds() const;
 	void ScheduleUpdate();
 	bool IsUpdateScheduled() const;
+	bool IsRemovalScheduled() const;
 	virtual void OnCursorEntered();
 	virtual void OnCursorExited();
 	virtual void OnCursorMoved(int x,int y);

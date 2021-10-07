@@ -440,9 +440,30 @@ bool WGUI::SetFocusedElement(WIBase *gui,prosper::Window *window)
 	}
 	(*window)->SetCursorInputMode(GLFW::CursorMode::Normal);
 	pair->elFocused = gui->GetHandle();
+	++pair->focusCount;
 	if(m_onFocusChangedCallback != nullptr)
 		m_onFocusChangedCallback(pPrevFocused,pair->elFocused.get());
 	return true;
+}
+
+void WGUI::IncrementFocusCount(const prosper::Window *window)
+{
+	window = GetWindow(window);
+	if(!window)
+		return;
+	auto *pair = FindWindowRootPair(*window);
+	if(!pair)
+		return;
+	++pair->focusCount;
+}
+
+uint32_t WGUI::GetFocusCount(const prosper::Window *window)
+{
+	window = GetWindow(window);
+	if(!window)
+		return 0;
+	auto *pair = FindWindowRootPair(*window);
+	return pair ? pair->focusCount : 0u;
 }
 
 WIBase *WGUI::GetFocusedElement(const prosper::Window *window)
