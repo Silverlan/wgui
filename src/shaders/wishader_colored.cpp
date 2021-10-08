@@ -96,17 +96,9 @@ void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 	pipelineInfo.ToggleStencilTest(true);
 	pipelineInfo.ToggleDynamicState(true,prosper::DynamicState::StencilReference);
 
-	bool blendingEnabled;
-	prosper::BlendOp blendOpColor;
-	prosper::BlendOp blendOpAlpha;
-	prosper::BlendFactor srcColorBlendFactor;
-	prosper::BlendFactor dstColorBlendFactor;
-	prosper::BlendFactor srcAlphaBlendFactor;
-	prosper::BlendFactor dstAlphaBlendFactor;
-	pipelineInfo.GetColorBlendAttachmentProperties(0,&blendingEnabled,&blendOpColor,&blendOpAlpha,&srcColorBlendFactor,&dstColorBlendFactor,&srcAlphaBlendFactor,&dstAlphaBlendFactor,nullptr);
 	// Disable color write
 	pipelineInfo.SetColorBlendAttachmentProperties(
-		0,&blendingEnabled,blendOpColor,blendOpAlpha,srcColorBlendFactor,dstColorBlendFactor,srcAlphaBlendFactor,dstAlphaBlendFactor,prosper::ColorComponentFlags::None
+		0,false,prosper::BlendOp::Add,prosper::BlendOp::Add,prosper::BlendFactor::Zero,prosper::BlendFactor::Zero,prosper::BlendFactor::Zero,prosper::BlendFactor::Zero,prosper::ColorComponentFlags::None
 	);
 
 	switch(static_cast<WIBase::StencilPipeline>(pipelineIdx))

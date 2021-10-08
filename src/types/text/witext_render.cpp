@@ -361,7 +361,7 @@ void WIText::RenderText(Mat4&)
 
 		drawCmd->RecordBeginRenderPass(rt);
 			drawCmd->RecordClearAttachment(img,std::array<float,4>{0.f,0.f,0.f,0.f});
-			if(shader.BeginDraw(drawCmd,w,h) == true)
+			if(shader.BeginDraw(drawCmd,w,h,0u,false) == true)
 			{
 				drawCmd->RecordSetViewport(vpWidth,vpHeight);
 				drawCmd->RecordSetScissor(vpWidth,vpHeight);
@@ -656,9 +656,8 @@ void WITextBase::InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h)
 
 bool WITextBase::RenderLines(
 	std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
-	wgui::ShaderTextRect &shader,int32_t width,int32_t height,
-	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2i &origin,
-	const umath::ScaledTransform &poseParent,const Vector2 &scale,Vector2i &inOutSize,
+	wgui::ShaderTextRect &shader,const DrawInfo &drawInfo,
+	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 	const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 	bool colorPass,StencilPipeline stencilPipeline
@@ -666,7 +665,7 @@ bool WITextBase::RenderLines(
 {
 	auto &textEl = static_cast<const WIText&>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(drawCmd,width,height,umath::to_integral(stencilPipeline)) == false)
+	if(shader.BeginDraw(drawCmd,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline),drawInfo.msaa) == false)
 		return false;
 	uint32_t xScissor,yScissor,wScissor,hScissor;
 	WGUI::GetInstance().GetScissor(xScissor,yScissor,wScissor,hScissor);
@@ -711,9 +710,9 @@ bool WITextBase::RenderLines(
 
 			// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
 			// This will be reset further below.
-			auto poseText = GetTransformPose(origin,width,height,poseParent.ToMatrix(),scale);
+			auto poseText = GetTransformPose(drawInfo.offset,drawInfo.size.x,drawInfo.size.y,drawInfo.transform,scale);
 			inOutPushConstants.elementData.modelMatrix = poseText;
-			inOutPushConstants.elementData.viewportSize = wgui::ElementData::ToViewportSize(Vector2i{width,height});
+			inOutPushConstants.elementData.viewportSize = wgui::ElementData::ToViewportSize(Vector2i{drawInfo.size.x,drawInfo.size.y});
 
 			inOutPushConstants.fontInfo.yOffset = bufInfo.absLineIndex *lineHeight;
 
@@ -726,20 +725,19 @@ bool WITextBase::RenderLines(
 
 void WITextBase::RenderLines(
 	std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
-	int32_t width,int32_t height,
-	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2i &origin,
-	const umath::ScaledTransform &poseParent,const Vector2 &scale,Vector2i &inOutSize,
+	const DrawInfo &drawInfo,
+	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,StencilPipeline stencilPipeline
 ) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
-	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,width,height,absPos,transform,origin,poseParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,drawInfo,absPos,transform,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
 	},false,stencilPipeline);
 	if(bHasColorBuffers == false)
 		return;
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
-	RenderLines(drawCmd,*pShaderTextRectColor,width,height,absPos,transform,origin,poseParent,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+	RenderLines(drawCmd,*pShaderTextRectColor,drawInfo,absPos,transform,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
 		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
 	},true,stencilPipeline);
 }
@@ -794,7 +792,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const V
 		CalcBounds(matDraw,drawInfo.size.x,drawInfo.size.y,absPos,absSize);
 		auto &commandBuffer = drawInfo.commandBuffer;
 		const auto fDraw = [&context,&commandBuffer,&pushConstants,&size,&drawInfo,&matDraw,pFont,this,&textEl,&absPos,&absSize,&scale,testStencilLevel,stencilPipeline](bool bClear) {
-			RenderLines(commandBuffer,drawInfo.size.x,drawInfo.size.y,absPos,matDraw,drawInfo.offset,drawInfo.transform /* parent transform */,scale,size,pushConstants,testStencilLevel,stencilPipeline);
+			RenderLines(commandBuffer,drawInfo,absPos,matDraw,scale,size,pushConstants,testStencilLevel,stencilPipeline);
 		};
 
 		// Render Shadow

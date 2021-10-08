@@ -48,7 +48,7 @@ void ShaderText::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &out
 {
 	CreateCachedRenderPass<ShaderText>({{{
 		prosper::Format::R8_UNorm,prosper::ImageLayout::ColorAttachmentOptimal,prosper::AttachmentLoadOp::DontCare,
-		prosper::AttachmentStoreOp::Store,prosper::SampleCountFlags::e1Bit,prosper::ImageLayout::ShaderReadOnlyOptimal
+		prosper::AttachmentStoreOp::Store,IsMsaaPipeline(pipelineIdx) ? WGUI::MSAA_SAMPLE_COUNT : prosper::SampleCountFlags::e1Bit,prosper::ImageLayout::ShaderReadOnlyOptimal
 	}}},outRenderPass,pipelineIdx);
 }
 

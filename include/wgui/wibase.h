@@ -104,6 +104,7 @@ public:
 		mutable std::shared_ptr<prosper::ICommandBuffer> commandBuffer;
 		bool useScissor = true;
 		bool useStencil = false;
+		bool msaa = false;
 
 		Vector4 GetColor(WIBase &el) const;
 	};

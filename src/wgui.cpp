@@ -23,9 +23,11 @@
 #include <prosper_descriptor_set_group.hpp>
 #include <prosper_command_buffer.hpp>
 #include <prosper_window.hpp>
+#include <prosper_render_pass.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #pragma optimize("",off)
 static std::unique_ptr<WGUI> s_wgui = nullptr;
+prosper::SampleCountFlags WGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
 WGUI &WGUI::Open(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager)
 {
 	s_wgui = nullptr;
@@ -126,7 +128,28 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 
 	m_time.Update();
 	m_tLastThink = static_cast<double>(m_time());
+
 	auto &context = GetContext();
+	prosper::ImageFormatPropertiesQuery query {
+		prosper::ImageCreateFlags::None,prosper::Format::R8G8B8A8_UNorm,
+		prosper::ImageType::e2D,prosper::ImageTiling::Optimal,
+		prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit
+	};
+	auto limits = context.GetPhysicalDeviceImageFormatProperties(query);
+	if(limits.has_value())
+	{
+		MSAA_SAMPLE_COUNT = limits->sampleCount;
+		if(MSAA_SAMPLE_COUNT > prosper::SampleCountFlags::e8Bit)
+			MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e8Bit;
+	}
+	else
+		MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
+
+	auto rpCreateInfo = context.GetWindow().GetStagingRenderPass().GetCreateInfo();
+	for(auto &att : rpCreateInfo.attachments)
+		att.sampleCount = MSAA_SAMPLE_COUNT;
+	m_msaaRenderPass = context.CreateRenderPass(rpCreateInfo);
+
 	auto &shaderManager = context.GetShaderManager();
 	shaderManager.RegisterShader("wguicolored",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColored(context,identifier);});
 	shaderManager.RegisterShader("wguicolored_cheap",[](prosper::IPrContext &context,const std::string &identifier) {return new wgui::ShaderColoredRect(context,identifier);});
@@ -167,6 +190,8 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 		base->SetSize(*resolution);
 	return ResultCode::Ok;
 }
+
+prosper::IRenderPass &WGUI::GetMsaaRenderPass() const {return *m_msaaRenderPass;}
 
 MaterialManager &WGUI::GetMaterialManager() {return *m_matManager.lock();}
 

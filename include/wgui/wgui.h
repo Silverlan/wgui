@@ -33,6 +33,7 @@ namespace prosper
 	class ISecondaryCommandBuffer;
 	class ICommandBuffer;
 	class Window;
+	enum class SampleCountFlags : uint32_t;
 };
 
 namespace wgui
@@ -55,6 +56,7 @@ class DLLWGUI WGUI
 {
 public:
 	friend WIBase;
+	static prosper::SampleCountFlags MSAA_SAMPLE_COUNT;
 	enum class ElementBuffer : uint32_t
 	{
 		SizeColor = sizeof(Vector4),
@@ -142,6 +144,7 @@ public:
 	WIBase *GetGUIElement(WIBase *el,int32_t x,int32_t y,const std::function<bool(WIBase*)> &condition,const prosper::Window *optWindow=nullptr);
 	WIBase *GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> &condition,const prosper::Window *optWindow=nullptr);
 	double GetDeltaTime() const;
+	prosper::IRenderPass &GetMsaaRenderPass() const;
 	//prosper::util::record_set_scissor(*drawCmd,szScissor[0],szScissor[1],posScissor[0],posScissor[1]); // Use parent scissor values
 
 	wgui::ShaderColored *GetColoredShader();
@@ -170,6 +173,7 @@ private:
 	std::function<Material*(const std::string&)> m_materialLoadHandler = nullptr;
 	std::shared_ptr<prosper::IUniformResizableBuffer> m_elementBuffer = nullptr;
 	std::vector<WIHandle> m_rootElements {};
+	std::shared_ptr<prosper::IRenderPass> m_msaaRenderPass = nullptr;
 	struct WindowRootPair
 	{
 		std::weak_ptr<const prosper::Window> window {};

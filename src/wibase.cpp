@@ -953,7 +953,7 @@ void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &
 	auto *shader = WGUI::GetInstance().GetStencilShader();
 	assert(shader != nullptr);
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline)) == true)
+	if(shader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline),drawInfo.msaa) == true)
 	{
 		shader->Draw({matDraw,Vector4{},wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
 		shader->EndDraw();

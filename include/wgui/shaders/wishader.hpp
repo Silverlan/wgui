@@ -8,10 +8,12 @@
 #include "wgui/wguidefinitions.h"
 #include <shader/prosper_shader_rect.hpp>
 
+namespace prosper {class IPrContext;};
+class WGUI;
 namespace wgui
 {
 	DLLWGUI prosper::IRenderPass &get_render_pass(prosper::IPrContext &context);
-	DLLWGUI void get_render_pass(prosper::IPrContext &context,std::shared_ptr<prosper::IRenderPass> &outRenderPass);
+	DLLWGUI void get_render_pass(WGUI &gui,prosper::IPrContext &context,std::shared_ptr<prosper::IRenderPass> &outRenderPass,bool msaa);
 	DLLWGUI void initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx);
 	class DLLWGUI Shader
 		: public prosper::ShaderGraphics
@@ -23,10 +25,12 @@ namespace wgui
 
 		Shader(prosper::IPrContext &context,const std::string &identifier);
 		Shader(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
-		bool BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx=0u);
+		bool BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx,bool msaa);
 		virtual size_t GetBaseTypeHashCode() const override;
 		using ShaderGraphics::BeginDraw;
 	protected:
+		static uint32_t TranslatePipelineIndex(uint32_t pipelineIdx,bool msaa);
+		static bool IsMsaaPipeline(uint32_t pipelineIdx);
 		bool RecordSetStencilReference(uint32_t testStencilLevel);
 		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
