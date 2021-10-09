@@ -361,7 +361,7 @@ void WIText::RenderText(Mat4&)
 
 		drawCmd->RecordBeginRenderPass(rt);
 			drawCmd->RecordClearAttachment(img,std::array<float,4>{0.f,0.f,0.f,0.f});
-			if(shader.BeginDraw(drawCmd,w,h,0u,false) == true)
+			if(shader.BeginDraw(drawCmd,w,h,wgui::StencilPipeline::Test,false) == true)
 			{
 				drawCmd->RecordSetViewport(vpWidth,vpHeight);
 				drawCmd->RecordSetScissor(vpWidth,vpHeight);
@@ -660,12 +660,12 @@ bool WITextBase::RenderLines(
 	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 	const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
-	bool colorPass,StencilPipeline stencilPipeline
+	bool colorPass,wgui::StencilPipeline stencilPipeline
 ) const
 {
 	auto &textEl = static_cast<const WIText&>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(drawCmd,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline),drawInfo.msaa) == false)
+	if(shader.BeginDraw(drawCmd,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == false)
 		return false;
 	uint32_t xScissor,yScissor,wScissor,hScissor;
 	WGUI::GetInstance().GetScissor(xScissor,yScissor,wScissor,hScissor);
@@ -727,7 +727,7 @@ void WITextBase::RenderLines(
 	std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 	const DrawInfo &drawInfo,
 	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2 &scale,Vector2i &inOutSize,
-	wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,StencilPipeline stencilPipeline
+	wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline
 ) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
@@ -742,7 +742,7 @@ void WITextBase::RenderLines(
 	},true,stencilPipeline);
 }
 
-void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
+void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
 {
 	auto matDraw = matDrawRoot;
 	if(m_localRenderTransform)

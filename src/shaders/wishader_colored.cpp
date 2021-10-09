@@ -101,10 +101,10 @@ void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 		0,false,prosper::BlendOp::Add,prosper::BlendOp::Add,prosper::BlendFactor::Zero,prosper::BlendFactor::Zero,prosper::BlendFactor::Zero,prosper::BlendFactor::Zero,prosper::ColorComponentFlags::None
 	);
 
-	switch(static_cast<WIBase::StencilPipeline>(pipelineIdx))
+	switch(Shader::ToStencilPipelineIndex(pipelineIdx))
 	{
-	case WIBase::StencilPipeline::Test:
-	case WIBase::StencilPipeline::Increment:
+	case wgui::StencilPipeline::Test:
+	case wgui::StencilPipeline::Increment:
 		pipelineInfo.SetStencilTestProperties(
 			true,
 			prosper::StencilOp::Keep, /* fail */
@@ -115,7 +115,7 @@ void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 			0
 		);
 		break;
-	case WIBase::StencilPipeline::Decrement:
+	case wgui::StencilPipeline::Decrement:
 		pipelineInfo.SetStencilTestProperties(
 			true,
 			prosper::StencilOp::Keep, /* fail */

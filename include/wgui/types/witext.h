@@ -52,7 +52,7 @@ public:
 		float sy = 0.f;
 	};
 
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,StencilPipeline stencilPipeline=StencilPipeline::Test) override;
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,wgui::StencilPipeline stencilPipeline=wgui::StencilPipeline::Test) override;
 	void InitializeTexture(prosper::Texture &tex,int32_t w,int32_t h);
 	void SetTextElement(WIText &elText);
 private:
@@ -63,14 +63,14 @@ private:
 		const Vector2 &scale,Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants,
 		const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
-		bool colorPass,StencilPipeline stencilPipeline
+		bool colorPass,wgui::StencilPipeline stencilPipeline
 	) const;
 	void RenderLines(
 		std::shared_ptr<prosper::ICommandBuffer> &drawCmd,
 		const DrawInfo &drawInfo,
 		const Vector2i &absPos,const umath::ScaledTransform &transform,
 		const Vector2 &scale,Vector2i &inOutSize,
-		wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,StencilPipeline stencilPipeline
+		wgui::ShaderTextRect::PushConstants &inOutPushConstants,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline
 	) const;
 	WIHandle m_hTexture = {};
 	WIHandle m_hText = {};

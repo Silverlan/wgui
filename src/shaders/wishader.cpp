@@ -27,13 +27,13 @@ decltype(Shader::DESCRIPTOR_SET) Shader::DESCRIPTOR_SET = {
 Shader::Shader(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderGraphics(context,identifier,"wgui/vs_wgui_colored","wgui/fs_wgui_colored")
 {
-	SetPipelineCount(umath::to_integral(WIBase::StencilPipeline::Count) *2);
+	SetPipelineCount(umath::to_integral(wgui::StencilPipeline::Count) *2);
 }
 
 Shader::Shader(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: ShaderGraphics(context,identifier,vsShader,fsShader,gsShader)
 {
-	SetPipelineCount(umath::to_integral(WIBase::StencilPipeline::Count) *2);
+	SetPipelineCount(umath::to_integral(wgui::StencilPipeline::Count) *2);
 }
 
 void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx,bool enableStencilTest)
@@ -58,18 +58,32 @@ void Shader::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRend
 	wgui::get_render_pass(WGUI::GetInstance(),GetContext(),outRenderPass,IsMsaaPipeline(pipelineIdx));
 }
 
-uint32_t Shader::TranslatePipelineIndex(uint32_t pipelineIdx,bool msaa)
+wgui::StencilPipeline Shader::ToStencilPipelineIndex(uint32_t pipelineIdx,bool *optOutMsaa)
+{
+	if(pipelineIdx >= umath::to_integral(wgui::StencilPipeline::Count))
+	{
+		if(optOutMsaa)
+			*optOutMsaa = true;
+		return static_cast<wgui::StencilPipeline>(pipelineIdx -umath::to_integral(wgui::StencilPipeline::Count));
+	}
+	if(optOutMsaa)
+		*optOutMsaa = false;
+	return static_cast<StencilPipeline>(pipelineIdx);
+}
+uint32_t Shader::ToAbsolutePipelineIndex(wgui::StencilPipeline pipelineIdx,bool msaa)
 {
 	if(msaa)
-		pipelineIdx += umath::to_integral(WIBase::StencilPipeline::Count);
-	return pipelineIdx;
+		return umath::to_integral(pipelineIdx) +umath::to_integral(wgui::StencilPipeline::Count);
+	return umath::to_integral(pipelineIdx);
 }
-bool Shader::IsMsaaPipeline(uint32_t pipelineIdx) {return pipelineIdx >= umath::to_integral(WIBase::StencilPipeline::Count);}
 
-bool Shader::BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,uint32_t pipelineIdx,bool msaa)
+static bool is_msaa_pipeline(uint32_t pipelineIdx) {return pipelineIdx >= umath::to_integral(wgui::StencilPipeline::Count);}
+bool Shader::IsMsaaPipeline(uint32_t pipelineIdx) {return is_msaa_pipeline(pipelineIdx);}
+
+bool Shader::BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa)
 {
-	pipelineIdx = TranslatePipelineIndex(pipelineIdx,msaa);
-	if(ShaderGraphics::BeginDraw(cmdBuffer,pipelineIdx,RecordFlags::None) == false || cmdBuffer->RecordSetViewport(width,height) == false)
+	auto idx = ToAbsolutePipelineIndex(pipelineIdx,msaa);
+	if(ShaderGraphics::BeginDraw(cmdBuffer,idx,RecordFlags::None) == false || cmdBuffer->RecordSetViewport(width,height) == false)
 		return false;
 	uint32_t x,y,w,h;
 	WGUI::GetInstance().GetScissor(x,y,w,h);
@@ -103,9 +117,9 @@ void wgui::initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pi
 {
 	pipelineInfo.ToggleStencilTest(true);
 	pipelineInfo.ToggleDynamicState(true,prosper::DynamicState::StencilReference);
-	switch(static_cast<WIBase::StencilPipeline>(pipelineIdx))
+	switch(Shader::ToStencilPipelineIndex(pipelineIdx))
 	{
-	case WIBase::StencilPipeline::Test:
+	case wgui::StencilPipeline::Test:
 		pipelineInfo.SetStencilTestProperties(
 			true,
 			prosper::StencilOp::Keep, /* fail */
@@ -116,7 +130,7 @@ void wgui::initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pi
 			0
 		);
 		break;
-	case WIBase::StencilPipeline::Increment:
+	case wgui::StencilPipeline::Increment:
 		pipelineInfo.SetStencilTestProperties(
 			true,
 			prosper::StencilOp::Keep, /* fail */
@@ -127,7 +141,7 @@ void wgui::initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pi
 			0
 		);
 		break;
-	case WIBase::StencilPipeline::Decrement:
+	case wgui::StencilPipeline::Decrement:
 		pipelineInfo.SetStencilTestProperties(
 			true,
 			prosper::StencilOp::Keep, /* fail */

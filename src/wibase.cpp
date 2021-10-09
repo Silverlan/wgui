@@ -457,6 +457,9 @@ void WIBase::SetHeight(int h,bool keepRatio)
 }
 int WIBase::GetZPos() const {return m_zpos;}
 float WIBase::GetAlpha() const {return m_color->GetValue().a /255.f;}
+void WIBase::SetLocalAlpha(float a) {m_localAlpha = a; UpdateTransparencyState();}
+void WIBase::UpdateTransparencyState() {umath::set_flag(m_stateFlags,StateFlags::FullyTransparent,(GetAlpha() *m_localAlpha) == 0.f);}
+bool WIBase::IsFullyTransparent() const {return umath::is_flag_set(m_stateFlags,StateFlags::FullyTransparent);}
 void WIBase::SetAlpha(float alpha)
 {
 	auto &col = GetColor();
@@ -944,16 +947,16 @@ Mat4 WIBase::GetScaledMatrix(int w,int h) const
 	Mat4 mat(1.0f);
 	return GetScaledMatrix(w,h,mat);
 }
-void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
+void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
 {
-	if(stencilPipeline == StencilPipeline::Test)
+	if(stencilPipeline == wgui::StencilPipeline::Test)
 		return;
 
 	// We don't actually render the element, but it still needs to be drawn to the stencil buffer
 	auto *shader = WGUI::GetInstance().GetStencilShader();
 	assert(shader != nullptr);
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline),drawInfo.msaa) == true)
+	if(shader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
 		shader->Draw({matDraw,Vector4{},wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
 		shader->EndDraw();
@@ -1169,7 +1172,9 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 		++newStencilLevel;
 	}
 	auto useStencil = (newStencilLevel > stencilLevel);
-	Render(drawInfo,matDraw,scale,stencilLevel,useStencil ? StencilPipeline::Increment : StencilPipeline::Test);
+	auto fullyTransparent = IsFullyTransparent();
+	if(useStencil || !fullyTransparent)
+		Render(drawInfo,matDraw,scale,stencilLevel,useStencil ? wgui::StencilPipeline::Increment : wgui::StencilPipeline::Test);
 
 	rootPose = GetTranslationPose(origin,w,h,rootPose);
 	if(m_rotationMatrix)
@@ -1235,7 +1240,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 	{
 		// Reset scissor
 		WGUI::GetInstance().SetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
-		Render(drawInfo,matDraw,scale,newStencilLevel,StencilPipeline::Decrement);
+		Render(drawInfo,matDraw,scale,newStencilLevel,wgui::StencilPipeline::Decrement);
 	}
 }
 void WIBase::Draw(const DrawInfo &drawInfo)

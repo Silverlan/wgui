@@ -41,6 +41,17 @@ class WISkin;
 class WGUI;
 namespace util {class ColorProperty;};
 namespace prosper {class IBuffer; class ICommandBuffer; class Window;};
+namespace wgui
+{
+	enum class StencilPipeline : uint8_t
+	{
+		Test = 0u,
+		Increment,
+		Decrement,
+
+		Count
+	};
+};
 class DLLWGUI WIBase
 	: public CallbackHandler
 {
@@ -50,14 +61,6 @@ protected:
 public:
 	friend WGUI;
 public:
-	enum class StencilPipeline : uint8_t
-	{
-		Test = 0u,
-		Increment,
-		Decrement,
-
-		Count
-	};
 	enum class StateFlags : uint32_t
 	{
 		None = 0u,
@@ -89,7 +92,8 @@ public:
 		IsBackgroundElement = IsBeingUpdated<<1u,
 		FirstThink = IsBackgroundElement<<1u,
 		DontRemoveOnParentRemoval = FirstThink<<1u,
-		StencilEnabled = DontRemoveOnParentRemoval<<1u
+		StencilEnabled = DontRemoveOnParentRemoval<<1u,
+		FullyTransparent = StencilEnabled<<1u
 	};
 	struct DLLWGUI DrawInfo
 	{
@@ -224,7 +228,7 @@ public:
 	float GetAlpha() const;
 	virtual void SetAlpha(float alpha);
 	float GetLocalAlpha() const {return m_localAlpha;}
-	void SetLocalAlpha(float a) {m_localAlpha = a;}
+	void SetLocalAlpha(float a);
 	int GetWidth() const;
 	int GetHeight() const;
 	const util::PVector2iProperty &GetSizeProperty() const;
@@ -383,6 +387,8 @@ protected:
 	virtual void DoUpdate();
 	virtual util::EventReply OnMousePressed();
 	virtual util::EventReply OnMouseReleased();
+	virtual void UpdateTransparencyState();
+	bool IsFullyTransparent() const;
 	void UpdateVisibility();
 	void UpdateParentThink();
 	void UpdateAnchorTransform();
@@ -416,7 +422,7 @@ protected:
 	int m_lastMouseY = 0;
 	std::vector<WIHandle> m_children;
 	mutable WIHandle m_parent = {};
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,StencilPipeline stencilPipeline=StencilPipeline::Test);
+	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,wgui::StencilPipeline stencilPipeline=wgui::StencilPipeline::Test);
 	void UpdateChildOrder(WIBase *child=NULL);
 	template<class TElement>
 		WIHandle CreateChild();

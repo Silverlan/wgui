@@ -307,6 +307,7 @@ void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 }
 void WITexturedShape::SetMaterial(Material *material)
 {
+	util::ScopeGuard sg {[this]() {UpdateTransparencyState();}};
 	ClearTexture();
 	m_hMaterial = material->GetHandle();
 	if(!m_hMaterial.IsValid())
@@ -381,6 +382,10 @@ WITexturedShape::~WITexturedShape()
 {
 	if(m_uvBuffer != nullptr)
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_uvBuffer);
+	if(m_descSetTextureGroup)
+		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_descSetTextureGroup);
+	if(m_texture)
+		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_texture);
 	ClearTextureLoadCallback();
 }
 unsigned int WITexturedShape::AddVertex(Vector2 vert)
@@ -430,6 +435,18 @@ void WITexturedShape::SetAlphaMode(AlphaMode alphaMode) {m_alphaMode = alphaMode
 void WITexturedShape::SetAlphaCutoff(float alphaCutoff) {m_alphaCutoff = alphaCutoff;}
 AlphaMode WITexturedShape::GetAlphaMode() const {return m_alphaMode;}
 float WITexturedShape::GetAlphaCutoff() const {return m_alphaCutoff;}
+void WITexturedShape::UpdateTransparencyState()
+{
+	WIBase::UpdateTransparencyState();
+	if(umath::is_flag_set(WIBase::m_stateFlags,WIBase::StateFlags::FullyTransparent))
+		return;
+	auto *mat = GetMaterial();
+	if(!mat)
+		return;
+	const char *transparent = "transparent.";
+	auto fullyTransparent = ustring::compare(mat->GetName().c_str(),transparent,false,strlen(transparent));
+	umath::set_flag(WIBase::m_stateFlags,WIBase::StateFlags::FullyTransparent,fullyTransparent);
+}
 void WITexturedShape::UpdateShaderState()
 {
 	umath::set_flag(m_stateFlags,StateFlags::ExpensiveShaderRequired,m_alphaMode != AlphaMode::Blend);
@@ -455,7 +472,7 @@ void WITexturedShape::SizeToTexture()
 	}
 	SetSize(width,height);
 }
-void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,StencilPipeline stencilPipeline)
+void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
 {
 	if(m_hMaterial.IsValid() == false && m_texture == nullptr)
 		return;
@@ -482,7 +499,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 			if(pShaderExpensive == nullptr)
 				return;
 			auto &context = WGUI::GetInstance().GetContext();
-			if(pShaderExpensive->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline),drawInfo.msaa) == true)
+			if(pShaderExpensive->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 			{
 				pShaderExpensive->Draw({
 					matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size),std::array<uint32_t,3>{},umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
@@ -500,7 +517,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 		if(pShaderCheap == nullptr)
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
-		if(pShaderCheap->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline),drawInfo.msaa) == true)
+		if(pShaderCheap->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 		{
 			pShaderCheap->Draw({
 				matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size),std::array<uint32_t,3>{},umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
@@ -523,7 +540,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 	auto uvBuf = (m_uvBuffer != nullptr) ? m_uvBuffer : context.GetCommonBufferCache().GetSquareUvBuffer();
 	if(vbuf == nullptr || uvBuf == nullptr)
 		return;
-	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,umath::to_integral(stencilPipeline),drawInfo.msaa) == true)
+	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
 		wgui::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = matDraw;
