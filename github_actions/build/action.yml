@@ -1,0 +1,42 @@
+name: Build
+description: 'Build library'
+inputs:
+  root_dir:
+    description: 'Root directory'
+    required: true
+  should_checkout:
+    description: 'Checkout the core library?'
+    required: true
+    default: '1'
+  dir:
+    description: 'Library directory'
+    required: true
+    default: 'external_libs/wgui'
+runs:
+  using: "composite"
+  steps:
+    - name: Initialize Env
+      id: init-env
+      uses: Silverlan/common_actions/set_common_env_vars@main
+      
+    - uses: ChristopherHX/conditional@b4a9649204f81002ec9a4ef7d4bf7d6b2ab7fa55
+      name: CMake Build
+      with:
+        if: ${{inputs.should_checkout == '1'}}
+        step: |
+          uses: Silverlan/common_actions/get_submodule@main
+          with:
+            repo: 'Silverlan/wgui'
+            repo_name: 'wgui'
+            cmake_var: 'DEPENDENCY_WGUI_INCLUDE'
+            dir: 'external_libs'
+         
+    - uses: Silverlan/common_actions/build_cmake@main
+      name: CMake Build
+      with:
+        build_type: ${{ matrix.config.build_type }}
+        build_generator: ${{ matrix.config.generators }}
+        cmake_var: 'DEPENDENCY_WGUI_LIBRARY'
+        build_target: wgui
+        build_dir: '${{ matrix.config.build_dir }}/${{ inputs.dir }}'
+        cmake_script_location: '${{ inputs.dir }}'
