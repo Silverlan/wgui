@@ -43,7 +43,7 @@ runs:
         repo: 'https://github.com/aseprite/freetype2'
         repo_name: 'freetype'
         repo_branch: 'master'
-        build_target: png
+        build_target: freetype
         cmake_var: 'DEPENDENCY_FREETYPE_INCLUDE'
         cmake_var_lib: 'DEPENDENCY_FREETYPE_LIBRARY'
             
