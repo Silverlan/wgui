@@ -37,7 +37,7 @@ runs:
       with:
         dir: 'third_party_libs'
         repo: 'https://github.com/aseprite/freetype2'
-        repo_name: 'freetype2'
+        repo_name: 'freetype'
         repo_branch: 'master'
         cmake_var: 'DEPENDENCY_FREETYPE_INCLUDE'
         cmake_var_lib: 'DEPENDENCY_FREETYPE_LIBRARY'
