@@ -32,6 +32,16 @@ runs:
             dir: 'external_libs'
             checkout_submodules: '0'
             
+    - name: Download submodule - freetype2
+      uses: Silverlan/common_actions/get_submodule@main
+      with:
+        dir: 'third_party_libs'
+        repo: 'https://github.com/aseprite/freetype2'
+        repo_name: 'freetype2'
+        repo_branch: 'master'
+        cmake_var: 'DEPENDENCY_FREETYPE_INCLUDE'
+        cmake_var_lib: 'DEPENDENCY_FREETYPE_LIBRARY'
+            
     - name: Build submodule - materialsystem
       uses: Silverlan/materialsystem/github_actions/build@master
       with:
