@@ -32,6 +32,11 @@ runs:
             dir: 'external_libs'
             checkout_submodules: '0'
             
+    - name: Define CMake Variables
+      uses: Silverlan/common_actions/define_cmake_var@main
+      with:
+        cmake_var: '-DWGUI_INCLUDE_DEPENDENCIES=OFF'
+            
     - name: Download submodule - freetype2
       uses: Silverlan/common_actions/get_submodule@main
       with:
