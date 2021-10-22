@@ -37,13 +37,13 @@ runs:
       with:
         cmake_var: '-DWGUI_INCLUDE_DEPENDENCIES=OFF'
             
-    - name: Download submodule - freetype2
-      uses: Silverlan/common_actions/get_submodule@main
+    - name: Build submodule - freetype2
+      uses: Silverlan/common_actions/build_submodule@main
       with:
-        dir: 'third_party_libs'
         repo: 'https://github.com/aseprite/freetype2'
         repo_name: 'freetype'
         repo_branch: 'master'
+        build_target: png
         cmake_var: 'DEPENDENCY_FREETYPE_INCLUDE'
         cmake_var_lib: 'DEPENDENCY_FREETYPE_LIBRARY'
             
