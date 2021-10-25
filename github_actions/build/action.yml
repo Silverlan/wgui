@@ -62,9 +62,6 @@ runs:
       shell: bash
       run: |
         echo "Cp..."
-        mkdir -p "/third_party_libs/glfw/src" || true
-        cp "/home/runner/work/wgui/wgui/build/third_party_libs/glfw/src/libglfw.so" "/third_party_libs/glfw/src/libglfw.so" || true
-        
         mkdir -p "./third_party_libs/glfw/src" || true
         cp "/home/runner/work/wgui/wgui/build/third_party_libs/glfw/src/libglfw.so" "./third_party_libs/glfw/src/libglfw.so" || true
         echo "Done"
