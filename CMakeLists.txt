@@ -108,6 +108,10 @@ endif()
 set(CMAKE_BUILD_TYPE ${CONFIG_BUILD_TYPE} CACHE STRING "" FORCE)
 #
 
+if(DEFINED DEPENDENCY_VFILESYSTEM_LIBRARY)
+	message("PRE-DEPENDENCY_VFILESYSTEM_LIBRARY set as: ${DEPENDENCY_VFILESYSTEM_LIBRARY}")
+endif()
+
 link_external_library(sharedutils "${CMAKE_CURRENT_LIST_DIR}/external_libs/sharedutils/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/sharedutils/${CMAKE_BUILD_TYPE}" "sharedutils" 0)
 link_external_library(sharedutils_static "${CMAKE_CURRENT_LIST_DIR}/external_libs/sharedutils/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/sharedutils-static/${CMAKE_BUILD_TYPE}" "sharedutils-static" 1)
 if(NOT DEFINED DEPENDENCY_SHAREDUTILS_LIBRARY_STATIC)
@@ -205,6 +209,8 @@ set(DEFINITIONS
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
 	WGUI_DLL
 )
+
+message("DEPENDENCY_VFILESYSTEM_LIBRARY set as: ${DEPENDENCY_VFILESYSTEM_LIBRARY}")
 
 ##### CONFIGURATION #####
 
