@@ -251,6 +251,7 @@ endif()
 def_vs_filters("${SRC_FILES}")
 
 foreach(LIB IN LISTS LIBRARIES)
+	message("Linking library ${${LIB}} with project ${PROJ_NAME}")
 	target_link_libraries(${PROJ_NAME} ${${LIB}})
 endforeach(LIB)
 
