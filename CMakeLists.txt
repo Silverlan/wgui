@@ -121,6 +121,7 @@ link_external_library(datasystem "${CMAKE_CURRENT_LIST_DIR}/external_libs/datasy
 link_external_library(iglfw "${CMAKE_CURRENT_LIST_DIR}/external_libs/iglfw/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/iglfw/${CMAKE_BUILD_TYPE}" "iglfw" 0)
 link_external_library(util_image "${CMAKE_CURRENT_LIST_DIR}/external_libs/util_image/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/util_image/${CMAKE_BUILD_TYPE}" "util_image" 1)
 # link_external_library(vfilesystem "${CMAKE_CURRENT_LIST_DIR}/external_libs/vfilesystem/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/vfilesystem/${CMAKE_BUILD_TYPE}" "vfilesystem" 0)
+add_include_dir(vfilesystem "${CMAKE_CURRENT_LIST_DIR}/external_libs/vfilesystem/include")
 link_external_library(sharedutils "${CMAKE_CURRENT_LIST_DIR}/external_libs/sharedutils/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/sharedutils/${CMAKE_BUILD_TYPE}" "sharedutils" 0)
 # link_external_library(sharedutils_static "${CMAKE_CURRENT_LIST_DIR}/external_libs/sharedutils/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/sharedutils-static/${CMAKE_BUILD_TYPE}" "sharedutils-static" 1)
 if(NOT DEFINED DEPENDENCY_SHAREDUTILS_LIBRARY_STATIC)
