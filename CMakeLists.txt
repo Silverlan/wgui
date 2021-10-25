@@ -14,6 +14,7 @@ function(add_include_dir IDENTIFIER DEFAULT_INCLUDE_DIR)
 	set(INCLUDE_DIRS ${INCLUDE_DIRS} DEPENDENCY_${UIDENTIFIER}_INCLUDE PARENT_SCOPE)
 endfunction(add_include_dir)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
 option(WGUI_INCLUDE_DEPENDENCIES "Include dependencies required to build the wgui library?" ON)
 function(setup_library_dependency_var LIB_PATH LIB_NAME STATIC_LIB VAR_NAME)
 	if(WGUI_INCLUDE_DEPENDENCIES)
