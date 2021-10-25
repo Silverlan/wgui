@@ -90,6 +90,7 @@ set(PROJ_NAME wgui)
 project(${PROJ_NAME} CXX)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(ENABLE_STATIC_LIBRARY_FLAG 0)
 # set(PRECOMPILED_HEADER "stdafx")
 
@@ -108,10 +109,6 @@ endif()
 set(CMAKE_BUILD_TYPE ${CONFIG_BUILD_TYPE} CACHE STRING "" FORCE)
 #
 
-if(DEFINED DEPENDENCY_VFILESYSTEM_LIBRARY)
-	message("PRE-DEPENDENCY_VFILESYSTEM_LIBRARY set as: ${DEPENDENCY_VFILESYSTEM_LIBRARY}")
-endif()
-
 
 link_external_library(util_formatted_text "${CMAKE_CURRENT_LIST_DIR}/external_libs/util_formatted_text/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/util_formatted_text/${CMAKE_BUILD_TYPE}" "util_formatted_text" 1)
 link_external_library(cmaterialsystem "${CMAKE_CURRENT_LIST_DIR}/external_libs/materialsystem/cmaterialsystem/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/materialsystem/${CMAKE_BUILD_TYPE}" "cmaterialsystem" 0)
@@ -120,8 +117,7 @@ link_external_library(prosper "${CMAKE_CURRENT_LIST_DIR}/external_libs/prosper/i
 link_external_library(datasystem "${CMAKE_CURRENT_LIST_DIR}/external_libs/datasystem/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/datasystem/${CMAKE_BUILD_TYPE}" "datasystem" 0)
 link_external_library(iglfw "${CMAKE_CURRENT_LIST_DIR}/external_libs/iglfw/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/iglfw/${CMAKE_BUILD_TYPE}" "iglfw" 0)
 link_external_library(util_image "${CMAKE_CURRENT_LIST_DIR}/external_libs/util_image/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/util_image/${CMAKE_BUILD_TYPE}" "util_image" 1)
-# link_external_library(vfilesystem "${CMAKE_CURRENT_LIST_DIR}/external_libs/vfilesystem/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/vfilesystem/${CMAKE_BUILD_TYPE}" "vfilesystem" 0)
-add_include_dir(vfilesystem "${CMAKE_CURRENT_LIST_DIR}/external_libs/vfilesystem/include")
+link_external_library(vfilesystem "${CMAKE_CURRENT_LIST_DIR}/external_libs/vfilesystem/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/vfilesystem/${CMAKE_BUILD_TYPE}" "vfilesystem" 0)
 link_external_library(sharedutils "${CMAKE_CURRENT_LIST_DIR}/external_libs/sharedutils/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/sharedutils/${CMAKE_BUILD_TYPE}" "sharedutils" 0)
 # link_external_library(sharedutils_static "${CMAKE_CURRENT_LIST_DIR}/external_libs/sharedutils/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/sharedutils-static/${CMAKE_BUILD_TYPE}" "sharedutils-static" 1)
 if(NOT DEFINED DEPENDENCY_SHAREDUTILS_LIBRARY_STATIC)
@@ -211,8 +207,6 @@ set(DEFINITIONS
 	WGUI_DLL
 )
 
-message("DEPENDENCY_VFILESYSTEM_LIBRARY set as: ${DEPENDENCY_VFILESYSTEM_LIBRARY}")
-
 ##### CONFIGURATION #####
 
 set(LIB_TYPE SHARED)
@@ -251,7 +245,7 @@ endif()
 def_vs_filters("${SRC_FILES}")
 
 foreach(LIB IN LISTS LIBRARIES)
-	message("Linking library ${${LIB}} with project ${PROJ_NAME}")
+	message("Linking library ${${LIB}} with project ${PROJ_NAME}...")
 	target_link_libraries(${PROJ_NAME} ${${LIB}})
 endforeach(LIB)
 
