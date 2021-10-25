@@ -46,6 +46,7 @@ runs:
         build_target: freetype
         cmake_var: 'DEPENDENCY_FREETYPE_INCLUDE'
         cmake_var_lib: 'DEPENDENCY_FREETYPE_LIBRARY'
+        static_library: '1'
             
     - name: Build submodule - materialsystem
       uses: Silverlan/materialsystem/github_actions/build@actions
