@@ -56,6 +56,29 @@ runs:
       uses: Silverlan/util_formatted_text/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_formatted_text"
+        
+    - name: Check files
+      id: check-files
+      shell: bash
+      run: |
+        fname="/home/runner/work/wgui/wgui/build//external_libs/vfilesystem/RelWithDebInfo/libvfilesystem.so"
+        echo "Check for existence of $fname..."
+        if [ -f "$fname" ]; then
+           echo "File exists!"
+        else
+           echo "File does not exist!"
+        fi
+        fname="/home/runner/work/wgui/wgui/build/external_libs/vfilesystem/RelWithDebInfo/libvfilesystem.so"
+        echo "Check for existence of $fname..."
+        if [ -f "$fname" ]; then
+           echo "File exists!"
+        else
+           echo "File does not exist!"
+        fi
+        echo "Find..."
+        find / -name "*ibvfilesystem.s*"
+        echo "Done"
+        
          
     - uses: Silverlan/common_actions/build_cmake@main
       name: CMake Build
