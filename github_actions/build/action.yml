@@ -46,6 +46,8 @@ runs:
         build_target: freetype
         cmake_var: 'DEPENDENCY_FREETYPE_INCLUDE'
         cmake_var_lib: 'DEPENDENCY_FREETYPE_LIBRARY'
+        cmake_definitions_tmp: ' -DCMAKE_POSITION_INDEPENDENT_CODE=ON'
+        static_library: '1'
             
     - name: Build submodule - materialsystem
       uses: Silverlan/materialsystem/github_actions/build@master
@@ -56,7 +58,7 @@ runs:
       uses: Silverlan/util_formatted_text/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_formatted_text"
-         
+        
     - uses: Silverlan/common_actions/build_cmake@main
       name: CMake Build
       with:

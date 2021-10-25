@@ -1,4 +1,4 @@
-name: Build
+name: Build Windows
 on:
   push:
     branches: [ master, actions ]
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Build - ${{ matrix.config.os }}
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
@@ -23,15 +23,6 @@ jobs:
             archiver: "7z a"
             generators: "Visual Studio 16 2019"
             build_dir: 'build'
-          #- os: ubuntu-latest
-          #  name: "Ubuntu GCC-11"
-          #  artifact: "ubuntu_gcc.7z"
-          #  build_type: "RelWithDebInfo"
-          #  cc: "gcc-11"
-          #  cxx: "g++-11"
-          #  archiver: "7z a"
-          #  generators: "Unix Makefiles"
-          #  build_dir: 'build'
     steps:
       - uses: actions/checkout@v2
         with:
