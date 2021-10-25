@@ -58,6 +58,17 @@ runs:
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_formatted_text"
         
+    - name: Cpy
+      shell: bash
+      run: |
+        echo "Cp..."
+        mkdir -p "/third_party_libs/glfw/src" || true
+        cp "/home/runner/work/wgui/wgui/build/third_party_libs/glfw/src/libglfw.so" "/third_party_libs/glfw/src/libglfw.so" || true
+        
+        mkdir -p "./third_party_libs/glfw/src" || true
+        cp "/home/runner/work/wgui/wgui/build/third_party_libs/glfw/src/libglfw.so" "./third_party_libs/glfw/src/libglfw.so" || true
+        echo "Done"
+        
     - uses: Silverlan/common_actions/build_cmake@main
       name: CMake Build
       with:
