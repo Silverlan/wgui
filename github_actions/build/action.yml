@@ -57,12 +57,12 @@ runs:
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_formatted_text"
         
-    #- uses: Silverlan/common_actions/build_cmake@main
-    #  name: CMake Build
-    #  with:
-    #    build_type: ${{ matrix.config.build_type }}
-    #    build_generator: ${{ matrix.config.generators }}
-    #    cmake_var: 'DEPENDENCY_WGUI_LIBRARY'
-    #    build_target: wgui
-    #    build_dir: '${{ matrix.config.build_dir }}/${{ inputs.dir }}'
-    #    cmake_script_location: '${{ inputs.dir }}'
+    - uses: Silverlan/common_actions/build_cmake@main
+      name: CMake Build
+      with:
+        build_type: ${{ matrix.config.build_type }}
+        build_generator: ${{ matrix.config.generators }}
+        cmake_var: 'DEPENDENCY_WGUI_LIBRARY'
+        build_target: wgui
+        build_dir: '${{ matrix.config.build_dir }}/${{ inputs.dir }}'
+        cmake_script_location: '${{ inputs.dir }}'
