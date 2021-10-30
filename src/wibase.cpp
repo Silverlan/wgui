@@ -1168,7 +1168,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 	if(IsStencilEnabled() || useStencilGlobal)
 	{
 		WGUI::GetInstance().GetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
-		WGUI::GetInstance().SetScissor(0u,0u,context.GetWindowWidth(),context.GetWindowHeight());
+		WGUI::GetInstance().SetScissor(0u,0u,drawInfo.size.x,drawInfo.size.y);
 		++newStencilLevel;
 	}
 	auto useStencil = (newStencilLevel > stencilLevel);
@@ -1202,7 +1202,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 					posChildEnd[j] = posScissorEnd[j];
 			}
 			if(useScissor == false)
-				WGUI::GetInstance().SetScissor(0u,0u,context.GetWindowWidth(),context.GetWindowHeight());
+				WGUI::GetInstance().SetScissor(0u,0u,drawInfo.size.x,drawInfo.size.y);
 			else if(useScissorChild == false)
 				WGUI::GetInstance().SetScissor(umath::max(posScissor[0],0),umath::max(posScissor[1],0),umath::max(szScissor[0],0),umath::max(szScissor[1],0)); // Use parent scissor values
 
@@ -1219,7 +1219,7 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 				WIBase::RENDER_ALPHA = 1.f;
 			else
 			{
-				float alpha = child->GetAlpha();
+				float alpha = GetAlpha();
 				WIBase::RENDER_ALPHA = aOriginal *alpha;
 				if(WIBase::RENDER_ALPHA > 1.f)
 					WIBase::RENDER_ALPHA = 1.f;
