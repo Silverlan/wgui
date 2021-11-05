@@ -36,6 +36,7 @@ public:
 	int GetIndex();
 	void SetText(const std::string_view &text);
 	std::string_view GetText() const;
+	WIText *GetTextElement();
 	virtual void SetSize(int x,int y) override;
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;

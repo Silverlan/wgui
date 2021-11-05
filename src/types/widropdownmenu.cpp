@@ -552,6 +552,8 @@ void WIDropDownMenuOption::SetText(const std::string_view &text)
 	UpdateTextPos();
 }
 
+WIText *WIDropDownMenuOption::GetTextElement() {return static_cast<WIText*>(m_hText.get());}
+
 std::string_view WIDropDownMenuOption::GetText() const
 {
 	if(!m_hText.IsValid())
