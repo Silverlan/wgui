@@ -388,6 +388,24 @@ WITexturedShape::~WITexturedShape()
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_texture);
 	ClearTextureLoadCallback();
 }
+std::ostream &WITexturedShape::Print(std::ostream &stream) const
+{
+	WIShape::Print(stream);
+	stream<<"[Mat:";
+	if(m_hMaterial.IsValid())
+		stream<<m_hMaterial.get()->GetName();
+	else
+		stream<<"NULL";
+	stream<<"]";
+
+	stream<<"[Tex:";
+	if(m_texture)
+		stream<<m_texture->GetDebugName();
+	else
+		stream<<"NULL";
+	stream<<"]";
+	return stream;
+}
 unsigned int WITexturedShape::AddVertex(Vector2 vert)
 {
 	Vector2 uv(vert.x +1.f,vert.y +1.f);

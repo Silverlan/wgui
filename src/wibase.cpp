@@ -18,6 +18,7 @@
 #include <atomic>
 #include <prosper_window.hpp>
 #include <sharedutils/property/util_property_color.hpp>
+#include <mathutil/umath_geometry.hpp>
 #pragma optimize("",off)
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 
@@ -39,7 +40,6 @@ static bool is_valid(const WIHandle &hEl)
 	return hEl.IsValid() && !hEl->IsRemovalScheduled();
 }
 
-std::deque<WIHandle> WIBase::m_focusTrapStack;
 float WIBase::RENDER_ALPHA = 1.f;
 
 WIBase::WIBase()
@@ -193,6 +193,12 @@ void WIBase::UpdateVisibility()
 }
 void WIBase::SetShouldScissor(bool b) {umath::set_flag(m_stateFlags,StateFlags::ShouldScissorBit,b);}
 bool WIBase::GetShouldScissor() const {return umath::is_flag_set(m_stateFlags,StateFlags::ShouldScissorBit);}
+std::ostream &WIBase::Print(std::ostream &stream) const
+{
+	auto &t = typeid(*this);
+	stream<<t.name();
+	return stream;
+}
 GLFW::Cursor::Shape WIBase::GetCursor() const {return m_cursor;}
 void WIBase::SetCursor(GLFW::Cursor::Shape cursor) {m_cursor = cursor;}
 void WIBase::RemoveSafely()
@@ -337,18 +343,25 @@ void WIBase::TrapFocus(bool b)
 	if(umath::is_flag_set(m_stateFlags,StateFlags::TrapFocusBit) == b)
 		return;
 	umath::set_flag(m_stateFlags,StateFlags::TrapFocusBit,b);
+	
+	auto *window = GetRootWindow();
+	if(!window)
+		return;
+	auto *pair = WGUI::GetInstance().FindWindowRootPair(*window);
+	if(!pair)
+		return;
 	if(b == true)
-		m_focusTrapStack.push_back(this->GetHandle());
+		pair->focusTrapStack.push_back(this->GetHandle());
 	else
 	{
-		for(auto it=m_focusTrapStack.begin();it!=m_focusTrapStack.end();)
+		for(auto it=pair->focusTrapStack.begin();it!=pair->focusTrapStack.end();)
 		{
 			auto &hEl = *it;
 			if(!is_valid(hEl))
-				it = m_focusTrapStack.erase(it);
+				it = pair->focusTrapStack.erase(it);
 			else if(hEl.get() == this)
 			{
-				m_focusTrapStack.erase(it);
+				pair->focusTrapStack.erase(it);
 				break;
 			}
 			else
@@ -549,16 +562,21 @@ void WIBase::KillFocus(bool bForceKill)
 		WGUI::GetInstance().SetFocusedElement(NULL,window);
 	if(bForceKill == false)
 	{
-		for(auto it=m_focusTrapStack.rbegin();it!=m_focusTrapStack.rend();)
+		auto *window = GetRootWindow();
+		auto *pair = window ? WGUI::GetInstance().FindWindowRootPair(*window) : nullptr;
+		if(pair)
 		{
-			auto &hEl = *it;
-			++it;
-			if(!is_valid(hEl))
-				it = std::deque<WIHandle>::reverse_iterator(m_focusTrapStack.erase(it.base()));
-			else if(hEl.get() != this && hEl->IsVisible())
+			for(auto it=pair->focusTrapStack.rbegin();it!=pair->focusTrapStack.rend();)
 			{
-				hEl->RequestFocus();
-				break;
+				auto &hEl = *it;
+				++it;
+				if(!is_valid(hEl))
+					it = std::deque<WIHandle>::reverse_iterator(pair->focusTrapStack.erase(it.base()));
+				else if(hEl.get() != this && hEl->IsVisible())
+				{
+					hEl->RequestFocus();
+					break;
+				}
 			}
 		}
 		/*
@@ -650,6 +668,61 @@ WIBase *WIBase::GetRootElement()
 	if(parent)
 		return parent->GetRootElement();
 	return this;
+}
+void WIBase::SetParentAndUpdateWindow(WIBase *base,std::optional<uint32_t> childIndex)
+{
+	if(!base)
+	{
+		SetParent(nullptr,childIndex);
+		return;
+	}
+	auto *window = base->GetRootWindow();
+	auto *curWindow = GetRootWindow();
+	if(curWindow == window)
+		return SetParent(base,childIndex);
+	
+	WIHandle hFocused {};
+	auto trapped = false;
+	WIBase *elFocused= nullptr;
+	for(;;)
+	{
+		elFocused = WGUI::GetInstance().GetFocusedElement(curWindow);
+		if(!elFocused)
+			break;
+		if(elFocused == this || elFocused->IsDescendantOf(this))
+		{
+			// The focused element is part of the new window, so we have to
+			// kill the focus
+			auto wasTrapped = elFocused->IsFocusTrapped();
+			elFocused->TrapFocus(false);
+			elFocused->KillFocus();
+
+			if(!hFocused.IsValid())
+			{
+				// We want to re-apply the focus once the element
+				// has been assigned to the new window
+				hFocused = elFocused->GetHandle();
+				trapped = wasTrapped;
+			}
+		}
+		else
+		{
+			// The focused element isn't part of the new window, so it can
+			// keep the focus
+			hFocused = WIHandle{};
+			break;
+		}
+	}
+
+	SetParent(base);
+	SetAnchor(0,0,1,1);
+	
+	if(hFocused.IsValid())
+	{
+		if(trapped)
+			hFocused->TrapFocus(true);
+		hFocused->RequestFocus();
+	}
 }
 prosper::Window *WIBase::GetRootWindow()
 {
@@ -780,7 +853,8 @@ Vector2 WIBase::GetAbsolutePos(bool includeRotation) const
 void WIBase::SetAbsolutePos(const Vector2 &pos)
 {
 	auto tmp = pos;
-	AbsolutePosToRelative(tmp);
+	if(m_parent.IsValid())
+		m_parent->AbsolutePosToRelative(tmp);
 	SetPos(tmp);
 }
 std::vector<WIHandle> *WIBase::GetChildren() {return &m_children;}
@@ -878,6 +952,14 @@ void WIBase::SetColor(const Color &col) {SetColor(static_cast<float>(col.r) /255
 void WIBase::SetColor(float r,float g,float b,float a) {*m_color = Color(r *255.f,g *255.f,b *255.f,a *255.f);}
 void WIBase::SetPos(const Vector2i &pos) {SetPos(pos.x,pos.y);}
 void WIBase::SetPos(int x,int y) {*m_pos = Vector2i{x,y};}
+umath::intersection::Intersect WIBase::IsInBounds(int x,int y,int w,int h) const
+{
+	Vector3 minA {x,y,0.f};
+	Vector3 maxA {x +w,y +h,0.f};
+	Vector3 minB {0.f,0.f,0.f};
+	Vector3 maxB {GetWidth(),GetHeight(),0.f};
+	return umath::intersection::aabb_aabb(minA,maxA,minB,maxB);
+}
 int WIBase::GetWidth() const {return (*m_size)->x;}
 int WIBase::GetHeight() const {return (*m_size)->y;}
 const util::PVector2iProperty &WIBase::GetSizeProperty() const {return m_size;}
@@ -904,15 +986,11 @@ Mat4 WIBase::GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &pos
 	if(!m_rotationMatrix)
 		return poseParent *glm::scale(glm::translate(normOrigin),normScale);
 
-	if(m_rotationMatrix)
-	{
-		auto t = glm::translate(normOrigin);
-		auto s = glm::scale(normScale);
-		auto &r = *m_rotationMatrix;
-		auto m = t *r *s;
-		return poseParent *m;
-	}
-	
+	auto t = glm::translate(normOrigin);
+	auto s = glm::scale(normScale);
+	auto &r = *m_rotationMatrix;
+	auto m = t *r *s;
+	return poseParent *m;
 }
 void WIBase::SetScale(const Vector2 &scale) {*m_scale = scale;}
 void WIBase::SetScale(float x,float y) {SetScale(Vector2{x,y});}
@@ -2095,4 +2173,10 @@ bool WIBase::IsFadingOut() const
 }
 void WIBase::SetIgnoreParentAlpha(bool ignoreParentAlpha) {umath::set_flag(m_stateFlags,StateFlags::IgnoreParentAlpha,ignoreParentAlpha);}
 bool WIBase::ShouldIgnoreParentAlpha() const {return umath::is_flag_set(m_stateFlags,StateFlags::IgnoreParentAlpha);}
+
+std::ostream &operator<<(std::ostream &stream,WIBase &el)
+{
+	el.Print(stream);
+	return stream;
+}
 #pragma optimize("",on)

@@ -67,6 +67,7 @@ public:
 	WITexturedShape();
 	virtual ~WITexturedShape() override;
 	virtual unsigned int AddVertex(Vector2 vert) override;
+	virtual std::ostream &Print(std::ostream &stream) const override;
 	unsigned int AddVertex(Vector2 vert,Vector2 uv);
 	void SetVertexUVCoord(unsigned int vertID,Vector2 uv);
 	void InvertVertexUVCoordinates(bool x=true,bool y=true);

@@ -52,12 +52,12 @@ namespace wgui
 		Count
 	};
 };
+namespace umath::intersection {enum class Intersect : uint8_t;};
 class DLLWGUI WIBase
 	: public CallbackHandler
 {
 protected:
 	static float RENDER_ALPHA;
-	static std::deque<WIHandle> m_focusTrapStack;
 public:
 	friend WGUI;
 public:
@@ -118,6 +118,7 @@ public:
 	virtual ~WIBase();
 	WIBase(const WIBase&)=delete;
 	WIBase &operator=(const WIBase&)=delete;
+	virtual std::ostream &Print(std::ostream &stream) const;
 	GLFW::Cursor::Shape GetCursor() const;
 	void SetCursor(GLFW::Cursor::Shape cursor);
 	void Resize();
@@ -220,6 +221,7 @@ public:
 	void GetPos(int *x,int *y) const;
 	void SetPos(const Vector2i &pos);
 	virtual void SetPos(int x,int y);
+	umath::intersection::Intersect IsInBounds(int x,int y,int w=0,int h=0) const;
 	const Color &GetColor() const;
 	const std::shared_ptr<util::ColorProperty> &GetColorProperty() const;
 	void SetColor(const Vector4 &col);
@@ -240,6 +242,7 @@ public:
 	void Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale,uint32_t testStencilLevel=0u);
 	void Draw(const DrawInfo &drawInfo);
 	virtual void SetParent(WIBase *base,std::optional<uint32_t> childIndex={});
+	void SetParentAndUpdateWindow(WIBase *base,std::optional<uint32_t> childIndex={});
 	WIBase *GetParent() const;
 	void RemoveChild(WIBase *child);
 	void AddChild(WIBase *child,std::optional<uint32_t> childIndex={});
@@ -463,6 +466,8 @@ private:
 	static util::EventReply InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)
+
+DLLWGUI std::ostream &operator<<(std::ostream &stream,WIBase &el);
 
 #include "wgui.h"
 

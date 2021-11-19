@@ -241,8 +241,8 @@ void WITextEntryBase::Think()
 				pCaret->SetVisible(false);
 		}
 		auto &context = WGUI::GetInstance().GetContext();
-		auto &window = context.GetWindow();
-		if(window->GetMouseButtonState(GLFW::MouseButton::Left) == GLFW::KeyState::Press && m_bWasDoubleClick == false)
+		auto *window = GetRootWindow();
+		if(window && (*window)->GetMouseButtonState(GLFW::MouseButton::Left) == GLFW::KeyState::Press && m_bWasDoubleClick == false)
 		{
 			if(m_selectStart != -1)
 			{
@@ -760,8 +760,9 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 				{
 					RemoveSelectedText();
 					auto &context = WGUI::GetInstance().GetContext();
-					auto &window = context.GetWindow();
-					InsertText(window->GetClipboardString());
+					auto *window = GetRootWindow();
+					if(window)
+						InsertText((*window)->GetClipboardString());
 				}
 				break;
 			}
@@ -773,19 +774,22 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 					if(m_selectStart != -1 && m_selectEnd != -1)
 					{
 						auto &context = WGUI::GetInstance().GetContext();
-						auto &window = context.GetWindow();
+						auto *window = GetRootWindow();
 						auto *pText = GetTextElement();
-						if(pText == nullptr || pText->IsTextHidden())
-							window->SetClipboardString("");
-						else
+						if(window)
 						{
-							if(pText)
+							if(pText == nullptr || pText->IsTextHidden())
+								(*window)->SetClipboardString("");
+							else
 							{
-								auto &text = pText->GetFormattedText();
-								int st,en;
-								GetSelectionBounds(&st,&en);
-								std::string sub = text.substr(st,en -st);
-								window->SetClipboardString(sub);
+								if(pText)
+								{
+									auto &text = pText->GetFormattedText();
+									int st,en;
+									GetSelectionBounds(&st,&en);
+									std::string sub = text.substr(st,en -st);
+									(*window)->SetClipboardString(sub);
+								}
 							}
 						}
 						if(key == GLFW::Key::X && IsEditable())

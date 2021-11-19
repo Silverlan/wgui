@@ -132,12 +132,12 @@ public:
 	std::string GetSkinName();
 	WISkin *GetSkin();
 	WISkin *GetSkin(std::string name);
-	void SetCursor(GLFW::Cursor::Shape cursor);
-	void SetCursor(GLFW::Cursor &cursor);
-	void ResetCursor();
-	void SetCursorInputMode(GLFW::CursorMode mode);
-	GLFW::Cursor::Shape GetCursor();
-	GLFW::CursorMode GetCursorInputMode();
+	void SetCursor(GLFW::Cursor::Shape cursor,prosper::Window *optWindow=nullptr);
+	void SetCursor(GLFW::Cursor &cursor,prosper::Window *optWindow=nullptr);
+	void ResetCursor(prosper::Window *optWindow=nullptr);
+	void SetCursorInputMode(GLFW::CursorMode mode,prosper::Window *optWindow=nullptr);
+	GLFW::Cursor::Shape GetCursor(const prosper::Window *optWindow=nullptr);
+	GLFW::CursorMode GetCursorInputMode(const prosper::Window *optWindow=nullptr);
 	MaterialManager &GetMaterialManager();
 	void SetMaterialLoadHandler(const std::function<Material*(const std::string&)> &handler);
 	const std::function<Material*(const std::string&)> &GetMaterialLoadHandler() const;
@@ -180,12 +180,17 @@ private:
 		WIHandle rootElement {};
 		WIHandle elFocused = {};
 		uint32_t focusCount = 0; // Used to detect changes
+		std::deque<WIHandle> focusTrapStack;
+
+		GLFW::Cursor::Shape cursor = GLFW::Cursor::Shape::Arrow;
+		GLFW::CursorHandle customCursor = {};
 	};
 	WindowRootPair *FindWindowRootPair(const prosper::Window &window);
 	WindowRootPair *FindFocusedWindowRootPair();
 	WindowRootPair *FindWindowRootPairUnderCursor();
 	const prosper::Window *GetWindow(const prosper::Window *window) const {return const_cast<WGUI*>(this)->GetWindow(const_cast<prosper::Window*>(window));}
 	prosper::Window *GetWindow(prosper::Window *window);
+	void ClearWindow(const prosper::Window &window);
 	std::vector<WindowRootPair> m_windowRootElements {};
 	uint64_t m_nextGuiElementIndex = 0u;
 
@@ -196,8 +201,6 @@ private:
 	std::vector<WIHandle> m_updateQueue;
 	std::queue<WIHandle> m_removeQueue;
 	std::vector<std::unique_ptr<GLFW::Cursor>> m_cursors;
-	GLFW::Cursor::Shape m_cursor = GLFW::Cursor::Shape::Arrow;
-	GLFW::CursorHandle m_customCursor = {};
 	std::function<void(WIBase&)> m_createCallback = nullptr;
 	std::function<void(WIBase&)> m_removeCallback = nullptr;
 	std::function<void(WIBase*,WIBase*)> m_onFocusChangedCallback = nullptr;
