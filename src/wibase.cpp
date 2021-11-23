@@ -1957,9 +1957,9 @@ void WIBase::InjectMouseMoveInput(int32_t x,int32_t y)
 util::EventReply WIBase::InjectMouseInput(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) {
-		return el.MouseInBounds();
+		return el.IsSelfVisible() && el.MouseInBounds();
 	},[](const WIBase &el) {
-		return el.GetMouseInputEnabled();
+		return el.GetMouseInputEnabled() && el.IsSelfVisible();
 	});
 	if(el == nullptr)
 		return util::EventReply::Handled;
@@ -1970,9 +1970,9 @@ util::EventReply WIBase::InjectCharInput(unsigned int c,GLFW::Modifier mods) {re
 util::EventReply WIBase::InjectScrollInput(Vector2 offset)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) {
-		return el.MouseInBounds();
+		return el.IsSelfVisible() && el.MouseInBounds();
 	},[](const WIBase &el) {
-		return el.GetScrollInputEnabled();
+		return el.GetScrollInputEnabled() && el.IsSelfVisible();
 	});
 	if(el != nullptr)
 		return el->ScrollCallback(offset);
