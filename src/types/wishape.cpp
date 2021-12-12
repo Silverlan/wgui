@@ -289,7 +289,7 @@ void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 		descSet.SetBindingTexture(*WGUI::GetInstance().GetContext().GetDummyTexture(),0u);
 		descSet.Update();
 	}};
-	if(!m_hMaterial.IsValid() || !m_descSetTextureGroup)
+	if(!m_hMaterial || !m_descSetTextureGroup)
 		return;
 	auto *diffuseMap = m_hMaterial->GetDiffuseMap();
 	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
@@ -310,7 +310,7 @@ void WITexturedShape::SetMaterial(Material *material)
 	util::ScopeGuard sg {[this]() {UpdateTransparencyState();}};
 	ClearTexture();
 	m_hMaterial = material->GetHandle();
-	if(!m_hMaterial.IsValid())
+	if(!m_hMaterial)
 		return;
 	auto *diffuseMap = m_hMaterial->GetDiffuseMap();
 	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
@@ -330,14 +330,14 @@ void WITexturedShape::SetMaterial(const std::string &material)
 }
 Material *WITexturedShape::GetMaterial()
 {
-	if(!m_hMaterial.IsValid())
+	if(!m_hMaterial)
 		return nullptr;
 	return m_hMaterial.get();
 }
 void WITexturedShape::ClearTexture()
 {
 	ClearTextureLoadCallback();
-	m_hMaterial = MaterialHandle();
+	m_hMaterial = nullptr;
 	m_texture = nullptr;
 }
 void WITexturedShape::SetTexture(prosper::Texture &tex,std::optional<uint32_t> layerIndex)
@@ -355,7 +355,7 @@ void WITexturedShape::SetTexture(prosper::Texture &tex,std::optional<uint32_t> l
 }
 const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
 {
-	if(m_texture || m_hMaterial.IsValid() == false)
+	if(m_texture || !m_hMaterial)
 		return m_texture;
 	auto *diffuseMap = m_hMaterial.get()->GetDiffuseMap();
 	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
@@ -392,7 +392,7 @@ std::ostream &WITexturedShape::Print(std::ostream &stream) const
 {
 	WIShape::Print(stream);
 	stream<<"[Mat:";
-	if(m_hMaterial.IsValid())
+	if(m_hMaterial)
 		stream<<m_hMaterial.get()->GetName();
 	else
 		stream<<"NULL";
@@ -471,7 +471,7 @@ void WITexturedShape::UpdateShaderState()
 }
 void WITexturedShape::SizeToTexture()
 {
-	if(m_texture == nullptr && m_hMaterial.IsValid() == false)
+	if(m_texture == nullptr && m_hMaterial == nullptr)
 		return;
 	uint32_t width,height;
 	if(m_texture)
@@ -492,13 +492,13 @@ void WITexturedShape::SizeToTexture()
 }
 void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
 {
-	if(m_hMaterial.IsValid() == false && m_texture == nullptr)
+	if(m_hMaterial == nullptr && m_texture == nullptr)
 		return;
 	auto col = drawInfo.GetColor(*this);
 	if(col.a <= 0.f)
 		return;
 	col.a *= GetLocalAlpha();
-	if(m_hMaterial.IsValid())
+	if(m_hMaterial)
 	{
 		auto *map = m_hMaterial->GetDiffuseMap();
 		if(!map || !map->texture)

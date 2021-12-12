@@ -9,7 +9,7 @@
 #include "wiskin.h"
 #include "wguifactories.h"
 #include "wihandle.h"
-#include <materialmanager.h>
+#include <material_manager2.hpp>
 #include <unordered_map>
 #include <algorithm>
 #include <queue>
@@ -81,12 +81,12 @@ public:
 		ErrorInitializingShaders,
 		FontNotFound,
 	};
-	WGUI(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager);
+	WGUI(prosper::IPrContext &context,const std::weak_ptr<msys::MaterialManager> &wpMatManager);
 	WGUI(const WGUI&)=delete;
 	~WGUI();
 	WGUI &operator=(const WGUI&)=delete;
 
-	static WGUI &Open(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager);
+	static WGUI &Open(prosper::IPrContext &context,const std::weak_ptr<msys::MaterialManager> &wpMatManager);
 	static void Close();
 	static WGUI &GetInstance();
 	static bool IsOpen();
@@ -138,7 +138,7 @@ public:
 	void SetCursorInputMode(GLFW::CursorMode mode,prosper::Window *optWindow=nullptr);
 	GLFW::Cursor::Shape GetCursor(const prosper::Window *optWindow=nullptr);
 	GLFW::CursorMode GetCursorInputMode(const prosper::Window *optWindow=nullptr);
-	MaterialManager &GetMaterialManager();
+	msys::MaterialManager &GetMaterialManager();
 	void SetMaterialLoadHandler(const std::function<Material*(const std::string&)> &handler);
 	const std::function<Material*(const std::string&)> &GetMaterialLoadHandler() const;
 	WIBase *GetGUIElement(WIBase *el,int32_t x,int32_t y,const std::function<bool(WIBase*)> &condition,const prosper::Window *optWindow=nullptr);
@@ -169,7 +169,7 @@ private:
 	WISkin *m_skin = nullptr;
 	bool m_bGUIUpdateRequired = false;
 	std::unordered_map<std::string,WISkin*> m_skins = {};
-	std::weak_ptr<MaterialManager> m_matManager = {};
+	std::weak_ptr<msys::MaterialManager> m_matManager = {};
 	std::function<Material*(const std::string&)> m_materialLoadHandler = nullptr;
 	std::shared_ptr<prosper::IUniformResizableBuffer> m_elementBuffer = nullptr;
 	std::vector<WIHandle> m_rootElements {};

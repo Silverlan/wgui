@@ -5,7 +5,7 @@
 #ifndef __WISHAPE_H__
 #define __WISHAPE_H__
 #include "wgui/wibase.h"
-#include <materialmanager.h>
+#include <material_manager2.hpp>
 #include "wgui/wibufferbase.h"
 #include "wgui/shaders/wishader_textured.hpp"
 #include "wiline.h"
@@ -101,7 +101,7 @@ protected:
 	virtual void UpdateTransparencyState() override;
 	void UpdateShaderState();
 	virtual void DoUpdate() override;
-	MaterialHandle m_hMaterial;
+	msys::MaterialHandle m_hMaterial;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	std::shared_ptr<bool> m_texLoadCallback;
 	std::shared_ptr<prosper::IBuffer> m_uvBuffer = nullptr;

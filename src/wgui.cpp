@@ -24,11 +24,12 @@
 #include <prosper_command_buffer.hpp>
 #include <prosper_window.hpp>
 #include <prosper_render_pass.hpp>
+#include <shader/prosper_pipeline_loader.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #pragma optimize("",off)
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 prosper::SampleCountFlags WGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
-WGUI &WGUI::Open(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager)
+WGUI &WGUI::Open(prosper::IPrContext &context,const std::weak_ptr<msys::MaterialManager> &wpMatManager)
 {
 	s_wgui = nullptr;
 	s_wgui = std::make_unique<WGUI>(context,wpMatManager);
@@ -82,11 +83,11 @@ void WGUI::Close()
 bool WGUI::IsOpen() {return s_wgui != nullptr;}
 WGUI &WGUI::GetInstance() {return *s_wgui;}
 
-WGUI::WGUI(prosper::IPrContext &context,const std::weak_ptr<MaterialManager> &wpMatManager)
+WGUI::WGUI(prosper::IPrContext &context,const std::weak_ptr<msys::MaterialManager> &wpMatManager)
 	: prosper::ContextObject(context),m_matManager(wpMatManager)
 {
 	SetMaterialLoadHandler([this](const std::string &path) -> Material* {
-		return m_matManager.lock()->Load(path);
+		return m_matManager.lock()->LoadAsset(path).get();
 	});
 }
 
@@ -202,6 +203,8 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 	m_shaderTexturedCheap = shaderManager.GetShader("wguitextured_cheap");
 	m_shaderTexturedExpensive = shaderManager.GetShader("wguitextured_expensive");
 	m_shaderStencil = shaderManager.GetShader("wguistencil");
+
+	GetContext().GetPipelineLoader().Flush();
 	
 	if(wgui::Shader::DESCRIPTOR_SET.IsValid() == false)
 		return ResultCode::ErrorInitializingShaders;
@@ -223,7 +226,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 
 prosper::IRenderPass &WGUI::GetMsaaRenderPass() const {return *m_msaaRenderPass;}
 
-MaterialManager &WGUI::GetMaterialManager() {return *m_matManager.lock();}
+msys::MaterialManager &WGUI::GetMaterialManager() {return *m_matManager.lock();}
 
 void WGUI::SetCursor(GLFW::Cursor::Shape cursor,prosper::Window *window)
 {

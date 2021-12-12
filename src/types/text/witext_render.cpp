@@ -15,7 +15,7 @@
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <sharedutils/scope_guard.h>
 #include <util_formatted_text.hpp>
-
+#pragma optimize("",off)
 void WIText::InitializeBlur(bool bReload)
 {
 	if(bReload == true)
@@ -840,3 +840,4 @@ void WITextBase::Render(const DrawInfo &drawInfo,const Mat4 &matDrawRoot,const V
 		size = currentSize;
 	}
 }
+#pragma optimize("",on)
