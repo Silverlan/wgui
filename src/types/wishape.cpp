@@ -309,7 +309,7 @@ void WITexturedShape::SetMaterial(Material *material)
 {
 	util::ScopeGuard sg {[this]() {UpdateTransparencyState();}};
 	ClearTexture();
-	m_hMaterial = material->GetHandle();
+	m_hMaterial = material ? material->GetHandle() : msys::MaterialHandle{};
 	if(!m_hMaterial)
 		return;
 	auto *diffuseMap = m_hMaterial->GetDiffuseMap();
