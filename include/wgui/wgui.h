@@ -146,6 +146,8 @@ public:
 	double GetDeltaTime() const;
 	prosper::IRenderPass &GetMsaaRenderPass() const;
 	//prosper::util::record_set_scissor(*drawCmd,szScissor[0],szScissor[1],posScissor[0],posScissor[1]); // Use parent scissor values
+	bool IsLockedForDrawing() const {return m_lockedForDrawing;}
+	void SetLockedForDrawing(bool locked) {m_lockedForDrawing = locked;}
 
 	wgui::ShaderColored *GetColoredShader();
 	wgui::ShaderColoredRect *GetColoredRectShader();
@@ -166,6 +168,7 @@ private:
 	friend wgui::Shader;
 	friend wgui::ShaderColoredRect;
 
+	std::atomic<bool> m_lockedForDrawing = false;
 	WISkin *m_skin = nullptr;
 	bool m_bGUIUpdateRequired = false;
 	std::unordered_map<std::string,WISkin*> m_skins = {};

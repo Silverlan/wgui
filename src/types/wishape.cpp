@@ -228,6 +228,8 @@ void WITexturedShape::SetShader(prosper::Shader &shader,prosper::Shader *shaderC
 }
 void WITexturedShape::ReloadDescriptorSet()
 {
+	if(WGUI::GetInstance().IsLockedForDrawing())
+		throw std::runtime_error{"Attempted to reload GUI element descriptor set during rendering, this is not allowed!"};
 	m_descSetTextureGroup = nullptr;
 	if(wgui::ShaderTextured::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
 		return;
@@ -235,7 +237,12 @@ void WITexturedShape::ReloadDescriptorSet()
 	//m_descSetTextureGroup = prosper::util::create_descriptor_set_group(WGUI::GetInstance().GetContext().GetDevice(),m_shader.get()->GetDescriptorSetGroup(),false); // TODO: FIXME
 }
 prosper::IBuffer &WITexturedShape::GetUVBuffer() const {return *m_uvBuffer;}
-void WITexturedShape::SetUVBuffer(prosper::IBuffer &buffer) {m_uvBuffer = buffer.shared_from_this();}
+void WITexturedShape::SetUVBuffer(prosper::IBuffer &buffer)
+{
+	if(WGUI::GetInstance().IsLockedForDrawing())
+		throw std::runtime_error{"Attempted to change GUI element UV buffer during rendering, this is not allowed!"};
+	m_uvBuffer = buffer.shared_from_this();
+}
 void WITexturedShape::SetAlphaOnly(bool b) {umath::set_flag(m_stateFlags,StateFlags::AlphaOnly,b);}
 bool WITexturedShape::GetAlphaOnly() const {return umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly);}
 float WITexturedShape::GetLOD() const {return m_lod;}
@@ -281,6 +288,8 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 }
 void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 {
+	// if(WGUI::GetInstance().IsLockedForDrawing())
+	// 	throw std::runtime_error{"Attempted to update material descriptor set texture during rendering, this is not allowed!"};
 	if(!m_descSetTextureGroup)
 		return;
 	util::ScopeGuard sgDummy {[this]() {
@@ -304,9 +313,12 @@ void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 	descSet.SetBindingTexture(*prTex,0u);
 	descSet.Update();
 	m_texUpdateCountRef = diffuseTexture->GetUpdateCount();
+	m_matUpdateCountRef = m_hMaterial->GetUpdateIndex();
 }
 void WITexturedShape::SetMaterial(Material *material)
 {
+	if(WGUI::GetInstance().IsLockedForDrawing())
+		throw std::runtime_error{"Attempted to change GUI element material during rendering, this is not allowed!"};
 	util::ScopeGuard sg {[this]() {UpdateTransparencyState();}};
 	ClearTexture();
 	m_hMaterial = material ? material->GetHandle() : msys::MaterialHandle{};
@@ -342,6 +354,8 @@ void WITexturedShape::ClearTexture()
 }
 void WITexturedShape::SetTexture(prosper::Texture &tex,std::optional<uint32_t> layerIndex)
 {
+	if(WGUI::GetInstance().IsLockedForDrawing())
+		throw std::runtime_error{"Attempted to change GUI element material during rendering, this is not allowed!"};
 	ClearTexture();
 	m_texture = tex.shared_from_this();
 	
@@ -421,6 +435,8 @@ unsigned int WITexturedShape::AddVertex(Vector2 vert,Vector2 uv)
 }
 std::shared_ptr<prosper::IBuffer> WITexturedShape::CreateUvBuffer(const std::vector<Vector2> &uvs)
 {
+	if(WGUI::GetInstance().IsLockedForDrawing())
+		throw std::runtime_error{"Attempted to update GUI element UV buffer during rendering, this is not allowed!"};
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::util::BufferCreateInfo createInfo {};
 	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
@@ -503,9 +519,14 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 		auto *map = m_hMaterial->GetDiffuseMap();
 		if(!map || !map->texture)
 			return;
-		auto *tex = static_cast<Texture*>(map->texture.get());
-		if(tex->GetUpdateCount() != m_texUpdateCountRef)
+		if(m_hMaterial->GetUpdateIndex() != m_matUpdateCountRef)
 			UpdateMaterialDescriptorSetTexture();
+		else
+		{
+			auto *tex = static_cast<Texture*>(map->texture.get());
+			if(tex->GetUpdateCount() != m_texUpdateCountRef)
+				UpdateMaterialDescriptorSetTexture();
+		}
 	}
 
 	// Try to use cheap shader if no custom vertex buffer was used

@@ -59,6 +59,8 @@ unsigned int WIBufferBase::GetVertexCount() {return 0;}
 
 void WIBufferBase::InitializeBufferData(prosper::IBuffer &buffer)
 {
+	if(WGUI::GetInstance().IsLockedForDrawing())
+		throw std::runtime_error{"Attempted to initialize GUI element buffer data during rendering, this is not allowed!"};
 	m_vertexBufferData = std::make_unique<WIElementVertexBufferData>();
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }
@@ -69,12 +71,19 @@ prosper::IBuffer *WIBufferBase::GetBuffer()
 }
 void WIBufferBase::SetBuffer(prosper::IBuffer &buffer)
 {
+	if(WGUI::GetInstance().IsLockedForDrawing())
+		throw std::runtime_error{"Attempted to change GUI element buffer during rendering, this is not allowed!"};
 	ClearBuffer();
 	m_vertexBufferData = std::make_unique<WIElementVertexBufferData>();
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }
 
-void WIBufferBase::ClearBuffer() {m_vertexBufferData = nullptr;}
+void WIBufferBase::ClearBuffer()
+{
+	if(WGUI::GetInstance().IsLockedForDrawing())
+		throw std::runtime_error{"Attempted to clear GUI element buffer during rendering, this is not allowed!"};
+	m_vertexBufferData = nullptr;
+}
 
 void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
 {

@@ -435,9 +435,8 @@ void WGUI::Draw(const prosper::Window &window,prosper::ICommandBuffer &drawCmd)
 {
 	auto rt = window.GetStagingRenderTarget();
 	auto *el = GetBaseElement(&window);
-	if(!rt || !el)
-		return;
-	Draw(*el,rt->GetRenderPass(),rt->GetFramebuffer(),drawCmd);
+	if(rt && el)
+		Draw(*el,rt->GetRenderPass(),rt->GetFramebuffer(),drawCmd);
 }
 
 WIBase *WGUI::Create(std::string classname,WIBase *parent)
