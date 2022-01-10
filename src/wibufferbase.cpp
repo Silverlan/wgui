@@ -98,10 +98,11 @@ void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vec
 			return;
 		auto *pShader = static_cast<wgui::ShaderColoredRect*>(m_shaderCheap.get());
 		auto &context = WGUI::GetInstance().GetContext();
-		if(pShader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
+		if(pShader->RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 		{
-			pShader->Draw({matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
-			pShader->EndDraw();
+			pShader->RecordDraw(bindState,{matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
+			pShader->RecordEndDraw(bindState);
 		}
 		return;
 	}
@@ -112,9 +113,10 @@ void WIBufferBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vec
 		return;
 	auto &shader = static_cast<wgui::ShaderColored&>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
+	if(shader.RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
-		shader.Draw(*buf,GetVertexCount(),wgui::ElementData{matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
-		shader.EndDraw();
+		shader.RecordDraw(bindState,*buf,GetVertexCount(),wgui::ElementData{matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
+		shader.RecordEndDraw(bindState);
 	}
 }

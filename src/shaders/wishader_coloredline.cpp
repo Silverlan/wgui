@@ -29,20 +29,17 @@ void ShaderColoredLine::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInf
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_COLOR);
 }
 
-bool ShaderColoredLine::Draw(
-	const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &colorBuffer,
+bool ShaderColoredLine::RecordDraw(
+	prosper::ShaderBindState &bindState,const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &colorBuffer,
 	uint32_t vertCount,float lineWidth,const wgui::ElementData &pushConstants,uint32_t testStencilLevel
-)
+) const
 {
-	auto drawCmd = GetCurrentCommandBuffer();
-	if(drawCmd == nullptr)
-		return false;
-	drawCmd->RecordSetLineWidth(lineWidth);
+	bindState.commandBuffer.RecordSetLineWidth(lineWidth);
 	if(
-		RecordBindVertexBuffers({vertBuffer.get(),colorBuffer.get()}) == false ||
-		RecordPushConstants(pushConstants) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(vertCount) == false
+		RecordBindVertexBuffers(bindState,{vertBuffer.get(),colorBuffer.get()}) == false ||
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,vertCount) == false
 	)
 		return false;
 	return true;

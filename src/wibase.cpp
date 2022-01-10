@@ -1034,10 +1034,11 @@ void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &
 	auto *shader = WGUI::GetInstance().GetStencilShader();
 	assert(shader != nullptr);
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
+	if(shader->RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
-		shader->Draw({matDraw,Vector4{},wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
-		shader->EndDraw();
+		shader->RecordDraw(bindState,{matDraw,Vector4{},wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
+		shader->RecordEndDraw(bindState);
 	}
 }
 const std::string &WIBase::GetName() const {return m_name;}

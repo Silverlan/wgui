@@ -361,13 +361,14 @@ void WIText::RenderText(Mat4&)
 
 		drawCmd->RecordBeginRenderPass(rt);
 			drawCmd->RecordClearAttachment(img,std::array<float,4>{0.f,0.f,0.f,0.f});
-			if(shader.BeginDraw(drawCmd,w,h,wgui::StencilPipeline::Test,false) == true)
+			prosper::ShaderBindState bindState {*drawCmd};
+			if(shader.RecordBeginDraw(bindState,w,h,wgui::StencilPipeline::Test,false) == true)
 			{
 				drawCmd->RecordSetViewport(vpWidth,vpHeight);
 				drawCmd->RecordSetScissor(vpWidth,vpHeight);
 				auto descSet = m_font->GetGlyphMapDescriptorSet();
-				shader.Draw(*bufBounds,*descSet,pushConstants,numChars,0u /* stencil level*/);
-				shader.EndDraw();
+				shader.RecordDraw(bindState,*bufBounds,*descSet,pushConstants,numChars,0u /* stencil level*/);
+				shader.RecordEndDraw(bindState);
 			}
 		drawCmd->RecordEndRenderPass();
 
@@ -659,13 +660,14 @@ bool WITextBase::RenderLines(
 	wgui::ShaderTextRect &shader,const DrawInfo &drawInfo,
 	const Vector2i &absPos,const umath::ScaledTransform &transform,const Vector2 &scale,Vector2i &inOutSize,
 	wgui::ShaderTextRect::PushConstants &inOutPushConstants,
-	const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
+	const std::function<void(prosper::ShaderBindState&,const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 	bool colorPass,wgui::StencilPipeline stencilPipeline
 ) const
 {
 	auto &textEl = static_cast<const WIText&>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(drawCmd,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == false)
+	prosper::ShaderBindState bindState {*drawCmd};
+	if(shader.RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == false)
 		return false;
 	uint32_t xScissor,yScissor,wScissor,hScissor;
 	WGUI::GetInstance().GetScissor(xScissor,yScissor,wScissor,hScissor);
@@ -716,10 +718,10 @@ bool WITextBase::RenderLines(
 
 			inOutPushConstants.fontInfo.yOffset = bufInfo.absLineIndex *lineHeight;
 
-			fDraw(bufInfo,*descSet);
+			fDraw(bindState,bufInfo,*descSet);
 		}
 	}
-	shader.EndDraw();
+	shader.RecordEndDraw(bindState);
 	return bHasColorBuffers;
 }
 
@@ -731,14 +733,17 @@ void WITextBase::RenderLines(
 ) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
-	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,drawInfo,absPos,transform,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRect,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
-		pShaderTextRect->Draw(*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
+	prosper::ShaderBindState bindState {*drawCmd};
+	auto bHasColorBuffers = RenderLines(drawCmd,*pShaderTextRect,drawInfo,absPos,transform,scale,inOutSize,inOutPushConstants,
+		[&inOutPushConstants,pShaderTextRect,testStencilLevel](prosper::ShaderBindState &bindState,const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+		pShaderTextRect->RecordDraw(bindState,*bufInfo.buffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
 	},false,stencilPipeline);
 	if(bHasColorBuffers == false)
 		return;
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
-	RenderLines(drawCmd,*pShaderTextRectColor,drawInfo,absPos,transform,scale,inOutSize,inOutPushConstants,[&inOutPushConstants,pShaderTextRectColor,testStencilLevel](const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
-		pShaderTextRectColor->Draw(*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
+	RenderLines(drawCmd,*pShaderTextRectColor,drawInfo,absPos,transform,scale,inOutSize,inOutPushConstants,
+		[&inOutPushConstants,pShaderTextRectColor,testStencilLevel](prosper::ShaderBindState &bindState,const SubBufferInfo &bufInfo,prosper::IDescriptorSet &descSet) {
+		pShaderTextRectColor->RecordDraw(bindState,*bufInfo.buffer,*bufInfo.colorBuffer,descSet,inOutPushConstants,bufInfo.numChars,testStencilLevel);
 	},true,stencilPipeline);
 }
 

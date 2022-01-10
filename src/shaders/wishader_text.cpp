@@ -60,25 +60,26 @@ void ShaderText::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipe
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_UV);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_GLYPH_INDEX);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_GLYPH_BOUNDS);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET_TEXTURE);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit);
 }
 
-bool ShaderText::Draw(
+bool ShaderText::RecordDraw(
+	prosper::ShaderBindState &bindState,
 	prosper::IBuffer &glyphBoundsIndexBuffer,
 	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 	uint32_t instanceCount,uint32_t testStencilLevel
-)
+) const
 {
 	if(
-		RecordBindVertexBuffers({
+		RecordBindVertexBuffers(bindState,{
 			GetContext().GetCommonBufferCache().GetSquareVertexUvBuffer().get(),&glyphBoundsIndexBuffer
 		}) == false ||
-		RecordBindDescriptorSets({&descTextureSet}) == false ||
-		RecordPushConstants(pushConstants) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount(),instanceCount) == false
+		RecordBindDescriptorSets(bindState,{&descTextureSet}) == false ||
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,prosper::CommonBufferCache::GetSquareVertexCount(),instanceCount) == false
 	)
 		return false;
 	return true;
@@ -93,20 +94,21 @@ ShaderTextRect::ShaderTextRect(prosper::IPrContext &context,const std::string &i
 	: ShaderText(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderTextRect::Draw(
+bool ShaderTextRect::RecordDraw(
+	prosper::ShaderBindState &bindState,
 	prosper::IBuffer &glyphBoundsIndexBuffer,
 	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 	uint32_t instanceCount,uint32_t testStencilLevel
-)
+) const
 {
 	if(
-		RecordBindVertexBuffers({
+		RecordBindVertexBuffers(bindState,{
 			GetContext().GetCommonBufferCache().GetSquareVertexUvBuffer().get(),&glyphBoundsIndexBuffer
 			}) == false ||
-		RecordBindDescriptorSets({&descTextureSet}) == false ||
-		RecordPushConstants(pushConstants) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount(),instanceCount) == false
+		RecordBindDescriptorSets(bindState,{&descTextureSet}) == false ||
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,prosper::CommonBufferCache::GetSquareVertexCount(),instanceCount) == false
 	)
 		return false;
 	return true;
@@ -126,9 +128,9 @@ void ShaderTextRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &
 	AddVertexAttribute(pipelineInfo,ShaderText::VERTEX_ATTRIBUTE_UV);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_GLYPH_INDEX);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_GLYPH_BOUNDS);
-	AddDescriptorSetGroup(pipelineInfo,ShaderText::DESCRIPTOR_SET_TEXTURE);
-	AddDescriptorSetGroup(pipelineInfo,ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,ShaderText::DESCRIPTOR_SET_TEXTURE);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
@@ -141,13 +143,14 @@ ShaderTextRectColor::ShaderTextRectColor(prosper::IPrContext &context,const std:
 ShaderTextRectColor::ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader)
 	: ShaderTextRect{context,identifier,vsShader,fsShader,gsShader}
 {}
-bool ShaderTextRectColor::Draw(
+bool ShaderTextRectColor::RecordDraw(
+	prosper::ShaderBindState &bindState,
 	prosper::IBuffer &glyphBoundsIndexBuffer,prosper::IBuffer &colorBuffer,
 	prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 	uint32_t instanceCount,uint32_t testStencilLevel
-)
+) const
 {
-	return RecordBindVertexBuffers({&colorBuffer},2u) && ShaderTextRect::Draw(glyphBoundsIndexBuffer,descTextureSet,pushConstants,instanceCount,testStencilLevel);
+	return RecordBindVertexBuffers(bindState,{&colorBuffer},2u) && ShaderTextRect::RecordDraw(bindState,glyphBoundsIndexBuffer,descTextureSet,pushConstants,instanceCount,testStencilLevel);
 }
 void ShaderTextRectColor::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {

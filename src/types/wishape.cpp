@@ -538,9 +538,10 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 			if(pShaderExpensive == nullptr)
 				return;
 			auto &context = WGUI::GetInstance().GetContext();
-			if(pShaderExpensive->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+			prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
+			if(pShaderExpensive->RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 			{
-				pShaderExpensive->Draw({
+				pShaderExpensive->RecordDraw(bindState,{
 					matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size),std::array<uint32_t,3>{},umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
 					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
 					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)),
@@ -548,7 +549,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 					m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha)),
 					GetAlphaMode(),GetAlphaCutoff()
 				},*m_descSetTextureGroup->GetDescriptorSet(0u),testStencilLevel);
-				pShaderExpensive->EndDraw();
+				pShaderExpensive->RecordEndDraw(bindState);
 			}
 			return;
 		}
@@ -556,16 +557,17 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 		if(pShaderCheap == nullptr)
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
-		if(pShaderCheap->BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
+		if(pShaderCheap->RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 		{
-			pShaderCheap->Draw({
+			pShaderCheap->RecordDraw(bindState,{
 				matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size),std::array<uint32_t,3>{},umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)),
 				m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha))
 			},*m_descSetTextureGroup->GetDescriptorSet(0u),testStencilLevel);
-			pShaderCheap->EndDraw();
+			pShaderCheap->RecordEndDraw(bindState);
 		}
 		return;
 	}
@@ -579,7 +581,8 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 	auto uvBuf = (m_uvBuffer != nullptr) ? m_uvBuffer : context.GetCommonBufferCache().GetSquareUvBuffer();
 	if(vbuf == nullptr || uvBuf == nullptr)
 		return;
-	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
+	if(shader.RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
 		wgui::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = matDraw;
@@ -590,11 +593,12 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 		pushConstants.green = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green));
 		pushConstants.blue = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue));
 		pushConstants.alpha = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha));
-		shader.Draw(
+		shader.RecordDraw(
+			bindState,
 			vbuf,
 			uvBuf,
 			GetVertexCount(),*m_descSetTextureGroup->GetDescriptorSet(0u),pushConstants,testStencilLevel
 		);
-		shader.EndDraw();
+		shader.RecordEndDraw(bindState);
 	}
 }

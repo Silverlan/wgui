@@ -62,7 +62,7 @@ private:
 		const Vector2i &absPos,const umath::ScaledTransform &transform,
 		const Vector2 &scale,Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants,
-		const std::function<void(const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
+		const std::function<void(prosper::ShaderBindState&,const SubBufferInfo&,prosper::IDescriptorSet&)> &fDraw,
 		bool colorPass,wgui::StencilPipeline stencilPipeline
 	) const;
 	void RenderLines(

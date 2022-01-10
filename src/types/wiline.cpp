@@ -140,11 +140,12 @@ void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &
 		return;
 	auto &shader = static_cast<wgui::ShaderColoredLine&>(*pShader);
 	auto &context = WGUI::GetInstance().GetContext();
-	if(shader.BeginDraw(drawInfo.commandBuffer,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
+	if(shader.RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
 		wgui::ElementData pushConstants {matDraw,col};
-		shader.Draw(s_lineBuffer,m_bufColor,GetVertexCount(),GetLineWidth(),pushConstants,testStencilLevel);
-		shader.EndDraw();
+		shader.RecordDraw(bindState,s_lineBuffer,m_bufColor,GetVertexCount(),GetLineWidth(),pushConstants,testStencilLevel);
+		shader.RecordEndDraw(bindState);
 	}
 }
 

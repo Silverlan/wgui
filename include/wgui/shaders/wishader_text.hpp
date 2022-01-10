@@ -41,13 +41,14 @@ namespace wgui
 		ShaderText(prosper::IPrContext &context,const std::string &identifier);
 		ShaderText(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(
+		bool RecordDraw(
+			prosper::ShaderBindState &bindState,
 			prosper::IBuffer &glyphBoundsIndexBuffer,
 			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 			uint32_t instanceCount,uint32_t testStencilLevel
-		);
-		using Shader::BeginDraw;
-		using ShaderGraphics::BeginDraw;
+		) const;
+		using Shader::RecordBeginDraw;
+		using ShaderGraphics::RecordBeginDraw;
 	protected:
 		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
@@ -71,11 +72,12 @@ namespace wgui
 		ShaderTextRect(prosper::IPrContext &context,const std::string &identifier);
 		ShaderTextRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(
+		bool RecordDraw(
+			prosper::ShaderBindState &bindState,
 			prosper::IBuffer &glyphBoundsIndexBuffer,
 			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 			uint32_t instanceCount,uint32_t testStencilLevel
-		);
+		) const;
 	protected:
 		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
@@ -92,11 +94,12 @@ namespace wgui
 		ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier);
 		ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(
+		bool RecordDraw(
+			prosper::ShaderBindState &bindState,
 			prosper::IBuffer &glyphBoundsIndexBuffer,prosper::IBuffer &colorBuffer,
 			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
 			uint32_t instanceCount,uint32_t testStencilLevel
-		);
+		) const;
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};

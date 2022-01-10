@@ -33,18 +33,18 @@ ShaderTextured::ShaderTextured(prosper::IPrContext &context,const std::string &i
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderTextured::Draw(
-	const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &uvBuffer,
+bool ShaderTextured::RecordDraw(
+	prosper::ShaderBindState &bindState,const std::shared_ptr<prosper::IBuffer> &vertBuffer,const std::shared_ptr<prosper::IBuffer> &uvBuffer,
 	uint32_t vertCount,prosper::IDescriptorSet &descSetTexture,
 	const PushConstants &pushConstants,uint32_t testStencilLevel
-)
+) const
 {
 	if(
-		RecordBindVertexBuffers({vertBuffer.get(),uvBuffer.get()}) == false ||
-		RecordBindDescriptorSets({&descSetTexture}) == false ||
-		RecordPushConstants(pushConstants) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(vertCount) == false
+		RecordBindVertexBuffers(bindState,{vertBuffer.get(),uvBuffer.get()}) == false ||
+		RecordBindDescriptorSets(bindState,{&descSetTexture}) == false ||
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,vertCount) == false
 	)
 		return false;
 	return true;
@@ -57,8 +57,8 @@ void ShaderTextured::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &
 
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_UV);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
@@ -70,14 +70,14 @@ ShaderTexturedRectExpensive::ShaderTexturedRectExpensive(prosper::IPrContext &co
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderTexturedRectExpensive::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet,uint32_t testStencilLevel)
+bool ShaderTexturedRectExpensive::RecordDraw(prosper::ShaderBindState &bindState,const PushConstants &pushConstants,prosper::IDescriptorSet &descSet,uint32_t testStencilLevel) const
 {
 	if(
-		RecordBindRenderBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false ||
-		RecordBindDescriptorSets({&descSet}) == false ||
-		RecordPushConstants(pushConstants) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
+		RecordBindRenderBuffer(bindState,*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false ||
+		RecordBindDescriptorSets(bindState,{&descSet}) == false ||
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
 	return true;
@@ -90,8 +90,8 @@ void ShaderTexturedRectExpensive::InitializeGfxPipeline(prosper::GraphicsPipelin
 
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,ShaderTextured::VERTEX_ATTRIBUTE_UV);
-	AddDescriptorSetGroup(pipelineInfo,ShaderTextured::DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
@@ -103,14 +103,14 @@ ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context,const std::s
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderTexturedRect::Draw(const PushConstants &pushConstants,prosper::IDescriptorSet &descSet,uint32_t testStencilLevel)
+bool ShaderTexturedRect::RecordDraw(prosper::ShaderBindState &bindState,const PushConstants &pushConstants,prosper::IDescriptorSet &descSet,uint32_t testStencilLevel) const
 {
 	if(
-		RecordBindRenderBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false ||
-		RecordBindDescriptorSets({&descSet}) == false ||
-		RecordPushConstants(pushConstants) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
+		RecordBindRenderBuffer(bindState,*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false ||
+		RecordBindDescriptorSets(bindState,{&descSet}) == false ||
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
 	return true;
@@ -123,6 +123,6 @@ void ShaderTexturedRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateIn
 
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(pipelineInfo,ShaderTextured::VERTEX_ATTRIBUTE_UV);
-	AddDescriptorSetGroup(pipelineInfo,ShaderTextured::DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(PushConstants),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }

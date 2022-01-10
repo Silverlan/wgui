@@ -29,11 +29,11 @@ namespace wgui
 
 		Shader(prosper::IPrContext &context,const std::string &identifier);
 		Shader(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
-		bool BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa);
+		bool RecordBeginDraw(prosper::ShaderBindState &bindState,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa) const;
 		virtual size_t GetBaseTypeHashCode() const override;
-		using ShaderGraphics::BeginDraw;
+		using ShaderGraphics::RecordBeginDraw;
 	protected:
-		bool RecordSetStencilReference(uint32_t testStencilLevel);
+		bool RecordSetStencilReference(prosper::ShaderBindState &bindState,uint32_t testStencilLevel) const;
 		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 		void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx,bool enableStencilTest);

@@ -19,13 +19,13 @@ ShaderColored::ShaderColored(prosper::IPrContext &context,const std::string &ide
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderColored::Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants,uint32_t testStencilLevel)
+bool ShaderColored::RecordDraw(prosper::ShaderBindState &bindState,prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants,uint32_t testStencilLevel) const
 {
 	if(
-		RecordBindVertexBuffer(vertBuffer) == false ||
-		RecordPushConstants(pushConstants) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(vertCount) == false
+		RecordBindVertexBuffer(bindState,vertBuffer) == false ||
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,vertCount) == false
 	)
 		return false;
 	return true;
@@ -37,8 +37,8 @@ void ShaderColored::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
@@ -51,13 +51,13 @@ ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context,const std::str
 	: Shader(context,identifier,vsShader,fsShader,gsShader)
 {}
 
-bool ShaderColoredRect::Draw(const wgui::ElementData &pushConstants,uint32_t testStencilLevel)
+bool ShaderColoredRect::RecordDraw(prosper::ShaderBindState &bindState,const wgui::ElementData &pushConstants,uint32_t testStencilLevel) const
 {
 	if(
-		RecordPushConstants(pushConstants) == false ||
-		RecordBindVertexBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordBindVertexBuffer(bindState,*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
 	return true;
@@ -69,8 +69,8 @@ void ShaderColoredRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInf
 	Shader::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
 }
 
 ///////////////////////
@@ -79,13 +79,13 @@ ShaderStencil::ShaderStencil(prosper::IPrContext &context,const std::string &ide
 	: Shader(context,identifier,"wgui/vs_wgui_colored_cheap","wgui/fs_wgui_stencil")
 {}
 
-bool ShaderStencil::Draw(const wgui::ElementData &pushConstants,uint32_t testStencilLevel)
+bool ShaderStencil::RecordDraw(prosper::ShaderBindState &bindState,const wgui::ElementData &pushConstants,uint32_t testStencilLevel) const
 {
 	if(
-		RecordPushConstants(pushConstants) == false ||
-		RecordBindVertexBuffer(*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false ||
-		RecordSetStencilReference(testStencilLevel) == false ||
-		RecordDraw(prosper::CommonBufferCache::GetSquareVertexCount()) == false
+		RecordPushConstants(bindState,pushConstants) == false ||
+		RecordBindVertexBuffer(bindState,*WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false ||
+		RecordSetStencilReference(bindState,testStencilLevel) == false ||
+		ShaderGraphics::RecordDraw(bindState,prosper::CommonBufferCache::GetSquareVertexCount()) == false
 	)
 		return false;
 	return true;
@@ -129,6 +129,6 @@ void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 	}
 
 	AddVertexAttribute(pipelineInfo,VERTEX_ATTRIBUTE_POSITION);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(wgui::ElementData),prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
 }

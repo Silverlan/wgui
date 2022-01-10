@@ -17,7 +17,7 @@ namespace wgui
 		ShaderColored(prosper::IPrContext &context,const std::string &identifier);
 		ShaderColored(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants,uint32_t testStencilLevel=0u);
+		bool RecordDraw(prosper::ShaderBindState &bindState,prosper::IBuffer &vertBuffer,uint32_t vertCount,const wgui::ElementData &pushConstants,uint32_t testStencilLevel=0u) const;
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
@@ -31,7 +31,7 @@ namespace wgui
 		ShaderColoredRect(prosper::IPrContext &context,const std::string &identifier);
 		ShaderColoredRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
 
-		bool Draw(const ElementData &pushConstants,uint32_t testStencilLevel);
+		bool RecordDraw(prosper::ShaderBindState &bindState,const ElementData &pushConstants,uint32_t testStencilLevel) const;
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};
@@ -44,7 +44,7 @@ namespace wgui
 	public:
 		ShaderStencil(prosper::IPrContext &context,const std::string &identifier);
 
-		bool Draw(const ElementData &pushConstants,uint32_t testStencilLevel);
+		bool RecordDraw(prosper::ShaderBindState &bindState,const ElementData &pushConstants,uint32_t testStencilLevel) const;
 	protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 	};

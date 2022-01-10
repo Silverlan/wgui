@@ -80,22 +80,19 @@ uint32_t Shader::ToAbsolutePipelineIndex(wgui::StencilPipeline pipelineIdx,bool 
 static bool is_msaa_pipeline(uint32_t pipelineIdx) {return pipelineIdx >= umath::to_integral(wgui::StencilPipeline::Count);}
 bool Shader::IsMsaaPipeline(uint32_t pipelineIdx) {return is_msaa_pipeline(pipelineIdx);}
 
-bool Shader::BeginDraw(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuffer,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa)
+bool Shader::RecordBeginDraw(prosper::ShaderBindState &bindState,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa) const
 {
 	auto idx = ToAbsolutePipelineIndex(pipelineIdx,msaa);
-	if(ShaderGraphics::BeginDraw(cmdBuffer,idx,RecordFlags::None) == false || cmdBuffer->RecordSetViewport(width,height) == false)
+	if(ShaderGraphics::RecordBeginDraw(bindState,idx,RecordFlags::None) == false || bindState.commandBuffer.RecordSetViewport(width,height) == false)
 		return false;
 	uint32_t x,y,w,h;
 	WGUI::GetInstance().GetScissor(x,y,w,h);
-	return cmdBuffer->RecordSetScissor(w,h,x,y);
+	return bindState.commandBuffer.RecordSetScissor(w,h,x,y);
 }
 
-bool Shader::RecordSetStencilReference(uint32_t testStencilLevel)
+bool Shader::RecordSetStencilReference(prosper::ShaderBindState &bindState,uint32_t testStencilLevel) const
 {
-	auto *cmd = GetCurrentCommandBuffer();
-	if(!cmd)
-		return false;
-	return cmd->RecordSetStencilReference(prosper::StencilFaceFlags::FrontBit,testStencilLevel);
+	return bindState.commandBuffer.RecordSetStencilReference(prosper::StencilFaceFlags::FrontBit,testStencilLevel);
 }
 
 //////////////////////
