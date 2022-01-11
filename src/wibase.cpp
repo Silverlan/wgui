@@ -22,14 +22,14 @@
 #pragma optimize("",off)
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 
-Vector4 WIBase::DrawInfo::GetColor(WIBase &el) const
+Vector4 WIBase::DrawInfo::GetColor(WIBase &el,const wgui::DrawState &drawState) const
 {
 	Vector4 color;
 	if(this->color.has_value())
 		color = *this->color;
 	else
 		color = el.GetColor().ToVector4();
-	color.a *= WIBase::RENDER_ALPHA;
+	color.a *= drawState.renderAlpha;
 	return color;
 }
 
@@ -39,8 +39,6 @@ static bool is_valid(const WIHandle &hEl)
 {
 	return hEl.IsValid() && !hEl->IsRemovalScheduled();
 }
-
-float WIBase::RENDER_ALPHA = 1.f;
 
 WIBase::WIBase()
 	: CallbackHandler(),m_cursor(GLFW::Cursor::Shape::Default),
@@ -1025,7 +1023,7 @@ Mat4 WIBase::GetScaledMatrix(int w,int h) const
 	Mat4 mat(1.0f);
 	return GetScaledMatrix(w,h,mat);
 }
-void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
+void WIBase::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
 {
 	if(stencilPipeline == wgui::StencilPipeline::Test)
 		return;
@@ -1035,7 +1033,7 @@ void WIBase::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &
 	assert(shader != nullptr);
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader->RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+	if(shader->RecordBeginDraw(bindState,drawState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
 		shader->RecordDraw(bindState,{matDraw,Vector4{},wgui::ElementData::ToViewportSize(drawInfo.size)},testStencilLevel);
 		shader->RecordEndDraw(bindState);
@@ -1202,7 +1200,7 @@ void WIBase::SetRotation(umath::Degree angle,const Vector2 &pivot)
 void WIBase::SetRotation(const Mat4 &rotationMatrix) {m_rotationMatrix = std::make_unique<Mat4>(rotationMatrix);}
 const Mat4 *WIBase::GetRotationMatrix() const {return m_rotationMatrix.get();}
 
-void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale,uint32_t testStencilLevel)
+void WIBase::Draw(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale,uint32_t testStencilLevel)
 {
 	const auto w = drawInfo.size.x;
 	const auto h = drawInfo.size.y;
@@ -1246,14 +1244,14 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 	std::array<uint32_t,4> oldScissor;
 	if(IsStencilEnabled() || useStencilGlobal)
 	{
-		WGUI::GetInstance().GetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
-		WGUI::GetInstance().SetScissor(0u,0u,drawInfo.size.x,drawInfo.size.y);
+		drawState.GetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
+		drawState.SetScissor(0u,0u,drawInfo.size.x,drawInfo.size.y);
 		++newStencilLevel;
 	}
 	auto useStencil = (newStencilLevel > stencilLevel);
 	auto fullyTransparent = IsFullyTransparent();
 	if(useStencil || !fullyTransparent)
-		Render(drawInfo,matDraw,scale,stencilLevel,useStencil ? wgui::StencilPipeline::Increment : wgui::StencilPipeline::Test);
+		Render(drawInfo,drawState,matDraw,scale,stencilLevel,useStencil ? wgui::StencilPipeline::Increment : wgui::StencilPipeline::Test);
 
 	rootPose = GetTranslationPose(origin,w,h,rootPose);
 	if(m_rotationMatrix)
@@ -1281,9 +1279,9 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 					posChildEnd[j] = posScissorEnd[j];
 			}
 			if(useScissor == false)
-				WGUI::GetInstance().SetScissor(0u,0u,drawInfo.size.x,drawInfo.size.y);
+				drawState.SetScissor(0u,0u,drawInfo.size.x,drawInfo.size.y);
 			else if(useScissorChild == false)
-				WGUI::GetInstance().SetScissor(umath::max(posScissor[0],0),umath::max(posScissor[1],0),umath::max(szScissor[0],0),umath::max(szScissor[1],0)); // Use parent scissor values
+				drawState.SetScissor(umath::max(posScissor[0],0),umath::max(posScissor[1],0),umath::max(szScissor[0],0),umath::max(szScissor[1],0)); // Use parent scissor values
 
 			posScissor = posChild;
 			szScissor = posChildEnd -posChild;
@@ -1291,19 +1289,19 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 			//auto yScissor = context.GetHeight() -(posScissor[1] +szScissor[1]); // Move origin to top left (OpenGL)
 			//drawCmd->SetScissor(posScissor[0],yScissor,szScissor[0],szScissor[1]);
 			if(useScissor == true && useScissorChild == true)
-				WGUI::GetInstance().SetScissor(umath::max(posScissor[0],0),umath::max(posScissor[1],0),umath::max(szScissor[0],0),umath::max(szScissor[1],0));
+				drawState.SetScissor(umath::max(posScissor[0],0),umath::max(posScissor[1],0),umath::max(szScissor[0],0),umath::max(szScissor[1],0));
 
-			float aOriginal = WIBase::RENDER_ALPHA;
+			float aOriginal = drawState.renderAlpha;
 			if(child->ShouldIgnoreParentAlpha())
-				WIBase::RENDER_ALPHA = 1.f;
+				drawState.renderAlpha = 1.f;
 			else
 			{
 				float alpha = GetAlpha();
-				WIBase::RENDER_ALPHA = aOriginal *alpha;
-				if(WIBase::RENDER_ALPHA > 1.f)
-					WIBase::RENDER_ALPHA = 1.f;
-				else if(WIBase::RENDER_ALPHA < 0.f)
-					WIBase::RENDER_ALPHA = 0.f;
+				drawState.renderAlpha = aOriginal *alpha;
+				if(drawState.renderAlpha > 1.f)
+					drawState.renderAlpha = 1.f;
+				else if(drawState.renderAlpha < 0.f)
+					drawState.renderAlpha = 0.f;
 			}
 			auto childDrawInfo = drawInfo;
 			childDrawInfo.offset = *child->m_pos;
@@ -1311,18 +1309,18 @@ void WIBase::Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Ve
 			childDrawInfo.useScissor = useScissorChild;
 			childDrawInfo.useStencil = useStencilGlobal;
 			auto scaleChild = scale *child->GetScale();
-			child->Draw(childDrawInfo,offsetParentNew,posScissor,szScissor,scaleChild,newStencilLevel);
-			WIBase::RENDER_ALPHA = aOriginal;
+			child->Draw(childDrawInfo,drawState,offsetParentNew,posScissor,szScissor,scaleChild,newStencilLevel);
+			drawState.renderAlpha = aOriginal;
 		}
 	}
 	if(useStencil) // Undo stencil
 	{
 		// Reset scissor
-		WGUI::GetInstance().SetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
-		Render(drawInfo,matDraw,scale,newStencilLevel,wgui::StencilPipeline::Decrement);
+		drawState.SetScissor(oldScissor[0],oldScissor[1],oldScissor[2],oldScissor[3]);
+		Render(drawInfo,drawState,matDraw,scale,newStencilLevel,wgui::StencilPipeline::Decrement);
 	}
 }
-void WIBase::Draw(const DrawInfo &drawInfo)
+void WIBase::Draw(const DrawInfo &drawInfo,wgui::DrawState &drawState)
 {
 	auto scissorPos = GetPos();
 	auto scissorSize = drawInfo.size;
@@ -1331,8 +1329,8 @@ void WIBase::Draw(const DrawInfo &drawInfo)
 		scissorPos = {};
 		scissorSize = GetSize();
 	}
-	WGUI::GetInstance().SetScissor(scissorPos.x,scissorPos.y,scissorSize.x,scissorSize.y);
-	Draw(drawInfo,GetPos(),scissorPos,scissorSize,GetScale());
+	drawState.SetScissor(scissorPos.x,scissorPos.y,scissorSize.x,scissorSize.y);
+	Draw(drawInfo,drawState,GetPos(),scissorPos,scissorSize,GetScale());
 }
 void WIBase::Draw(int w,int h,std::shared_ptr<prosper::ICommandBuffer> &cmdBuf)
 {
@@ -1342,7 +1340,8 @@ void WIBase::Draw(int w,int h,std::shared_ptr<prosper::ICommandBuffer> &cmdBuf)
 	drawInfo.offset = GetPos();
 	drawInfo.useScissor = GetShouldScissor();
 	drawInfo.size = {w,h};
-	Draw(drawInfo);
+	wgui::DrawState drawState {};
+	Draw(drawInfo,drawState);
 }
 std::string WIBase::GetDebugInfo() const {return "";}
 void WIBase::SetTooltip(const std::string &msg) {m_toolTip = msg;}

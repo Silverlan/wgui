@@ -8,10 +8,13 @@
 #include "wgui/wguidefinitions.h"
 #include <shader/prosper_shader_rect.hpp>
 
+#undef DrawState
+
 namespace prosper {class IPrContext;};
 class WGUI;
 namespace wgui
 {
+	struct DrawState;
 	enum class StencilPipeline : uint8_t;
 	DLLWGUI prosper::IRenderPass &get_render_pass(prosper::IPrContext &context);
 	DLLWGUI void get_render_pass(WGUI &gui,prosper::IPrContext &context,std::shared_ptr<prosper::IRenderPass> &outRenderPass,bool msaa);
@@ -29,7 +32,7 @@ namespace wgui
 
 		Shader(prosper::IPrContext &context,const std::string &identifier);
 		Shader(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
-		bool RecordBeginDraw(prosper::ShaderBindState &bindState,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa) const;
+		bool RecordBeginDraw(prosper::ShaderBindState &bindState,wgui::DrawState &drawState,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa) const;
 		virtual size_t GetBaseTypeHashCode() const override;
 		using ShaderGraphics::RecordBeginDraw;
 	protected:

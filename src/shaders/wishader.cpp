@@ -80,13 +80,13 @@ uint32_t Shader::ToAbsolutePipelineIndex(wgui::StencilPipeline pipelineIdx,bool 
 static bool is_msaa_pipeline(uint32_t pipelineIdx) {return pipelineIdx >= umath::to_integral(wgui::StencilPipeline::Count);}
 bool Shader::IsMsaaPipeline(uint32_t pipelineIdx) {return is_msaa_pipeline(pipelineIdx);}
 
-bool Shader::RecordBeginDraw(prosper::ShaderBindState &bindState,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa) const
+bool Shader::RecordBeginDraw(prosper::ShaderBindState &bindState,wgui::DrawState &drawState,uint32_t width,uint32_t height,StencilPipeline pipelineIdx,bool msaa) const
 {
 	auto idx = ToAbsolutePipelineIndex(pipelineIdx,msaa);
 	if(ShaderGraphics::RecordBeginDraw(bindState,idx,RecordFlags::None) == false || bindState.commandBuffer.RecordSetViewport(width,height) == false)
 		return false;
 	uint32_t x,y,w,h;
-	WGUI::GetInstance().GetScissor(x,y,w,h);
+	drawState.GetScissor(x,y,w,h);
 	return bindState.commandBuffer.RecordSetScissor(w,h,x,y);
 }
 

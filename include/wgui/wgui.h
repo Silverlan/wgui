@@ -20,6 +20,7 @@
 
 #undef GetClassName
 #undef FindWindow
+#undef DrawState
 
 namespace GLFW {class Joystick;};
 namespace prosper
@@ -49,6 +50,18 @@ namespace wgui
 	class ShaderTexturedRect;
 	class ShaderTexturedRectExpensive;
 	class ShaderStencil;
+};
+
+namespace wgui
+{
+	struct DLLWGUI DrawState
+	{
+		std::array<uint32_t,4> scissor = {0u,0,0u,0u};
+		float renderAlpha = 1.f;
+
+		void GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h);
+		void SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h);
+	};
 };
 
 class DLLWGUI WGUI
@@ -159,9 +172,6 @@ public:
 	wgui::ShaderTexturedRect *GetTexturedRectShader();
 	wgui::ShaderTexturedRectExpensive *GetTexturedRectExpensiveShader();
 	wgui::ShaderStencil *GetStencilShader();
-
-	void GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h);
-	void SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h);
 private:
 	void ScheduleElementForUpdate(WIBase &el);
 	friend WIBase;

@@ -506,11 +506,11 @@ void WITexturedShape::SizeToTexture()
 	}
 	SetSize(width,height);
 }
-void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
+void WITexturedShape::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
 {
 	if(m_hMaterial == nullptr && m_texture == nullptr)
 		return;
-	auto col = drawInfo.GetColor(*this);
+	auto col = drawInfo.GetColor(*this,drawState);
 	if(col.a <= 0.f)
 		return;
 	col.a *= GetLocalAlpha();
@@ -539,7 +539,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 				return;
 			auto &context = WGUI::GetInstance().GetContext();
 			prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-			if(pShaderExpensive->RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+			if(pShaderExpensive->RecordBeginDraw(bindState,drawState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 			{
 				pShaderExpensive->RecordDraw(bindState,{
 					matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size),std::array<uint32_t,3>{},umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
@@ -558,7 +558,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
 		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-		if(pShaderCheap->RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+		if(pShaderCheap->RecordBeginDraw(bindState,drawState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 		{
 			pShaderCheap->RecordDraw(bindState,{
 				matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size),std::array<uint32_t,3>{},umath::is_flag_set(m_stateFlags,StateFlags::AlphaOnly) ? 1 : 0,m_lod,
@@ -582,7 +582,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const 
 	if(vbuf == nullptr || uvBuf == nullptr)
 		return;
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+	if(shader.RecordBeginDraw(bindState,drawState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
 		wgui::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = matDraw;

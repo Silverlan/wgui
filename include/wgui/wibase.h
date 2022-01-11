@@ -23,6 +23,8 @@
 #include <sharedutils/util_event_reply.hpp>
 #include <sharedutils/util_clock.hpp>
 
+#undef DrawState
+
 struct DLLWGUI WIFadeInfo
 {
 	WIFadeInfo(float tFade)
@@ -43,6 +45,7 @@ namespace util {class ColorProperty;};
 namespace prosper {class IBuffer; class ICommandBuffer; class Window;};
 namespace wgui
 {
+	struct DrawState;
 	enum class StencilPipeline : uint8_t
 	{
 		Test = 0u,
@@ -56,8 +59,6 @@ namespace umath::intersection {enum class Intersect : uint8_t;};
 class DLLWGUI WIBase
 	: public CallbackHandler
 {
-protected:
-	static float RENDER_ALPHA;
 public:
 	friend WGUI;
 public:
@@ -110,7 +111,7 @@ public:
 		bool useStencil = false;
 		bool msaa = false;
 
-		Vector4 GetColor(WIBase &el) const;
+		Vector4 GetColor(WIBase &el,const wgui::DrawState &drawState) const;
 	};
 	static void CalcBounds(const Mat4 &mat,int32_t w,int32_t h,Vector2i &outPos,Vector2i &outSize);
 
@@ -239,8 +240,8 @@ public:
 	void SetSize(const Vector2i &size);
 	virtual void SetSize(int x,int y);
 	virtual void Draw(int w,int h,std::shared_ptr<prosper::ICommandBuffer> &cmdBuf);
-	void Draw(const DrawInfo &drawInfo,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale,uint32_t testStencilLevel=0u);
-	void Draw(const DrawInfo &drawInfo);
+	void Draw(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Vector2i &offsetParent,const Vector2i &scissorOffset,const Vector2i &scissorSize,const Vector2 &scale,uint32_t testStencilLevel=0u);
+	void Draw(const DrawInfo &drawInfo,wgui::DrawState &drawState);
 	virtual void SetParent(WIBase *base,std::optional<uint32_t> childIndex={});
 	void SetParentAndUpdateWindow(WIBase *base,std::optional<uint32_t> childIndex={});
 	WIBase *GetParent() const;
@@ -425,7 +426,7 @@ protected:
 	int m_lastMouseY = 0;
 	std::vector<WIHandle> m_children;
 	mutable WIHandle m_parent = {};
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,wgui::StencilPipeline stencilPipeline=wgui::StencilPipeline::Test);
+	virtual void Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,wgui::StencilPipeline stencilPipeline=wgui::StencilPipeline::Test);
 	void UpdateChildOrder(WIBase *child=NULL);
 	template<class TElement>
 		WIHandle CreateChild();

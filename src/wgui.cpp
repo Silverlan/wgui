@@ -128,21 +128,20 @@ wgui::ShaderTexturedRect *WGUI::GetTexturedRectShader() {return static_cast<wgui
 wgui::ShaderTexturedRectExpensive *WGUI::GetTexturedRectExpensiveShader() {return static_cast<wgui::ShaderTexturedRectExpensive*>(m_shaderTexturedExpensive.get());}
 wgui::ShaderStencil *WGUI::GetStencilShader() {return static_cast<wgui::ShaderStencil*>(m_shaderStencil.get());}
 
-static std::array<uint32_t,4> s_scissor = {0u,0,0u,0u};
-void WGUI::SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h)
+void wgui::DrawState::SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h)
 {
 #ifdef WGUI_ENABLE_SANITY_EXCEPTIONS
 	if(x +w > std::numeric_limits<int32_t>::max() || y +h > std::numeric_limits<int32_t>::max())
 		throw std::logic_error("Scissor out of bounds!");
 #endif
-	s_scissor = {x,y,w,h};
+	scissor = {x,y,w,h};
 }
-void WGUI::GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h)
+void wgui::DrawState::GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h)
 {
-	x = s_scissor.at(0u);
-	y = s_scissor.at(1u);
-	w = s_scissor.at(2u);
-	h = s_scissor.at(3u);
+	x = scissor.at(0u);
+	y = scissor.at(1u);
+	w = scissor.at(2u);
+	h = scissor.at(3u);
 }
 
 WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
@@ -423,8 +422,6 @@ void WGUI::ScheduleElementForUpdate(WIBase &el)
 
 void WGUI::Draw(WIBase &el,prosper::IRenderPass &rp,prosper::IFramebuffer &fb,prosper::ICommandBuffer &drawCmd)
 {
-	WIBase::RENDER_ALPHA = 1.f;
-
 	auto baseCmd = drawCmd.shared_from_this();
 	if(el.IsVisible() == false)
 		return;

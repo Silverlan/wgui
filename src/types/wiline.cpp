@@ -129,10 +129,10 @@ Mat4 WILine::GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &pos
 	return poseParent *pose.ToMatrix();
 }
 
-void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
+void WILine::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
 {
 	auto *pShader = GetShader();
-	auto col = drawInfo.GetColor(*this);
+	auto col = drawInfo.GetColor(*this,drawState);
 	if(col.a <= 0.f)
 		return;
 
@@ -141,7 +141,7 @@ void WILine::Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &
 	auto &shader = static_cast<wgui::ShaderColoredLine&>(*pShader);
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
+	if(shader.RecordBeginDraw(bindState,drawState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
 		wgui::ElementData pushConstants {matDraw,col};
 		shader.RecordDraw(bindState,s_lineBuffer,m_bufColor,GetVertexCount(),GetLineWidth(),pushConstants,testStencilLevel);

@@ -84,7 +84,7 @@ public:
 	void SetTexture(prosper::Texture &tex,std::optional<uint32_t> layerIndex={});
 	void ClearTexture();
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
-	virtual void Render(const DrawInfo &drawInfo,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel=0u,wgui::StencilPipeline stencilPipeline=wgui::StencilPipeline::Test) override;
+	virtual void Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel=0u,wgui::StencilPipeline stencilPipeline=wgui::StencilPipeline::Test) override;
 	void SizeToTexture();
 	void SetShader(wgui::ShaderTextured &shader);
 
