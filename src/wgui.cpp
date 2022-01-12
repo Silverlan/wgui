@@ -490,8 +490,67 @@ WIBase *WGUI::AddBaseElement(const prosper::Window *window)
 	return el;
 }
 
+static std::unordered_set<WIBase*> g_exemptFromFocus;
+void WGUI::ClearFocus(WIBase &el)
+{
+	auto *window = el.GetRootWindow();
+	if(!window)
+		return;
+	auto *pair = FindWindowRootPair(*window);
+	if(!pair)
+		return;
+	std::function<void(WIBase&)> fAddElement = nullptr;
+	fAddElement = [&fAddElement](WIBase &el) {
+		g_exemptFromFocus.insert(&el);
+		**el.m_bHasFocus = false;
+		el.m_stateFlags &= ~WIBase::StateFlags::TrapFocusBit;
+		for(auto &hChild : *el.GetChildren())
+		{
+			if(!hChild.IsValid())
+				continue;
+			fAddElement(*hChild);
+		}
+	};
+	fAddElement(el);
+
+	if(g_exemptFromFocus.find(pair->elFocused.get()) != g_exemptFromFocus.end())
+		pair->elFocused = WIHandle{};
+	for(auto it=pair->focusTrapStack.begin();it!=pair->focusTrapStack.end();)
+	{
+		auto &hEl = *it;
+		if(g_exemptFromFocus.find(hEl.get()) == g_exemptFromFocus.end())
+		{
+			++it;
+			continue;
+		}
+		it = pair->focusTrapStack.erase(it);
+	}
+
+	pair->RestoreTrappedFocus(); // g_exemptFromFocus will ensure that during this call none of the elements will regain focus
+	g_exemptFromFocus.clear();
+}
+
+bool is_valid(const WIHandle &hEl);
+void WGUI::WindowRootPair::RestoreTrappedFocus(WIBase *elRef)
+{
+	for(auto it=focusTrapStack.rbegin();it!=focusTrapStack.rend();)
+	{
+		auto &hEl = *it;
+		++it;
+		if(!is_valid(hEl))
+			it = std::deque<WIHandle>::reverse_iterator(focusTrapStack.erase(it.base()));
+		else if(hEl.get() != elRef && hEl->IsVisible())
+		{
+			hEl->RequestFocus();
+			break;
+		}
+	}
+}
+
 bool WGUI::SetFocusedElement(WIBase *gui,prosper::Window *window)
 {
+	if(g_exemptFromFocus.find(gui) != g_exemptFromFocus.end())
+		return false;
 	window = GetWindow(window);
 	if(!window)
 		return false;
@@ -521,6 +580,7 @@ bool WGUI::SetFocusedElement(WIBase *gui,prosper::Window *window)
 		return true;
 	}
 	(*window)->SetCursorInputMode(GLFW::CursorMode::Normal);
+
 	pair->elFocused = gui->GetHandle();
 	++pair->focusCount;
 	if(m_onFocusChangedCallback != nullptr)

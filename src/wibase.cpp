@@ -35,7 +35,7 @@ Vector4 WIBase::DrawInfo::GetColor(WIBase &el,const wgui::DrawState &drawState) 
 
 /////////////
 
-static bool is_valid(const WIHandle &hEl)
+bool is_valid(const WIHandle &hEl)
 {
 	return hEl.IsValid() && !hEl->IsRemovalScheduled();
 }
@@ -563,20 +563,7 @@ void WIBase::KillFocus(bool bForceKill)
 		auto *window = GetRootWindow();
 		auto *pair = window ? WGUI::GetInstance().FindWindowRootPair(*window) : nullptr;
 		if(pair)
-		{
-			for(auto it=pair->focusTrapStack.rbegin();it!=pair->focusTrapStack.rend();)
-			{
-				auto &hEl = *it;
-				++it;
-				if(!is_valid(hEl))
-					it = std::deque<WIHandle>::reverse_iterator(pair->focusTrapStack.erase(it.base()));
-				else if(hEl.get() != this && hEl->IsVisible())
-				{
-					hEl->RequestFocus();
-					break;
-				}
-			}
-		}
+			pair->RestoreTrappedFocus(this);
 		/*
 		WIBase *parent = GetParent();
 		WIBase *root = WGUI::GetBaseElement();
@@ -681,12 +668,16 @@ void WIBase::SetParentAndUpdateWindow(WIBase *base,std::optional<uint32_t> child
 	
 	WIHandle hFocused {};
 	auto trapped = false;
-	WIBase *elFocused= nullptr;
+	WIBase *elFocused = nullptr;
+	std::unordered_set<WIBase*> traversed; // Used to prevent potential infinite loop
 	for(;;)
 	{
 		elFocused = WGUI::GetInstance().GetFocusedElement(curWindow);
 		if(!elFocused)
 			break;
+		if(traversed.find(elFocused) != traversed.end())
+			break;
+		traversed.insert(elFocused);
 		if(elFocused == this || elFocused->IsDescendantOf(this))
 		{
 			// The focused element is part of the new window, so we have to
@@ -711,6 +702,7 @@ void WIBase::SetParentAndUpdateWindow(WIBase *base,std::optional<uint32_t> child
 			break;
 		}
 	}
+	WGUI::GetInstance().ClearFocus(*this); // Force clear focus for this element and all descendants
 
 	SetParent(base);
 	SetAnchor(0,0,1,1);
