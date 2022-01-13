@@ -56,16 +56,19 @@ protected:
 	WIHandle m_hOutline;
 	WIHandle m_hArrow;
 	WIHandle m_hList;
+	CallbackHandle m_cbListWindowUpdate;
 	WIHandle m_hScrollBar;
 	std::vector<WIHandle> m_options;
 
 	void UpdateTextPos();
 	void UpdateText();
 	virtual void OnTextChanged(const std::string &text,bool changedByUser) override;
+	void UpdateListWindow();
 public:
 	WIDropDownMenu();
 	virtual ~WIDropDownMenu() override;
 	virtual void Initialize() override;
+	virtual void OnRemove() override;
 	void SetListItemCount(uint32_t n);
 	void SelectOption(unsigned int idx);
 	void SelectOption(const std::string &value);

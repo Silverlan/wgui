@@ -117,6 +117,14 @@ void WIDropDownMenu::Initialize()
 	},this->GetHandle(),std::placeholders::_1)));
 
 	SetMouseInputEnabled(true);
+	UpdateListWindow();
+}
+
+void WIDropDownMenu::OnRemove()
+{
+	WITextEntry::OnRemove();
+	if(m_cbListWindowUpdate.IsValid())
+		m_cbListWindowUpdate.Remove();
 }
 
 void WIDropDownMenu::SelectOption(unsigned int idx)
@@ -392,6 +400,29 @@ void WIDropDownMenu::ScrollToOption(uint32_t offset,bool center)
 	}
 }
 
+void WIDropDownMenu::UpdateListWindow()
+{
+	if(!m_hList.IsValid())
+		return;
+	auto *pList = static_cast<WIRect*>(m_hList.get());
+	auto *wMenu = GetRootWindow();
+	auto *wList = pList->GetRootWindow();
+	if(wList == wMenu && m_cbListWindowUpdate.IsValid())
+		return;
+	auto *elBase = WGUI::GetInstance().GetBaseElement(wMenu);
+	if(wList != wMenu)
+	{
+		// We'll have to move the list to the same window as the menu
+		pList->SetParentAndUpdateWindow(elBase);
+	}
+
+	if(m_cbListWindowUpdate.IsValid())
+		m_cbListWindowUpdate.Remove();
+	if(!elBase)
+		return;
+	m_cbListWindowUpdate = elBase->AddCallback("OnPreRemove",FunctionCallback<void>::Create([this]() {UpdateListWindow();}));
+}
+
 void WIDropDownMenu::OpenMenu()
 {
 	if(!m_hList.IsValid())
@@ -400,6 +431,8 @@ void WIDropDownMenu::OpenMenu()
 	if(pList->IsVisible())
 		return;
 	SetScrollInputEnabled(true);
+	UpdateListWindow();
+
 	int y = GetHeight();
 	pList->SetVisible(true);
 	auto pos = GetAbsolutePos();
