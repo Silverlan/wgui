@@ -329,6 +329,8 @@ public:
 	void ClearAnchor();
 	void SetAnchor(float left,float top,float right,float bottom);
 	void SetAnchor(float left,float top,float right,float bottom,uint32_t refWidth,uint32_t refHeight);
+	void AnchorWithMargin(uint32_t left,uint32_t top,uint32_t right,uint32_t bottom);
+	void AnchorWithMargin(uint32_t margin);
 	void SetAnchorLeft(float f);
 	void SetAnchorRight(float f);
 	void SetAnchorTop(float f);

@@ -56,6 +56,7 @@ WIBase::WIBase()
 	RegisterCallback<void>("SetSize");
 	RegisterCallback<void,int32_t,int32_t>("OnCursorMoved");
 	RegisterCallback<void>("Think");
+	RegisterCallback<void>("OnPreRemove");
 	RegisterCallback<void>("OnRemove");
 	RegisterCallback<void,WIBase*>("OnChildAdded");
 	RegisterCallback<void,WIBase*>("OnChildRemoved");
@@ -1445,6 +1446,16 @@ std::pair<Vector2,Vector2> WIBase::GetAnchorBounds() const
 	return GetAnchorBounds(w,h);
 }
 void WIBase::ClearAnchor() {m_anchor = {};}
+void WIBase::AnchorWithMargin(uint32_t left,uint32_t top,uint32_t right,uint32_t bottom)
+{
+	ClearAnchor();
+	SetPos(left,top);
+	auto *p = GetParent();
+	if(!p)
+		return;
+	SetSize(p->GetWidth() -(right +left),p->GetHeight() -(top +bottom));
+}
+void WIBase::AnchorWithMargin(uint32_t margin) {AnchorWithMargin(margin,margin,margin,margin);}
 void WIBase::SetAnchor(float left,float top,float right,float bottom,uint32_t refWidth,uint32_t refHeight)
 {
 	m_anchor = WIAnchor{};
@@ -1552,6 +1563,7 @@ void WIBase::Remove()
 	if(umath::is_flag_set(m_stateFlags,StateFlags::IsBeingRemoved))
 		return;
 	umath::set_flag(m_stateFlags,StateFlags::IsBeingRemoved);
+	CallCallbacks<void>("OnPreRemove");
 	for(auto &hChild : *GetChildren())
 	{
 		if(hChild.IsValid() == false)
