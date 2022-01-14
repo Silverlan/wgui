@@ -167,7 +167,8 @@ public:
 
 	bool IsTextHidden() const;
 	void HideText(bool hide=true);
-
+	
+	void UpdateSubLines();
 	void AppendText(const std::string_view &text);
 	bool InsertText(const std::string_view &text,util::text::LineIndex lineIdx,util::text::CharOffset charOffset=util::text::LAST_CHAR);
 	void AppendLine(const std::string_view &line);
@@ -263,7 +264,6 @@ private:
 	unsigned int m_hTexture;
 
 	bool BreakLineByWidth(uint32_t lineIndex,util::text::ShiftOffset &lineShift);
-	void UpdateSubLines();
 	
 	void PerformTextPostProcessing();
 	void AutoSizeToText();

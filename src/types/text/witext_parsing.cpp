@@ -88,7 +88,10 @@ bool WIText::BreakLineByWidth(uint32_t lineIndex,util::text::ShiftOffset &lineSh
 					return {}; // Don't break; Character will be out-of-bounds but there's nothing we can do
 				if(GetAutoBreakMode() == AutoBreak::WHITESPACE && lastSpaceCharOffset != util::text::LAST_CHAR)
 					charOffset = lastSpaceCharOffset +1;
-				lineInfo.subLines.push_back(charOffset -startOffset);
+				if(charOffset == startOffset)
+					++charOffset;
+				auto l = charOffset -startOffset;
+				lineInfo.subLines.push_back(l);
 				return charOffset;
 			}
 			if(c == ' ' || c == '\f' || c == '\v' || c == '\t')
