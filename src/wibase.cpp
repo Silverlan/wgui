@@ -1454,6 +1454,7 @@ void WIBase::AnchorWithMargin(uint32_t left,uint32_t top,uint32_t right,uint32_t
 	if(!p)
 		return;
 	SetSize(p->GetWidth() -(right +left),p->GetHeight() -(top +bottom));
+	SetAnchor(0.f,0.f,1.f,1.f);
 }
 void WIBase::AnchorWithMargin(uint32_t margin) {AnchorWithMargin(margin,margin,margin,margin);}
 void WIBase::SetAnchor(float left,float top,float right,float bottom,uint32_t refWidth,uint32_t refHeight)
