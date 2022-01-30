@@ -125,6 +125,7 @@ WIText::WIText()
 	RegisterCallback<void,const FontInfo*>("OnFontChanged");
 	RegisterCallback<void,std::reference_wrapper<const std::shared_ptr<prosper::RenderTarget>>>("OnTextRendered");
 	RegisterCallback<void>("OnContentsChanged");
+	RegisterCallbackWithOptionalReturn<util::EventReply,std::string>("HandleLinkTagAction");
 }
 
 WIText::~WIText()

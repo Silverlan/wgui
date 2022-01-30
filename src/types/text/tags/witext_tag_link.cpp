@@ -4,11 +4,12 @@
 
 #include "stdafx_wgui.h"
 #include "wgui/types/witext_tags.hpp"
+#include "wgui/types/witext.h"
 #include "wgui/wibase.h"
 #include <sharedutils/functioncallback.h>
 #include <sharedutils/util_event_reply.hpp>
 #include <util_formatted_text_tag.hpp>
-
+#pragma optimize("",off)
 decltype(WITextTagLink::s_linkHandler) WITextTagLink::s_linkHandler = nullptr;
 void WITextTagLink::set_link_handler(const std::function<void(const std::string&)> &linkHandler)
 {
@@ -41,7 +42,10 @@ void WITextTagLink::Initialize()
 				return;
 			auto arg = *static_cast<std::string*>(m_args.front().value.get());
 			m_cbFunction = FunctionCallback<util::EventReply,std::reference_wrapper<const std::vector<std::string>>>::CreateWithOptionalReturn(
-				[arg](util::EventReply *reply,std::reference_wrapper<const std::vector<std::string>> args) -> CallbackReturnType {
+				[this,arg](util::EventReply *reply,std::reference_wrapper<const std::vector<std::string>> args) -> CallbackReturnType {
+				m_text.CallCallbacksWithOptionalReturn<util::EventReply,std::string>("HandleLinkTagAction",*reply,arg);
+				if(*reply == util::EventReply::Handled)
+					return CallbackReturnType::HasReturnValue;
 				s_linkHandler(arg);
 				*reply = util::EventReply::Handled;
 				return CallbackReturnType::HasReturnValue;
@@ -69,3 +73,4 @@ void WITextTagLink::Apply()
 	CreateOverlayElements();
 	WITextTagUnderline::Apply();
 }
+#pragma optimize("",on)
