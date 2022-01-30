@@ -30,7 +30,7 @@ WILine::WILine()
 {
 	++s_lineCount;
 	SetShouldScissor(false);
-	const std::vector<Vector2> verts = {
+	const std::array<Vector2,2> verts = {
 		Vector2(0.f,0.f),
 		Vector2(1.f,1.f)
 	};
@@ -44,18 +44,22 @@ WILine::WILine()
 	{
 		prosper::util::BufferCreateInfo bufCreateInfo {};
 		bufCreateInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
-		bufCreateInfo.size = verts.size() *sizeof(Vector2);
+		bufCreateInfo.size = util::size_of_container(verts);
 		bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 		s_lineBuffer = context.CreateBuffer(bufCreateInfo,verts.data());
 		s_lineBuffer->SetDebugName("gui_line_vertex_buf");
 	}
 	InitializeBufferData(*s_lineBuffer);
 
+	const std::array<Vector4,2> colors = {
+		Vector4{1.f,1.f,1.f,1.f},
+		Vector4{1.f,1.f,1.f,1.f}
+	};
 	prosper::util::BufferCreateInfo bufCreateInfo {};
 	bufCreateInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
-	bufCreateInfo.size = sizeof(Vector4) *2;
+	bufCreateInfo.size = util::size_of_container(colors);
 	bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
-	m_bufColor = context.CreateBuffer(bufCreateInfo,verts.data());
+	m_bufColor = context.CreateBuffer(bufCreateInfo,colors.data());
 	m_bufColor->SetDebugName("gui_line_color_buf");
 
 	auto col = Color::White.ToVector4();
