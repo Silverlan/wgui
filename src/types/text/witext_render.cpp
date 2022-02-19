@@ -316,7 +316,7 @@ void WIText::RenderText(Mat4&)
 
 				glyphBoundsInfos.push_back({});
 				auto &info = glyphBoundsInfos.back();
-				info.index = FontInfo::CharToGlyphMapIndex(c);
+				info.index = m_font->CharToGlyphMapIndex(c);
 				info.bounds = {x2,y2,width,height};
 
 				x += (advanceX >> 6) *sx;
@@ -345,9 +345,10 @@ void WIText::RenderText(Mat4&)
 	auto glyphMap = m_font->GetGlyphMap();
 	auto glyphMapExtents = glyphMap->GetImage().GetExtents();
 	auto maxGlyphBitmapWidth = m_font->GetMaxGlyphBitmapWidth();
+	auto maxGlyphBitmapHeight = m_font->GetMaxGlyphBitmapHeight();
 
 	wgui::ShaderText::PushConstants pushConstants {
-		sx,sy,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth
+		sx,sy,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth,maxGlyphBitmapHeight,0.f,m_font->GetGlyphCountPerRow()
 	};
 	const auto fDraw = [&context,&drawCmd,&shader,&bufBounds,&pushConstants,sx,sy,numChars,w,h,this](prosper::RenderTarget &rt,bool bClear,uint32_t vpWidth,uint32_t vpHeight) {
 		auto &img = rt.GetTexture().GetImage();
@@ -508,7 +509,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 			auto h = height *sy;
 
 			info.glyphBounds.push_back({x2,y2,width,height});
-			info.glyphIndices.push_back(FontInfo::CharToGlyphMapIndex(c));
+			info.glyphIndices.push_back(m_font->CharToGlyphMapIndex(c));
 
 			advanceX >>= 6;
 			advanceX *= multiplier;
@@ -780,6 +781,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,cons
 		auto glyphMap = pFont->GetGlyphMap();
 		auto glyphMapExtents = glyphMap->GetImage().GetExtents();
 		auto maxGlyphBitmapWidth = pFont->GetMaxGlyphBitmapWidth();
+		auto maxGlyphBitmapHeight = pFont->GetMaxGlyphBitmapHeight();
 
 		auto col = drawInfo.GetColor(*this,drawState);
 		if(col.a <= 0.f && umath::is_flag_set(m_stateFlags,StateFlags::RenderIfZeroAlpha) == false)
@@ -792,7 +794,8 @@ void WITextBase::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,cons
 
 		wgui::ShaderTextRect::PushConstants pushConstants {
 			wgui::ElementData{Mat4{},col},
-			0.f,0.f,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth
+			0.f,0.f,glyphMapExtents.width,glyphMapExtents.height,
+			maxGlyphBitmapWidth,maxGlyphBitmapHeight,0.f,pFont->GetGlyphCountPerRow()
 		};
 		Vector2i absPos,absSize;
 		CalcBounds(matDraw,drawInfo.size.x,drawInfo.size.y,absPos,absSize);

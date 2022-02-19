@@ -16,15 +16,7 @@
 
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
-
-enum class GlyphRange : uint32_t
-{
-	Start = 32,
-	End = 255,
-	Count = End -Start
-};
-//#define FONT_GLYPH_END 126
-
+#pragma optimize("",off)
 FontInfo::Face::~Face()
 {
 	if(m_ftFace != nullptr)
@@ -99,16 +91,17 @@ FontInfo::~FontInfo()
 {
 	Clear();
 }
-const GlyphInfo *FontInfo::GetGlyphInfo(char c) const
+const GlyphInfo *FontInfo::GetGlyphInfo(int32_t c) const
 {
 	auto idx = CharToGlyphMapIndex(c);
-	if(idx < 0 || idx > umath::to_integral(GlyphRange::Count)) //94)
+	if(idx < 0 || idx >= m_glyphs.size())
 		return nullptr;
 	return m_glyphs[idx].get();
 }
 const std::vector<std::shared_ptr<GlyphInfo>> &FontInfo::GetGlyphs() const {return m_glyphs;}
 uint32_t FontInfo::GetSize() const {return m_size;}
 
+constexpr uint32_t glyphStartIndex = 32u;
 bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 {
 	if(m_bInitialized || wgui::ShaderText::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
@@ -131,96 +124,168 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 	//FT_Select_Charmap(m_face,FT_ENCODING_UNICODE);
 	m_size = fontSize;
 
-	auto numGlyphs = umath::to_integral(GlyphRange::Count) +1;
-	m_glyphs.resize(numGlyphs);
 	uint32_t hMax = 0;
 	uint32_t szMax = 0;
 
 	m_maxBitmapWidth = 0;
 	m_maxBitmapHeight = 0;
 	auto &context = WGUI::GetInstance().GetContext();
-	std::vector<std::shared_ptr<prosper::IImage>> glyphImages(m_glyphs.size(),nullptr);
-	std::vector<std::pair<uint32_t,uint32_t>> glyphBounds(m_glyphs.size());
-	for(auto i=umath::to_integral(GlyphRange::Start);i<=umath::to_integral(GlyphRange::End);i++)
+
+	std::vector<GlyphRange> ranges;
+	constexpr uint32_t asciiEndIdx = 255u;
+	ranges.push_back({glyphStartIndex,asciiEndIdx -glyphStartIndex}); // Ascii range
+
+	std::optional<uint32_t> start {};
+	constexpr uint32_t utf8EndIdx = 1'000'000;
+	for(uint32_t i=glyphStartIndex;i<utf8EndIdx;++i)
 	{
-		if(FT_Load_Char(face,i,FT_LOAD_RENDER) == 0)
+		if(FT_Get_Char_Index(face,i) != 0)
 		{
-			auto gslot = face->glyph;
-			// Outline
-			/*if(gslot->format == FT_GLYPH_FORMAT_OUTLINE)
+			if(!start.has_value())
+				start = i;
+		}
+		else if(start.has_value())
+		{
+			if(!ranges.empty())
 			{
-				std::vector<Span> spans;
-				RenderSpans(lib,gslot->outline,spans);
-			}*/
-			//
-			auto &glyph = m_glyphs[i -umath::to_integral(GlyphRange::Start)] = std::shared_ptr<GlyphInfo>(new GlyphInfo());
-			if(gslot->bitmap.width > 0 && gslot->bitmap.rows > 0)
-			{
-				prosper::util::ImageCreateInfo createInfo {};
-				createInfo.format = prosper::Format::R8_UNorm;
-				createInfo.width = gslot->bitmap.width;
-				createInfo.height = umath::next_power_of_2(gslot->bitmap.rows); // With has to be a power of 2!
-				createInfo.tiling = prosper::ImageTiling::Linear;
-				createInfo.usage = prosper::ImageUsageFlags::TransferSrcBit;
-				createInfo.postCreateLayout = prosper::ImageLayout::TransferSrcOptimal;
-				createInfo.memoryFeatures = prosper::MemoryFeatureFlags::HostAccessable;
-
-				std::vector<uint8_t> data(createInfo.width *createInfo.height);
-				m_maxBitmapWidth = umath::max(m_maxBitmapWidth,gslot->bitmap.width);
-				m_maxBitmapHeight = umath::max(m_maxBitmapHeight,gslot->bitmap.rows);
-
-				auto *ptr = data.data();
-				size_t pos = 0;
-				for(auto y=decltype(gslot->bitmap.rows){0};y<gslot->bitmap.rows;++y)
+				auto &last = ranges.back();
+				if(static_cast<int32_t>(*start -last.unicodeStartIndex) -static_cast<int32_t>(last.count) <= 100)
 				{
-					auto *row = ptr;
-					for(auto x=decltype(gslot->bitmap.width){0};x<gslot->bitmap.width;++x)
-					{
-						auto *px = row;
-						px[0] = gslot->bitmap.buffer[pos];
-						++pos;
-						++row;
-					}
-					ptr += createInfo.width;
+					last.count = i -last.unicodeStartIndex;
+					start = {};
+					continue;
 				}
-
-				createInfo.flags |= prosper::util::ImageCreateInfo::Flags::DontAllocateMemory;
-				auto &glyphImg = glyphImages.at(i -umath::to_integral(GlyphRange::Start)) = context.CreateImage(createInfo,data.data());
-				context.AllocateTemporaryBuffer(*glyphImg);
-				glyphImg->SetDebugName("tmp_glyph_img");
-				glyphBounds.at(i -umath::to_integral(GlyphRange::Start)) = {gslot->bitmap.width,gslot->bitmap.rows};
 			}
-
-			glyph->Initialize(gslot);
-			int32_t yMin,yMax;
-			glyph->GetBounds(nullptr,&yMin,nullptr,&yMax);
-			yMax -= yMin;
-			if(yMax < 0)
-				yMax = 0;
-			auto u_yMax = static_cast<unsigned int>(yMax);
-			if(u_yMax > hMax)
-				hMax = u_yMax;
-			auto u_szMax = static_cast<unsigned int>(u_yMax) +static_cast<unsigned int>(static_cast<int>(fontSize) -glyph->GetTop());
-			if(u_szMax < 0)
-				u_szMax = 0;
-			if(u_szMax > szMax)
-				szMax = u_szMax;
-			int top = glyph->GetTop();
-			if(top > m_glyphTopMax)
-				m_glyphTopMax = top;
+			ranges.push_back(GlyphRange{*start,i -*start});
+			start = {};
 		}
 	}
+	if(start.has_value())
+	{
+		ranges.push_back(GlyphRange{*start,utf8EndIdx -*start});
+		start = {};
+	}
+	
+	uint32_t numGlyphs = 0;
+	for(auto &range : ranges)
+	{
+		range.glyphMapStartIndex = numGlyphs;
+		numGlyphs += range.count;
+	}
+	m_glyphs.resize(numGlyphs);
+	std::vector<uint8_t> glyphImageBufData;
+	struct GlyphExtent
+	{
+		uint32_t width;
+		uint32_t height;
+	};
+	std::vector<GlyphExtent> glyphBounds(numGlyphs,GlyphExtent{0,0});
+
+	uint32_t glyphIdx = 0;
+	for(auto range : ranges)
+	{
+		for(auto i=range.unicodeStartIndex;i<(range.unicodeStartIndex +range.count);++i)
+		{
+			auto charIdx = FT_Get_Char_Index(face,i);
+			if(charIdx != 0 && FT_Load_Char(face,i,FT_LOAD_RENDER) == 0)
+			{
+				auto gslot = face->glyph;
+				// Outline
+				/*if(gslot->format == FT_GLYPH_FORMAT_OUTLINE)
+				{
+					std::vector<Span> spans;
+					RenderSpans(lib,gslot->outline,spans);
+				}*/
+				//
+				auto &glyph = m_glyphs[glyphIdx] = std::shared_ptr<GlyphInfo>(new GlyphInfo());
+				auto &glyphInfo = glyphBounds[glyphIdx];
+				if(gslot->bitmap.width > 0 && gslot->bitmap.rows > 0)
+				{
+					auto &data = glyphImageBufData;
+					auto glyphDataSize = gslot->bitmap.width *gslot->bitmap.rows;
+					if((data.size() +glyphDataSize) >= data.capacity())
+						data.reserve((data.size() +glyphDataSize) *1.5 +1'000);
+					auto offset = data.size();
+					data.resize(offset +glyphDataSize);
+					auto *ptr = data.data() +offset;
+					m_maxBitmapWidth = umath::max(m_maxBitmapWidth,gslot->bitmap.width);
+					m_maxBitmapHeight = umath::max(m_maxBitmapHeight,gslot->bitmap.rows);
+
+					size_t pos = 0;
+					for(auto y=decltype(gslot->bitmap.rows){0};y<gslot->bitmap.rows;++y)
+					{
+						auto *row = ptr;
+						for(auto x=decltype(gslot->bitmap.width){0};x<gslot->bitmap.width;++x)
+						{
+							auto *px = row;
+							px[0] = gslot->bitmap.buffer[pos];
+							++pos;
+							++row;
+						}
+						ptr += gslot->bitmap.width;
+					}
+
+					glyphInfo.width = gslot->bitmap.width;
+					glyphInfo.height = gslot->bitmap.rows;
+				}
+
+				glyph->Initialize(gslot);
+				int32_t yMin,yMax;
+				glyph->GetBounds(nullptr,&yMin,nullptr,&yMax);
+				yMax -= yMin;
+				if(yMax < 0)
+					yMax = 0;
+				auto u_yMax = static_cast<unsigned int>(yMax);
+				if(u_yMax > hMax)
+					hMax = u_yMax;
+				auto u_szMax = static_cast<unsigned int>(u_yMax) +static_cast<unsigned int>(static_cast<int>(fontSize) -glyph->GetTop());
+				if(u_szMax < 0)
+					u_szMax = 0;
+				if(u_szMax > szMax)
+					szMax = u_szMax;
+				int top = glyph->GetTop();
+				if(top > m_glyphTopMax)
+					m_glyphTopMax = top;
+			}
+			++glyphIdx;
+		}
+	}
+	m_glyphIndexRanges = std::move(ranges);
+
+	prosper::util::BufferCreateInfo glyphBufCreateInfo {};
+	glyphBufCreateInfo.size = glyphImageBufData.size();
+	glyphBufCreateInfo.usageFlags = prosper::BufferUsageFlags::TransferSrcBit;
+	glyphBufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::HostAccessable;
+
+	auto glyphBuf = context.CreateBuffer(glyphBufCreateInfo,glyphImageBufData.data());
+	glyphBuf->SetDebugName("tmp_glyph_buf");
 
 	// Initialize font image map
 	const auto format = prosper::Format::R8_UNorm;
-	// TODO: Calculate proper width / height ratio
 	auto imgCreateInfo = prosper::util::ImageCreateInfo {};
 	imgCreateInfo.format = format;
-	imgCreateInfo.width = numGlyphs *m_maxBitmapWidth;
-	imgCreateInfo.height = m_maxBitmapHeight;
 	imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
 	imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit | prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferDstBit;
 	imgCreateInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
+	
+	imgCreateInfo.width = numGlyphs *m_maxBitmapWidth;
+	imgCreateInfo.height = m_maxBitmapHeight;
+
+	auto props = context.GetPhysicalDeviceImageFormatProperties(imgCreateInfo);
+	if(!props.has_value())
+		return false;
+
+	if(imgCreateInfo.width > props->maxExtent.width)
+	{
+		auto levels = (imgCreateInfo.width /props->maxExtent.width) +1;
+		imgCreateInfo.height = umath::next_power_of_2(imgCreateInfo.height *levels);
+		imgCreateInfo.width = props->maxExtent.width;
+		if(imgCreateInfo.height > props->maxExtent.height)
+			return false;
+	}
+
+	m_numGlyphsPerRow = imgCreateInfo.width /m_maxBitmapWidth;
+
 	auto imgViewCreateInfo = prosper::util::ImageViewCreateInfo {};
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
 	auto glyphMapImage = context.CreateImage(imgCreateInfo);
@@ -240,36 +305,38 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 		int32_t advanceY;
 	};
 #pragma pack(pop)
-	//std::vector<std::shared_ptr<prosper::Image>> tmpGlyphImages {};
-	//tmpGlyphImages.reserve(m_glyphs.size());
+
 	std::vector<GlyphBounds> glyphCharacterBounds {};
 	glyphCharacterBounds.reserve(m_glyphs.size());
+	size_t glyphBufOffset = 0;
+	Vector2i glyphImageOffset {0,0};
 	for(auto i=decltype(m_glyphs.size()){0};i<m_glyphs.size();++i)
 	{
-		auto &glyphImage = glyphImages[i];
-		if(glyphImage == nullptr)
-			continue;
-		auto &bounds = glyphBounds.at(i);
-		auto &glyph = m_glyphs[i];
-		// Copy to image with optimal tiling and without host-visible memory
-		auto imgCreateInfo = prosper::util::ImageCreateInfo {};
-		imgCreateInfo.format = format;
-		imgCreateInfo.width = bounds.first;
-		imgCreateInfo.height = bounds.second;
-		imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit | prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferDstBit;
-		imgCreateInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
+		auto &glyphInfo = glyphBounds.at(i);
+		auto glyphDataSize = glyphInfo.width *glyphInfo.height;
 
-		prosper::util::CopyInfo copyInfo {};
-		copyInfo.srcSubresource = prosper::util::ImageSubresourceLayers{prosper::ImageAspectFlags::ColorBit,0u,0u,1u};
-		copyInfo.dstSubresource = prosper::util::ImageSubresourceLayers{prosper::ImageAspectFlags::ColorBit,0u,0u,1u};
-		copyInfo.width = bounds.first;
-		copyInfo.height = bounds.second;
+		auto curGlyphImageOffset = glyphImageOffset;
+		glyphImageOffset.x += m_maxBitmapWidth;
+		if((glyphImageOffset.x +m_maxBitmapWidth) > imgCreateInfo.width)
+		{
+			glyphImageOffset.x = 0;
+			glyphImageOffset.y += m_maxBitmapHeight;
+		}
+
+		if(glyphDataSize == 0)
+			continue;
+		auto &glyph = m_glyphs[i];
+
+		prosper::util::BufferImageCopyInfo cpyInfo {};
+		cpyInfo.bufferOffset = glyphBufOffset;
+		cpyInfo.imageExtent = {glyphInfo.width,glyphInfo.height};
 
 		// Write glyph to font image map
-		auto xOffset = i *m_maxBitmapWidth;
-		uint32_t yOffset = 0;
-		copyInfo.dstOffset = prosper::Offset3D(xOffset,yOffset,0);
-		setupCmd->RecordCopyImage(copyInfo,*glyphImage,*glyphMapImage);
+		cpyInfo.imageOffset = curGlyphImageOffset;
+		if((cpyInfo.imageOffset.x +cpyInfo.imageExtent->x) > imgCreateInfo.width ||
+			(cpyInfo.imageOffset.y +cpyInfo.imageExtent->y) > imgCreateInfo.height)
+			throw std::logic_error{"Glyph map image offset out of bounds!"};
+		setupCmd->RecordCopyBufferToImage(cpyInfo,*glyphBuf,*glyphMapImage);
 
 		glyphCharacterBounds.push_back(GlyphBounds{});
 		auto &glyphCharBounds = glyphCharacterBounds.back();
@@ -282,6 +349,8 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 		glyphCharBounds.height = height;
 		glyphCharBounds.advanceX = advanceX;
 		glyphCharBounds.advanceY = advanceY;
+
+		glyphBufOffset += glyphDataSize;
 	}
 	setupCmd->RecordImageBarrier(*glyphMapImage,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
 
@@ -310,7 +379,17 @@ bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
 
 uint32_t FontInfo::GetMaxGlyphBitmapWidth() const {return m_maxBitmapWidth;}
 uint32_t FontInfo::GetMaxGlyphBitmapHeight() const {return m_maxBitmapHeight;}
-uint32_t FontInfo::CharToGlyphMapIndex(char c) {return static_cast<uint8_t>(c) -umath::to_integral(GlyphRange::Start);}
+uint32_t FontInfo::CharToGlyphMapIndex(int32_t c) const
+{
+	if(c <= std::numeric_limits<uint8_t>::max()) // Ascii range
+		return c -glyphStartIndex;
+	auto itSim = std::upper_bound(m_glyphIndexRanges.begin(),m_glyphIndexRanges.end(),c,[](int32_t value,const GlyphRange &range) {
+		return value < (range.unicodeStartIndex +range.count);
+	});
+	if(itSim == m_glyphIndexRanges.end())
+		return 0;
+	return itSim->glyphMapStartIndex +(c -itSim->unicodeStartIndex);
+}
 
 std::shared_ptr<prosper::Texture> FontInfo::GetGlyphMap() const {return m_glyphMap;}
 std::shared_ptr<prosper::IBuffer> FontInfo::GetGlyphBoundsBuffer() const {return m_glyphBoundsBuffer;}
@@ -323,6 +402,7 @@ prosper::IDescriptorSet *FontInfo::GetGlyphMapDescriptorSet() const {return m_gl
 const FT_Face FontInfo::GetFace() const {return m_face.GetFtFace();}
 
 int32_t FontInfo::GetMaxGlyphTop() const {return m_glyphTopMax;}
+uint32_t FontInfo::GetGlyphCountPerRow() const {return m_numGlyphsPerRow;}
 
 uint32_t FontInfo::GetMaxGlyphSize() const {return m_maxGlyphSize;}
 uint32_t FontInfo::GetMaxGlyphHeight() const {return m_maxGlyphHeight;}
@@ -500,3 +580,4 @@ uint32_t FontManager::GetTextSize(char c,uint32_t charOffset,const std::string &
 	std::string str{c,'\0'};
 	return GetTextSize(str,charOffset,font,width,height);
 }
+#pragma optimize("",on)

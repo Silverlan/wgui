@@ -47,12 +47,12 @@ class DLLWGUI FontInfo
 	: public std::enable_shared_from_this<FontInfo>
 {
 public:
-	static uint32_t CharToGlyphMapIndex(char c);
 	~FontInfo();
 	void Clear();
 	bool Initialize(const std::string &cpath,uint32_t size);
 	const FT_Face GetFace() const;
-	const GlyphInfo *GetGlyphInfo(char c) const;
+	const GlyphInfo *GetGlyphInfo(int32_t c) const;
+	uint32_t CharToGlyphMapIndex(int32_t c) const;
 	const std::vector<std::shared_ptr<GlyphInfo>> &GetGlyphs() const;
 	uint32_t GetSize() const;
 	uint32_t GetMaxGlyphSize() const;
@@ -60,6 +60,7 @@ public:
 	uint32_t GetMaxGlyphBitmapWidth() const;
 	uint32_t GetMaxGlyphBitmapHeight() const;
 	int32_t GetMaxGlyphTop() const;
+	uint32_t GetGlyphCountPerRow() const;
 	std::shared_ptr<prosper::Texture> GetGlyphMap() const;
 	prosper::IDescriptorSet *GetGlyphMapDescriptorSet() const;
 	std::shared_ptr<prosper::IBuffer> GetGlyphBoundsBuffer() const;
@@ -77,8 +78,16 @@ private:
 		~Face();
 		const FT_Face &GetFtFace() const;
 	} m_face;
+	struct DLLWGUI GlyphRange
+	{
+		uint32_t unicodeStartIndex = 0;
+		uint32_t count = 0;
+
+		uint32_t glyphMapStartIndex = 0;
+	};
 	std::vector<uint8_t> m_data;
 	std::vector<std::shared_ptr<GlyphInfo>> m_glyphs;
+	std::vector<GlyphRange> m_glyphIndexRanges;
 	bool m_bInitialized = false;
 	uint32_t m_size = 0;
 	uint32_t m_maxGlyphHeight = 0;
@@ -86,6 +95,7 @@ private:
 	int32_t m_glyphTopMax = 0;
 	uint32_t m_maxBitmapWidth = 0;
 	uint32_t m_maxBitmapHeight = 0;
+	uint32_t m_numGlyphsPerRow = 0;
 	std::shared_ptr<prosper::Texture> m_glyphMap = nullptr;
 	std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphMapDescSetGroup = nullptr;
 	std::shared_ptr<prosper::IBuffer> m_glyphBoundsBuffer = nullptr;

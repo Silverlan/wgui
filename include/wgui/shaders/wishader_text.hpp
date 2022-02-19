@@ -34,7 +34,9 @@ namespace wgui
 			uint32_t glyphMapWidth;
 			uint32_t glyphMapHeight;
 			uint32_t maxGlyphBitmapWidth;
+			uint32_t maxGlyphBitmapHeight;
 			uint32_t yOffset;
+			uint32_t numGlyphsPerRow;
 		};
 #pragma pack(pop)
 
