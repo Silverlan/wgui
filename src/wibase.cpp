@@ -2019,6 +2019,11 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton 
 	auto hFocused = pFocused ? pFocused->GetHandle() : WIHandle{};
 	__lastMouseGUIElements[button] = el.GetHandle();
 	auto result = el.MouseCallback(button,state,mods);
+	{
+		auto it = __lastMouseGUIElements.find(button);
+		if(hEl.IsValid() == false || it == __lastMouseGUIElements.end() || it->second.get() != &el)
+			return result; // Mouse button press was hijacked by another element
+	}
 	// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
 	auto it = std::find_if(__lastMouseGUIElements.begin(),__lastMouseGUIElements.end(),[&el](const std::pair<GLFW::MouseButton,WIHandle> &p) {
 		return (p.second.get() == &el) ? true : false;
@@ -2044,9 +2049,10 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window,GLFW::MouseButton b
 	auto i = __lastMouseGUIElements.find(button);
 	if(i != __lastMouseGUIElements.end())
 	{
-		if(is_valid(i->second) && i->second->IsVisible() && i->second->GetMouseInputEnabled())
-			i->second->MouseCallback(button,GLFW::KeyState::Release,mods);
+		auto hEl = i->second;
 		__lastMouseGUIElements.erase(i);
+		if(is_valid(hEl) && hEl->IsVisible() && hEl->GetMouseInputEnabled())
+			hEl->MouseCallback(button,GLFW::KeyState::Release,mods);
 	}
 	if(state == GLFW::KeyState::Press)
 	{
