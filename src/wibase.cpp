@@ -2017,7 +2017,7 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el,GLFW::MouseButton 
 	WIBase *pFocused = wgui.GetFocusedElement(window);
 	auto c = wgui.GetFocusCount(window);
 	auto hFocused = pFocused ? pFocused->GetHandle() : WIHandle{};
-	__lastMouseGUIElements.insert(std::unordered_map<GLFW::MouseButton,WIHandle>::value_type(button,el.GetHandle()));
+	__lastMouseGUIElements[button] = el.GetHandle();
 	auto result = el.MouseCallback(button,state,mods);
 	// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
 	auto it = std::find_if(__lastMouseGUIElements.begin(),__lastMouseGUIElements.end(),[&el](const std::pair<GLFW::MouseButton,WIHandle> &p) {
