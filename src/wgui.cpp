@@ -144,7 +144,7 @@ void wgui::DrawState::GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h
 	h = scissor.at(3u);
 }
 
-WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
+WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution,std::optional<std::string> fontFileName)
 {
 	if(!FontManager::Initialize())
 		return ResultCode::UnableToInitializeFontManager;
@@ -209,10 +209,12 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution)
 		return ResultCode::ErrorInitializingShaders;
 
 	// Font has to be loaded AFTER shaders have been initialized (Requires wguitext shader)
-	auto font = FontManager::LoadFont("default","vera/VeraBd.ttf",14);
-	FontManager::LoadFont("default_large","vera/VeraBd.ttf",18);
-	FontManager::LoadFont("default_small","vera/VeraBd.ttf",10);
-	FontManager::LoadFont("default_tiny","vera/VeraBd.ttf",8);
+	if(!fontFileName.has_value())
+		fontFileName = "vera/VeraBd.ttf";
+	auto font = FontManager::LoadFont("default",*fontFileName,14);
+	FontManager::LoadFont("default_large",*fontFileName,18);
+	FontManager::LoadFont("default_small",*fontFileName,10);
+	FontManager::LoadFont("default_tiny",*fontFileName,8);
 	if(font != nullptr)
 		FontManager::SetDefaultFont(*font);
 	else
