@@ -2148,8 +2148,8 @@ bool WIBase::__wiScrollCallback(prosper::Window &window,Vector2 offset)
 		gui = WGUI::GetInstance().GetGUIElement(gui,static_cast<int>(cursorPos.x),static_cast<int>(cursorPos.y),[](WIBase *elChild) -> bool {return elChild->GetScrollInputEnabled();},&window);
 		while(gui != nullptr)
 		{
-			if(gui->GetScrollInputEnabled())
-				return gui->ScrollCallback(offset) == util::EventReply::Handled;
+			if(gui->GetScrollInputEnabled() && gui->ScrollCallback(offset) == util::EventReply::Handled)
+				return true;
 			gui = gui->GetParent();
 		}
 	}
