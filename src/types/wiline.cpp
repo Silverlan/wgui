@@ -115,22 +115,25 @@ const Color &WILine::GetEndColor() const {return m_colEnd;}
 unsigned int WILine::GetVertexCount() {return 2;}
 Mat4 WILine::GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &poseParent,const Vector2 &scale) const
 {
-	auto &posStart = GetStartPos();
-	auto &posEnd = GetEndPos();
-	Vector3 size(
-		((posEnd.x -posStart.x) /float(w)) *2.f,
-		((posEnd.y -posStart.y) /float(h)) *2.f,
+	auto bounds = GetNormalizedLineBounds();
+	const auto &posStart = bounds.first;
+	const auto &posEnd = bounds.second;
+	Vector3 size {
+		(posEnd.x -posStart.x),
+		(posEnd.y -posStart.y),
 		0
-	);
-	auto offset = origin -GetPos();
-	umath::ScaledTransform pose {};
-	pose.SetOrigin(Vector3(
-		-1.f +((offset.x +posStart.x) /float(w)) *2.f,
-		-1.f +((offset.y +posStart.y) /float(h)) *2.f,
-		0
-	));
-	pose.SetScale(size *Vector3{scale,1.f});
-	return poseParent *pose.ToMatrix();
+	};
+	Vector3 normOrigin {(origin.x) *2,(origin.y) *2,0.f};
+	Vector3 normScale {size.x *scale.x,size.y *scale.y,0};
+
+	if(!m_rotationMatrix)
+		return poseParent *glm::scale(glm::translate(normOrigin),normScale);
+
+	auto t = glm::translate(normOrigin);
+	auto s = glm::scale(normScale);
+	auto &r = *m_rotationMatrix;
+	auto m = t *r *s;
+	return poseParent *m;
 }
 
 void WILine::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Mat4 &matDraw,const Vector2 &scale,uint32_t testStencilLevel,wgui::StencilPipeline stencilPipeline)
@@ -147,7 +150,7 @@ void WILine::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Ma
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
 	if(shader.RecordBeginDraw(bindState,drawState,drawInfo.size.x,drawInfo.size.y,stencilPipeline,drawInfo.msaa) == true)
 	{
-		wgui::ElementData pushConstants {matDraw,col};
+		wgui::ElementData pushConstants {matDraw,col,wgui::ElementData::ToViewportSize(drawInfo.size)};
 		shader.RecordDraw(bindState,s_lineBuffer,m_bufColor,GetVertexCount(),GetLineWidth(),pushConstants,testStencilLevel);
 		shader.RecordEndDraw(bindState);
 	}
@@ -155,8 +158,9 @@ void WILine::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Ma
 
 void WILine::SizeToContents(bool x,bool y)
 {
-	Vector2i &pos = GetStartPos();
-	Vector2i &posEnd = GetEndPos();
+	auto bounds = GetNormalizedLineBounds();
+	const Vector2i &pos = bounds.first;
+	const Vector2i &posEnd = bounds.second;
 	int xL,xR,yU,yB;
 	if(pos.x < posEnd.x)
 	{
@@ -187,23 +191,25 @@ void WILine::SizeToContents(bool x,bool y)
 		SetWidth(w);
 	else if(y)
 		SetHeight(h);
-	Vector2 dir = Vector2((*m_posEnd)->x,(*m_posEnd)->y) -Vector2((*m_posStart)->x,(*m_posStart)->y);
+	Vector2 dir = Vector2(posEnd.x,posEnd.y) -Vector2(posEnd.x,posEnd.y);
 	dir = glm::normalize(dir);
 	m_dot = glm::dot(Vector2(1.f,0.f),dir);
+}
+
+std::pair<Vector2i,Vector2i> WILine::GetNormalizedLineBounds() const
+{
+	return {
+		Vector2i{umath::min((*m_posStart)->x,(*m_posEnd)->x),umath::min((*m_posStart)->y,(*m_posEnd)->y)},
+		Vector2i{umath::max((*m_posStart)->x,(*m_posEnd)->x),umath::max((*m_posStart)->y,(*m_posEnd)->y)},
+	};
 }
 
 const util::PVector2iProperty &WILine::GetStartPosProperty() const {return m_posStart;}
 const util::PVector2iProperty &WILine::GetEndPosProperty() const {return m_posEnd;}
 Vector2i &WILine::GetStartPos() const {return *m_posStart;}
 void WILine::SetStartPos(Vector2i pos) {SetStartPos(pos.x,pos.y);}
-void WILine::SetStartPos(int x,int y)
-{
-	*m_posStart = Vector2i{x,y};
-}
+void WILine::SetStartPos(int x,int y) {*m_posStart = Vector2i{x,y};}
 
 Vector2i &WILine::GetEndPos() const {return *m_posEnd;}
 void WILine::SetEndPos(Vector2i pos) {SetEndPos(pos.x,pos.y);}
-void WILine::SetEndPos(int x,int y)
-{
-	*m_posEnd = Vector2i{x,y};
-}
+void WILine::SetEndPos(int x,int y) {*m_posEnd = Vector2i{x,y};}

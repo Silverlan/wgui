@@ -36,6 +36,7 @@ public:
 	virtual void SetColor(float r,float g,float b,float a=1.f) override;
 	void SetLineWidth(unsigned int width);
 	unsigned int GetLineWidth();
+	std::pair<Vector2i,Vector2i> GetNormalizedLineBounds() const;
 
 	const util::PVector2iProperty &GetStartPosProperty() const;
 	const util::PVector2iProperty &GetEndPosProperty() const;
