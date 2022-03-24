@@ -123,7 +123,12 @@ Mat4 WILine::GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &pos
 		(posEnd.y -posStart.y),
 		0
 	};
-	Vector3 normOrigin {(origin.x) *2,(origin.y) *2,0.f};
+	Vector2 offset {origin.x,origin.y};
+	if(posStart.x > posEnd.x)
+		offset.x += posStart.x -posEnd.x;
+	if(posStart.y > posEnd.y)
+		offset.y += posStart.y -posEnd.y;
+	Vector3 normOrigin {offset *2.f,0.f};
 	Vector3 normScale {size.x *scale.x,size.y *scale.y,0};
 
 	if(!m_rotationMatrix)
@@ -198,10 +203,7 @@ void WILine::SizeToContents(bool x,bool y)
 
 std::pair<Vector2i,Vector2i> WILine::GetNormalizedLineBounds() const
 {
-	return {
-		Vector2i{umath::min((*m_posStart)->x,(*m_posEnd)->x),umath::min((*m_posStart)->y,(*m_posEnd)->y)},
-		Vector2i{umath::max((*m_posStart)->x,(*m_posEnd)->x),umath::max((*m_posStart)->y,(*m_posEnd)->y)},
-	};
+	return {*m_posStart,*m_posEnd};
 }
 
 const util::PVector2iProperty &WILine::GetStartPosProperty() const {return m_posStart;}
