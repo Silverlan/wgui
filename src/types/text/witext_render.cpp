@@ -768,7 +768,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,cons
 		if(pFont == nullptr)
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
-		for(auto &lineInfo : textEl.m_lineInfos)
+		/*for(auto &lineInfo : textEl.m_lineInfos)
 		{
 			for(auto &bufInfo : lineInfo.buffers)
 			{
@@ -776,7 +776,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,cons
 				if(bufInfo.colorBuffer)
 					context.KeepResourceAliveUntilPresentationComplete(bufInfo.colorBuffer);
 			}
-		}
+		}*/
 
 		auto glyphMap = pFont->GetGlyphMap();
 		auto glyphMapExtents = glyphMap->GetImage().GetExtents();
@@ -795,7 +795,7 @@ void WITextBase::Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,cons
 		wgui::ShaderTextRect::PushConstants pushConstants {
 			wgui::ElementData{Mat4{},col},
 			0.f,0.f,glyphMapExtents.width,glyphMapExtents.height,
-			maxGlyphBitmapWidth,maxGlyphBitmapHeight,0.f,pFont->GetGlyphCountPerRow()
+			maxGlyphBitmapWidth,maxGlyphBitmapHeight,0,pFont->GetGlyphCountPerRow()
 		};
 		Vector2i absPos,absSize;
 		CalcBounds(matDraw,drawInfo.size.x,drawInfo.size.y,absPos,absSize);
