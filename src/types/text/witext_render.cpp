@@ -348,7 +348,7 @@ void WIText::RenderText(Mat4&)
 	auto maxGlyphBitmapHeight = m_font->GetMaxGlyphBitmapHeight();
 
 	wgui::ShaderText::PushConstants pushConstants {
-		sx,sy,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth,maxGlyphBitmapHeight,0.f,m_font->GetGlyphCountPerRow()
+		sx,sy,glyphMapExtents.width,glyphMapExtents.height,maxGlyphBitmapWidth,maxGlyphBitmapHeight,0,m_font->GetGlyphCountPerRow()
 	};
 	const auto fDraw = [&context,&drawCmd,&shader,&bufBounds,&pushConstants,sx,sy,numChars,w,h,this](prosper::RenderTarget &rt,bool bClear,uint32_t vpWidth,uint32_t vpHeight) {
 		auto &img = rt.GetTexture().GetImage();
