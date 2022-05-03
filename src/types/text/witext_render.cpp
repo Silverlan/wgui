@@ -12,6 +12,7 @@
 #include <prosper_util.hpp>
 #include <shader/prosper_shader_blur.hpp>
 #include <prosper_command_buffer.hpp>
+#include <prosper_window.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <sharedutils/scope_guard.h>
 #include <util_formatted_text.hpp>
@@ -337,7 +338,7 @@ void WIText::RenderText(Mat4&)
 	auto bufBounds = context.CreateBuffer(createInfo,glyphBoundsInfos.data());
 	context.KeepResourceAliveUntilPresentationComplete(bufBounds);
 
-	auto drawCmd = context.GetDrawCommandBuffer();
+	auto drawCmd = context.GetWindow().GetDrawCommandBuffer();
 	auto &shader = static_cast<wgui::ShaderText&>(*m_shader.get());
 	//prosper::util::record_set_viewport(*drawCmd,w,h);
 	//prosper::util::record_set_scissor(*drawCmd,w,h);
@@ -598,7 +599,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 			0ull,glyphBoundsData.size() *sizeof(glyphBoundsData.front()),glyphBoundsData.data()
 		);
 
-		context.GetDrawCommandBuffer()->RecordBufferBarrier(
+		context.GetWindow().GetDrawCommandBuffer()->RecordBufferBarrier(
 			*bufInfo.buffer,
 			prosper::PipelineStageFlags::TransferBit,prosper::PipelineStageFlags::VertexInputBit,prosper::AccessFlags::TransferWriteBit,prosper::AccessFlags::VertexAttributeReadBit
 		);

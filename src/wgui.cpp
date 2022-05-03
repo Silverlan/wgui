@@ -493,6 +493,20 @@ WIBase *WGUI::AddBaseElement(const prosper::Window *window)
 }
 
 static std::unordered_set<WIBase*> g_exemptFromFocus;
+void WGUI::SetFocusEnabled(const prosper::Window &window,bool enabled)
+{
+	auto *pair = const_cast<WGUI*>(this)->FindWindowRootPair(window);
+	if(!pair)
+		return;
+	pair->focusEnabled = enabled;
+}
+bool WGUI::IsFocusEnabled(const prosper::Window &window) const
+{
+	auto *pair = const_cast<WGUI*>(this)->FindWindowRootPair(window);
+	if(!pair)
+		return false;
+	return pair->focusEnabled;
+}
 void WGUI::ClearFocus(WIBase &el)
 {
 	auto *window = el.GetRootWindow();
@@ -616,7 +630,7 @@ WIBase *WGUI::GetFocusedElement(const prosper::Window *window)
 	if(!window)
 		return nullptr;
 	auto *pair = FindWindowRootPair(*window);
-	return pair ? pair->elFocused.get() : nullptr;
+	return (pair && pair->focusEnabled) ? pair->elFocused.get() : nullptr;
 }
 
 WIBase *WGUI::FindByFilter(const std::function<bool(WIBase&)> &filter,const prosper::Window *window) const

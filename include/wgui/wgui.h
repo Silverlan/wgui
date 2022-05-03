@@ -114,6 +114,8 @@ public:
 	void RemoveSafely(WIBase &gui);
 	void Remove(WIBase &gui);
 	void ClearFocus(WIBase &el);
+	void SetFocusEnabled(const prosper::Window &window,bool enabled);
+	bool IsFocusEnabled(const prosper::Window &window) const;
 	const std::vector<WIHandle> &GetBaseElements() const {return m_rootElements;}
 	WIBase *GetBaseElement(const prosper::Window *optWindow=nullptr);
 	WIBase *AddBaseElement(const prosper::Window *optWindow=nullptr);
@@ -195,6 +197,7 @@ private:
 		WIHandle elFocused = {};
 		uint32_t focusCount = 0; // Used to detect changes
 		std::deque<WIHandle> focusTrapStack;
+		bool focusEnabled = true;
 		void RestoreTrappedFocus(WIBase *elRef=nullptr);
 
 		GLFW::Cursor::Shape cursor = GLFW::Cursor::Shape::Arrow;

@@ -10,6 +10,7 @@
 #include <prosper_util.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <prosper_command_buffer.hpp>
+#include <prosper_window.hpp>
 
 decltype(WITextTagColor::s_colorBuffer) WITextTagColor::s_colorBuffer = nullptr;
 void WITextTagColor::ClearColorBuffer()
@@ -121,7 +122,7 @@ void WITextTagColor::Apply()
 					offsetRelativeToBuffer *sizeof(colors.front()),(endOffsetRelativeToBuffer -offsetRelativeToBuffer +1) *sizeof(colors.front()),colors.data() +offsetRelativeToBuffer
 				);
 			}
-			context.GetDrawCommandBuffer()->RecordBufferBarrier(
+			context.GetWindow().GetDrawCommandBuffer()->RecordBufferBarrier(
 				*glyphBufferInfo.colorBuffer,
 				prosper::PipelineStageFlags::TransferBit,prosper::PipelineStageFlags::VertexInputBit,
 				prosper::AccessFlags::TransferWriteBit,prosper::AccessFlags::VertexAttributeReadBit
