@@ -7,6 +7,7 @@
 #include "wgui/wibase.h"
 #include "wgui/wibufferbase.h"
 #include "wgui/wihandle.h"
+#include <sharedutils/util_utf8.hpp>
 
 class DLLWGUI WIButton
 	: public WIBase
@@ -18,8 +19,8 @@ public:
 	WIButton();
 	virtual ~WIButton() override;
 	virtual void Initialize() override;
-	void SetText(std::string text);
-	std::string GetText();
+	void SetText(util::Utf8String text);
+	util::Utf8String GetText();
 	virtual void SetSize(int x,int y) override;
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual void SizeToContents(bool x=true,bool y=true) override;

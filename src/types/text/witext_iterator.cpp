@@ -207,7 +207,7 @@ CharIteratorBase::CharIteratorBase(WIText &text,util::text::LineIndex lineIndex,
 		{
 			int32_t w;
 			auto subLineStartOffset = m_info.charOffsetRelToLine -m_info.charOffsetRelToSubLine;
-			if(FontManager::GetTextSize(std::string_view{formattedLine}.substr(subLineStartOffset,m_info.charOffsetRelToSubLine),subLineStartOffset,GetText().GetFont(),&w,nullptr))
+			if(FontManager::GetTextSize(formattedLine.substr(subLineStartOffset,m_info.charOffsetRelToSubLine),subLineStartOffset,GetText().GetFont(),&w,nullptr))
 				m_info.pxOffset = w;
 		}
 	}

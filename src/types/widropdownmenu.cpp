@@ -33,7 +33,7 @@ WIDropDownMenu::~WIDropDownMenu()
 
 void WIDropDownMenu::SetListItemCount(uint32_t n) {m_numListItems = n;}
 
-void WIDropDownMenu::OnTextChanged(const std::string &text,bool changedByUser)
+void WIDropDownMenu::OnTextChanged(const util::Utf8String &text,bool changedByUser)
 {
 	WITextEntry::OnTextChanged(text,changedByUser);
 	if(changedByUser)
@@ -165,7 +165,7 @@ void WIDropDownMenu::SelectOption(const std::string &value)
 	SelectOption(option->GetIndex());
 }
 
-void WIDropDownMenu::SelectOptionByText(const std::string &name)
+void WIDropDownMenu::SelectOptionByText(const util::Utf8StringView &name)
 {
 	auto it = std::find_if(m_options.begin(),m_options.end(),[&name](const WIHandle &hOption) {
 		return (hOption.IsValid() && static_cast<const WIDropDownMenuOption*>(hOption.get())->GetText() == name) ? true : false;
@@ -175,7 +175,7 @@ void WIDropDownMenu::SelectOptionByText(const std::string &name)
 	SelectOption(static_cast<WIDropDownMenuOption*>(it->get())->GetIndex());
 }
 
-std::string_view WIDropDownMenu::GetOptionText(uint32_t idx)
+util::Utf8StringView WIDropDownMenu::GetOptionText(uint32_t idx)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return {};
@@ -203,20 +203,20 @@ void WIDropDownMenu::SetOptionValue(uint32_t idx,const std::string &val)
 	static_cast<WIDropDownMenuOption*>(m_options[idx].get())->SetValue(val);
 }
 
-std::string_view WIDropDownMenu::GetText() const {return WITextEntry::GetText();}
+util::Utf8StringView WIDropDownMenu::GetText() const {return WITextEntry::GetText();}
 
 std::string WIDropDownMenu::GetValue()
 {
 	auto idx = m_selected;
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
-		return IsEditable() ? std::string{GetText()} : "";
+		return IsEditable() ? GetText().cpp_str() : "";
 	WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption*>(m_options[idx].get());
 	return pOption->GetValue();
 }
 
 int32_t WIDropDownMenu::GetSelectedOption() const {return m_selected;}
 
-void WIDropDownMenu::SetText(const std::string_view &text)
+void WIDropDownMenu::SetText(const util::Utf8StringView &text)
 {
 	WITextEntry::SetText(text);
 	//SetText(text);
@@ -574,7 +574,7 @@ void WIDropDownMenuOption::Initialize()
 	SetScrollInputEnabled(true);
 }
 
-void WIDropDownMenuOption::SetText(const std::string_view &text)
+void WIDropDownMenuOption::SetText(const util::Utf8StringView &text)
 {
 	if(!m_hText.IsValid())
 		return;
@@ -587,7 +587,7 @@ void WIDropDownMenuOption::SetText(const std::string_view &text)
 
 WIText *WIDropDownMenuOption::GetTextElement() {return static_cast<WIText*>(m_hText.get());}
 
-std::string_view WIDropDownMenuOption::GetText() const
+util::Utf8StringView WIDropDownMenuOption::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <image/prosper_texture.hpp>
+#include <sharedutils/util_utf8.hpp>
 #include "wguidefinitions.h"
 
 namespace prosper {class IDescriptorSet;};
@@ -115,10 +116,10 @@ public:
 	static std::shared_ptr<const FontInfo> GetFont(const std::string &cfontName);
 	static void Close();
 	// Char offset (relative to a line) is required to calculate the correct tab size
-	static uint32_t GetTextSize(const std::string_view &text,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
-	static uint32_t GetTextSize(const std::string_view &text,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height=nullptr);
-	static uint32_t GetTextSize(char c,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
-	static uint32_t GetTextSize(char c,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height=nullptr);
+	static uint32_t GetTextSize(const util::Utf8StringView &text,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
+	static uint32_t GetTextSize(const util::Utf8StringView &text,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height=nullptr);
+	static uint32_t GetTextSize(int32_t c,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
+	static uint32_t GetTextSize(int32_t c,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height=nullptr);
 private:
 	struct Library
 	{

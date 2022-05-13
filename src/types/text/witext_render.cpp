@@ -439,7 +439,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 	// Initialize Buffers
 	struct SubStringInfo
 	{
-		std::string_view subString;
+		util::Utf8StringView subString;
 		size_t hash;
 		uint32_t width;
 		uint32_t height;
@@ -454,7 +454,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 	std::vector<SubStringInfo> subStrings {};
 	auto numChars = m_text->GetCharCount();
 
-	const auto fAddSubString = [this,&subStrings](const std::string_view &substr,util::text::LineIndex lineIndex,util::text::CharOffset charOffset,uint32_t &inOutX,uint32_t &inOutY) {
+	const auto fAddSubString = [this,&subStrings](const util::Utf8StringView &substr,util::text::LineIndex lineIndex,util::text::CharOffset charOffset,uint32_t &inOutX,uint32_t &inOutY) {
 		if(substr.empty())
 			return;
 		if(subStrings.size() == subStrings.capacity())
@@ -463,7 +463,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 		auto &info = subStrings.back();
 		info.subString = substr;
 		info.charOffset = charOffset;
-		info.hash = std::hash<std::string_view>{}(info.subString);
+		info.hash = std::hash<std::string_view>{}(info.subString.c_str());
 		info.absLineIndex = lineIndex;
 
 		int w,h;
@@ -484,7 +484,8 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 		auto fontSize = m_font->GetSize();
 		auto offset = 0u;
 		auto isHidden = IsTextHidden();
-		for(auto c : info.subString)
+		util::Utf8StringView u8Str {info.subString};
+		for(auto c : u8Str)
 		{
 			if(isHidden)
 				c = '*';
@@ -523,7 +524,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex line
 	auto y = 0u; // lineIndex *GetLineHeight();
 	auto x = 0u;
 	auto pLine = lineInfo.wpLine.lock();
-	auto lineView = std::string_view{pLine->GetFormattedLine()};
+	auto lineView = util::Utf8StringView{static_cast<const util::Utf8String&>(pLine->GetFormattedLine())};
 	auto subString = lineView;
 	util::text::CharOffset offset = 0;
 	auto subLines = lineInfo.subLines;

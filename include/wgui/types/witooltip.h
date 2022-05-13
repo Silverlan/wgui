@@ -6,6 +6,7 @@
 #define __WITOOLTIP_H__
 
 #include "wgui/wibase.h"
+#include <sharedutils/util_utf8.hpp>
 
 class DLLWGUI WITooltip
 	: public WIBase
@@ -16,7 +17,7 @@ public:
 	WITooltip();
 	virtual void Initialize() override;
 	void SetText(const std::string &text);
-	const std::string &GetText() const;
+	const util::Utf8String &GetText() const;
 };
 
 #endif

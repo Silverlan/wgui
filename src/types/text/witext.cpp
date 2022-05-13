@@ -121,7 +121,7 @@ WIText::WIText()
 	auto &shaderManager = WGUI::GetInstance().GetContext().GetShaderManager();
 	m_shader = shaderManager.GetShader("wguitext");
 
-	RegisterCallback<void,std::reference_wrapper<const std::string>>("OnTextChanged");
+	RegisterCallback<void,std::reference_wrapper<const util::Utf8String>>("OnTextChanged");
 	RegisterCallback<void,const FontInfo*>("OnFontChanged");
 	RegisterCallback<void,std::reference_wrapper<const std::shared_ptr<prosper::RenderTarget>>>("OnTextRendered");
 	RegisterCallback<void>("OnContentsChanged");
@@ -143,7 +143,7 @@ void WIText::SetAutoSizeToText(bool bAutoSize) {m_bAutoSizeToText = bAutoSize;}
 bool WIText::ShouldAutoSizeToText() const {return m_bAutoSizeToText;}
 void WIText::UpdateTags() {SetFlag(Flags::ApplySubTextTags);}
 
-std::string WIText::GetDebugInfo() const {return "Text: " +GetText();}
+std::string WIText::GetDebugInfo() const {return "Text: " +GetText().cpp_str();}
 
 std::pair<Vector2i,Vector2i> WIText::GetCharacterPixelBounds(util::text::LineIndex lineIdx,util::text::CharOffset charOffset) const
 {
@@ -156,7 +156,7 @@ std::pair<Vector2i,Vector2i> WIText::GetCharacterPixelBounds(util::text::LineInd
 		return {{0,0},{0,0}};
 	if(charOffset >= strLine.size())
 		charOffset = strLine.size() -1;
-	auto strViewLine = std::string_view{strLine};
+	auto strViewLine = util::Utf8StringView{strLine};
 
 	std::string strHidden;
 	if(IsTextHidden())
@@ -187,7 +187,7 @@ std::pair<Vector2i,Vector2i> WIText::GetCharacterPixelBounds(util::text::LineInd
 
 	auto endOffset = startOffset;
 	endOffset.y += GetLineHeight();
-	FontManager::GetTextSize(strViewLine.at(charOffset),charOffset,GetFont(),&endOffset.x);
+	FontManager::GetTextSize(strViewLine.get(charOffset),charOffset,GetFont(),&endOffset.x);
 	endOffset.x += startOffset.x;
 	return {startOffset,endOffset};
 }
@@ -237,8 +237,8 @@ int WIText::GetBreakHeight() {return m_breakHeight;}
 void WIText::SetBreakHeight(int breakHeight) {m_breakHeight = breakHeight;}
 const util::text::FormattedText &WIText::GetFormattedTextObject() const {return const_cast<WIText*>(this)->GetFormattedTextObject();}
 util::text::FormattedText &WIText::GetFormattedTextObject() {return *m_text;}
-const std::string &WIText::GetText() const {return m_text->GetUnformattedText();}
-const std::string &WIText::GetFormattedText() const {return m_text->GetFormattedText();}
+const util::Utf8String &WIText::GetText() const {return m_text->GetUnformattedText();}
+const util::Utf8String &WIText::GetFormattedText() const {return m_text->GetFormattedText();}
 void WIText::SetTabSpaceCount(uint32_t numberOfSpaces) {m_tabSpaceCount = numberOfSpaces;}
 uint32_t WIText::GetTabSpaceCount() const {return m_tabSpaceCount;}
 void WIText::SetFont(const std::string_view &font) {SetFont(FontManager::GetFont(font.data()).get());}
@@ -270,7 +270,7 @@ int WIText::GetTextHeight()
 	return numLines *h +(((numLines > 0) ? (numLines -1) : 0) *m_breakHeight);
 }
 
-void WIText::GetTextSize(int *w,int *h,const std::string_view *inText)
+void WIText::GetTextSize(int *w,int *h,const util::Utf8StringView *inText)
 {
 	if(m_font == nullptr)
 	{
@@ -355,12 +355,12 @@ void WIText::SetAutoBreakMode(AutoBreak b)
 	SizeToContents();
 }
 
-void WIText::AppendText(const std::string_view &text) {m_text->AppendText(text);}
-bool WIText::InsertText(const std::string_view &text,util::text::LineIndex lineIdx,util::text::CharOffset charOffset)
+void WIText::AppendText(const util::Utf8StringView &text) {m_text->AppendText(text);}
+bool WIText::InsertText(const util::Utf8StringView &text,util::text::LineIndex lineIdx,util::text::CharOffset charOffset)
 {
 	return m_text->InsertText(text,lineIdx,charOffset);
 }
-void WIText::AppendLine(const std::string_view &line) {m_text->AppendLine(line);}
+void WIText::AppendLine(const util::Utf8StringView &line) {m_text->AppendLine(line);}
 void WIText::PopFrontLine() {m_text->PopFrontLine();}
 void WIText::PopBackLine() {m_text->PopBackLine();}
 void WIText::RemoveLine(util::text::LineIndex lineIdx) {m_text->RemoveLine(lineIdx);}
@@ -373,7 +373,7 @@ bool WIText::MoveText(util::text::LineIndex lineIdx,util::text::CharOffset start
 {
 	return m_text->MoveText(lineIdx,startOffset,len,targetLineIdx,targetCharOffset);
 }
-std::string WIText::Substr(util::text::TextOffset startOffset,util::text::TextLength len) const
+util::Utf8StringView WIText::Substr(util::text::TextOffset startOffset,util::text::TextLength len) const
 {
 	return m_text->Substr(startOffset,len);
 }

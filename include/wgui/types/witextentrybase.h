@@ -7,6 +7,7 @@
 #include "wgui/wibase.h"
 #include "wgui/wihandle.h"
 #include <util_formatted_text_types.hpp>
+#include <sharedutils/util_utf8.hpp>
 #include <string_view>
 
 class WIText;
@@ -34,11 +35,11 @@ public:
 	virtual void OnFocusKilled() override;
 	void SetInputHidden(bool b);
 	bool IsInputHidden() const;
-	std::string_view GetText() const;
+	util::Utf8StringView GetText() const;
 	WIText *GetTextElement();
-	void SetText(std::string_view text);
-	void InsertText(const std::string_view &instext,int pos);
-	void InsertText(const std::string_view &text);
+	void SetText(util::Utf8StringView text);
+	void InsertText(const util::Utf8StringView &instext,int pos);
+	void InsertText(const util::Utf8StringView &text);
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual util::EventReply KeyboardCallback(GLFW::Key key,int scanCode,GLFW::KeyState state,GLFW::Modifier mods) override;
 	virtual util::EventReply CharCallback(unsigned int c,GLFW::Modifier mods=GLFW::Modifier::None) override;
@@ -85,9 +86,9 @@ protected:
 	void SetSelectionStart(int pos);
 	void SetSelectionEnd(int pos);
 	void UpdateSelection();
-	std::pair<util::text::LineIndex,util::text::LineIndex> GetLineInfo(int pos,std::string_view &outLine,int *lpos) const;
+	std::pair<util::text::LineIndex,util::text::LineIndex> GetLineInfo(int pos,util::Utf8StringView &outLine,int *lpos) const;
 	void UpdateTextPosition();
-	virtual void OnTextChanged(const std::string &text,bool changedByUser);
+	virtual void OnTextChanged(const util::Utf8String &text,bool changedByUser);
 	void OnTextChanged(bool changedByUser);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WITextEntryBase::StateFlags)

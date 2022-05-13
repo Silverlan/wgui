@@ -33,11 +33,11 @@ void WITooltip::SetText(const std::string &text)
 	pText->SetText(text);
 	pText->SizeToContents();
 }
-const std::string &WITooltip::GetText() const
+const util::Utf8String &WITooltip::GetText() const
 {
 	if(!m_hText.IsValid())
 	{
-		static std::string r;
+		static util::Utf8String r;
 		return r;
 	}
 	return static_cast<const WIText*>(m_hText.get())->GetText();

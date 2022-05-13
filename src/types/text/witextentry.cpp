@@ -15,7 +15,7 @@ WITextEntry::WITextEntry()
 	: WIBase()
 {
 	RegisterCallback<void>("OnTextEntered");
-	RegisterCallback<void,std::reference_wrapper<const std::string>,bool>("OnTextChanged");
+	RegisterCallback<void,std::reference_wrapper<const util::Utf8String>,bool>("OnTextChanged");
 	RegisterCallback<void>("OnContentsChanged");
 }
 
@@ -103,7 +103,8 @@ void WITextEntry::Initialize()
 		WITextEntry *te = static_cast<WITextEntry*>(hTextEntry.get());
 		te->OnTextEntered();
 	},this->GetHandle())));
-	pBase->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const std::string>,bool>::Create(std::bind([](WIHandle hTextEntry,std::reference_wrapper<const std::string> text,bool changedByUser) {
+	pBase->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const util::Utf8String>,bool>::Create(
+		std::bind([](WIHandle hTextEntry,std::reference_wrapper<const util::Utf8String> text,bool changedByUser) {
 		if(!hTextEntry.IsValid())
 			return;
 		WITextEntry *te = static_cast<WITextEntry*>(hTextEntry.get());
@@ -144,9 +145,9 @@ void WITextEntry::OnTextEntered()
 	CallCallbacks<void>("OnTextEntered");
 }
 
-void WITextEntry::OnTextChanged(const std::string &text,bool changedByUser)
+void WITextEntry::OnTextChanged(const util::Utf8String &text,bool changedByUser)
 {
-	CallCallbacks<void,std::reference_wrapper<const std::string>,bool>("OnTextChanged",text,changedByUser);
+	CallCallbacks<void,std::reference_wrapper<const util::Utf8String>,bool>("OnTextChanged",text,changedByUser);
 }
 
 void WITextEntry::OnContentsChanged()
@@ -215,25 +216,25 @@ int WITextEntry::GetMaxLength() const
 	return static_cast<const WITextEntryBase*>(m_hBase.get())->GetMaxLength();
 }
 
-std::string_view WITextEntry::GetText() const
+util::Utf8StringView WITextEntry::GetText() const
 {
 	if(!m_hBase.IsValid())
 		return {};
 	return static_cast<const WITextEntryBase*>(m_hBase.get())->GetText();
 }
-void WITextEntry::SetText(std::string_view text)
+void WITextEntry::SetText(util::Utf8StringView text)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase*>(m_hBase.get())->SetText(text);
 }
-void WITextEntry::InsertText(std::string_view instext,int pos)
+void WITextEntry::InsertText(util::Utf8StringView instext,int pos)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase*>(m_hBase.get())->InsertText(instext,pos);
 }
-void WITextEntry::InsertText(std::string_view text)
+void WITextEntry::InsertText(util::Utf8StringView text)
 {
 	if(!m_hBase.IsValid())
 		return;
@@ -340,7 +341,7 @@ void WINumericEntry::Initialize()
 			if(!hThis.IsValid())
 				return CallbackReturnType::HasReturnValue;
 			auto text = GetText();
-			auto i = atoi(text.data());
+			auto i = atoi(text.cpp_str().data());
 			if(m_numeric.max != nullptr)
 				i = umath::min(++i,*m_numeric.max);
 			SetText(ustring::int_to_string(i));
@@ -358,7 +359,7 @@ void WINumericEntry::Initialize()
 			if(!hThis.IsValid())
 				return CallbackReturnType::HasReturnValue;
 			auto text = GetText();
-			auto i = atoi(text.data());
+			auto i = atoi(text.cpp_str().data());
 			if(m_numeric.min != nullptr)
 				i = umath::max(--i,*m_numeric.min);
 			SetText(ustring::int_to_string(i));

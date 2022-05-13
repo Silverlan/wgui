@@ -12,6 +12,7 @@
 #include <image/prosper_render_target.hpp>
 #include <sharedutils/property/util_property.hpp>
 #include <sharedutils/util_shared_handle.hpp>
+#include <sharedutils/util_utf8.hpp>
 #include <util_formatted_text_types.hpp>
 #include <string_view>
 #include <queue>
@@ -144,9 +145,9 @@ public:
 	void SetBreakHeight(int breakHeight);
 	const util::text::FormattedText &GetFormattedTextObject() const;
 	util::text::FormattedText &GetFormattedTextObject();
-	const std::string &GetText() const;
-	const std::string &GetFormattedText() const;
-	void SetText(const std::string_view &text);
+	const util::Utf8String &GetText() const;
+	const util::Utf8String &GetFormattedText() const;
+	void SetText(const util::Utf8StringView &text);
 	void SetFont(const std::string_view &font);
 	void SetFont(const FontInfo *font);
 	void SetAutoBreakMode(AutoBreak b);
@@ -169,16 +170,16 @@ public:
 	void HideText(bool hide=true);
 	
 	void UpdateSubLines();
-	void AppendText(const std::string_view &text);
-	bool InsertText(const std::string_view &text,util::text::LineIndex lineIdx,util::text::CharOffset charOffset=util::text::LAST_CHAR);
-	void AppendLine(const std::string_view &line);
+	void AppendText(const util::Utf8StringView &text);
+	bool InsertText(const util::Utf8StringView &text,util::text::LineIndex lineIdx,util::text::CharOffset charOffset=util::text::LAST_CHAR);
+	void AppendLine(const util::Utf8StringView &line);
 	void PopFrontLine();
 	void PopBackLine();
 	void RemoveLine(util::text::LineIndex lineIdx);
 	bool RemoveText(util::text::LineIndex lineIdx,util::text::CharOffset charOffset,util::text::TextLength len);
 	bool RemoveText(util::text::TextOffset offset,util::text::TextLength len);
 	bool MoveText(util::text::LineIndex lineIdx,util::text::CharOffset startOffset,util::text::TextLength len,util::text::LineIndex targetLineIdx,util::text::CharOffset targetCharOffset=util::text::LAST_CHAR);
-	std::string Substr(util::text::TextOffset startOffset,util::text::TextLength len) const;
+	util::Utf8StringView Substr(util::text::TextOffset startOffset,util::text::TextLength len) const;
 	void Clear();
 
 	void SetTabSpaceCount(uint32_t numberOfSpaces);
@@ -276,7 +277,7 @@ private:
 	void InitializeTextBuffers();
 	void InitializeTextBuffers(LineInfo &lineInfo,util::text::LineIndex lineIndex);
 	void UpdateRenderTexture();
-	void GetTextSize(int *w,int *h,const std::string_view *inText=nullptr);
+	void GetTextSize(int *w,int *h,const util::Utf8StringView *inText=nullptr);
 	void RenderText();
 	void RenderText(Mat4 &mat);
 	void InitializeShadow(bool bReload=false);

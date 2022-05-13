@@ -34,8 +34,8 @@ public:
 	const std::string &GetValue();
 	void SetIndex(int idx);
 	int GetIndex();
-	void SetText(const std::string_view &text);
-	std::string_view GetText() const;
+	void SetText(const util::Utf8StringView &text);
+	util::Utf8StringView GetText() const;
 	WIText *GetTextElement();
 	virtual void SetSize(int x,int y) override;
 	virtual void OnCursorEntered() override;
@@ -62,7 +62,7 @@ protected:
 
 	void UpdateTextPos();
 	void UpdateText();
-	virtual void OnTextChanged(const std::string &text,bool changedByUser) override;
+	virtual void OnTextChanged(const util::Utf8String &text,bool changedByUser) override;
 	void UpdateListWindow();
 public:
 	WIDropDownMenu();
@@ -72,20 +72,20 @@ public:
 	void SetListItemCount(uint32_t n);
 	void SelectOption(unsigned int idx);
 	void SelectOption(const std::string &value);
-	void SelectOptionByText(const std::string &name);
+	void SelectOptionByText(const util::Utf8StringView &name);
 	const WIDropDownMenuOption *FindOptionByValue(const std::string &value) const;
 	WIDropDownMenuOption *FindOptionByValue(const std::string &value);
 	bool HasOption(const std::string &value) const;
 	void OnOptionSelected(WIDropDownMenuOption *option);
 	void ClearSelectedOption();
-	std::string_view GetText() const;
+	util::Utf8StringView GetText() const;
 	std::string GetValue();
 	int32_t GetSelectedOption() const;
-	std::string_view GetOptionText(uint32_t idx);
+	util::Utf8StringView GetOptionText(uint32_t idx);
 	std::string GetOptionValue(uint32_t idx);
 	void SetOptionText(uint32_t idx,const std::string &text);
 	void SetOptionValue(uint32_t idx,const std::string &val);
-	void SetText(const std::string_view &text);
+	void SetText(const util::Utf8StringView &text);
 	unsigned int GetOptionCount();
 	WIDropDownMenuOption *AddOption(const std::string &option,const std::string &value);
 	WIDropDownMenuOption *AddOption(const std::string &option);

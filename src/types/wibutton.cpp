@@ -27,7 +27,7 @@ void WIButton::SetSize(int x,int y)
 {
 	WIBase::SetSize(x,y);
 }
-void WIButton::SetText(std::string text)
+void WIButton::SetText(util::Utf8String text)
 {
 	if(!m_text.IsValid())
 		return;
@@ -35,7 +35,7 @@ void WIButton::SetText(std::string text)
 	pText->SetText(text);
 	pText->SizeToContents();
 }
-std::string WIButton::GetText()
+util::Utf8String WIButton::GetText()
 {
 	if(!m_text.IsValid())
 		return "";

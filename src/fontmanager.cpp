@@ -7,6 +7,7 @@
 #include <fsys/filesystem.h>
 #include "wgui/shaders/wishader_text.hpp"
 #include <sharedutils/util_file.h>
+#include <sharedutils/util_utf8.hpp>
 #include <prosper_util.hpp>
 #include <prosper_descriptor_set_group.hpp>
 #include <prosper_command_buffer.hpp>
@@ -508,7 +509,7 @@ void FontManager::Close()
 	m_fonts.clear();
 	m_lib = {};
 }
-uint32_t FontManager::GetTextSize(const std::string_view &text,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height)
+uint32_t FontManager::GetTextSize(const util::Utf8StringView &text,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height)
 {
 	if(font == nullptr)
 	{
@@ -569,15 +570,18 @@ uint32_t FontManager::GetTextSize(const std::string_view &text,uint32_t charOffs
 	return offset -charOffset;
 }
 
-uint32_t FontManager::GetTextSize(const std::string_view &text,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height) {return  GetTextSize(text,charOffset,GetFont(font).get(),width,height);}
-uint32_t FontManager::GetTextSize(char c,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height)
+uint32_t FontManager::GetTextSize(const util::Utf8StringView &text,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height)
 {
-	std::string str{c,'\0'};
+	return GetTextSize(text,charOffset,GetFont(font).get(),width,height);
+}
+uint32_t FontManager::GetTextSize(int32_t c,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height)
+{
+	util::Utf8String str{static_cast<uint16_t>(c)};
 	return GetTextSize(str,charOffset,font,width,height);
 }
-uint32_t FontManager::GetTextSize(char c,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height)
+uint32_t FontManager::GetTextSize(int32_t c,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height)
 {
-	std::string str{c,'\0'};
+	util::Utf8String str{static_cast<uint16_t>(c)};
 	return GetTextSize(str,charOffset,font,width,height);
 }
 #pragma optimize("",on)

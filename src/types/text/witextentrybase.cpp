@@ -23,7 +23,7 @@ WITextEntryBase::WITextEntryBase()
 {
 	RegisterCallback<void>("OnTextEntered");
 	RegisterCallback<void>("OnContentsChanged");
-	RegisterCallback<void,std::reference_wrapper<const std::string>,bool>("OnTextChanged");
+	RegisterCallback<void,std::reference_wrapper<const util::Utf8String>,bool>("OnTextChanged");
 }
 
 void WITextEntryBase::OnTextContentsChanged()
@@ -57,14 +57,14 @@ bool WITextEntryBase::IsInputHidden() const {return m_hText.IsValid() ? static_c
 
 WIText *WITextEntryBase::GetTextElement() {return static_cast<WIText*>(m_hText.get());}
 
-void WITextEntryBase::OnTextChanged(const std::string &text,bool changedByUser)
+void WITextEntryBase::OnTextChanged(const util::Utf8String &text,bool changedByUser)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
 		return;
 	if(pText->GetAutoBreakMode() == WIText::AutoBreak::NONE)
 		pText->SizeToContents();
-	CallCallbacks<void,std::reference_wrapper<const std::string>,bool>("OnTextChanged",text,changedByUser);
+	CallCallbacks<void,std::reference_wrapper<const util::Utf8String>,bool>("OnTextChanged",text,changedByUser);
 }
 
 void WITextEntryBase::OnTextChanged(bool changedByUser)
@@ -106,7 +106,8 @@ void WITextEntryBase::Initialize()
 		WITextEntryBase *te = static_cast<WITextEntryBase*>(hTe.get());
 		te->OnTextContentsChanged();
 	}));
-	pText->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const std::string>>::Create(std::bind([](WIHandle hTeBase,std::reference_wrapper<const std::string> text) {
+	pText->AddCallback("OnTextChanged",FunctionCallback<void,std::reference_wrapper<const util::Utf8String>>::Create(
+		std::bind([](WIHandle hTeBase,std::reference_wrapper<const util::Utf8String> text) {
 		if(!hTeBase.IsValid())
 			return;
 		WITextEntryBase *te = static_cast<WITextEntryBase*>(hTeBase.get());
@@ -198,14 +199,14 @@ void WITextEntryBase::OnFocusKilled()
 	DisableThinking();
 }
 
-std::string_view WITextEntryBase::GetText() const
+util::Utf8StringView WITextEntryBase::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};
 	return static_cast<const WIText*>(m_hText.get())->GetText();
 }
 
-void WITextEntryBase::SetText(std::string_view text)
+void WITextEntryBase::SetText(util::Utf8StringView text)
 {
 	if(!m_hText.IsValid())
 		return;
@@ -302,7 +303,7 @@ void WITextEntryBase::SetCaretPos(int pos)
 					int32_t w = 0;
 					auto relPos = pos -lineInfo.GetAbsCharStartOffset();
 					auto startOffset = lineInfo.relCharStartOffset;
-					auto text = std::string_view{lineInfo.line->GetFormattedLine().GetText()}.substr(startOffset,relPos);
+					auto text = util::Utf8StringView{lineInfo.line->GetFormattedLine().GetText()}.substr(startOffset,relPos);
 					std::string strHidden;
 					if(IsInputHidden())
 					{
@@ -550,7 +551,7 @@ void WITextEntryBase::ClearSelection()
 	SetSelectionBounds(-1,-1);
 }
 
-std::pair<util::text::LineIndex,util::text::LineIndex> WITextEntryBase::GetLineInfo(int pos,std::string_view &outLine,int *lpos) const
+std::pair<util::text::LineIndex,util::text::LineIndex> WITextEntryBase::GetLineInfo(int pos,util::Utf8StringView &outLine,int *lpos) const
 {
 	if(!m_hText.IsValid())
 		return {util::text::INVALID_LINE_INDEX,util::text::INVALID_LINE_INDEX};
@@ -565,7 +566,7 @@ std::pair<util::text::LineIndex,util::text::LineIndex> WITextEntryBase::GetLineI
 		int len = lineInfo.charCountSubLine;
 		if(pos < len)
 		{
-			outLine = std::string_view{strLine}.substr(lineInfo.relCharStartOffset,len);
+			outLine = util::Utf8StringView{strLine}.substr(lineInfo.relCharStartOffset,len);
 			*lpos = pos;
 			return {lineInfo.lineIndex,lineInfo.relSubLineIndex};
 		}
@@ -679,13 +680,13 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 					WIText *pText = static_cast<WIText*>(m_hText.get());
 					auto &lines = pText->GetLines();
 					int pos = GetCaretPos();
-					std::string_view line;
+					util::Utf8StringView line;
 					int lpos;
 					auto curLine = GetLineInfo(pos,line,&lpos);
 					if(curLine.first != util::text::INVALID_LINE_INDEX)
 					{
 						int lenOfSubStringUpToCaret;
-						FontManager::GetTextSize(ustring::substr(line,0,lpos),0u,pText->GetFont(),&lenOfSubStringUpToCaret);
+						FontManager::GetTextSize(line.substr(0,lpos),0u,pText->GetFont(),&lenOfSubStringUpToCaret);
 
 						TextLineIterator lineIt {*pText,curLine.first,curLine.second};
 						auto it = lineIt.begin();
@@ -787,8 +788,8 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key,int scanCode,GL
 									auto &text = pText->GetFormattedText();
 									int st,en;
 									GetSelectionBounds(&st,&en);
-									std::string sub = text.substr(st,en -st);
-									(*window)->SetClipboardString(sub);
+									auto sub = text.substr(st,en -st);
+									(*window)->SetClipboardString(sub.cpp_str());
 								}
 							}
 						}
@@ -855,17 +856,31 @@ util::EventReply WITextEntryBase::OnDoubleClick()
 	};
 	auto pivotPos = caretPos;
 	auto startPos = pivotPos;
-	while(startPos > 0 && fIsLetterOrNumber(text.at(startPos -1u)))
-		--startPos;
+	if(startPos > 0)
+	{
+		auto it = text.begin() +(startPos -1);
+		while(startPos > 0 && fIsLetterOrNumber(*it))
+		{
+			--startPos;
+			--it;
+		}
+	}
 	auto endPos = pivotPos;
-	while(endPos < text.size() && fIsLetterOrNumber(text.at(endPos)))
-		++endPos;
+	if(endPos < text.size())
+	{
+		auto it = text.begin() +endPos;
+		while(endPos < text.size() && fIsLetterOrNumber(*it))
+		{
+			++endPos;
+			++it;
+		}
+	}
 	SetSelectionBounds(startPos,endPos);
 	SetCaretPos(endPos);
 	return util::EventReply::Handled;
 }
 
-void WITextEntryBase::InsertText(const std::string_view &instext,int pos)
+void WITextEntryBase::InsertText(const util::Utf8StringView &instext,int pos)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
@@ -881,7 +896,7 @@ void WITextEntryBase::InsertText(const std::string_view &instext,int pos)
 	SetCaretPos(GetCaretPos() +static_cast<int>(instext.length()));
 }
 
-void WITextEntryBase::InsertText(const std::string_view &text)
+void WITextEntryBase::InsertText(const util::Utf8StringView &text)
 {
 	RemoveSelectedText();
 	InsertText(text,GetCaretPos());
@@ -893,10 +908,10 @@ void WITextEntryBase::SetNumeric(bool bNumeric)
 	umath::set_flag(m_stateFlags,StateFlags::Numeric,bNumeric);
 	auto text = GetText();
 	std::string ntext = "";
-	for(unsigned int i=0;i<text.size();i++)
+	for(auto c : text)
 	{
-		if(text[i] >= 48 && text[i] <= 57)
-			ntext += text[i];
+		if(c >= 48 && c <= 57)
+			ntext += c;
 	}
 	SetText(ntext);
 }
