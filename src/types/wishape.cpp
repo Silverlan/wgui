@@ -454,7 +454,7 @@ void WITexturedShape::DoUpdate()
 }
 void WITexturedShape::SetChannelSwizzle(wgui::ShaderTextured::Channel dst,wgui::ShaderTextured::Channel src)
 {
-	m_channels.at(umath::to_integral(src)) = dst;
+	m_channels.at(umath::to_integral(dst)) = src;
 }
 wgui::ShaderTextured::Channel WITexturedShape::GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const
 {
