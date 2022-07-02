@@ -401,11 +401,6 @@ void WGUI::Think()
 void WGUI::ScheduleElementForUpdate(WIBase &el)
 {
 	if(umath::is_flag_set(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit))
-		return;
-	m_bGUIUpdateRequired = true;
-	umath::set_flag(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit,true);
-
-	if(umath::is_flag_set(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit))
 	{
 		// Element is already scheduled for an updated, but we'll want to make sure it's at the end of the list, so we'll
 		// remove the previous entry! We'll iterate backwards because it's likely the last update-schedule was very recently.
@@ -419,6 +414,10 @@ void WGUI::ScheduleElementForUpdate(WIBase &el)
 			*it = WIHandle{};
 		}
 	}
+	m_bGUIUpdateRequired = true;
+	umath::set_flag(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit,true);
+	if(m_updateQueue.size() == m_updateQueue.capacity())
+		m_updateQueue.reserve(m_updateQueue.size() *1.5 +100);
 	m_updateQueue.push_back(el.GetHandle());
 }
 
