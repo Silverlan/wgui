@@ -26,7 +26,7 @@
 #include <prosper_render_pass.hpp>
 #include <shader/prosper_pipeline_loader.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
-#pragma optimize("",off)
+
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 prosper::SampleCountFlags WGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
 WGUI &WGUI::Open(prosper::IPrContext &context,const std::weak_ptr<msys::MaterialManager> &wpMatManager)
@@ -892,4 +892,3 @@ WIBase *WGUI::GetCursorGUIElement(WIBase *el,const std::function<bool(WIBase*)> 
 	GetMousePos(x,y,window);
 	return GetGUIElement(el,x,y,condition,window);
 }
-#pragma optimize("",on)

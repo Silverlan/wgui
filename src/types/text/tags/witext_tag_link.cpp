@@ -9,7 +9,7 @@
 #include <sharedutils/functioncallback.h>
 #include <sharedutils/util_event_reply.hpp>
 #include <util_formatted_text_tag.hpp>
-#pragma optimize("",off)
+
 decltype(WITextTagLink::s_linkHandler) WITextTagLink::s_linkHandler = nullptr;
 void WITextTagLink::set_link_handler(const std::function<void(const std::string&)> &linkHandler)
 {
@@ -73,4 +73,3 @@ void WITextTagLink::Apply()
 	CreateOverlayElements();
 	WITextTagUnderline::Apply();
 }
-#pragma optimize("",on)

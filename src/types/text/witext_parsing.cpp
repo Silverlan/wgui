@@ -7,7 +7,7 @@
 #include "wgui/types/witext_tags.hpp"
 #include <util_formatted_text.hpp>
 #include <unordered_map>
-#pragma optimize("",off)
+
 void WIText::UpdateSubLines()
 {
 	if(m_autoBreak == AutoBreak::NONE)
@@ -167,4 +167,3 @@ void WIText::AutoSizeToText()
 		w = GetWidth();
 	WIBase::SetSize(w,GetTextHeight());
 }
-#pragma optimize("",on)

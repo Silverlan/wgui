@@ -17,7 +17,7 @@
 
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
-#pragma optimize("",off)
+
 FontInfo::Face::~Face()
 {
 	if(m_ftFace != nullptr)
@@ -584,4 +584,3 @@ uint32_t FontManager::GetTextSize(int32_t c,uint32_t charOffset,const std::strin
 	util::Utf8String str{static_cast<uint16_t>(c)};
 	return GetTextSize(str,charOffset,font,width,height);
 }
-#pragma optimize("",on)

@@ -19,7 +19,7 @@
 #include <prosper_window.hpp>
 #include <sharedutils/property/util_property_color.hpp>
 #include <mathutil/umath_geometry.hpp>
-#pragma optimize("",off)
+
 LINK_WGUI_TO_CLASS(WIBase,WIBase);
 
 Vector4 WIBase::DrawInfo::GetColor(WIBase &el,const wgui::DrawState &drawState) const
@@ -2190,4 +2190,3 @@ std::ostream &operator<<(std::ostream &stream,WIBase &el)
 	el.Print(stream);
 	return stream;
 }
-#pragma optimize("",on)
