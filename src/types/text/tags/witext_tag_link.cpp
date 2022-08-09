@@ -18,6 +18,13 @@ void WITextTagLink::set_link_handler(const std::function<void(const std::string&
 void WITextTagLink::InitializeOverlay(WIBase &overlay)
 {
 	WITextTagUnderline::InitializeOverlay(overlay);
+	overlay.AddCallback("OnMousePressed",FunctionCallback<util::EventReply>::CreateWithOptionalReturn([this](util::EventReply *reply) mutable -> CallbackReturnType {
+		if(m_cbFunction.IsValid() == false)
+			return CallbackReturnType::NoReturnValue;
+		if(reply)
+			*reply = util::EventReply::Handled;
+		return CallbackReturnType::HasReturnValue;
+	}));
 	overlay.AddCallback("OnMouseReleased",FunctionCallback<util::EventReply>::CreateWithOptionalReturn([this](util::EventReply *reply) mutable -> CallbackReturnType {
 		if(m_cbFunction.IsValid() == false)
 			return CallbackReturnType::NoReturnValue;
