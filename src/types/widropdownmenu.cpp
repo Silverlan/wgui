@@ -129,7 +129,7 @@ void WIDropDownMenu::OnRemove()
 
 void WIDropDownMenu::SelectOption(unsigned int idx)
 {
-	if(idx >= m_options.size())
+	if(idx >= m_options.size() || idx == m_selected)
 		return;
 	WIHandle &hOption = m_options[idx];
 	if(!hOption.IsValid())
