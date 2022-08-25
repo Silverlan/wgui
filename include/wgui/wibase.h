@@ -343,7 +343,7 @@ public:
 	WIBase *Wrap(const std::string &wrapperClass);
 	bool Wrap(WIBase &wrapper);
 
-	void SetAutoSizeToContents(bool x,bool y);
+	void SetAutoSizeToContents(bool x,bool y,bool updateImmediately=true);
 	void SetAutoSizeToContents(bool autoSize);
 	bool ShouldAutoSizeToContentsX() const;
 	bool ShouldAutoSizeToContentsY() const;
@@ -376,6 +376,7 @@ public:
 	void ClearLocalRenderTransform();
 	umath::ScaledTransform *GetLocalRenderTransform();
 	const umath::ScaledTransform *GetLocalRenderTransform() const {return const_cast<WIBase*>(this)->GetLocalRenderTransform();}
+	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 
 	// Handles
 	WIHandle GetHandle() const;
@@ -385,7 +386,6 @@ protected:
 	Mat4 GetRelativePose(float x,float y) const;
 	void AbsolutePosToRelative(Vector2 &pos) const;
 	void SetIndex(uint64_t idx);
-	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 	void UpdateParentAutoSizeToContents();
 	void UpdateCursorMove(int x,int y);
 	void ClearParent();

@@ -1388,11 +1388,11 @@ const util::PVector2iProperty *WIBase::GetAttachmentPosProperty(const std::strin
 		return nullptr;
 	return &pAttachment->GetAbsPosProperty();
 }
-void WIBase::SetAutoSizeToContents(bool x,bool y)
+void WIBase::SetAutoSizeToContents(bool x,bool y,bool updateImmediately)
 {
 	umath::set_flag(m_stateFlags,StateFlags::AutoSizeToContentsX,x);
 	umath::set_flag(m_stateFlags,StateFlags::AutoSizeToContentsY,y);
-	if(x || y)
+	if(updateImmediately && (x || y))
 		UpdateAutoSizeToContents();
 }
 void WIBase::SetAutoSizeToContents(bool autoSize) {SetAutoSizeToContents(autoSize,autoSize);}
