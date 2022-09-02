@@ -359,9 +359,11 @@ void WGUI::Think()
 			{
 				// We don't want to update hidden elements, but we have to remember that we have to
 				// update them later!
-				m_updateQueue.push_back(hEl);
+				hEl->m_updateIndex = std::numeric_limits<decltype(hEl->m_updateIndex)>::max();
+				umath::set_flag(hEl->m_stateFlags,WIBase::StateFlags::ScheduleUpdateOnVisible,true);
 				continue;
 			}
+			hEl->m_updateIndex = std::numeric_limits<decltype(hEl->m_updateIndex)>::max();
 			hEl->Update();
 		}
 	}
@@ -404,14 +406,11 @@ void WGUI::ScheduleElementForUpdate(WIBase &el)
 	{
 		// Element is already scheduled for an updated, but we'll want to make sure it's at the end of the list, so we'll
 		// remove the previous entry! We'll iterate backwards because it's likely the last update-schedule was very recently.
-		auto it = std::find_if(m_updateQueue.rbegin(),m_updateQueue.rend(),[&el](const WIHandle &hEl) -> bool {
-			return hEl.get() == &el;
-		});
-		if(it != m_updateQueue.rend())
+		if(el.m_updateIndex < m_updateQueue.size())
 		{
 			// We don't erase the element from the vector because that would re-order the entire vector, which is expensive.
 			// Instead we'll just invalidate it, the vector will be cleared during the next ::Think anyway!
-			*it = WIHandle{};
+			m_updateQueue[el.m_updateIndex] = WIHandle{};
 		}
 	}
 	m_bGUIUpdateRequired = true;
@@ -419,6 +418,7 @@ void WGUI::ScheduleElementForUpdate(WIBase &el)
 	if(m_updateQueue.size() == m_updateQueue.capacity())
 		m_updateQueue.reserve(m_updateQueue.size() *1.5 +100);
 	m_updateQueue.push_back(el.GetHandle());
+	el.m_updateIndex = m_updateQueue.size() -1;
 }
 
 void WGUI::Draw(WIBase &el,prosper::IRenderPass &rp,prosper::IFramebuffer &fb,prosper::ICommandBuffer &drawCmd)

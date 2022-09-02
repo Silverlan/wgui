@@ -189,6 +189,7 @@ void WIBase::UpdateVisibility()
 		WGUI::GetInstance().m_bGUIUpdateRequired = true;
 
 	UpdateThink();
+	UpdateVisibilityUpdateState();
 }
 void WIBase::SetShouldScissor(bool b) {umath::set_flag(m_stateFlags,StateFlags::ShouldScissorBit,b);}
 bool WIBase::GetShouldScissor() const {return umath::is_flag_set(m_stateFlags,StateFlags::ShouldScissorBit);}
@@ -218,10 +219,22 @@ void WIBase::RemoveOnRemoval(WIBase *other)
 		const_cast<WIBase*>(hOther.get())->Remove();
 	}));
 }
+void WIBase::UpdateVisibilityUpdateState()
+{
+	if(umath::is_flag_set(m_stateFlags,StateFlags::ScheduleUpdateOnVisible) || (!IsVisible() && !ShouldThinkIfInvisible()))
+		return;
+	umath::set_flag(m_stateFlags,StateFlags::ScheduleUpdateOnVisible,false);
+	WGUI::GetInstance().ScheduleElementForUpdate(*this);
+}
 void WIBase::ScheduleUpdate()
 {
 	//if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit))
 	//	return;
+	if(!IsVisible() && !ShouldThinkIfInvisible())
+	{
+		umath::set_flag(m_stateFlags,StateFlags::ScheduleUpdateOnVisible,true);
+		return;
+	}
 	WGUI::GetInstance().ScheduleElementForUpdate(*this);
 }
 bool WIBase::IsUpdateScheduled() const {return umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit);}
@@ -1108,6 +1121,7 @@ void WIBase::SetThinkIfInvisible(bool bThinkIfInvisible)
 {
 	umath::set_flag(m_stateFlags,StateFlags::UpdateIfInvisibleBit,bThinkIfInvisible);
 	UpdateParentThink();
+	UpdateVisibilityUpdateState();
 }
 bool WIBase::ShouldThinkIfInvisible() const {return umath::is_flag_set(m_stateFlags,StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit);}
 void WIBase::SetRenderIfZeroAlpha(bool renderIfZeroAlpha) {umath::set_flag(m_stateFlags,StateFlags::RenderIfZeroAlpha,renderIfZeroAlpha);}
