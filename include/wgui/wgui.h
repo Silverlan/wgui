@@ -165,6 +165,8 @@ public:
 	bool IsLockedForDrawing() const {return m_lockedForDrawing;}
 	void SetLockedForDrawing(bool locked) {m_lockedForDrawing = locked;}
 
+	size_t GetLastThinkIndex() const;
+
 	wgui::ShaderColored *GetColoredShader();
 	wgui::ShaderColoredRect *GetColoredRectShader();
 	wgui::ShaderColoredLine *GetColoredLineShader();
@@ -225,6 +227,7 @@ private:
 	ChronoTime m_time = {};
 	double m_tLastThink = 0;
 	double m_tDelta = 0.f;
+	size_t m_thinkIndex = 0;
 
 	util::WeakHandle<prosper::Shader> m_shaderColored = {};
 	util::WeakHandle<prosper::Shader> m_shaderColoredCheap = {};

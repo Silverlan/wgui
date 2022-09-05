@@ -228,8 +228,12 @@ void WIBase::UpdateVisibilityUpdateState()
 }
 void WIBase::ScheduleUpdate()
 {
+	if(umath::is_flag_set(m_stateFlags,StateFlags::IsBeingUpdated))
+		return;
 	//if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit))
 	//	return;
+	if(m_lastThinkUpdateIndex == WGUI::GetInstance().GetLastThinkIndex())
+		return;
 	if(!IsVisible() && !ShouldThinkIfInvisible())
 	{
 		umath::set_flag(m_stateFlags,StateFlags::ScheduleUpdateOnVisible,true);
@@ -763,11 +767,11 @@ void WIBase::Update()
 {
 	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated);
 	DoUpdate();
-	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated,false);
 	// Flag must be cleared after DoUpdate, in case DoUpdate has set it again!
 	umath::set_flag(m_stateFlags,StateFlags::UpdateScheduledBit,false);
 
 	CallCallbacks("OnUpdated");
+	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated,false);
 }
 void WIBase::OnFirstThink() {}
 void WIBase::DoUpdate() {}

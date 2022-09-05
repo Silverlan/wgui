@@ -332,7 +332,7 @@ WIBase *WGUI::FindRootElementUnderCursor()
 		return nullptr;
 	return pair->rootElement.get();
 }
-
+size_t WGUI::GetLastThinkIndex() const {return m_thinkIndex;}
 void WGUI::Think()
 {
 	while(!m_removeQueue.empty())
@@ -355,15 +355,15 @@ void WGUI::Think()
 				continue;
 			if(umath::is_flag_set(hEl.get()->m_stateFlags,WIBase::StateFlags::UpdateScheduledBit) == false)
 				continue; // Update is no longer scheduled; Ignore this element
+			hEl->m_updateIndex = std::numeric_limits<decltype(hEl->m_updateIndex)>::max();
 			if(hEl->IsVisible() == false && hEl->ShouldThinkIfInvisible() == false)
 			{
 				// We don't want to update hidden elements, but we have to remember that we have to
 				// update them later!
-				hEl->m_updateIndex = std::numeric_limits<decltype(hEl->m_updateIndex)>::max();
 				umath::set_flag(hEl->m_stateFlags,WIBase::StateFlags::ScheduleUpdateOnVisible,true);
 				continue;
 			}
-			hEl->m_updateIndex = std::numeric_limits<decltype(hEl->m_updateIndex)>::max();
+			hEl->m_lastThinkUpdateIndex = m_thinkIndex;
 			hEl->Update();
 		}
 	}
@@ -393,11 +393,16 @@ void WGUI::Think()
 	auto *window = FindWindowUnderCursor();
 	auto *elBase = window ? GetBaseElement(window) : nullptr;
 	if(!elBase)
+	{
+		++m_thinkIndex;
 		return;
+	}
 	auto *el = GetCursorGUIElement(elBase,[](WIBase *el) -> bool {return el->GetCursor() != GLFW::Cursor::Shape::Default;},window);
 	while(el && el->GetCursor() == GLFW::Cursor::Shape::Default)
 		el = el->GetParent();
 	SetCursor(el ? el->GetCursor() : GLFW::Cursor::Shape::Arrow,window);
+
+	++m_thinkIndex;
 }
 
 void WGUI::ScheduleElementForUpdate(WIBase &el)
