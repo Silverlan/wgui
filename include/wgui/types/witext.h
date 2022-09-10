@@ -9,6 +9,7 @@
 #include "wgui/fontmanager.h"
 #include "wgui/wihandle.h"
 #include "wgui/shaders/wishader_text.hpp"
+#include "wgui/types/witext_tags.hpp"
 #include <image/prosper_render_target.hpp>
 #include <sharedutils/property/util_property.hpp>
 #include <sharedutils/util_shared_handle.hpp>

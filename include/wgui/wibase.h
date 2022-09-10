@@ -94,7 +94,8 @@ public:
 		FirstThink = IsBackgroundElement<<1u,
 		DontRemoveOnParentRemoval = FirstThink<<1u,
 		StencilEnabled = DontRemoveOnParentRemoval<<1u,
-		FullyTransparent = StencilEnabled<<1u
+		FullyTransparent = StencilEnabled<<1u,
+		ScheduleUpdateOnVisible = FullyTransparent<<1u
 	};
 	struct DLLWGUI DrawInfo
 	{
@@ -343,7 +344,7 @@ public:
 	WIBase *Wrap(const std::string &wrapperClass);
 	bool Wrap(WIBase &wrapper);
 
-	void SetAutoSizeToContents(bool x,bool y);
+	void SetAutoSizeToContents(bool x,bool y,bool updateImmediately=true);
 	void SetAutoSizeToContents(bool autoSize);
 	bool ShouldAutoSizeToContentsX() const;
 	bool ShouldAutoSizeToContentsY() const;
@@ -376,6 +377,7 @@ public:
 	void ClearLocalRenderTransform();
 	umath::ScaledTransform *GetLocalRenderTransform();
 	const umath::ScaledTransform *GetLocalRenderTransform() const {return const_cast<WIBase*>(this)->GetLocalRenderTransform();}
+	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 
 	// Handles
 	WIHandle GetHandle() const;
@@ -385,10 +387,10 @@ protected:
 	Mat4 GetRelativePose(float x,float y) const;
 	void AbsolutePosToRelative(Vector2 &pos) const;
 	void SetIndex(uint64_t idx);
-	void UpdateAutoSizeToContents(bool updateX=true,bool updateY=true);
 	void UpdateParentAutoSizeToContents();
 	void UpdateCursorMove(int x,int y);
 	void ClearParent();
+	void UpdateVisibilityUpdateState();
 	virtual void OnFirstThink();
 	virtual void DoUpdate();
 	virtual util::EventReply OnMousePressed();
@@ -401,6 +403,8 @@ protected:
 	void UpdateAnchorTopLeftPixelOffsets();
 	void UpdateAnchorBottomRightPixelOffsets();
 	uint64_t m_index = std::numeric_limits<uint64_t>::max();
+	uint32_t m_updateIndex = std::numeric_limits<uint32_t>::max();
+	size_t m_lastThinkUpdateIndex = std::numeric_limits<size_t>::max();
 	StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 	std::array<std::shared_ptr<void>,4> m_userData;
 	std::unique_ptr<umath::ScaledTransform> m_localRenderTransform = nullptr;

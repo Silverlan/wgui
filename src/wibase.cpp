@@ -189,6 +189,7 @@ void WIBase::UpdateVisibility()
 		WGUI::GetInstance().m_bGUIUpdateRequired = true;
 
 	UpdateThink();
+	UpdateVisibilityUpdateState();
 }
 void WIBase::SetShouldScissor(bool b) {umath::set_flag(m_stateFlags,StateFlags::ShouldScissorBit,b);}
 bool WIBase::GetShouldScissor() const {return umath::is_flag_set(m_stateFlags,StateFlags::ShouldScissorBit);}
@@ -218,10 +219,26 @@ void WIBase::RemoveOnRemoval(WIBase *other)
 		const_cast<WIBase*>(hOther.get())->Remove();
 	}));
 }
+void WIBase::UpdateVisibilityUpdateState()
+{
+	if(umath::is_flag_set(m_stateFlags,StateFlags::ScheduleUpdateOnVisible) || (!IsVisible() && !ShouldThinkIfInvisible()))
+		return;
+	umath::set_flag(m_stateFlags,StateFlags::ScheduleUpdateOnVisible,false);
+	WGUI::GetInstance().ScheduleElementForUpdate(*this);
+}
 void WIBase::ScheduleUpdate()
 {
+	if(umath::is_flag_set(m_stateFlags,StateFlags::IsBeingUpdated))
+		return;
 	//if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit))
 	//	return;
+	if(m_lastThinkUpdateIndex == WGUI::GetInstance().GetLastThinkIndex())
+		return;
+	if(!IsVisible() && !ShouldThinkIfInvisible())
+	{
+		umath::set_flag(m_stateFlags,StateFlags::ScheduleUpdateOnVisible,true);
+		return;
+	}
 	WGUI::GetInstance().ScheduleElementForUpdate(*this);
 }
 bool WIBase::IsUpdateScheduled() const {return umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit);}
@@ -750,11 +767,11 @@ void WIBase::Update()
 {
 	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated);
 	DoUpdate();
-	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated,false);
 	// Flag must be cleared after DoUpdate, in case DoUpdate has set it again!
 	umath::set_flag(m_stateFlags,StateFlags::UpdateScheduledBit,false);
 
 	CallCallbacks("OnUpdated");
+	umath::set_flag(m_stateFlags,StateFlags::IsBeingUpdated,false);
 }
 void WIBase::OnFirstThink() {}
 void WIBase::DoUpdate() {}
@@ -1108,6 +1125,7 @@ void WIBase::SetThinkIfInvisible(bool bThinkIfInvisible)
 {
 	umath::set_flag(m_stateFlags,StateFlags::UpdateIfInvisibleBit,bThinkIfInvisible);
 	UpdateParentThink();
+	UpdateVisibilityUpdateState();
 }
 bool WIBase::ShouldThinkIfInvisible() const {return umath::is_flag_set(m_stateFlags,StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit);}
 void WIBase::SetRenderIfZeroAlpha(bool renderIfZeroAlpha) {umath::set_flag(m_stateFlags,StateFlags::RenderIfZeroAlpha,renderIfZeroAlpha);}
@@ -1388,11 +1406,11 @@ const util::PVector2iProperty *WIBase::GetAttachmentPosProperty(const std::strin
 		return nullptr;
 	return &pAttachment->GetAbsPosProperty();
 }
-void WIBase::SetAutoSizeToContents(bool x,bool y)
+void WIBase::SetAutoSizeToContents(bool x,bool y,bool updateImmediately)
 {
 	umath::set_flag(m_stateFlags,StateFlags::AutoSizeToContentsX,x);
 	umath::set_flag(m_stateFlags,StateFlags::AutoSizeToContentsY,y);
-	if(x || y)
+	if(updateImmediately && (x || y))
 		UpdateAutoSizeToContents();
 }
 void WIBase::SetAutoSizeToContents(bool autoSize) {SetAutoSizeToContents(autoSize,autoSize);}
