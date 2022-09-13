@@ -63,6 +63,7 @@ WIBase::WIBase()
 	RegisterCallback<void>("OnCursorEntered");
 	RegisterCallback<void>("OnCursorExited");
 	RegisterCallback<void>("OnUpdated");
+	RegisterCallback<void>("OnSkinApplied");
 	RegisterCallbackWithOptionalReturn<util::EventReply,GLFW::MouseButton,GLFW::KeyState,GLFW::Modifier>("OnMouseEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMousePressed");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMouseReleased");
@@ -1088,6 +1089,7 @@ void WIBase::ResetSkin()
 	}
 }
 void WIBase::SetRemoveOnParentRemoval(bool b) {umath::set_flag(m_stateFlags,StateFlags::DontRemoveOnParentRemoval,!b);}
+void WIBase::OnSkinApplied() {}
 void WIBase::ApplySkin(WISkin *skin)
 {
 	if(umath::is_flag_set(m_stateFlags,StateFlags::SkinAppliedBit) == true)
@@ -1113,7 +1115,11 @@ void WIBase::ApplySkin(WISkin *skin)
 		if(hChild.IsValid())
 			hChild->ApplySkin(m_skin);
 	}
+	OnSkinApplied();
+	if(umath::is_flag_set(m_stateFlags,StateFlags::SkinCallbacksEnabled))
+		CallCallbacks<void>("OnSkinApplied");
 }
+void WIBase::SetSkinCallbacksEnabled(bool enabled) {umath::set_flag(m_stateFlags,StateFlags::SkinCallbacksEnabled,enabled);}
 WISkin *WIBase::GetSkin()
 {
 	if(m_skin)

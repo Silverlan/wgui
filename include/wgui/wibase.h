@@ -95,7 +95,8 @@ public:
 		DontRemoveOnParentRemoval = FirstThink<<1u,
 		StencilEnabled = DontRemoveOnParentRemoval<<1u,
 		FullyTransparent = StencilEnabled<<1u,
-		ScheduleUpdateOnVisible = FullyTransparent<<1u
+		ScheduleUpdateOnVisible = FullyTransparent<<1u,
+		SkinCallbacksEnabled = ScheduleUpdateOnVisible<<1u
 	};
 	struct DLLWGUI DrawInfo
 	{
@@ -126,6 +127,7 @@ public:
 	void Resize();
 	void SetSkin(std::string skin);
 	void ResetSkin();
+	void SetSkinCallbacksEnabled(bool enabled);
 	const std::string &GetName() const;
 	void SetName(const std::string &name);
 	const std::shared_ptr<void> &GetUserData();
@@ -391,6 +393,7 @@ protected:
 	void UpdateCursorMove(int x,int y);
 	void ClearParent();
 	void UpdateVisibilityUpdateState();
+	virtual void OnSkinApplied();
 	virtual void OnFirstThink();
 	virtual void DoUpdate();
 	virtual util::EventReply OnMousePressed();
