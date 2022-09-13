@@ -464,8 +464,18 @@ void WIBase::SetRight(int32_t pos) {SetLeft(pos -GetWidth());}
 void WIBase::SetTop(int32_t pos) {SetY(pos);}
 void WIBase::SetBottom(int32_t pos) {SetTop(pos -GetHeight());}
 Vector2i WIBase::GetEndPos() const {return Vector2i(GetRight(),GetBottom());}
-void WIBase::SetX(int x) {SetPos(x,(*m_pos)->y);}
-void WIBase::SetY(int y) {SetPos((*m_pos)->x,y);}
+void WIBase::SetX(int x)
+{
+	if(x == GetX())
+		return;
+	SetPos(x,(*m_pos)->y);
+}
+void WIBase::SetY(int y)
+{
+	if(y == GetY())
+		return;
+	SetPos((*m_pos)->x,y);
+}
 float WIBase::GetAspectRatio() const
 {
 	auto h = GetHeight();
@@ -473,6 +483,8 @@ float WIBase::GetAspectRatio() const
 }
 void WIBase::SetWidth(int w,bool keepRatio)
 {
+	if(w == GetWidth())
+		return;
 	auto h = (*m_size)->y;
 	if(keepRatio)
 		h = w *(1.f /GetAspectRatio());
@@ -480,6 +492,8 @@ void WIBase::SetWidth(int w,bool keepRatio)
 }
 void WIBase::SetHeight(int h,bool keepRatio)
 {
+	if(h == GetHeight())
+		return;
 	auto w = (*m_size)->x;
 	if(keepRatio)
 		w = h *GetAspectRatio();
@@ -985,6 +999,8 @@ void WIBase::SetSize(int x,int y)
 	if(x < 0 || y < 0)
 		throw std::logic_error("Negative size not allowed!");
 #endif
+	x = umath::max(x,0);
+	y = umath::max(y,0);
 	*m_size = Vector2i{x,y};
 }
 Mat4 WIBase::GetTransformPose(const Vector2i &origin,int w,int h,const Mat4 &poseParent,const Vector2 &scale) const
