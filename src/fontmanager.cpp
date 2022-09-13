@@ -103,8 +103,9 @@ const std::vector<std::shared_ptr<GlyphInfo>> &FontInfo::GetGlyphs() const {retu
 uint32_t FontInfo::GetSize() const {return m_size;}
 
 constexpr uint32_t glyphStartIndex = 32u;
-bool FontInfo::Initialize(const std::string &cpath,uint32_t fontSize)
+bool FontInfo::Initialize(const std::string &cpath,const std::string &name,uint32_t fontSize)
 {
+	m_name = name;
 	if(m_bInitialized || wgui::ShaderText::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
 		return true;
 	auto f = FileManager::OpenFile(cpath.c_str(),"rb");
@@ -477,7 +478,7 @@ std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidenti
 	}
 	if(font == nullptr)
 		font = std::shared_ptr<FontInfo>(new FontInfo());
-	if(!font->Initialize(path.c_str(),size))
+	if(!font->Initialize(path.c_str(),identifier,size))
 		return nullptr;
 	m_fonts.insert(decltype(m_fonts)::value_type(identifier,font));
 	return font;

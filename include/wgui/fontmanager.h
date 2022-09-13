@@ -50,7 +50,8 @@ class DLLWGUI FontInfo
 public:
 	~FontInfo();
 	void Clear();
-	bool Initialize(const std::string &cpath,uint32_t size);
+	bool Initialize(const std::string &cpath,const std::string &name,uint32_t size);
+	const std::string &GetName() const {return m_name;}
 	const FT_Face GetFace() const;
 	const GlyphInfo *GetGlyphInfo(int32_t c) const;
 	uint32_t CharToGlyphMapIndex(int32_t c) const;
@@ -90,6 +91,7 @@ private:
 	std::vector<std::shared_ptr<GlyphInfo>> m_glyphs;
 	std::vector<GlyphRange> m_glyphIndexRanges;
 	bool m_bInitialized = false;
+	std::string m_name;
 	uint32_t m_size = 0;
 	uint32_t m_maxGlyphHeight = 0;
 	uint32_t m_maxGlyphSize = 0;
