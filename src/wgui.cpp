@@ -143,6 +143,10 @@ void wgui::DrawState::GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h
 	w = scissor.at(2u);
 	h = scissor.at(3u);
 }
+bool wgui::detail::UpdatePriority::operator()(const UpdateInfo &h0,const UpdateInfo &h1) const
+{
+	return h0.depth < h1.depth;
+}
 
 WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution,std::optional<std::string> fontFileName)
 {
@@ -347,25 +351,33 @@ void WGUI::Think()
 	{
 		m_bGUIUpdateRequired = false;
 
-		std::vector<WIHandle> tmpUpdateQueue = std::move(m_updateQueue);
-		m_updateQueue.clear();
-		for(auto &hEl : tmpUpdateQueue)
+		while(!m_updateQueue.empty())
 		{
-			if(hEl.IsValid() == false)
-				continue;
-			if(umath::is_flag_set(hEl.get()->m_stateFlags,WIBase::StateFlags::UpdateScheduledBit) == false)
-				continue; // Update is no longer scheduled; Ignore this element
-			hEl->m_updateIndex = std::numeric_limits<decltype(hEl->m_updateIndex)>::max();
-			if(hEl->IsVisible() == false && hEl->ShouldThinkIfInvisible() == false)
+			auto updateInfo = m_updateQueue.top();
+			m_updateQueue.pop();
+			auto &hEl = updateInfo.element;
+			m_currentUpdateDepth = updateInfo.depth;
+			if(hEl.valid())
 			{
-				// We don't want to update hidden elements, but we have to remember that we have to
-				// update them later!
-				umath::set_flag(hEl->m_stateFlags,WIBase::StateFlags::ScheduleUpdateOnVisible,true);
-				continue;
+				auto *el = const_cast<WIBase*>(hEl.get());
+				if(updateInfo.element.valid() && umath::is_flag_set(updateInfo.element->m_stateFlags,WIBase::StateFlags::UpdateScheduledBit))
+				{
+					auto &el = *updateInfo.element;
+					if(el.IsVisible() || el.ShouldThinkIfInvisible())
+					{
+						el.m_lastThinkUpdateIndex = m_thinkIndex;
+						el.Update();
+						umath::set_flag(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit,false);
+					}
+					else
+					{
+						umath::set_flag(el.m_stateFlags,WIBase::StateFlags::ScheduleUpdateOnVisible,true);
+						umath::set_flag(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit,false);
+					}
+				}
 			}
-			hEl->m_lastThinkUpdateIndex = m_thinkIndex;
-			hEl->Update();
 		}
+		m_currentUpdateDepth = {};
 	}
 
 	m_time.Update();
@@ -405,25 +417,13 @@ void WGUI::Think()
 	++m_thinkIndex;
 }
 
-void WGUI::ScheduleElementForUpdate(WIBase &el)
+void WGUI::ScheduleElementForUpdate(WIBase &el,bool force)
 {
-	if(umath::is_flag_set(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit))
-	{
-		// Element is already scheduled for an updated, but we'll want to make sure it's at the end of the list, so we'll
-		// remove the previous entry! We'll iterate backwards because it's likely the last update-schedule was very recently.
-		if(el.m_updateIndex < m_updateQueue.size())
-		{
-			// We don't erase the element from the vector because that would re-order the entire vector, which is expensive.
-			// Instead we'll just invalidate it, the vector will be cleared during the next ::Think anyway!
-			m_updateQueue[el.m_updateIndex] = WIHandle{};
-		}
-	}
+	if(!force && umath::is_flag_set(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit))
+		return;
 	m_bGUIUpdateRequired = true;
 	umath::set_flag(el.m_stateFlags,WIBase::StateFlags::UpdateScheduledBit,true);
-	if(m_updateQueue.size() == m_updateQueue.capacity())
-		m_updateQueue.reserve(m_updateQueue.size() *1.5 +100);
-	m_updateQueue.push_back(el.GetHandle());
-	el.m_updateIndex = m_updateQueue.size() -1;
+	m_updateQueue.push({el.GetHandle(),el.GetDepth()});
 }
 
 void WGUI::Draw(WIBase &el,prosper::IRenderPass &rp,prosper::IFramebuffer &fb,prosper::ICommandBuffer &drawCmd)

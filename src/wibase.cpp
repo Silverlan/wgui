@@ -222,7 +222,7 @@ void WIBase::RemoveOnRemoval(WIBase *other)
 }
 void WIBase::UpdateVisibilityUpdateState()
 {
-	if(umath::is_flag_set(m_stateFlags,StateFlags::ScheduleUpdateOnVisible) || (!IsVisible() && !ShouldThinkIfInvisible()))
+	if(!umath::is_flag_set(m_stateFlags,StateFlags::ScheduleUpdateOnVisible) || (!IsVisible() && !ShouldThinkIfInvisible()))
 		return;
 	umath::set_flag(m_stateFlags,StateFlags::ScheduleUpdateOnVisible,false);
 	WGUI::GetInstance().ScheduleElementForUpdate(*this);
@@ -233,8 +233,8 @@ void WIBase::ScheduleUpdate()
 		return;
 	//if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit))
 	//	return;
-	if(m_lastThinkUpdateIndex == WGUI::GetInstance().GetLastThinkIndex())
-		return;
+	//if(m_lastThinkUpdateIndex == WGUI::GetInstance().GetLastThinkIndex())
+	//	return;
 	if(!IsVisible() && !ShouldThinkIfInvisible())
 	{
 		umath::set_flag(m_stateFlags,StateFlags::ScheduleUpdateOnVisible,true);
@@ -1666,6 +1666,22 @@ uint64_t WIBase::GetIndex() const {return m_index;}
 void WIBase::SetIndex(uint64_t idx) {m_index = idx;}
 void WIBase::SetParent(WIBase *base,std::optional<uint32_t> childIndex)
 {
+	std::function<void(WIBase*,WIBase*)> updateDepth = nullptr;
+	updateDepth = [&updateDepth](WIBase *el,WIBase *base) {
+		auto curDepth = el->m_depth;
+		el->m_depth = base ? (base->m_depth +1) : ((el == WGUI::GetInstance().GetBaseElement()) ? 0 : 1);
+		if(el->m_depth == curDepth)
+			return;
+		if(umath::is_flag_set(el->m_stateFlags,StateFlags::UpdateScheduledBit))
+			WGUI::GetInstance().ScheduleElementForUpdate(*el,true);
+		for(auto &hChild : *el->GetChildren())
+		{
+			if(hChild.expired())
+				continue;
+			updateDepth(hChild.get(),el);
+		}
+	};
+	updateDepth(this,base);
 	if(base == this || (m_parent.get() == base))
 	{
 		if(childIndex.has_value() == false)

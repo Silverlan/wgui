@@ -343,6 +343,8 @@ public:
 	std::pair<Vector2,Vector2> GetAnchorBounds() const;
 	std::pair<Vector2,Vector2> GetAnchorBounds(uint32_t refWidth,uint32_t refHeight) const;
 
+	uint32_t GetDepth() const {return m_depth;}
+
 	WIBase *Wrap(const std::string &wrapperClass);
 	bool Wrap(WIBase &wrapper);
 
@@ -406,8 +408,8 @@ protected:
 	void UpdateAnchorTopLeftPixelOffsets();
 	void UpdateAnchorBottomRightPixelOffsets();
 	uint64_t m_index = std::numeric_limits<uint64_t>::max();
-	uint32_t m_updateIndex = std::numeric_limits<uint32_t>::max();
 	size_t m_lastThinkUpdateIndex = std::numeric_limits<size_t>::max();
+	uint32_t m_depth = 0;
 	StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 	std::array<std::shared_ptr<void>,4> m_userData;
 	std::unique_ptr<umath::ScaledTransform> m_localRenderTransform = nullptr;

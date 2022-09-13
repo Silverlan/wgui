@@ -62,6 +62,19 @@ namespace wgui
 		void GetScissor(uint32_t &x,uint32_t &y,uint32_t &w,uint32_t &h);
 		void SetScissor(uint32_t x,uint32_t y,uint32_t w,uint32_t h);
 	};
+
+	namespace detail
+	{
+		struct DLLWGUI UpdateInfo
+		{
+			WIHandle element;
+			uint32_t depth;
+		};
+		struct DLLWGUI UpdatePriority
+		{
+			bool operator()(const UpdateInfo &h0,const UpdateInfo &h1) const;
+		};
+	};
 };
 
 class DLLWGUI WGUI
@@ -178,7 +191,7 @@ public:
 	wgui::ShaderTexturedRectExpensive *GetTexturedRectExpensiveShader();
 	wgui::ShaderStencil *GetStencilShader();
 private:
-	void ScheduleElementForUpdate(WIBase &el);
+	void ScheduleElementForUpdate(WIBase &el,bool force=false);
 	friend WIBase;
 	friend wgui::Shader;
 	friend wgui::ShaderColoredRect;
@@ -218,7 +231,8 @@ private:
 	// so we keep a separate reference to those elements for better efficiency.
 	std::vector<WIHandle> m_thinkingElements;
 
-	std::vector<WIHandle> m_updateQueue;
+	std::priority_queue<wgui::detail::UpdateInfo,std::vector<wgui::detail::UpdateInfo>,wgui::detail::UpdatePriority> m_updateQueue;
+	std::optional<uint32_t> m_currentUpdateDepth = {};
 	std::queue<WIHandle> m_removeQueue;
 	std::vector<std::unique_ptr<GLFW::Cursor>> m_cursors;
 	std::function<void(WIBase&)> m_createCallback = nullptr;
