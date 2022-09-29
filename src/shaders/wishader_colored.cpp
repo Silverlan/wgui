@@ -6,6 +6,7 @@
 #include "wgui/shaders/wishader_colored.hpp"
 #include "wgui/wielementdata.hpp"
 #include <shader/prosper_pipeline_create_info.hpp>
+#include <shader/prosper_shader_t.hpp>
 #include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
 
