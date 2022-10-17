@@ -1,9 +1,13 @@
 name: Build Windows
 on:
   push:
-    branches: [ main, master, actions ]
+    branches: [ master ]
   pull_request:
-    branches: [ main, master, actions ]
+    branches: [ master ]
+
+concurrency:
+  group: environment-win-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -43,6 +47,44 @@ jobs:
           root_dir: "${{ env.GA_ROOT_DIR }}"
           should_checkout: "0"
           dir: '.'
-          
-      - name: Upload binaries
-        uses: Silverlan/common_actions/upload_build_binaries@main
+
+      - name: Create Release Files
+        shell: bash
+        run: |
+          mkdir release
+          mkdir release/lib
+          cp build/external_libs/datasystem/${{ matrix.config.build_type }}/datasystem.dll release/lib/
+          cp build/external_libs/iglfw/${{ matrix.config.build_type }}/iglfw.dll release/lib/iglfw.dll
+          cp build/external_libs/materialsystem/${{ matrix.config.build_type }}/cmaterialsystem.dll release/lib/cmaterialsystem.dll
+          cp build/external_libs/materialsystem/${{ matrix.config.build_type }}/materialsystem.dll release/lib/materialsystem.dll
+          cp build/external_libs/mathutil/${{ matrix.config.build_type }}/mathutil.dll release/lib/mathutil.dll
+          cp build/external_libs/prosper/${{ matrix.config.build_type }}/prosper.dll release/lib/prosper.dll
+          cp build/external_libs/sharedutils/${{ matrix.config.build_type }}/sharedutils.dll release/lib/sharedutils.dll
+          cp build/external_libs/util_image/${{ matrix.config.build_type }}/util_image.dll release/lib/util_image.dll
+          cp build/external_libs/vfilesystem/${{ matrix.config.build_type }}/vfilesystem.dll release/lib/vfilesystem.dll
+          cp build/${{ matrix.config.build_type }}/wgui.dll release/lib/wgui.dll
+          cp build/third_party_libs/glfw/src/${{ matrix.config.build_type }}/glfw3.dll release/lib/glfw3.dll
+          cp build/third_party_libs/libpng/${{ matrix.config.build_type }}/libpng16.dll release/lib/libpng16.dll
+          cp build/third_party_libs/VTFLib/src/${{ matrix.config.build_type }}/VTFLib13.dll release/lib/VTFLib13.dll
+          cp build/third_party_libs/zlib/${{ matrix.config.build_type }}/zlib.dll release/lib/zlib.dll
+          cp build/third_party_libs/zlib/${{ matrix.config.build_type }}/zlib.dll release/lib/zlib.dll
+          cp build/external_libs/datasystem/${{ matrix.config.build_type }}/datasystem.lib release/lib/datasystem.lib
+          cp build/external_libs/iglfw/${{ matrix.config.build_type }}/iglfw.lib release/lib/iglfw.lib
+          cp build/external_libs/materialsystem/${{ matrix.config.build_type }}/cmaterialsystem.lib release/lib/cmaterialsystem.lib
+          cp build/external_libs/materialsystem/${{ matrix.config.build_type }}/materialsystem.lib release/lib/materialsystem.lib
+          cp build/external_libs/mathutil/${{ matrix.config.build_type }}/mathutil.lib release/lib/mathutil.lib
+          cp build/external_libs/prosper/${{ matrix.config.build_type }}/prosper.lib release/lib/prosper.lib
+          cp build/external_libs/sharedutils/${{ matrix.config.build_type }}/sharedutils.lib release/lib/sharedutils.lib
+          cp build/external_libs/util_image/${{ matrix.config.build_type }}/util_image.lib release/lib/util_image.lib
+          cp build/external_libs/vfilesystem/${{ matrix.config.build_type }}/vfilesystem.lib release/lib/vfilesystem.lib
+          cp build/${{ matrix.config.build_type }}/wgui.lib release/lib/wgui.lib
+          cp build/third_party_libs/glfw/src/${{ matrix.config.build_type }}/glfw3dll.lib release/lib/glfw3dll.lib
+          cp build/third_party_libs/libpng/${{ matrix.config.build_type }}/libpng16.lib release/lib/libpng16.lib
+          cp build/third_party_libs/VTFLib/src/${{ matrix.config.build_type }}/VTFLib13.lib release/lib/VTFLib13.lib
+          cp build/third_party_libs/zlib/${{ matrix.config.build_type }}/zlib.lib release/lib/zlib.lib
+
+      - name: Release Binaries
+        uses: Silverlan/common_actions/release_nightly_binaries@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit: ${{ github.ref_name }}
