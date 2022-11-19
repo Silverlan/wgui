@@ -1,41 +1,44 @@
 name: Build
 description: 'Build library'
 inputs:
-  root_dir:
-    description: 'Root directory'
+  repo-directory:
+    description: 'Specifies source code location. If empty, source code will be downloaded to working-directory.'
     required: true
-  should_checkout:
-    description: 'Checkout the core library?'
+    default: ''
+  working-directory:
+    description: 'Working Directory'
     required: true
-    default: '1'
-  dir:
-    description: 'Library directory'
-    required: true
-    default: 'external_libs/wgui'
+    default: '.'
 runs:
   using: "composite"
   steps:
+    - uses: Silverlan/common_actions/action_start@main
+      with:
+        name: "iglfw > build"
+        input_values: "repo-directory: ${{inputs.repo-directory}},working-directory: ${{inputs.working-directory}}"
+  
     - name: Initialize Env
       id: init-env
       uses: Silverlan/common_actions/set_common_env_vars@main
+      with:
+        working-directory: ${{inputs.working-directory}}
       
     - uses: ChristopherHX/conditional@b4a9649204f81002ec9a4ef7d4bf7d6b2ab7fa55
       name: CMake Build
       with:
-        if: ${{inputs.should_checkout == '1'}}
+        if: ${{inputs.repo-directory == ''}}
         step: |
-          uses: Silverlan/common_actions/get_submodule@main
+          uses: Silverlan/common_actions/get_submodule_simple@main
           with:
             repo: 'Silverlan/wgui'
-            repo_name: 'wgui'
             cmake_var: 'DEPENDENCY_WGUI_INCLUDE'
-            dir: 'external_libs'
-            checkout_submodules: '0'
+            working-directory: ${{inputs.working-directory}}
             
     - name: Define CMake Variables
       uses: Silverlan/common_actions/define_cmake_var@main
       with:
         cmake_var: '-DWGUI_INCLUDE_DEPENDENCIES=OFF'
+        working-directory: ${{inputs.working-directory}}
             
     - name: Build submodule - freetype2
       uses: Silverlan/common_actions/build_submodule@main
@@ -48,16 +51,19 @@ runs:
         cmake_var_lib: 'DEPENDENCY_FREETYPE_LIBRARY'
         cmake_definitions_tmp: ' -DCMAKE_POSITION_INDEPENDENT_CODE=ON'
         static_library: '1'
+        working-directory: ${{inputs.working-directory}}
             
     - name: Build submodule - materialsystem
       uses: Silverlan/materialsystem/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/materialsystem"
+        working-directory: ${{inputs.working-directory}}/materialsystem
         
     - name: Build submodule - util_formatted_text
       uses: Silverlan/util_formatted_text/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_formatted_text"
+        working-directory: ${{inputs.working-directory}}/util_formatted_text
         
     - uses: Silverlan/common_actions/build_cmake@main
       name: CMake Build
@@ -66,5 +72,9 @@ runs:
         build_generator: ${{ matrix.config.generators }}
         cmake_var: 'DEPENDENCY_WGUI_LIBRARY'
         build_target: wgui
-        build_dir: '${{ matrix.config.build_dir }}/${{ inputs.dir }}'
-        cmake_script_location: '${{ inputs.dir }}'
+        build_dir: '${{inputs.working-directory}}/build'
+        cmake_script_location: '${{inputs.working-directory}}'
+        working-directory: ${{inputs.working-directory}}
+
+    - uses: Silverlan/common_actions/action_end@main
+    

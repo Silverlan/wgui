@@ -1,9 +1,9 @@
 name: Build Linux
 on:
   push:
-    branches: [ main, master, actions ]
+    branches: [ master ]
   pull_request:
-    branches: [ main, master, actions ]
+    branches: [ master ]
 
 concurrency:
   group: environment-lin-${{ github.ref }}
@@ -43,9 +43,7 @@ jobs:
         id: build
         uses: Silverlan/wgui/github_actions/build@master
         with:
-          root_dir: "${{ env.GA_ROOT_DIR }}"
-          should_checkout: "0"
-          dir: '.'
+          repo-directory: '.'
 
       - name: Create Release Files
         shell: bash
