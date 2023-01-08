@@ -351,6 +351,8 @@ void WIDropDownMenu::SetOptions(const std::unordered_map<std::string,std::string
 
 void WIDropDownMenu::SetOptionOffset(unsigned int offset)
 {
+	if(offset >= m_options.size())
+		return;
 	unsigned int curOffset = m_listOffset;
 	int numList = curOffset +m_numListItems;
 	int numOptions = static_cast<int>(m_options.size());
@@ -384,6 +386,8 @@ void WIDropDownMenu::SetOptionOffset(unsigned int offset)
 
 void WIDropDownMenu::ScrollToOption(uint32_t offset,bool center)
 {
+	if(offset >= m_options.size())
+		return;
 	if(center)
 	{
 		unsigned int numOptions = static_cast<unsigned int>(m_options.size());
