@@ -10,12 +10,10 @@
 #include "wgui/wihandle.h"
 
 class DLLWGUI WIDropDownMenu;
-class DLLWGUI WIDropDownMenuOption
-	: public WIBase
-{
-public:
+class DLLWGUI WIDropDownMenuOption : public WIBase {
+  public:
 	friend WIDropDownMenu;
-protected:
+  protected:
 	int m_index;
 
 	bool m_selected = false;
@@ -26,7 +24,7 @@ protected:
 
 	void UpdateTextPos();
 	void SetDropDownMenu(WIDropDownMenu *menu);
-public:
+  public:
 	WIDropDownMenuOption();
 	virtual ~WIDropDownMenuOption() override;
 	virtual void Initialize() override;
@@ -37,7 +35,7 @@ public:
 	void SetText(const util::Utf8StringView &text);
 	util::Utf8StringView GetText() const;
 	WIText *GetTextElement();
-	virtual void SetSize(int x,int y) override;
+	virtual void SetSize(int x, int y) override;
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
 	virtual void OnVisibilityChanged(bool bVisible) override;
@@ -45,10 +43,8 @@ public:
 	bool IsSelected() const;
 };
 
-class DLLWGUI WIDropDownMenu
-	: public WITextEntry
-{
-protected:
+class DLLWGUI WIDropDownMenu : public WITextEntry {
+  protected:
 	unsigned int m_numListItems;
 	unsigned int m_listOffset;
 	int m_selected;
@@ -62,9 +58,9 @@ protected:
 
 	void UpdateTextPos();
 	void UpdateText();
-	virtual void OnTextChanged(const util::Utf8String &text,bool changedByUser) override;
+	virtual void OnTextChanged(const util::Utf8String &text, bool changedByUser) override;
 	void UpdateListWindow();
-public:
+  public:
 	WIDropDownMenu();
 	virtual ~WIDropDownMenu() override;
 	virtual void Initialize() override;
@@ -83,26 +79,26 @@ public:
 	int32_t GetSelectedOption() const;
 	util::Utf8StringView GetOptionText(uint32_t idx);
 	std::string GetOptionValue(uint32_t idx);
-	void SetOptionText(uint32_t idx,const std::string &text);
-	void SetOptionValue(uint32_t idx,const std::string &val);
+	void SetOptionText(uint32_t idx, const std::string &text);
+	void SetOptionValue(uint32_t idx, const std::string &val);
 	void SetText(const util::Utf8StringView &text);
 	unsigned int GetOptionCount();
-	WIDropDownMenuOption *AddOption(const std::string &option,const std::string &value);
+	WIDropDownMenuOption *AddOption(const std::string &option, const std::string &value);
 	WIDropDownMenuOption *AddOption(const std::string &option);
 	WIDropDownMenuOption *GetOptionElement(uint32_t idx);
 	WIDropDownMenuOption *FindOptionSelectedByCursor();
 	void ClearOptions();
 	void SetOptions(const std::vector<std::string> &options);
-	void SetOptions(const std::unordered_map<std::string,std::string> &options);
+	void SetOptions(const std::unordered_map<std::string, std::string> &options);
 	void SetOptionOffset(unsigned int offset);
 	void OpenMenu();
 	void CloseMenu();
-	void ScrollToOption(uint32_t offset,bool center=false);
+	void ScrollToOption(uint32_t offset, bool center = false);
 	bool IsMenuOpen();
 	void ToggleMenu();
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual util::EventReply ScrollCallback(Vector2 offset) override;
-	virtual void SetSize(int x,int y) override;
+	virtual void SetSize(int x, int y) override;
 };
 
 #endif

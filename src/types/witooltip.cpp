@@ -7,11 +7,9 @@
 #include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
 
-LINK_WGUI_TO_CLASS(WITooltip,WITooltip);
+LINK_WGUI_TO_CLASS(WITooltip, WITooltip);
 
-WITooltip::WITooltip()
-	: WIBase()
-{}
+WITooltip::WITooltip() : WIBase() {}
 
 void WITooltip::Initialize()
 {
@@ -28,17 +26,16 @@ void WITooltip::SetText(const std::string &text)
 		return;
 	//auto *parent = GetParent();
 	//auto maxWidth = parent->GetWidth() -GetX();
-	auto *pText = static_cast<WIText*>(m_hText.get());
+	auto *pText = static_cast<WIText *>(m_hText.get());
 	//pText->SetWidth(maxWidth);
 	pText->SetText(text);
 	pText->SizeToContents();
 }
 const util::Utf8String &WITooltip::GetText() const
 {
-	if(!m_hText.IsValid())
-	{
+	if(!m_hText.IsValid()) {
 		static util::Utf8String r;
 		return r;
 	}
-	return static_cast<const WIText*>(m_hText.get())->GetText();
+	return static_cast<const WIText *>(m_hText.get())->GetText();
 }

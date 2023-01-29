@@ -10,19 +10,18 @@
 
 class WGUI;
 class WIBase;
-class DLLWGUI WISkin
-{
-protected:
+class DLLWGUI WISkin {
+  protected:
 	WISkin(std::string id);
 	virtual ~WISkin();
 	std::string m_identifier;
 	void ReleaseElement(WIBase *el);
-public:
+  public:
 	friend WGUI;
-public:
+  public:
 	virtual void Initialize(WIBase *el);
 	virtual void Release(WIBase *el);
-	virtual void InitializeClass(WIBase *el,std::string &className);
+	virtual void InitializeClass(WIBase *el, std::string &className);
 };
 
 #endif

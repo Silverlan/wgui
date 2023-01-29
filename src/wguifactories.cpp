@@ -8,37 +8,36 @@
 #include <algorithm>
 
 WGUIClassMap *g_wguiFactories = nullptr;
-void LinkWGUIToFactory(std::string name,const std::type_info &info,WIBase*(*fc)(void))
+void LinkWGUIToFactory(std::string name, const std::type_info &info, WIBase *(*fc)(void))
 {
-	if(g_wguiFactories == nullptr)
-	{
+	if(g_wguiFactories == nullptr) {
 		static WGUIClassMap map;
 		g_wguiFactories = &map;
 	}
-	g_wguiFactories->AddClass(name,info,fc);
+	g_wguiFactories->AddClass(name, info, fc);
 }
-WGUIClassMap *GetWGUIClassMap() {return g_wguiFactories;}
+WGUIClassMap *GetWGUIClassMap() { return g_wguiFactories; }
 
-__reg_wgui_factory::__reg_wgui_factory(std::string name,const std::type_info &info,WIBase*(*fc)(void))
+__reg_wgui_factory::__reg_wgui_factory(std::string name, const std::type_info &info, WIBase *(*fc)(void))
 {
-	LinkWGUIToFactory(name,info,fc);
+	LinkWGUIToFactory(name, info, fc);
 	delete this;
 }
 
 /////////////////////////////////////////
 
-void WGUIClassMap::AddClass(std::string name,const std::type_info &info,WIBase *(*fc)(void))
+void WGUIClassMap::AddClass(std::string name, const std::type_info &info, WIBase *(*fc)(void))
 {
 	ustring::to_lower(name);
-	m_factories.insert(std::unordered_map<std::string,WIBase*(*)(void)>::value_type(name,fc));
-	m_classNames.insert(std::unordered_map<size_t,std::string>::value_type(info.hash_code(),name));
+	m_factories.insert(std::unordered_map<std::string, WIBase *(*)(void)>::value_type(name, fc));
+	m_classNames.insert(std::unordered_map<size_t, std::string>::value_type(info.hash_code(), name));
 }
 
-void WGUIClassMap::GetFactories(std::unordered_map<std::string,WIBase*(*)(void)> **factories) {*factories = &m_factories;}
+void WGUIClassMap::GetFactories(std::unordered_map<std::string, WIBase *(*)(void)> **factories) { *factories = &m_factories; }
 #undef GetClassName
-bool WGUIClassMap::GetClassName(const std::type_info &info,std::string *classname)
+bool WGUIClassMap::GetClassName(const std::type_info &info, std::string *classname)
 {
-	std::unordered_map<size_t,std::string>::iterator i = m_classNames.find(info.hash_code());
+	std::unordered_map<size_t, std::string>::iterator i = m_classNames.find(info.hash_code());
 	if(i == m_classNames.end())
 		return false;
 	*classname = i->second;
@@ -48,7 +47,7 @@ bool WGUIClassMap::GetClassName(const std::type_info &info,std::string *classnam
 WIBase *(*WGUIClassMap::FindFactory(std::string classname))()
 {
 	ustring::to_lower(classname);
-	std::unordered_map<std::string,WIBase*(*)()>::iterator i = m_factories.find(classname);
+	std::unordered_map<std::string, WIBase *(*)()>::iterator i = m_factories.find(classname);
 	if(i == m_factories.end())
 		return nullptr;
 	return i->second;

@@ -8,12 +8,10 @@
 #include "wgui/wibase.h"
 #include <sharedutils/util_utf8.hpp>
 
-class DLLWGUI WITooltip
-	: public WIBase
-{
-protected:
+class DLLWGUI WITooltip : public WIBase {
+  protected:
 	WIHandle m_hText;
-public:
+  public:
 	WITooltip();
 	virtual void Initialize() override;
 	void SetText(const std::string &text);

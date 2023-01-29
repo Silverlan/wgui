@@ -8,10 +8,8 @@
 #include "wgui/wibase.h"
 
 class WIText;
-class DLLWGUI WIMenuItem
-	: public WIBase
-{
-public:
+class DLLWGUI WIMenuItem : public WIBase {
+  public:
 	WIMenuItem();
 	virtual void Initialize() override;
 
@@ -20,20 +18,20 @@ public:
 	bool IsSelected() const;
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
-	virtual void SetSize(int x,int y) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual void SetSize(int x, int y) override;
 	using WIBase::SetSize;
-	virtual void SizeToContents(bool x=true,bool y=true) override;
+	virtual void SizeToContents(bool x = true, bool y = true) override;
 	void SetAction(const std::function<void(void)> &fOnClickAction);
 	void SetKeybindCommand(const std::string &cmd);
 	const std::string &GetKeybindCommand() const;
 	void SetTitle(const std::string &title);
 
 	WIText *GetTextElement();
-private:
+  private:
 	void UpdateRightText();
 	std::function<void(void)> m_fOnAction = nullptr;
-	std::vector<WIBase*> m_items = {};
+	std::vector<WIBase *> m_items = {};
 	WIHandle m_hBg = {};
 	WIHandle m_hBgOutline = {};
 	WIHandle m_hText = {};

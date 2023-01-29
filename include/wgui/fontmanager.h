@@ -13,13 +13,14 @@
 #include <sharedutils/util_utf8.hpp>
 #include "wguidefinitions.h"
 
-namespace prosper {class IDescriptorSet;};
+namespace prosper {
+	class IDescriptorSet;
+};
 
 class FontInfo;
 class FontManager;
-class DLLWGUI GlyphInfo
-{
-private:
+class DLLWGUI GlyphInfo {
+  private:
 	bool m_bInitialized = false;
 	int32_t m_left = 0;
 	int32_t m_top = 0;
@@ -27,31 +28,31 @@ private:
 	int32_t m_height = 0;
 	int32_t m_advanceX = 0;
 	int32_t m_advanceY = 0;
-	std::array<int32_t,4> m_bbox;
+	std::array<int32_t, 4> m_bbox;
 	friend FontManager;
-protected:
+  protected:
 	GlyphInfo();
 	friend FontInfo;
-public:
+  public:
 	void Initialize(FT_GlyphSlot glyph);
-	void GetAdvance(int32_t &advanceX,int32_t &advanceY) const;
-	void GetDimensions(int32_t &left,int32_t &top,int32_t &width,int32_t &height) const;
-	void GetBounds(int32_t *xMin,int32_t *yMin,int32_t *xMax,int32_t *yMax) const;
+	void GetAdvance(int32_t &advanceX, int32_t &advanceY) const;
+	void GetDimensions(int32_t &left, int32_t &top, int32_t &width, int32_t &height) const;
+	void GetBounds(int32_t *xMin, int32_t *yMin, int32_t *xMax, int32_t *yMax) const;
 	int32_t GetTop() const;
 	int32_t GetLeft() const;
 	int32_t GetWidth() const;
 	int32_t GetHeight() const;
 };
 
-namespace prosper {class DescriptorSetGroup;};
-class DLLWGUI FontInfo
-	: public std::enable_shared_from_this<FontInfo>
-{
-public:
+namespace prosper {
+	class DescriptorSetGroup;
+};
+class DLLWGUI FontInfo : public std::enable_shared_from_this<FontInfo> {
+  public:
 	~FontInfo();
 	void Clear();
-	bool Initialize(const std::string &cpath,const std::string &name,uint32_t size);
-	const std::string &GetName() const {return m_name;}
+	bool Initialize(const std::string &cpath, const std::string &name, uint32_t size);
+	const std::string &GetName() const { return m_name; }
 	const FT_Face GetFace() const;
 	const GlyphInfo *GetGlyphInfo(int32_t c) const;
 	uint32_t CharToGlyphMapIndex(int32_t c) const;
@@ -67,21 +68,19 @@ public:
 	prosper::IDescriptorSet *GetGlyphMapDescriptorSet() const;
 	std::shared_ptr<prosper::IBuffer> GetGlyphBoundsBuffer() const;
 	prosper::IDescriptorSet *GetGlyphBoundsDescriptorSet() const;
-protected:
-	FontInfo()=default;
+  protected:
+	FontInfo() = default;
 	friend FontManager;
-private:
-	struct DLLWGUI Face
-	{
-	private:
+  private:
+	struct DLLWGUI Face {
+	  private:
 		FT_Face m_ftFace = nullptr;
-	public:
-		Face()=default;
+	  public:
+		Face() = default;
 		~Face();
 		const FT_Face &GetFtFace() const;
 	} m_face;
-	struct DLLWGUI GlyphRange
-	{
+	struct DLLWGUI GlyphRange {
 		uint32_t unicodeStartIndex = 0;
 		uint32_t count = 0;
 
@@ -105,35 +104,33 @@ private:
 	std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphBoundsDsg = nullptr;
 };
 
-class DLLWGUI FontManager
-{
-public:
+class DLLWGUI FontManager {
+  public:
 	static const auto TAB_WIDTH_SPACE_COUNT = 4u;
 	static bool Initialize();
 	static std::shared_ptr<const FontInfo> GetDefaultFont();
-	static const std::unordered_map<std::string,std::shared_ptr<FontInfo>> &GetFonts();
+	static const std::unordered_map<std::string, std::shared_ptr<FontInfo>> &GetFonts();
 	static void SetDefaultFont(const FontInfo &font);
 	static const FT_Library GetFontLibrary();
-	static std::shared_ptr<const FontInfo> LoadFont(const std::string &cidentifier,const std::string &cpath,uint32_t fontSize,bool bForceReload=false);
+	static std::shared_ptr<const FontInfo> LoadFont(const std::string &cidentifier, const std::string &cpath, uint32_t fontSize, bool bForceReload = false);
 	static std::shared_ptr<const FontInfo> GetFont(const std::string &cfontName);
 	static void Close();
 	// Char offset (relative to a line) is required to calculate the correct tab size
-	static uint32_t GetTextSize(const util::Utf8StringView &text,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
-	static uint32_t GetTextSize(const util::Utf8StringView &text,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height=nullptr);
-	static uint32_t GetTextSize(int32_t c,uint32_t charOffset,const FontInfo *font,int32_t *width,int32_t *height=nullptr);
-	static uint32_t GetTextSize(int32_t c,uint32_t charOffset,const std::string &font,int32_t *width,int32_t *height=nullptr);
-private:
-	struct Library
-	{
-	private:
+	static uint32_t GetTextSize(const util::Utf8StringView &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height = nullptr);
+	static uint32_t GetTextSize(const util::Utf8StringView &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);
+	static uint32_t GetTextSize(int32_t c, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height = nullptr);
+	static uint32_t GetTextSize(int32_t c, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);
+  private:
+	struct Library {
+	  private:
 		FT_Library m_ftLibrary = nullptr;
-	public:
-		Library()=default;
+	  public:
+		Library() = default;
 		~Library();
 		const FT_Library &GetFtLibrary() const;
 	};
 	static Library m_lib;
-	static std::unordered_map<std::string,std::shared_ptr<FontInfo>> m_fonts;
+	static std::unordered_map<std::string, std::shared_ptr<FontInfo>> m_fonts;
 	static std::shared_ptr<const FontInfo> m_fontDefault;
 };
 

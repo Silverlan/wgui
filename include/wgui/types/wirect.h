@@ -10,53 +10,41 @@
 #include "wgui/wihandle.h"
 #include <array>
 
-class DLLWGUI WIRect
-	: public WIShape
-{
-public:
+class DLLWGUI WIRect : public WIShape {
+  public:
 	WIRect();
 };
 
-class DLLWGUI WIOutlinedRect
-	: public WIBase
-{
-private:
-	std::array<WIHandle,4> m_lines;
+class DLLWGUI WIOutlinedRect : public WIBase {
+  private:
+	std::array<WIHandle, 4> m_lines;
 	unsigned int m_lineWidth;
 	void UpdateLines();
-public:
+  public:
 	WIOutlinedRect();
 	virtual void Initialize() override;
 	unsigned int GetOutlineWidth();
 	void SetOutlineWidth(unsigned int width);
-	virtual void SetSize(int x,int y) override;
+	virtual void SetSize(int x, int y) override;
 	using WIBase::SetColor;
 };
 
-class DLLWGUI WIRoundedRect
-	: public WIShape,
-	public WIRoundedBase
-{
-public:
+class DLLWGUI WIRoundedRect : public WIShape, public WIRoundedBase {
+  public:
 	WIRoundedRect();
 	virtual ~WIRoundedRect() override = default;
 	virtual void Update() override;
 	virtual void Initialize() override;
 };
 
-class DLLWGUI WITexturedRect
-	: public WITexturedShape
-{
-public:
+class DLLWGUI WITexturedRect : public WITexturedShape {
+  public:
 	WITexturedRect();
 	virtual ~WITexturedRect() override = default;
 };
 
-class DLLWGUI WIRoundedTexturedRect
-	: public WITexturedShape,
-	public WIRoundedBase
-{
-public:
+class DLLWGUI WIRoundedTexturedRect : public WITexturedShape, public WIRoundedBase {
+  public:
 	WIRoundedTexturedRect();
 	virtual ~WIRoundedTexturedRect() override = default;
 	virtual void Update() override;

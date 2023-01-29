@@ -8,8 +8,7 @@
 #include "wguidefinitions.h"
 #include <cinttypes>
 
-struct DLLWGUI WIAnchor
-{
+struct DLLWGUI WIAnchor {
 	float left = 0.f;
 	float right = 0.f;
 	float top = 0.f;

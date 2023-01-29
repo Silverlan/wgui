@@ -8,18 +8,16 @@
 #include "wgui/wibase.h"
 #include <sharedutils/util_clock.hpp>
 
-class DLLWGUI WIRoot
-	: public WIBase
-{
-private:
+class DLLWGUI WIRoot : public WIBase {
+  private:
 	virtual ~WIRoot();
 	WIHandle m_hTooltip;
 	WIHandle m_hTooltipTarget;
 	util::Clock::time_point m_tCursorOver;
-public:
+  public:
 	WIRoot();
 	virtual void Initialize() override;
-	virtual void OnCursorMoved(int x,int y) override;
+	virtual void OnCursorMoved(int x, int y) override;
 	virtual void Think() override;
 	void Setup();
 };

@@ -9,21 +9,19 @@
 #include "wgui/wihandle.h"
 #include <sharedutils/util_utf8.hpp>
 
-class DLLWGUI WIButton
-	: public WIBase
-{
-protected:
+class DLLWGUI WIButton : public WIBase {
+  protected:
 	WIHandle m_text;
 	bool m_bPressed;
-public:
+  public:
 	WIButton();
 	virtual ~WIButton() override;
 	virtual void Initialize() override;
 	void SetText(util::Utf8String text);
 	util::Utf8String GetText();
-	virtual void SetSize(int x,int y) override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
-	virtual void SizeToContents(bool x=true,bool y=true) override;
+	virtual void SetSize(int x, int y) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual void SizeToContents(bool x = true, bool y = true) override;
 };
 
 #endif

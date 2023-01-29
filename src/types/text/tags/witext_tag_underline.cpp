@@ -12,15 +12,15 @@ void WITextTagUnderline::InitializeOverlay(WIBase &overlay)
 {
 	auto *pUnderline = WGUI::GetInstance().Create<WIRect>(&overlay);
 	auto hOverlay = overlay.GetHandle();
-	overlay.AddCallback("SetSize",FunctionCallback<void>::Create([this,pUnderline,hOverlay]() {
+	overlay.AddCallback("SetSize", FunctionCallback<void>::Create([this, pUnderline, hOverlay]() {
 		if(hOverlay.IsValid() == false)
 			return;
-		pUnderline->SetPos(Vector2i{0,hOverlay.get()->GetHeight() -1});
-		pUnderline->SetSize(Vector2i{hOverlay.get()->GetWidth(),1});
+		pUnderline->SetPos(Vector2i {0, hOverlay.get()->GetHeight() - 1});
+		pUnderline->SetSize(Vector2i {hOverlay.get()->GetWidth(), 1});
 		pUnderline->SetColor(m_underlineColor);
 	}));
 }
-void WITextTagUnderline::CalcBounds(Vector2i &inOutPos,Vector2i &inOutSize) {inOutSize.y += 2;}
+void WITextTagUnderline::CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) { inOutSize.y += 2; }
 void WITextTagUnderline::Apply()
 {
 	WITextDecorator::Apply();

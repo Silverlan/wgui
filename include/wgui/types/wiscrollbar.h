@@ -10,12 +10,10 @@
 #include "wgui/wihandle.h"
 
 class DLLWGUI WIScrollBar;
-class DLLWGUI WIScrollBarSlider
-	: public WIRect
-{
-public:
+class DLLWGUI WIScrollBarSlider : public WIRect {
+  public:
 	friend WIScrollBar;
-protected:
+  protected:
 	bool m_bHorizontal;
 	int m_moveOrigin;
 	int m_moveOffset;
@@ -32,25 +30,23 @@ protected:
 	void SetSliderHeight(int h);
 	void SetSliderX(int x);
 	void SetSliderY(int y);
-	void SetSliderPos(int x,int y);
-	void SetSliderSize(int w,int h);
-public:
+	void SetSliderPos(int x, int y);
+	void SetSliderSize(int w, int h);
+  public:
 	WIScrollBarSlider();
 	virtual ~WIScrollBarSlider() override = default;
 	virtual void Initialize() override;
 	virtual util::EventReply ScrollCallback(Vector2 offset) override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual void Think() override;
 	void SetHorizontal(bool b);
 	bool IsHorizontal();
 	bool IsVertical();
-	void SetLimits(int min,int max);
+	void SetLimits(int min, int max);
 };
 
-class DLLWGUI WIScrollBar
-	: public WIBase
-{
-protected:
+class DLLWGUI WIScrollBar : public WIBase {
+  protected:
 	bool m_bHorizontal;
 	unsigned int m_offset;
 	unsigned int m_numElements;
@@ -67,14 +63,14 @@ protected:
 	void SetSliderHeight(int h);
 	void SetSliderX(int x);
 	void SetSliderY(int y);
-	void SetSliderPos(int x,int y);
-	void SetSliderSize(int w,int h);
+	void SetSliderPos(int x, int y);
+	void SetSliderSize(int w, int h);
 	void UpdateSliderSize();
 	void UpdateSliderOffset();
-public:
+  public:
 	WIScrollBar();
 	virtual ~WIScrollBar() override;
-	void SetUp(unsigned int numElementsListed,unsigned int numElementsTotal);
+	void SetUp(unsigned int numElementsListed, unsigned int numElementsTotal);
 	unsigned int GetScrollAmount();
 	void SetScrollAmount(unsigned int am);
 	unsigned int GetScrollOffset();
@@ -88,8 +84,8 @@ public:
 	bool IsHorizontal();
 	bool IsVertical();
 	virtual util::EventReply ScrollCallback(Vector2 offset) override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button,GLFW::KeyState state,GLFW::Modifier mods) override;
-	virtual void SetSize(int x,int y) override;
+	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual void SetSize(int x, int y) override;
 };
 
 #endif

@@ -8,11 +8,10 @@
 #include "wgui/wguidefinitions.h"
 
 class WIShape;
-class DLLWGUI WIRoundedBase
-{
-public:
+class DLLWGUI WIRoundedBase {
+  public:
 	friend WIShape;
-protected:
+  protected:
 	WIRoundedBase();
 	char m_roundness;
 	float m_cornerSize;
@@ -22,8 +21,8 @@ protected:
 	bool m_bRoundLowerRight;
 	virtual void Update();
 	virtual void Initialize();
-public:
-	virtual ~WIRoundedBase()=default;
+  public:
+	virtual ~WIRoundedBase() = default;
 	char GetRoundness();
 	void SetRoundness(char roundness);
 	void SetCornerSize(float size);

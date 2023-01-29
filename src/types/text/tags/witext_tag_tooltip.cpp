@@ -7,10 +7,7 @@
 #include "wgui/wibase.h"
 #include <util_formatted_text_tag.hpp>
 
-void WITextTagTooltip::InitializeOverlay(WIBase &overlay)
-{
-	overlay.SetTooltip(*static_cast<std::string*>(m_args.front().value.get()));
-}
+void WITextTagTooltip::InitializeOverlay(WIBase &overlay) { overlay.SetTooltip(*static_cast<std::string *>(m_args.front().value.get())); }
 void WITextTagTooltip::Apply()
 {
 	WITextDecorator::Apply();

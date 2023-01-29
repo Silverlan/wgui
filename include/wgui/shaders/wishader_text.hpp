@@ -9,12 +9,9 @@
 #include "wgui/wielementdata.hpp"
 
 class FontInfo;
-namespace wgui
-{
-	class DLLWGUI ShaderText
-		: public Shader
-	{
-	public:
+namespace wgui {
+	class DLLWGUI ShaderText : public Shader {
+	  public:
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_POSITION;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_UV;
@@ -26,9 +23,8 @@ namespace wgui
 		static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
 		static prosper::DescriptorSetInfo DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER;
 
-#pragma pack(push,1)
-		struct PushConstants
-		{
+#pragma pack(push, 1)
+		struct PushConstants {
 			float widthScale;
 			float heightScale;
 			uint32_t glyphMapWidth;
@@ -40,70 +36,50 @@ namespace wgui
 		};
 #pragma pack(pop)
 
-		ShaderText(prosper::IPrContext &context,const std::string &identifier);
-		ShaderText(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+		ShaderText(prosper::IPrContext &context, const std::string &identifier);
+		ShaderText(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader = "");
 
-		bool RecordDraw(
-			prosper::ShaderBindState &bindState,
-			prosper::IBuffer &glyphBoundsIndexBuffer,
-			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-			uint32_t instanceCount,uint32_t testStencilLevel
-		) const;
+		bool RecordDraw(prosper::ShaderBindState &bindState, prosper::IBuffer &glyphBoundsIndexBuffer, prosper::IDescriptorSet &descTextureSet, const PushConstants &pushConstants, uint32_t instanceCount, uint32_t testStencilLevel) const;
 		using Shader::RecordBeginDraw;
 		using ShaderGraphics::RecordBeginDraw;
-	protected:
-		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
-		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+	  protected:
+		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) override;
 	};
 
 	///////////////////////
 
-	class DLLWGUI ShaderTextRect
-		: public ShaderText
-	{
-	public:
-#pragma pack(push,1)
-		struct PushConstants
-		{
+	class DLLWGUI ShaderTextRect : public ShaderText {
+	  public:
+#pragma pack(push, 1)
+		struct PushConstants {
 			wgui::ElementData elementData;
 			ShaderText::PushConstants fontInfo;
 			int32_t alphaOnly;
 		};
 #pragma pack(pop)
 
-		ShaderTextRect(prosper::IPrContext &context,const std::string &identifier);
-		ShaderTextRect(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+		ShaderTextRect(prosper::IPrContext &context, const std::string &identifier);
+		ShaderTextRect(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader = "");
 
-		bool RecordDraw(
-			prosper::ShaderBindState &bindState,
-			prosper::IBuffer &glyphBoundsIndexBuffer,
-			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-			uint32_t instanceCount,uint32_t testStencilLevel
-		) const;
-	protected:
-		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
-		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		bool RecordDraw(prosper::ShaderBindState &bindState, prosper::IBuffer &glyphBoundsIndexBuffer, prosper::IDescriptorSet &descTextureSet, const PushConstants &pushConstants, uint32_t instanceCount, uint32_t testStencilLevel) const;
+	  protected:
+		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx) override;
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) override;
 	};
 
 	///////////////////////
 
-	class DLLWGUI ShaderTextRectColor
-		: public ShaderTextRect
-	{
-	public:
+	class DLLWGUI ShaderTextRectColor : public ShaderTextRect {
+	  public:
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_COLOR;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_COLOR;
-		ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier);
-		ShaderTextRectColor(prosper::IPrContext &context,const std::string &identifier,const std::string &vsShader,const std::string &fsShader,const std::string &gsShader="");
+		ShaderTextRectColor(prosper::IPrContext &context, const std::string &identifier);
+		ShaderTextRectColor(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader = "");
 
-		bool RecordDraw(
-			prosper::ShaderBindState &bindState,
-			prosper::IBuffer &glyphBoundsIndexBuffer,prosper::IBuffer &colorBuffer,
-			prosper::IDescriptorSet &descTextureSet,const PushConstants &pushConstants,
-			uint32_t instanceCount,uint32_t testStencilLevel
-		) const;
-	protected:
-		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
+		bool RecordDraw(prosper::ShaderBindState &bindState, prosper::IBuffer &glyphBoundsIndexBuffer, prosper::IBuffer &colorBuffer, prosper::IDescriptorSet &descTextureSet, const PushConstants &pushConstants, uint32_t instanceCount, uint32_t testStencilLevel) const;
+	  protected:
+		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) override;
 	};
 };
 

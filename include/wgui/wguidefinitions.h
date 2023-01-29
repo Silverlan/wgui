@@ -5,21 +5,21 @@
 #ifndef __WGUIDEFINITIONS_H__
 #define __WGUIDEFINITIONS_H__
 #ifdef WGUI_DLL
-	#ifdef __linux__
-		#define DLLWGUI __attribute__((visibility("default")))
-	#else
-		#define DLLWGUI  __declspec(dllexport)
-	#endif
+#ifdef __linux__
+#define DLLWGUI __attribute__((visibility("default")))
 #else
-	#ifdef WGUI_EXE
-		#define DLLWGUI
-	#else
-		#ifdef __linux__
-			#define DLLWGUI
-		#else
-			#define DLLWGUI  __declspec(dllimport)
-		#endif
-	#endif
+#define DLLWGUI __declspec(dllexport)
+#endif
+#else
+#ifdef WGUI_EXE
+#define DLLWGUI
+#else
+#ifdef __linux__
+#define DLLWGUI
+#else
+#define DLLWGUI __declspec(dllimport)
+#endif
+#endif
 #endif
 
 // #define WGUI_ENABLE_SANITY_EXCEPTIONS

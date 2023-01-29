@@ -7,19 +7,14 @@
 
 #include <mathutil/uvec.h>
 
-namespace wgui
-{
-#pragma pack(push,1)
-	struct ElementData
-	{
-		static uint32_t ToViewportSize(const Vector2i &res)
-		{
-			return (res.x<<16) | res.y;
-		}
+namespace wgui {
+#pragma pack(push, 1)
+	struct ElementData {
+		static uint32_t ToViewportSize(const Vector2i &res) { return (res.x << 16) | res.y; }
 		Mat4 modelMatrix;
 		Vector4 color;
 		uint32_t viewportSize;
-		std::array<uint32_t,3> placeholder;
+		std::array<uint32_t, 3> placeholder;
 	};
 #pragma pack(pop)
 };

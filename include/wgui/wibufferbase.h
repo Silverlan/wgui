@@ -8,26 +8,23 @@
 #include <sharedutils/util_weak_handle.hpp>
 #include "wielementbufferdata.hpp"
 
-namespace prosper
-{
+namespace prosper {
 	class Shader;
 };
-class DLLWGUI WIBufferBase
-	: public WIBase
-{
-public:
+class DLLWGUI WIBufferBase : public WIBase {
+  public:
 	virtual ~WIBufferBase() override;
 	virtual unsigned int GetVertexCount();
-	virtual void Render(const DrawInfo &drawInfo,wgui::DrawState &drawState,const Mat4 &matDraw,const Vector2 &scale={1.f,1.f},uint32_t testStencilLevel=0u,wgui::StencilPipeline stencilPipeline=wgui::StencilPipeline::Test) override;
+	virtual void Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale = {1.f, 1.f}, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
 
 	prosper::IBuffer *GetBuffer();
 	void SetBuffer(prosper::IBuffer &buffer);
 
 	virtual void ClearBuffer();
-protected:
+  protected:
 	WIBufferBase();
 
-	virtual void SetShader(prosper::Shader &shader,prosper::Shader *shaderCheap=nullptr);
+	virtual void SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap = nullptr);
 	prosper::Shader *GetShader();
 	prosper::Shader *GetCheapShader();
 

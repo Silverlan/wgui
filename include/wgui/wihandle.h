@@ -8,5 +8,4 @@
 #include <sharedutils/def_handle.h>
 #include <memory>
 
-
 #endif
