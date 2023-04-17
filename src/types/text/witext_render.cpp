@@ -540,7 +540,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lin
 		// Update existing buffer
 		auto &bufInfo = lineInfo.buffers.at(bufferOffset);
 		// bufInfo.subStringHash = subStrInfo.hash;
-		bufInfo.numChars = subStrInfo.subString.length();
+		bufInfo.numChars = glyphBoundsData.size();
 		bufInfo.charOffset = subStrInfo.charOffset;
 		bufInfo.absLineIndex = subStrInfo.absLineIndex;
 		bufInfo.colorBuffer = nullptr;
