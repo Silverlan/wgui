@@ -418,7 +418,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lin
 	std::vector<SubStringInfo> subStrings {};
 	auto numChars = m_text->GetCharCount();
 
-	const auto fAddSubString = [this, &subStrings](const util::Utf8StringView &substr, util::text::LineIndex lineIndex, util::text::CharOffset charOffset, uint32_t &inOutX, uint32_t &inOutY) {
+	const auto fAddSubString = [this, &subStrings](const util::Utf8StringView &substr, util::text::LineIndex lineIndex, util::text::CharOffset charOffset, int32_t &inOutX, int32_t &inOutY) {
 		if(substr.empty())
 			return;
 		if(subStrings.size() == subStrings.capacity())
@@ -483,8 +483,8 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lin
 			offset += multiplier;
 		}
 	};
-	auto y = 0u; // lineIndex *GetLineHeight();
-	auto x = 0u;
+	int32_t y = 0u; // lineIndex *GetLineHeight();
+	int32_t x = 0u;
 	auto pLine = lineInfo.wpLine.lock();
 	auto lineView = util::Utf8StringView {static_cast<const util::Utf8String &>(pLine->GetFormattedLine())};
 	auto subString = lineView;
