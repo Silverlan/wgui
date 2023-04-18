@@ -82,7 +82,7 @@ void WIContextMenu::DoUpdate()
 	WIRect::DoUpdate();
 	auto yOffset = 0u;
 	auto wItem = 256u;
-	auto hItem = 16u;
+	auto hItem = 17u;
 	for(auto &item : m_items) {
 		if(item.IsValid() == false)
 			continue;

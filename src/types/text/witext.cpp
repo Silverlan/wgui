@@ -277,7 +277,8 @@ void WIText::GetTextSize(int *w, int *h, const util::Utf8StringView *inText)
 		auto lineCount = GetTotalLineCount();
 		int hText = GetLineHeight(); //m_font->GetMaxGlyphSize();//m_font->GetSize();
 		*w = wText;
-		*h = hText * lineCount + 1; // TODO: Why +1?
+		// We add 3 pixels to prevent characters from being cut off in some cases
+		*h = hText * lineCount + 3;
 		return;
 	}
 	FontManager::GetTextSize(*inText, 0u, m_font.get(), w);
