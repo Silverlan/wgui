@@ -13,7 +13,7 @@
 #include <sharedutils/util.h>
 
 LINK_WGUI_TO_CLASS(WIText, WIText);
-
+#pragma optimize("",off)
 decltype(WIText::s_textBuffer) WIText::s_textBuffer = nullptr;
 WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(0), m_wTexture(0), m_hTexture(0), m_autoBreak(AutoBreak::NONE), m_renderTarget(nullptr)
 {
@@ -106,7 +106,9 @@ WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(0), m_wTexture(0), m
 			return;
 		itLabel->second.erase(itTag);
 	};
-	callbacks.onTagsCleared = [this]() { m_tagInfos.clear(); };
+	callbacks.onTagsCleared = [this]() {
+		m_tagInfos.clear();
+	};
 	m_text->SetCallbacks(callbacks);
 	SetTagsEnabled(false);
 
@@ -350,3 +352,4 @@ bool WIText::RemoveText(util::text::TextOffset offset, util::text::TextLength le
 bool WIText::MoveText(util::text::LineIndex lineIdx, util::text::CharOffset startOffset, util::text::TextLength len, util::text::LineIndex targetLineIdx, util::text::CharOffset targetCharOffset) { return m_text->MoveText(lineIdx, startOffset, len, targetLineIdx, targetCharOffset); }
 util::Utf8StringView WIText::Substr(util::text::TextOffset startOffset, util::text::TextLength len) const { return m_text->Substr(startOffset, len); }
 void WIText::Clear() { return m_text->Clear(); }
+#pragma optimize("", on)

@@ -526,6 +526,72 @@ void WIBase::SizeToContents(bool x, bool y)
 	else if(y)
 		SetHeight(height);
 }
+void WIBase::ClampToBounds(Vector2i &pos) const
+{
+	auto endPos = GetSize();
+	pos = glm::clamp(pos, Vector2i {0, 0}, endPos);
+}
+void WIBase::ClampToBounds(Vector2i &pos, Vector2i &size) const
+{
+	auto endPos = pos + size;
+	ClampToBounds(pos);
+	ClampToBounds(endPos);
+	endPos.x = umath::max(pos.x, endPos.x);
+	endPos.y = umath::max(pos.y, endPos.y);
+	size = endPos - pos;
+}
+void WIBase::GetAbsoluteVisibleBounds(Vector2i &pos, Vector2i &size, Vector2i *optOutParentPos) const
+{
+	pos = GetPos();
+	size = GetSize();
+
+	auto endPos = pos + size;
+	auto *parent = GetParent();
+	Vector2i absParentPos {0, 0};
+	while(parent) {
+		parent->ClampToBounds(pos);
+		parent->ClampToBounds(endPos);
+
+		pos += parent->GetPos();
+		endPos += parent->GetPos();
+		absParentPos += parent->GetPos();
+		parent = parent->GetParent();
+	}
+
+	endPos.x = umath::max(endPos.x, pos.x);
+	endPos.y = umath::max(endPos.y, pos.y);
+	if(optOutParentPos)
+		*optOutParentPos = absParentPos;
+
+	size = endPos - pos;
+}
+void WIBase::GetVisibleBounds(Vector2i &pos, Vector2i &size) const
+{
+	Vector2i absParentPos;
+	GetAbsoluteVisibleBounds(pos, size, &absParentPos);
+	auto endPos = pos + size;
+	pos -= absParentPos;
+	endPos -= absParentPos;
+	size = endPos - pos;
+}
+void WIBase::ClampToVisibleBounds(Vector2i &pos) const
+{
+	Vector2i visPos, visSize;
+	GetVisibleBounds(visPos, visSize);
+	auto visEndPos = visPos + visSize;
+	pos = glm::clamp(pos, visPos, visEndPos);
+}
+void WIBase::ClampToVisibleBounds(Vector2i &pos, Vector2i &size) const
+{
+	Vector2i visPos, visSize;
+	GetVisibleBounds(visPos, visSize);
+	auto visEndPos = visPos + visSize;
+	auto endPos = pos + size;
+
+	pos = glm::clamp(pos, visPos, visEndPos);
+	endPos = glm::clamp(endPos, visPos, visEndPos);
+	size = endPos - pos;
+}
 void WIBase::SetStencilEnabled(bool enabled) { umath::set_flag(m_stateFlags, StateFlags::StencilEnabled, enabled); }
 bool WIBase::IsStencilEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::StencilEnabled); }
 void WIBase::SetBackgroundElement(bool backgroundElement, bool autoAlignToParent)

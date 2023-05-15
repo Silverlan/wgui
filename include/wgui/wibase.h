@@ -273,6 +273,13 @@ class DLLWGUI WIBase : public CallbackHandler {
 	virtual util::EventReply CharCallback(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None);
 	virtual util::EventReply ScrollCallback(Vector2 offset);
 
+	void ClampToBounds(Vector2i &pos) const;
+	void ClampToBounds(Vector2i &pos, Vector2i &size) const;
+	void GetAbsoluteVisibleBounds(Vector2i &pos, Vector2i &size, Vector2i *optOutParentPos = nullptr) const;
+	void GetVisibleBounds(Vector2i &pos, Vector2i &size) const;
+	void ClampToVisibleBounds(Vector2i &pos) const;
+	void ClampToVisibleBounds(Vector2i &pos, Vector2i &size) const;
+
 	void SetStencilEnabled(bool enabled);
 	bool IsStencilEnabled() const;
 
