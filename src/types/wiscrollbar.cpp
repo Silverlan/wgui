@@ -47,8 +47,8 @@ util::EventReply WIScrollBar::ScrollCallback(Vector2 offset)
 		return util::EventReply::Handled;
 	auto scrollAmount = GetScrollAmount();
 	auto &window = WGUI::GetInstance().GetContext().GetWindow();
-	auto isShiftDown = (window->GetKeyState(GLFW::Key::LeftShift) != GLFW::KeyState::Release || window->GetKeyState(GLFW::Key::RightShift) != GLFW::KeyState::Release) ? true : false;
-	if(isShiftDown)
+	auto isAltDown = (window->GetKeyState(GLFW::Key::LeftAlt) != GLFW::KeyState::Release || window->GetKeyState(GLFW::Key::RightAlt) != GLFW::KeyState::Release) ? true : false;
+	if(isAltDown)
 		scrollAmount = m_numListed;
 	AddScrollOffset(static_cast<int>(-offset.y * static_cast<double>(scrollAmount)));
 	return util::EventReply::Handled;
