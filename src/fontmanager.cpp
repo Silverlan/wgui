@@ -175,7 +175,7 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, uin
 	for(auto range : ranges) {
 		for(auto i = range.unicodeStartIndex; i < (range.unicodeStartIndex + range.count); ++i) {
 			auto charIdx = FT_Get_Char_Index(face, i);
-			if(charIdx != 0 && FT_Load_Char(face, i, FT_LOAD_RENDER) == 0) {
+			if(charIdx != 0 && FT_Load_Char(face, i, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT) == 0) {
 				auto gslot = face->glyph;
 				// Outline
 				/*if(gslot->format == FT_GLYPH_FORMAT_OUTLINE)
