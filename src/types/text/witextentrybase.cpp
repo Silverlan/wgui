@@ -12,6 +12,7 @@
 #include <util_formatted_text_line.hpp>
 #include <prosper_context.hpp>
 #include <prosper_window.hpp>
+#include <codecvt>
 
 LINK_WGUI_TO_CLASS(WITextEntryBase, WITextEntryBase);
 
@@ -751,16 +752,20 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key, int scanCode, 
 	return util::EventReply::Handled;
 }
 
+static std::string utf8char_to_str(unsigned int c)
+{
+	wchar_t unicodeCharacter = static_cast<wchar_t>(c);
+	std::wstring wstr;
+	wstr.push_back(unicodeCharacter);
+	return ustring::wstring_to_string(wstr);
+}
 util::EventReply WITextEntryBase::CharCallback(unsigned int c, GLFW::Modifier mods)
 {
 	//std::cout<<"CharCallback: "<<c<<std::endl;
 	if(IsEditable() == false)
 		return util::EventReply::Unhandled;
-	if(!IsNumeric() || (c >= 48 && c <= 57) || (IsMultiLine() && c == '\n')) {
-		std::string s = "";
-		s += char(c);
-		InsertText(s);
-	}
+	if(!IsNumeric() || (c >= 48 && c <= 57) || (IsMultiLine() && c == '\n'))
+		InsertText(utf8char_to_str(c));
 	return util::EventReply::Handled;
 }
 
