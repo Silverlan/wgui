@@ -406,6 +406,8 @@ void WIDropDownMenu::UpdateListWindow()
 
 void WIDropDownMenu::OpenMenu()
 {
+	if(IsMenuOpen())
+		return;
 	if(!m_hList.IsValid())
 		return;
 	WIRect *pList = static_cast<WIRect *>(m_hList.get());
@@ -455,6 +457,8 @@ void WIDropDownMenu::OpenMenu()
 }
 void WIDropDownMenu::CloseMenu()
 {
+	if(!IsMenuOpen())
+		return;
 	SetScrollInputEnabled(false);
 	if(m_hList.IsValid()) {
 		WIRect *pList = static_cast<WIRect *>(m_hList.get());
