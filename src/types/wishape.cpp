@@ -272,7 +272,7 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 			static_cast<WITexturedShape *>(hThis.get())->m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(*WGUI::GetInstance().GetContext().GetDummyTexture(), 0u);
 			return;
 		}
-		WGUI::GetInstance().GetContext().WaitIdle(); // Mustn't update the descriptor set if it may still be in use by a command buffer
+		WGUI::GetInstance().GetContext().WaitIdle(false); // Mustn't update the descriptor set if it may still be in use by a command buffer
 		auto &descSet = *static_cast<WITexturedShape *>(hThis.get())->m_descSetTextureGroup->GetDescriptorSet();
 		descSet.SetBindingTexture(*texture->GetVkTexture(), 0u);
 		descSet.Update();
