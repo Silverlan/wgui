@@ -59,8 +59,9 @@ bool WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineS
 		if(wText <= w) {
 			// We're not updating the line buffers, so we have to change the
 			// line indices of the existing buffers
-			for(auto &bufInfo : lineInfo.buffers)
-				bufInfo.absLineIndex += lineShift;
+			auto numBuffers = lineInfo.GetBufferCount();
+			for(auto i = decltype(numBuffers) {0u}; i < numBuffers; ++i)
+				lineInfo.GetBufferInfo(i)->absLineIndex += lineShift;
 			return false;
 		}
 	}
@@ -107,8 +108,9 @@ bool WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineS
 	else {
 		// Sublines haven't changed, no need to update the buffers.
 		// The line indices have to be updated manually, however.
-		for(auto &bufInfo : lineInfo.buffers)
-			bufInfo.absLineIndex += lineShift;
+		auto numBuffers = lineInfo.GetBufferCount();
+		for(auto i = decltype(numBuffers) {0u}; i < numBuffers; ++i)
+			lineInfo.GetBufferInfo(i)->absLineIndex += lineShift;
 	}
 
 	lineShift += static_cast<util::text::ShiftOffset>(newNumSubLines) - static_cast<util::text::ShiftOffset>(numSubLines);

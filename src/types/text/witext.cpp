@@ -24,8 +24,9 @@ WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(0), m_wTexture(0), m
 	const auto fShiftBufferLines = [this](util::text::LineIndex lineIndex, int32_t shiftOffset) {
 		for(auto i = lineIndex; i < m_lineInfos.size(); ++i) {
 			auto &lineInfo = m_lineInfos.at(i);
-			for(auto &bufInfo : lineInfo.buffers)
-				bufInfo.absLineIndex += shiftOffset;
+			auto numBuffers = lineInfo.GetBufferCount();
+			for(auto i = decltype(numBuffers) {0u}; i < numBuffers; ++i)
+				lineInfo.GetBufferInfo(i)->absLineIndex += shiftOffset;
 		}
 	};
 	callbacks.onLineAdded = [this, fShiftBufferLines](util::text::FormattedTextLine &line) {
@@ -106,9 +107,7 @@ WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(0), m_wTexture(0), m
 			return;
 		itLabel->second.erase(itTag);
 	};
-	callbacks.onTagsCleared = [this]() {
-		m_tagInfos.clear();
-	};
+	callbacks.onTagsCleared = [this]() { m_tagInfos.clear(); };
 	m_text->SetCallbacks(callbacks);
 	SetTagsEnabled(false);
 

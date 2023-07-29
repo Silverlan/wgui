@@ -17,6 +17,26 @@
 #include <sharedutils/scope_guard.h>
 #include <util_formatted_text.hpp>
 
+WIText::LineInfo::~LineInfo() { ClearBuffers(); }
+const std::vector<WITextBase::SubBufferInfo> &WIText::LineInfo::GetBuffers() const { return buffers; }
+size_t WIText::LineInfo::GetBufferCount() const { return buffers.size(); }
+void WIText::LineInfo::AddBuffer(prosper::IBuffer &buf) { buffers.push_back({buf.shared_from_this()}); }
+void WIText::LineInfo::ResizeBuffers(size_t size)
+{
+	auto &context = WGUI::GetInstance().GetContext();
+	for(size_t i = size; i < buffers.size(); ++i) {
+		auto &bufInfo = buffers[i];
+		if(bufInfo.buffer)
+			context.KeepResourceAliveUntilPresentationComplete(bufInfo.buffer);
+		if(bufInfo.colorBuffer)
+			context.KeepResourceAliveUntilPresentationComplete(bufInfo.colorBuffer);
+	}
+	buffers.resize(size);
+}
+WITextBase::SubBufferInfo *WIText::LineInfo::GetBufferInfo(size_t idx) { return (idx < buffers.size()) ? &buffers[idx] : nullptr; }
+const WITextBase::SubBufferInfo *WIText::LineInfo::GetBufferInfo(size_t idx) const { return const_cast<WIText::LineInfo *>(this)->GetBufferInfo(idx); }
+void WIText::LineInfo::ClearBuffers() { ResizeBuffers(0); }
+
 void WIText::InitializeBlur(bool bReload)
 {
 	if(bReload == true)
@@ -395,7 +415,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lin
 {
 	lineInfo.bufferUpdateRequired = false;
 	if(lineInfo.wpLine.expired() == true) {
-		lineInfo.buffers.clear();
+		lineInfo.ClearBuffers();
 		return;
 	}
 	auto &context = WGUI::GetInstance().GetContext();
@@ -511,12 +531,12 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lin
 			x = 0;
 	}
 
-	lineInfo.buffers.clear();
+	lineInfo.ClearBuffers();
 	auto bufferOffset = 0u;
 	for(auto &subStrInfo : subStrings) {
 		util::ScopeGuard sg {[this, &subStrInfo, &bufferOffset]() { ++bufferOffset; }};
 
-		auto bExistingBuffer = bufferOffset < lineInfo.buffers.size();
+		auto bExistingBuffer = bufferOffset < lineInfo.GetBufferCount();
 		if(bExistingBuffer == true) {
 			/*auto &curBufInfo = lineInfo.buffers.at(bufferOffset);
 			if(
@@ -536,9 +556,9 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lin
 			glyphBoundsData.push_back({static_cast<int32_t>(index), bounds});
 		}
 		if(bExistingBuffer == false)
-			lineInfo.buffers.push_back({s_textBuffer->AllocateBuffer()});
+			lineInfo.AddBuffer(*s_textBuffer->AllocateBuffer());
 		// Update existing buffer
-		auto &bufInfo = lineInfo.buffers.at(bufferOffset);
+		auto &bufInfo = *lineInfo.GetBufferInfo(bufferOffset);
 		// bufInfo.subStringHash = subStrInfo.hash;
 		bufInfo.numChars = glyphBoundsData.size();
 		bufInfo.charOffset = subStrInfo.charOffset;
@@ -553,7 +573,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lin
 
 		context.GetWindow().GetDrawCommandBuffer()->RecordBufferBarrier(*bufInfo.buffer, prosper::PipelineStageFlags::TransferBit, prosper::PipelineStageFlags::VertexInputBit, prosper::AccessFlags::TransferWriteBit, prosper::AccessFlags::VertexAttributeReadBit);
 	}
-	lineInfo.buffers.resize(bufferOffset);
+	lineInfo.ResizeBuffers(bufferOffset);
 }
 
 void WIText::RemoveDecorator(const WITextDecorator &decorator)
@@ -617,12 +637,12 @@ bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 	auto lineHeight = textEl.GetLineHeight();
 	uint32_t lineIndex = 0;
 	for(auto &lineInfo : textEl.m_lineInfos) {
-		if(lineInfo.buffers.empty())
+		if(lineInfo.GetBufferCount() == 0)
 			continue;
-		auto &firstBufferInfo = lineInfo.buffers.front();
+		auto &firstBufferInfo = *lineInfo.GetBufferInfo(0);
 		auto firstLineIndex = firstBufferInfo.absLineIndex;
 
-		auto &lastBufferInfo = lineInfo.buffers.back();
+		auto &lastBufferInfo = *lineInfo.GetBufferInfo(lineInfo.GetBufferCount() - 1);
 		auto lastLineIndex = lastBufferInfo.absLineIndex;
 
 		int32_t yLineStartPxOffset = absPos.y + static_cast<int32_t>(firstLineIndex) * lineHeight;
@@ -633,7 +653,7 @@ bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 		if(yLineStartPxOffset >= static_cast<int32_t>(yScissor + hScissor))
 			break; // Line is out of scissor bounds; We can skip all remaining lines altogether
 
-		for(auto &bufInfo : lineInfo.buffers) {
+		for(auto &bufInfo : lineInfo.GetBuffers()) {
 			if(bufInfo.colorBuffer != nullptr) {
 				bHasColorBuffers = true;
 				if(colorPass == false)

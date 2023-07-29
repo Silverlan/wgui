@@ -74,10 +74,10 @@ void WITextTagColor::Apply()
 			continue;
 
 		auto &lineInfo = m_text.GetLines().at(lineIdx);
-		auto &glyphBufferInfos = lineInfo.buffers;
+		auto numBuffers = lineInfo.GetBufferCount();
 		auto bufIdx = 0u;
-		while(bufIdx < glyphBufferInfos.size()) {
-			auto &glyphBufferInfo = glyphBufferInfos.at(bufIdx++);
+		while(bufIdx < numBuffers) {
+			auto &glyphBufferInfo = *lineInfo.GetBufferInfo(bufIdx++);
 			auto bufStartOffset = glyphBufferInfo.charOffset;
 			auto bufEndOffset = bufStartOffset + glyphBufferInfo.numChars - 1;
 			if(bufEndOffset < localStartOffset)

@@ -92,12 +92,22 @@ class DLLWGUI WIText : public WIBase {
 	enum class TagType : uint32_t { None = 0u, Color, Link, Underline, Tooltip, Template };
 	struct DLLWGUI LineInfo {
 		LineInfo() = default;
+		~LineInfo();
+		void ClearBuffers();
+		const std::vector<WITextBase::SubBufferInfo> &GetBuffers() const;
+		size_t GetBufferCount() const;
+		WITextBase::SubBufferInfo *GetBufferInfo(size_t idx);
+		const WITextBase::SubBufferInfo *GetBufferInfo(size_t idx) const;
+		void AddBuffer(prosper::IBuffer &buf);
+		void ResizeBuffers(size_t size);
+
 		std::weak_ptr<util::text::FormattedTextLine> wpLine;
 		int32_t widthInPixels = 0u;
 		bool bufferUpdateRequired = true;
 		util::text::LineIndex subLineIndexOffset = 0;
-		std::vector<WITextBase::SubBufferInfo> buffers = {};
 		std::vector<util::text::TextLength> subLines = {};
+	  private:
+		std::vector<WITextBase::SubBufferInfo> buffers = {};
 	};
 	static const auto MAX_CHARS_PER_BUFFER = 32u;
 
