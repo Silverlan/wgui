@@ -119,6 +119,7 @@ class DLLWGUI WIText : public WIBase {
 	WITextBase *GetBaseElement();
 	const FontInfo *GetFont() const;
 	uint32_t GetLineCount() const;
+	uint32_t GetTextWidth() const;
 	uint32_t GetTotalLineCount() const;
 	const std::vector<LineInfo> &GetLines() const;
 	std::vector<LineInfo> &GetLines();
@@ -138,6 +139,7 @@ class DLLWGUI WIText : public WIBase {
 	using WIBase::SetSize;
 	virtual void SetSize(int x, int y) override;
 	int GetTextHeight();
+	Vector2i CalcTextSize() const;
 	std::shared_ptr<prosper::Texture> GetTexture() const;
 	virtual std::string GetDebugInfo() const override;
 	std::pair<Vector2i, Vector2i> GetCharacterPixelBounds(util::text::LineIndex lineIdx, util::text::CharOffset charOffset) const;

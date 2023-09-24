@@ -214,6 +214,33 @@ const std::vector<WIText::LineInfo> &WIText::GetLines() const { return const_cas
 std::vector<WIText::LineInfo> &WIText::GetLines() { return m_lineInfos; }
 util::text::FormattedTextLine *WIText::GetLine(util::text::LineIndex lineIdx) { return m_text->GetLine(lineIdx); }
 uint32_t WIText::GetLineCount() const { return m_text->GetLineCount(); }
+uint32_t WIText::GetTextWidth() const
+{
+	auto *font = GetFont();
+	uint32_t width = 0;
+	for(auto &lineInfo : m_lineInfos) {
+		if(lineInfo.subLines.empty()) {
+			int32_t wChar = 0;
+			int32_t wLine = 0;
+			auto line = lineInfo.wpLine.lock();
+			FontManager::GetTextSize(line->Substr(0, line->GetLength()), 0, font, &wLine);
+			width = std::max(static_cast<int32_t>(width), wLine);
+			continue;
+		}
+		size_t offset = 0;
+		for(auto subLineLen : lineInfo.subLines) {
+			auto sub = lineInfo.wpLine.lock()->Substr(offset, subLineLen);
+
+			int32_t wChar = 0;
+			int32_t wLine = 0;
+			FontManager::GetTextSize(sub, 0, font, &wLine);
+			width = std::max(static_cast<int32_t>(width), wLine);
+
+			offset += subLineLen;
+		}
+	}
+	return width;
+}
 uint32_t WIText::GetTotalLineCount() const
 {
 	if(m_lineInfos.empty())
@@ -257,6 +284,13 @@ int WIText::GetTextHeight()
 	auto h = m_font->GetSize();
 	auto numLines = GetTotalLineCount();
 	return numLines * h + (((numLines > 0) ? (numLines - 1) : 0) * m_breakHeight);
+}
+
+Vector2i WIText::CalcTextSize() const
+{
+	Vector2i sz;
+	const_cast<WIText *>(this)->GetTextSize(&sz.x, &sz.y);
+	return sz;
 }
 
 void WIText::GetTextSize(int *w, int *h, const util::Utf8StringView *inText)
