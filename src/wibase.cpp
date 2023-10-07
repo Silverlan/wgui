@@ -12,6 +12,7 @@
 #include "wgui/shaders/wishader.hpp"
 #include "wgui/shaders/wishader_colored.hpp"
 #include "wgui/types/wicontextmenu.hpp"
+#include "wgui/types/witooltip.h"
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <sharedutils/scope_guard.h>
@@ -55,6 +56,7 @@ WIBase::WIBase()
 	RegisterCallback<void>("OnCursorExited");
 	RegisterCallback<void>("OnUpdated");
 	RegisterCallback<void>("OnSkinApplied");
+	RegisterCallback<void, WITooltip *>("OnShowTooltip");
 	RegisterCallbackWithOptionalReturn<util::EventReply, GLFW::MouseButton, GLFW::KeyState, GLFW::Modifier>("OnMouseEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMousePressed");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMouseReleased");

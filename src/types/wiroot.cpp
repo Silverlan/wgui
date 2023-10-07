@@ -47,6 +47,8 @@ void WIRoot::Think()
 					y = yMax;
 				pTooltip->SetPos(x, y);
 				pTooltip->SetVisible(true);
+
+				el->CallCallbacks<void, WITooltip *>("OnShowTooltip", pTooltip);
 			}
 		}
 	}
