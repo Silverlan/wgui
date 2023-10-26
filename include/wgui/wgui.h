@@ -167,6 +167,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	//prosper::util::record_set_scissor(*drawCmd,szScissor[0],szScissor[1],posScissor[0],posScissor[1]); // Use parent scissor values
 	bool IsLockedForDrawing() const { return m_lockedForDrawing; }
 	void SetLockedForDrawing(bool locked) { m_lockedForDrawing = locked; }
+	uint64_t GetNextGuiElementIndex() const { return m_nextGuiElementIndex; }
 
 	size_t GetLastThinkIndex() const;
 
