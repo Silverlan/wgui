@@ -55,7 +55,6 @@ namespace wgui {
 		struct PushConstants {
 			wgui::ElementData elementData;
 			ShaderText::PushConstants fontInfo;
-			int32_t alphaOnly;
 		};
 #pragma pack(pop)
 
