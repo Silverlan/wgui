@@ -203,6 +203,10 @@ WITexturedShape::WITexturedShape() : WIShape(), m_hMaterial(), m_texture(), m_uv
 	if(pShader != nullptr)
 		SetShader(*pShader, pShaderCheap);
 	ReloadDescriptorSet();
+
+	RegisterCallback<void>("OnMaterialChanged");
+	RegisterCallback<void>("OnTextureChanged");
+	RegisterCallback<void>("OnTextureApplied");
 }
 void WITexturedShape::ClearBuffer()
 {
@@ -277,6 +281,7 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Textur
 		descSet.SetBindingTexture(*texture->GetVkTexture(), 0u);
 		descSet.Update();
 		static_cast<WITexturedShape *>(hThis.get())->m_texUpdateCountRef = texture->GetUpdateCount();
+		static_cast<WITexturedShape *>(hThis.get())->CallCallbacks<void>("OnTextureApplied");
 	});
 }
 void WITexturedShape::UpdateMaterialDescriptorSetTexture()
@@ -312,7 +317,10 @@ void WITexturedShape::SetMaterial(Material *material)
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to change GUI element material during rendering, this is not allowed!"};
-	util::ScopeGuard sg {[this]() { UpdateTransparencyState(); }};
+	util::ScopeGuard sg {[this]() {
+		UpdateTransparencyState();
+		CallCallbacks<void>("OnMaterialChanged");
+	}};
 	ClearTexture();
 	m_hMaterial = material ? material->GetHandle() : msys::MaterialHandle {};
 	if(!m_hMaterial)
@@ -359,6 +367,9 @@ void WITexturedShape::SetTexture(prosper::Texture &tex, std::optional<uint32_t> 
 	else
 		m_descSetTextureGroup->GetDescriptorSet()->SetBindingTexture(tex, 0u);
 	m_descSetTextureGroup->GetDescriptorSet()->Update();
+
+	CallCallbacks<void>("OnTextureChanged");
+	CallCallbacks<void>("OnTextureApplied");
 }
 const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
 {
