@@ -60,11 +60,13 @@ class DLLWGUI WIDropDownMenu : public WITextEntry {
 	void UpdateText();
 	virtual void OnTextChanged(const util::Utf8String &text, bool changedByUser) override;
 	void UpdateListWindow();
+	void UpdateOptionItems(std::optional<uint32_t> oldOffset);
   public:
 	WIDropDownMenu();
 	virtual ~WIDropDownMenu() override;
 	virtual void Initialize() override;
 	virtual void OnRemove() override;
+	virtual void DoUpdate() override;
 	void SetListItemCount(uint32_t n);
 	void SelectOption(unsigned int idx);
 	void SelectOption(const std::string &value);

@@ -128,6 +128,12 @@ void WIDropDownMenu::OnRemove()
 		m_cbListWindowUpdate.Remove();
 }
 
+void WIDropDownMenu::DoUpdate()
+{
+	WITextEntry::DoUpdate();
+	UpdateOptionItems({});
+}
+
 void WIDropDownMenu::SelectOption(unsigned int idx)
 {
 	if(idx >= m_options.size() || idx == m_selected)
@@ -283,6 +289,8 @@ WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option, const
 	m_options.push_back(hOption);
 	if(m_hScrollBar.IsValid())
 		static_cast<WIScrollBar *>(m_hScrollBar.get())->SetUp(m_numListItems, static_cast<unsigned int>(m_options.size()));
+	m_hList->ScheduleUpdate();
+	ScheduleUpdate();
 	return pOption;
 }
 
@@ -335,26 +343,26 @@ void WIDropDownMenu::SetOptions(const std::unordered_map<std::string, std::strin
 		AddOption(it->first, it->second);
 }
 
-void WIDropDownMenu::SetOptionOffset(unsigned int offset)
+void WIDropDownMenu::UpdateOptionItems(std::optional<uint32_t> oldOffset)
 {
-	if(offset >= m_options.size())
-		return;
-	unsigned int curOffset = m_listOffset;
-	int numList = curOffset + m_numListItems;
 	int numOptions = static_cast<int>(m_options.size());
-	if(numOptions < numList)
-		numList = numOptions;
-	for(int i = curOffset; i < numList; i++) {
-		WIHandle &hOption = m_options[i];
-		if(hOption.IsValid())
-			hOption->SetVisible(false);
+	if(oldOffset.has_value()) {
+		unsigned int curOffset = *oldOffset;
+		int numList = curOffset + m_numListItems;
+		if(numOptions < numList)
+			numList = numOptions;
+		for(int i = curOffset; i < numList; i++) {
+			WIHandle &hOption = m_options[i];
+			if(hOption.IsValid())
+				hOption->SetVisible(false);
+		}
 	}
 
 	int y = 0;
-	numList = offset + m_numListItems;
+	auto numList = m_listOffset + m_numListItems;
 	if(numOptions < numList)
 		numList = numOptions;
-	for(int i = offset; i < numList; i++) {
+	for(int i = m_listOffset; i < numList; i++) {
 		WIHandle &hOption = m_options[i];
 		if(hOption.IsValid()) {
 			WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
@@ -364,7 +372,15 @@ void WIDropDownMenu::SetOptionOffset(unsigned int offset)
 			y += OPTION_HEIGHT;
 		}
 	}
+}
+
+void WIDropDownMenu::SetOptionOffset(unsigned int offset)
+{
+	if(offset >= m_options.size())
+		return;
+	auto oldOffset = m_listOffset;
 	m_listOffset = offset;
+	UpdateOptionItems(oldOffset);
 }
 
 void WIDropDownMenu::ScrollToOption(uint32_t offset, bool center)
