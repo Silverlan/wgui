@@ -764,8 +764,17 @@ util::EventReply WITextEntryBase::CharCallback(unsigned int c, GLFW::Modifier mo
 	//std::cout<<"CharCallback: "<<c<<std::endl;
 	if(IsEditable() == false)
 		return util::EventReply::Unhandled;
-	if(!IsNumeric() || (c >= 48 && c <= 57) || (IsMultiLine() && c == '\n'))
-		InsertText(utf8char_to_str(c));
+	if(!IsNumeric() || (c >= 48 && c <= 57) || (IsMultiLine() && c == '\n')) {
+		auto *pText = GetTextElement();
+		auto shouldInsert = true;
+		if(pText && m_maxLength >= 0) {
+			auto &text = pText->GetText();
+			if(text.length() >= m_maxLength)
+				shouldInsert = false;
+		}
+		if(shouldInsert)
+			InsertText(utf8char_to_str(c));
+	}
 	return util::EventReply::Handled;
 }
 
