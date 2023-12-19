@@ -486,10 +486,10 @@ void WITexturedShape::UpdateTransparencyState()
 	umath::set_flag(WIBase::m_stateFlags, WIBase::StateFlags::FullyTransparent, fullyTransparent);
 }
 void WITexturedShape::UpdateShaderState() { umath::set_flag(m_stateFlags, StateFlags::ExpensiveShaderRequired, m_alphaMode != AlphaMode::Blend); }
-void WITexturedShape::SizeToTexture()
+Vector2i WITexturedShape::GetTextureSize() const
 {
 	if(m_texture == nullptr && m_hMaterial == nullptr)
-		return;
+		return {};
 	uint32_t width, height;
 	if(m_texture) {
 		auto extents = m_texture->GetImage().GetExtents();
@@ -499,11 +499,16 @@ void WITexturedShape::SizeToTexture()
 	else {
 		auto *diffuseMap = m_hMaterial.get()->GetDiffuseMap();
 		if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
-			return;
+			return {};
 		width = diffuseMap->width;
 		height = diffuseMap->height;
 	}
-	SetSize(width, height);
+	return {width, height};
+}
+void WITexturedShape::SizeToTexture()
+{
+	auto size = GetTextureSize();
+	SetSize(size.x, size.y);
 }
 void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline)
 {

@@ -72,6 +72,7 @@ class DLLWGUI WITexturedShape : public WIShape {
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
 	virtual void Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
 	void SizeToTexture();
+	Vector2i GetTextureSize() const;
 	void SetShader(wgui::ShaderTextured &shader);
 
 	void SetAlphaMode(AlphaMode alphaMode);
