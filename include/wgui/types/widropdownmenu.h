@@ -99,7 +99,7 @@ class DLLWGUI WIDropDownMenu : public WITextEntry {
 	bool IsMenuOpen();
 	void ToggleMenu();
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
-	virtual util::EventReply ScrollCallback(Vector2 offset) override;
+	virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
 	virtual void SetSize(int x, int y) override;
 };
 

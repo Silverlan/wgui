@@ -64,7 +64,7 @@ WIBase::WIBase()
 	RegisterCallbackWithOptionalReturn<util::EventReply, std::reference_wrapper<const GLFW::Joystick>, uint32_t, GLFW::KeyState>("OnJoystickEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply, GLFW::Key, int, GLFW::KeyState, GLFW::Modifier>("OnKeyEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply, int, GLFW::Modifier>("OnCharEvent");
-	RegisterCallbackWithOptionalReturn<util::EventReply, Vector2>("OnScroll");
+	RegisterCallbackWithOptionalReturn<util::EventReply, Vector2, bool>("OnScroll");
 
 	//auto hThis = GetHandle();
 	m_pos->AddCallback([this](std::reference_wrapper<const Vector2i> oldPos, std::reference_wrapper<const Vector2i> pos) {
@@ -1907,11 +1907,11 @@ util::EventReply WIBase::CharCallback(unsigned int c, GLFW::Modifier mods)
 	CallCallbacksWithOptionalReturn<util::EventReply, int, GLFW::Modifier>("OnCharEvent", reply, c, mods);
 	return reply;
 }
-util::EventReply WIBase::ScrollCallback(Vector2 offset)
+util::EventReply WIBase::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
 	//std::cout<<"ScrollCallback: "<<xoffset<<","<<yoffset<<std::endl;
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, Vector2>("OnScroll", reply, offset);
+	CallCallbacksWithOptionalReturn<util::EventReply, Vector2, bool>("OnScroll", reply, offset, offsetAsPixels);
 	return reply;
 }
 
@@ -1959,11 +1959,11 @@ util::EventReply WIBase::InjectMouseInput(GLFW::MouseButton button, GLFW::KeySta
 }
 util::EventReply WIBase::InjectKeyboardInput(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) { return KeyboardCallback(key, scanCode, state, mods); }
 util::EventReply WIBase::InjectCharInput(unsigned int c, GLFW::Modifier mods) { return CharCallback(c, mods); }
-util::EventReply WIBase::InjectScrollInput(Vector2 offset)
+util::EventReply WIBase::InjectScrollInput(Vector2 offset, bool offsetAsPixels)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) { return el.IsSelfVisible() && el.MouseInBounds(); }, [](const WIBase &el) { return el.GetScrollInputEnabled() && el.IsSelfVisible(); });
 	if(el != nullptr)
-		return el->ScrollCallback(offset);
+		return el->ScrollCallback(offset, offsetAsPixels);
 	return util::EventReply::Handled;
 }
 

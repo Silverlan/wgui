@@ -271,7 +271,7 @@ class DLLWGUI WIBase : public CallbackHandler {
 	virtual util::EventReply JoystickCallback(const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state);
 	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods);
 	virtual util::EventReply CharCallback(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None);
-	virtual util::EventReply ScrollCallback(Vector2 offset);
+	virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false);
 
 	void ClampToBounds(Vector2i &pos) const;
 	void ClampToBounds(Vector2i &pos, Vector2i &size) const;
@@ -290,7 +290,7 @@ class DLLWGUI WIBase : public CallbackHandler {
 	util::EventReply InjectMouseInput(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
 	util::EventReply InjectKeyboardInput(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods);
 	util::EventReply InjectCharInput(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None);
-	util::EventReply InjectScrollInput(Vector2 offset);
+	util::EventReply InjectScrollInput(Vector2 offset, bool offsetAsPixels = false);
 
 	void GetMousePos(int *x, int *y) const;
 	void Remove();

@@ -41,16 +41,20 @@ void WIScrollBar::SetScrollOffset(unsigned int offset)
 	UpdateSliderOffset();
 	CallCallbacks<void, unsigned int>("OnScrollOffsetChanged", offset);
 }
-util::EventReply WIScrollBar::ScrollCallback(Vector2 offset)
+util::EventReply WIScrollBar::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
-	if(WIBase::ScrollCallback(offset) == util::EventReply::Handled)
+	if(WIBase::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled)
 		return util::EventReply::Handled;
-	auto scrollAmount = GetScrollAmount();
-	auto &window = WGUI::GetInstance().GetContext().GetWindow();
-	auto isAltDown = (window->GetKeyState(GLFW::Key::LeftAlt) != GLFW::KeyState::Release || window->GetKeyState(GLFW::Key::RightAlt) != GLFW::KeyState::Release) ? true : false;
-	if(isAltDown)
-		scrollAmount = m_numListed;
-	AddScrollOffset(static_cast<int>(-offset.y * static_cast<double>(scrollAmount)));
+	if(offsetAsPixels)
+		AddScrollOffset(static_cast<int>(-offset.y));
+	else {
+		auto scrollAmount = GetScrollAmount();
+		auto &window = WGUI::GetInstance().GetContext().GetWindow();
+		auto isAltDown = (window->GetKeyState(GLFW::Key::LeftAlt) != GLFW::KeyState::Release || window->GetKeyState(GLFW::Key::RightAlt) != GLFW::KeyState::Release) ? true : false;
+		if(isAltDown)
+			scrollAmount = m_numListed;
+		AddScrollOffset(static_cast<int>(-offset.y * static_cast<double>(scrollAmount)));
+	}
 	return util::EventReply::Handled;
 }
 util::EventReply WIScrollBar::MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
@@ -344,12 +348,12 @@ void WIScrollBarSlider::SetHorizontal(bool b)
 bool WIScrollBarSlider::IsHorizontal() { return m_bHorizontal; }
 bool WIScrollBarSlider::IsVertical() { return !m_bHorizontal; }
 
-util::EventReply WIScrollBarSlider::ScrollCallback(Vector2 offset)
+util::EventReply WIScrollBarSlider::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
-	if(WIRect::ScrollCallback(offset) == util::EventReply::Handled)
+	if(WIRect::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled)
 		return util::EventReply::Handled;
 	WIBase *parent = GetParent();
 	if(parent == NULL)
 		return util::EventReply::Handled;
-	return parent->ScrollCallback(offset);
+	return parent->ScrollCallback(offset, offsetAsPixels);
 }

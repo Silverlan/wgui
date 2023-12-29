@@ -508,11 +508,11 @@ util::EventReply WIDropDownMenu::MouseCallback(GLFW::MouseButton button, GLFW::K
 	}
 	return util::EventReply::Handled;
 }
-util::EventReply WIDropDownMenu::ScrollCallback(Vector2 offset)
+util::EventReply WIDropDownMenu::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
-	if(WITextEntry::ScrollCallback(offset) == util::EventReply::Handled || !m_hScrollBar.IsValid())
+	if(WITextEntry::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled || !m_hScrollBar.IsValid())
 		return util::EventReply::Handled;
-	static_cast<WIScrollBar *>(m_hScrollBar.get())->ScrollCallback(offset);
+	static_cast<WIScrollBar *>(m_hScrollBar.get())->ScrollCallback(offset, offsetAsPixels);
 	return util::EventReply::Handled;
 }
 void WIDropDownMenu::SetSize(int x, int y)
