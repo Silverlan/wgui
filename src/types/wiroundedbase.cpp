@@ -9,9 +9,9 @@
 
 WIRoundedBase::WIRoundedBase() : m_roundness(3), m_cornerSize(0.2f), m_bRoundUpperLeft(true), m_bRoundUpperRight(true), m_bRoundLowerLeft(true), m_bRoundLowerRight(true) {}
 
-void WIRoundedBase::Initialize() { Update(); }
+void WIRoundedBase::Initialize() { DoUpdate(); }
 
-void WIRoundedBase::Update()
+void WIRoundedBase::DoUpdate()
 {
 	WIShape *shape = dynamic_cast<WIShape *>(this);
 	shape->ClearVertices();

@@ -88,10 +88,10 @@ void WIOutlinedRect::SetSize(int x, int y)
 
 WIRoundedRect::WIRoundedRect() : WIShape(), WIRoundedBase() {}
 
-void WIRoundedRect::Update()
+void WIRoundedRect::DoUpdate()
 {
-	WIRoundedBase::Update();
-	WIShape::Update();
+	WIRoundedBase::DoUpdate();
+	WIShape::DoUpdate();
 }
 void WIRoundedRect::Initialize()
 {
@@ -117,10 +117,10 @@ WITexturedRect::WITexturedRect() : WITexturedShape()
 
 WIRoundedTexturedRect::WIRoundedTexturedRect() : WITexturedShape(), WIRoundedBase() {}
 
-void WIRoundedTexturedRect::Update()
+void WIRoundedTexturedRect::DoUpdate()
 {
-	WIRoundedBase::Update();
-	WITexturedShape::Update();
+	WIRoundedBase::DoUpdate();
+	WITexturedShape::DoUpdate();
 }
 void WIRoundedTexturedRect::Initialize()
 {

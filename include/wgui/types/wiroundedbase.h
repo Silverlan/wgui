@@ -19,7 +19,7 @@ class DLLWGUI WIRoundedBase {
 	bool m_bRoundUpperRight;
 	bool m_bRoundLowerLeft;
 	bool m_bRoundLowerRight;
-	virtual void Update();
+	virtual void DoUpdate();
 	virtual void Initialize();
   public:
 	virtual ~WIRoundedBase() = default;

@@ -33,7 +33,7 @@ class DLLWGUI WIRoundedRect : public WIShape, public WIRoundedBase {
   public:
 	WIRoundedRect();
 	virtual ~WIRoundedRect() override = default;
-	virtual void Update() override;
+	virtual void DoUpdate() override;
 	virtual void Initialize() override;
 };
 
@@ -47,7 +47,7 @@ class DLLWGUI WIRoundedTexturedRect : public WITexturedShape, public WIRoundedBa
   public:
 	WIRoundedTexturedRect();
 	virtual ~WIRoundedTexturedRect() override = default;
-	virtual void Update() override;
+	virtual void DoUpdate() override;
 	virtual void Initialize() override;
 };
 
