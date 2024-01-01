@@ -2022,6 +2022,8 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el, GLFW::MouseButton
 }
 bool WIBase::__wiMouseButtonCallback(prosper::Window &window, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
 {
+	if(!WGUI::IsOpen())
+		return false;
 	auto i = __lastMouseGUIElements.find(button);
 	if(i != __lastMouseGUIElements.end()) {
 		auto hEl = i->second;
@@ -2060,12 +2062,15 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window, GLFW::MouseButton 
 static std::unordered_map<GLFW::Key, WIHandle> __lastKeyboardGUIElements;
 bool WIBase::__wiJoystickCallback(prosper::Window &window, const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state)
 {
-
+	if(!WGUI::IsOpen())
+		return false;
 	// TODO
 	return false;
 }
 bool WIBase::__wiKeyCallback(prosper::Window &window, GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods)
 {
+	if(!WGUI::IsOpen())
+		return false;
 	auto it = __lastKeyboardGUIElements.find(key);
 	if(it != __lastKeyboardGUIElements.end()) {
 		if(is_valid(it->second) && it->second->GetKeyboardInputEnabled())
@@ -2098,6 +2103,8 @@ bool WIBase::__wiKeyCallback(prosper::Window &window, GLFW::Key key, int scanCod
 
 bool WIBase::__wiCharCallback(prosper::Window &window, unsigned int c)
 {
+	if(!WGUI::IsOpen())
+		return false;
 	WIBase *gui = WGUI::GetInstance().GetFocusedElement(&window);
 	if(gui != NULL) {
 		if(gui->GetKeyboardInputEnabled())
@@ -2108,6 +2115,8 @@ bool WIBase::__wiCharCallback(prosper::Window &window, unsigned int c)
 
 bool WIBase::__wiScrollCallback(prosper::Window &window, Vector2 offset)
 {
+	if(!WGUI::IsOpen())
+		return false;
 	auto cursorPos = window->GetCursorPos();
 	WIBase *gui = WGUI::GetInstance().GetBaseElement(&window);
 	if(gui->IsVisible()) {
