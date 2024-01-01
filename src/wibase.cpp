@@ -1235,7 +1235,8 @@ void WIBase::Draw(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Ve
 		poseDraw = *postTransform * poseDraw;
 
 	auto matDraw = poseDraw;
-	if(useScissor == true) {
+	auto skipOutOfBounds = (useScissor || (useStencilGlobal && !m_rotationMatrix));
+	if(skipOutOfBounds) {
 		// Check if the element is outside the scissor bounds.
 		// If that's the case, we can skip rendering it (and
 		// all its children) altogether.
