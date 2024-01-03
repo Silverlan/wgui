@@ -7,6 +7,7 @@
 #include "wgui/types/witext.h"
 #include "wgui/types/wiscrollbar.h"
 #include "wgui/types/wiarrow.h"
+#include "wgui/types/wiroot.h"
 
 LINK_WGUI_TO_CLASS(WIDropDownMenu, WIDropDownMenu);
 

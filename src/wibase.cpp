@@ -13,6 +13,7 @@
 #include "wgui/shaders/wishader_colored.hpp"
 #include "wgui/types/wicontextmenu.hpp"
 #include "wgui/types/witooltip.h"
+#include "wgui/types/wiroot.h"
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <sharedutils/scope_guard.h>
@@ -350,18 +351,19 @@ void WIBase::TrapFocus(bool b)
 	auto *window = GetRootWindow();
 	if(!window)
 		return;
-	auto *pair = WGUI::GetInstance().FindWindowRootPair(*window);
-	if(!pair)
+	auto *elRoot = WGUI::GetInstance().FindWindowRootElement(*window);
+	if(!elRoot)
 		return;
+	auto &focusTrapStack = elRoot->GetFocusTrapStack();
 	if(b == true)
-		pair->focusTrapStack.push_back(this->GetHandle());
+		focusTrapStack.push_back(this->GetHandle());
 	else {
-		for(auto it = pair->focusTrapStack.begin(); it != pair->focusTrapStack.end();) {
+		for(auto it = focusTrapStack.begin(); it != focusTrapStack.end();) {
 			auto &hEl = *it;
 			if(!is_valid(hEl))
-				it = pair->focusTrapStack.erase(it);
+				it = focusTrapStack.erase(it);
 			else if(hEl.get() == this) {
-				pair->focusTrapStack.erase(it);
+				focusTrapStack.erase(it);
 				break;
 			}
 			else
@@ -633,9 +635,9 @@ void WIBase::KillFocus(bool bForceKill)
 		WGUI::GetInstance().SetFocusedElement(NULL, window);
 	if(bForceKill == false) {
 		auto *window = GetRootWindow();
-		auto *pair = window ? WGUI::GetInstance().FindWindowRootPair(*window) : nullptr;
-		if(pair)
-			pair->RestoreTrappedFocus(this);
+		auto *elRoot = window ? WGUI::GetInstance().FindWindowRootElement(*window) : nullptr;
+		if(elRoot)
+			elRoot->RestoreTrappedFocus(this);
 		/*
 		WIBase *parent = GetParent();
 		WIBase *root = WGUI::GetBaseElement();
@@ -1949,7 +1951,7 @@ void WIBase::InjectMouseMoveInput(int32_t x, int32_t y)
 	iterateChildren(*this, x, y);
 
 	OnCursorMoved(x, y);
-	UpdateChildrenMouseInBounds(true);
+	UpdateChildrenMouseInBounds(false);
 }
 util::EventReply WIBase::InjectMouseInput(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
 {

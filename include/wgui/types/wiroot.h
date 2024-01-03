@@ -9,17 +9,47 @@
 #include <sharedutils/util_clock.hpp>
 
 class DLLWGUI WIRoot : public WIBase {
-  private:
-	virtual ~WIRoot();
-	WIHandle m_hTooltip;
-	WIHandle m_hTooltipTarget;
-	util::Clock::time_point m_tCursorOver;
   public:
 	WIRoot();
+	virtual ~WIRoot() override;
 	virtual void Initialize() override;
 	virtual void OnCursorMoved(int x, int y) override;
 	virtual void Think() override;
+	const prosper::Window *GetWindow() const;
+	prosper::Window *GetWindow();
 	void Setup();
+  protected:
+	friend WGUI;
+	friend WIBase;
+
+	const std::weak_ptr<const prosper::Window> &GetWindowPtr() const;
+	void SetWindow(const std::shared_ptr<const prosper::Window> &window);
+	GLFW::Cursor::Shape GetMainCursor() const;
+	const GLFW::CursorHandle &GetMainCustomCursor() const;
+	void SetMainCursor(GLFW::Cursor::Shape cursor);
+	void SetMainCustomCursor(const GLFW::CursorHandle &hCursor);
+	void SetFocusEnabled(bool enabled);
+	bool IsFocusEnabled() const;
+	WIBase *GetFocusedElement();
+	void SetFocusedElement(WIBase *el);
+	uint32_t GetFocusCount() const;
+	void SetFocusCount(uint32_t focusCount);
+	std::deque<WIHandle> &GetFocusTrapStack();
+
+	void RestoreTrappedFocus(WIBase *elRef = nullptr);
+  private:
+	WIHandle m_hTooltip;
+	WIHandle m_hTooltipTarget;
+	util::Clock::time_point m_tCursorOver;
+	std::weak_ptr<const prosper::Window> m_window {};
+
+	WIHandle m_elFocused = {};
+	uint32_t m_focusCount = 0; // Used to detect changes
+	std::deque<WIHandle> m_focusTrapStack;
+	bool m_focusEnabled = true;
+
+	GLFW::Cursor::Shape m_mainCursor = GLFW::Cursor::Shape::Arrow;
+	GLFW::CursorHandle m_mainCustomCursor = {};
 };
 
 #endif

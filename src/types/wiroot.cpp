@@ -18,6 +18,43 @@ void WIRoot::Initialize()
 	EnableThinking();
 }
 
+const std::weak_ptr<const prosper::Window> &WIRoot::GetWindowPtr() const { return m_window; }
+void WIRoot::SetWindow(const std::shared_ptr<const prosper::Window> &window) { m_window = window; }
+GLFW::Cursor::Shape WIRoot::GetMainCursor() const { return m_mainCursor; }
+const GLFW::CursorHandle &WIRoot::GetMainCustomCursor() const { return m_mainCustomCursor; }
+void WIRoot::SetMainCursor(GLFW::Cursor::Shape cursor) { m_mainCursor = cursor; }
+void WIRoot::SetMainCustomCursor(const GLFW::CursorHandle &hCursor) { m_mainCustomCursor = hCursor; }
+void WIRoot::SetFocusEnabled(bool enabled) { m_focusEnabled = enabled; }
+bool WIRoot::IsFocusEnabled() const { return m_focusEnabled; }
+WIBase *WIRoot::GetFocusedElement() { return m_elFocused.get(); }
+void WIRoot::SetFocusedElement(WIBase *el) { m_elFocused = el ? el->GetHandle() : WIHandle {}; }
+uint32_t WIRoot::GetFocusCount() const { return m_focusCount; }
+void WIRoot::SetFocusCount(uint32_t focusCount) { m_focusCount = focusCount; }
+std::deque<WIHandle> &WIRoot::GetFocusTrapStack() { return m_focusTrapStack; }
+
+bool is_valid(const WIHandle &hEl);
+void WIRoot::RestoreTrappedFocus(WIBase *elRef)
+{
+	for(auto it = m_focusTrapStack.rbegin(); it != m_focusTrapStack.rend();) {
+		auto &hEl = *it;
+		++it;
+		if(!is_valid(hEl))
+			it = std::deque<WIHandle>::reverse_iterator(m_focusTrapStack.erase(it.base()));
+		else if(hEl.get() != elRef && hEl->IsVisible()) {
+			hEl->RequestFocus();
+			break;
+		}
+	}
+}
+
+const prosper::Window *WIRoot::GetWindow() const { return const_cast<WIRoot *>(this)->GetWindow(); }
+prosper::Window *WIRoot::GetWindow()
+{
+	if(m_window.expired())
+		return nullptr;
+	return const_cast<prosper::Window *>(m_window.lock().get());
+}
+
 void WIRoot::Think()
 {
 	WIBase::Think();

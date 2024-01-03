@@ -37,11 +37,10 @@ WGUI &WGUI::Open(prosper::IPrContext &context, const std::weak_ptr<msys::Materia
 }
 void WGUI::ClearWindow(const prosper::Window &window)
 {
-	auto it = std::find_if(m_windowRootElements.begin(), m_windowRootElements.end(), [&window](const WindowRootPair &pair) { return pair.window.lock().get() == &window; });
+	auto it = std::find_if(m_windowRootElements.begin(), m_windowRootElements.end(), [&window](const WIHandle &hRoot) { return hRoot.IsValid() && static_cast<const WIRoot *>(hRoot.get())->GetWindow() == &window; });
 	if(it == m_windowRootElements.end())
 		return;
-	auto &pair = *it;
-	auto *elRoot = pair.rootElement.get();
+	auto *elRoot = static_cast<WIRoot *>(it->get());
 	m_windowRootElements.erase(it);
 	if(elRoot) {
 		auto it = std::find_if(m_rootElements.begin(), m_rootElements.end(), [elRoot](const WIHandle &handle) { return handle.get() == elRoot; });
@@ -55,10 +54,14 @@ void WGUI::Close()
 	if(s_wgui == nullptr)
 		return;
 	std::queue<std::weak_ptr<const prosper::Window>> windows;
-	for(auto &pair : s_wgui->m_windowRootElements) {
-		if(pair.window.expired())
+	for(auto &hEl : s_wgui->m_windowRootElements) {
+		if(hEl.expired())
 			continue;
-		windows.push(pair.window);
+		auto &root = *static_cast<WIRoot *>(hEl.get());
+		auto &window = root.GetWindowPtr();
+		if(window.expired())
+			continue;
+		windows.push(window);
 	}
 
 	while(!windows.empty()) {
@@ -219,36 +222,37 @@ void WGUI::SetCursor(GLFW::Cursor::Shape cursor, prosper::Window *window)
 	window = GetWindow(window);
 	if(!window)
 		return;
-	auto *pair = FindWindowRootPair(*window);
-	if(!pair)
+	auto *elRoot = FindWindowRootElement(*window);
+	if(!elRoot)
 		return;
-	if(pair->customCursor == nullptr && cursor == pair->cursor)
+	if(elRoot->GetMainCustomCursor() == nullptr && cursor == elRoot->GetMainCursor())
 		return;
 	if(cursor == GLFW::Cursor::Shape::Hidden) {
 		SetCursorInputMode(GLFW::CursorMode::Hidden, window);
 		return;
 	}
-	else if(pair->cursor == GLFW::Cursor::Shape::Hidden)
+	else if(elRoot->GetMainCursor() == GLFW::Cursor::Shape::Hidden)
 		SetCursorInputMode(GLFW::CursorMode::Normal, window);
 	auto icursor = static_cast<uint32_t>(cursor) - static_cast<uint32_t>(GLFW::Cursor::Shape::Arrow);
 	if(icursor > static_cast<uint32_t>(GLFW::Cursor::Shape::VResize))
 		return;
 	SetCursor(*m_cursors[icursor].get(), window);
-	pair->cursor = cursor;
-	pair->customCursor = GLFW::CursorHandle();
+	elRoot->SetMainCursor(cursor);
+	elRoot->SetMainCustomCursor(GLFW::CursorHandle());
 }
 void WGUI::SetCursor(GLFW::Cursor &cursor, prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
 		return;
-	auto *pair = FindWindowRootPair(*window);
-	if(!pair)
+	auto *elRoot = FindWindowRootElement(*window);
+	if(!elRoot)
 		return;
-	if(pair->customCursor.IsValid() && pair->customCursor.get() == &cursor)
+	auto &customCursor = elRoot->GetMainCustomCursor();
+	if(customCursor.IsValid() && customCursor.get() == &cursor)
 		return;
 	(*window)->SetCursor(cursor);
-	pair->customCursor = cursor.GetHandle();
+	elRoot->SetMainCustomCursor(cursor.GetHandle());
 }
 void WGUI::SetCursorInputMode(GLFW::CursorMode mode, prosper::Window *window)
 {
@@ -262,8 +266,8 @@ GLFW::Cursor::Shape WGUI::GetCursor(const prosper::Window *window)
 	window = GetWindow(window);
 	if(!window)
 		return GLFW::Cursor::Shape::Default;
-	auto *pair = FindWindowRootPair(*window);
-	return pair ? pair->cursor : GLFW::Cursor::Shape::Default;
+	auto *elRoot = FindWindowRootElement(*window);
+	return elRoot ? elRoot->GetMainCursor() : GLFW::Cursor::Shape::Default;
 }
 GLFW::CursorMode WGUI::GetCursorInputMode(const prosper::Window *window)
 {
@@ -289,32 +293,29 @@ void WGUI::GetMousePos(int &x, int &y, const prosper::Window *window)
 
 prosper::Window *WGUI::FindFocusedWindow()
 {
-	auto *pair = FindFocusedWindowRootPair();
-	if(!pair)
+	auto *elRoot = FindFocusedWindowRootElement();
+	if(!elRoot)
 		return nullptr;
-	return const_cast<prosper::Window *>(pair->window.lock().get());
+	return const_cast<prosper::Window *>(elRoot->GetWindow());
 }
-WIBase *WGUI::FindFocusedWindowRootElement()
+WIRoot *WGUI::FindFocusedWindowRootElement()
 {
-	auto *pair = FindFocusedWindowRootPair();
-	if(!pair)
-		return nullptr;
-	return pair->rootElement.get();
+	for(auto &hEl : m_windowRootElements) {
+		auto window = hEl.IsValid() ? static_cast<WIRoot *>(hEl.get())->GetWindow() : nullptr;
+		if(!window || (*window)->IsFocused() == false)
+			continue;
+		return static_cast<WIRoot *>(hEl.get());
+	}
+	return nullptr;
 }
 prosper::Window *WGUI::FindWindowUnderCursor()
 {
-	auto *pair = FindWindowRootPairUnderCursor();
-	if(!pair)
+	auto *elRoot = FindWindowRootElementUnderCursor();
+	if(!elRoot)
 		return nullptr;
-	return const_cast<prosper::Window *>(pair->window.lock().get());
+	return const_cast<prosper::Window *>(elRoot->GetWindow());
 }
-WIBase *WGUI::FindRootElementUnderCursor()
-{
-	auto *pair = FindWindowRootPairUnderCursor();
-	if(!pair)
-		return nullptr;
-	return pair->rootElement.get();
-}
+WIRoot *WGUI::FindRootElementUnderCursor() { return FindWindowRootElementUnderCursor(); }
 size_t WGUI::GetLastThinkIndex() const { return m_thinkIndex; }
 void WGUI::Think()
 {
@@ -427,16 +428,15 @@ WIBase *WGUI::Create(std::string classname, WIBase *parent)
 	return NULL;
 }
 
-WIBase *WGUI::GetBaseElement(const prosper::Window *window)
+WIRoot *WGUI::GetBaseElement(const prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
 		return nullptr;
-	auto *pair = FindWindowRootPair(*window);
-	return pair ? pair->rootElement.get() : nullptr;
+	return FindWindowRootElement(*window);
 }
 
-WIBase *WGUI::AddBaseElement(const prosper::Window *window)
+WIRoot *WGUI::AddBaseElement(const prosper::Window *window)
 {
 	if(window) {
 		auto *el = GetBaseElement(window);
@@ -447,7 +447,8 @@ WIBase *WGUI::AddBaseElement(const prosper::Window *window)
 			return nullptr;
 		auto size = (*window)->GetSize();
 		el->SetSize(size);
-		m_windowRootElements.push_back({window->shared_from_this(), el->GetHandle()});
+		el->SetWindow(window->shared_from_this());
+		m_windowRootElements.push_back(el->GetHandle());
 		const_cast<prosper::Window *>(window)->AddClosedListener([this, window]() { ClearWindow(*window); });
 		el->AddCallback("OnRemove", FunctionCallback<void>::Create([this, window]() { ClearWindow(*window); }));
 		return el;
@@ -463,25 +464,25 @@ WIBase *WGUI::AddBaseElement(const prosper::Window *window)
 static std::unordered_set<WIBase *> g_exemptFromFocus;
 void WGUI::SetFocusEnabled(const prosper::Window &window, bool enabled)
 {
-	auto *pair = const_cast<WGUI *>(this)->FindWindowRootPair(window);
-	if(!pair)
+	auto *elRoot = const_cast<WGUI *>(this)->FindWindowRootElement(window);
+	if(!elRoot)
 		return;
-	pair->focusEnabled = enabled;
+	elRoot->SetFocusEnabled(enabled);
 }
 bool WGUI::IsFocusEnabled(const prosper::Window &window) const
 {
-	auto *pair = const_cast<WGUI *>(this)->FindWindowRootPair(window);
-	if(!pair)
+	auto *elRoot = const_cast<WGUI *>(this)->FindWindowRootElement(window);
+	if(!elRoot)
 		return false;
-	return pair->focusEnabled;
+	return elRoot->IsFocusEnabled();
 }
 void WGUI::ClearFocus(WIBase &el)
 {
 	auto *window = el.GetRootWindow();
 	if(!window)
 		return;
-	auto *pair = FindWindowRootPair(*window);
-	if(!pair)
+	auto *elRoot = FindWindowRootElement(*window);
+	if(!elRoot)
 		return;
 	std::function<void(WIBase &)> fAddElement = nullptr;
 	fAddElement = [&fAddElement](WIBase &el) {
@@ -496,34 +497,21 @@ void WGUI::ClearFocus(WIBase &el)
 	};
 	fAddElement(el);
 
-	if(g_exemptFromFocus.find(pair->elFocused.get()) != g_exemptFromFocus.end())
-		pair->elFocused = WIHandle {};
-	for(auto it = pair->focusTrapStack.begin(); it != pair->focusTrapStack.end();) {
+	auto *focusedElement = elRoot->GetFocusedElement();
+	if(g_exemptFromFocus.find(focusedElement) != g_exemptFromFocus.end())
+		elRoot->SetFocusedElement(nullptr);
+	auto &focusTrapStack = elRoot->GetFocusTrapStack();
+	for(auto it = focusTrapStack.begin(); it != focusTrapStack.end();) {
 		auto &hEl = *it;
 		if(g_exemptFromFocus.find(hEl.get()) == g_exemptFromFocus.end()) {
 			++it;
 			continue;
 		}
-		it = pair->focusTrapStack.erase(it);
+		it = focusTrapStack.erase(it);
 	}
 
-	pair->RestoreTrappedFocus(); // g_exemptFromFocus will ensure that during this call none of the elements will regain focus
+	elRoot->RestoreTrappedFocus(); // g_exemptFromFocus will ensure that during this call none of the elements will regain focus
 	g_exemptFromFocus.clear();
-}
-
-bool is_valid(const WIHandle &hEl);
-void WGUI::WindowRootPair::RestoreTrappedFocus(WIBase *elRef)
-{
-	for(auto it = focusTrapStack.rbegin(); it != focusTrapStack.rend();) {
-		auto &hEl = *it;
-		++it;
-		if(!is_valid(hEl))
-			it = std::deque<WIHandle>::reverse_iterator(focusTrapStack.erase(it.base()));
-		else if(hEl.get() != elRef && hEl->IsVisible()) {
-			hEl->RequestFocus();
-			break;
-		}
-	}
 }
 
 bool WGUI::SetFocusedElement(WIBase *gui, prosper::Window *window)
@@ -533,34 +521,34 @@ bool WGUI::SetFocusedElement(WIBase *gui, prosper::Window *window)
 	window = GetWindow(window);
 	if(!window)
 		return false;
-	auto *pair = FindWindowRootPair(*window);
-	if(!pair)
+	auto *elRoot = FindWindowRootElement(*window);
+	if(!elRoot)
 		return false;
-	auto *pPrevFocused = pair->elFocused.get();
+	auto *pPrevFocused = elRoot->GetFocusedElement();
 	auto &context = GetContext();
-	if(gui != NULL && pair->elFocused.IsValid()) {
+	if(gui != NULL && pPrevFocused != nullptr) {
 		WIBase *root = GetBaseElement(window);
-		WIBase *parent = pair->elFocused.get();
-		while(parent != NULL && parent != root && parent != pair->elFocused.get()) {
+		WIBase *parent = pPrevFocused;
+		while(parent != NULL && parent != root && parent != elRoot->GetFocusedElement()) {
 			if(parent->IsFocusTrapped())
 				return false;
 			parent = parent->GetParent();
 		}
-		pair->elFocused->KillFocus(true);
+		elRoot->GetFocusedElement()->KillFocus(true);
 	}
 	if(gui == NULL) {
 		(*window)->SetCursorInputMode(GLFW::CursorMode::Hidden);
-		pair->elFocused = WIHandle {};
+		elRoot->SetFocusedElement(nullptr);
 		if(m_onFocusChangedCallback != nullptr)
-			m_onFocusChangedCallback(pPrevFocused, pair->elFocused.get());
+			m_onFocusChangedCallback(pPrevFocused, elRoot->GetFocusedElement());
 		return true;
 	}
 	(*window)->SetCursorInputMode(GLFW::CursorMode::Normal);
 
-	pair->elFocused = gui->GetHandle();
-	++pair->focusCount;
+	elRoot->SetFocusedElement(gui);
+	elRoot->SetFocusCount(elRoot->GetFocusCount() + 1);
 	if(m_onFocusChangedCallback != nullptr)
-		m_onFocusChangedCallback(pPrevFocused, pair->elFocused.get());
+		m_onFocusChangedCallback(pPrevFocused, elRoot->GetFocusedElement());
 	return true;
 }
 
@@ -569,10 +557,10 @@ void WGUI::IncrementFocusCount(const prosper::Window *window)
 	window = GetWindow(window);
 	if(!window)
 		return;
-	auto *pair = FindWindowRootPair(*window);
-	if(!pair)
+	auto *elRoot = FindWindowRootElement(*window);
+	if(!elRoot)
 		return;
-	++pair->focusCount;
+	elRoot->SetFocusCount(elRoot->GetFocusCount() + 1);
 }
 
 uint32_t WGUI::GetFocusCount(const prosper::Window *window)
@@ -580,8 +568,8 @@ uint32_t WGUI::GetFocusCount(const prosper::Window *window)
 	window = GetWindow(window);
 	if(!window)
 		return 0;
-	auto *pair = FindWindowRootPair(*window);
-	return pair ? pair->focusCount : 0u;
+	auto *elRoot = FindWindowRootElement(*window);
+	return elRoot ? elRoot->GetFocusCount() : 0u;
 }
 
 WIBase *WGUI::GetFocusedElement(const prosper::Window *window)
@@ -589,8 +577,8 @@ WIBase *WGUI::GetFocusedElement(const prosper::Window *window)
 	window = GetWindow(window);
 	if(!window)
 		return nullptr;
-	auto *pair = FindWindowRootPair(*window);
-	return (pair && pair->focusEnabled) ? pair->elFocused.get() : nullptr;
+	auto *elRoot = FindWindowRootElement(*window);
+	return (elRoot && elRoot->IsFocusEnabled()) ? elRoot->GetFocusedElement() : nullptr;
 }
 
 WIBase *WGUI::FindByFilter(const std::function<bool(WIBase &)> &filter, const prosper::Window *window) const
@@ -609,10 +597,13 @@ WIBase *WGUI::FindByFilter(const std::function<bool(WIBase &)> &filter, const pr
 		return nullptr;
 	};
 	if(!window) {
-		for(auto &pair : m_windowRootElements) {
-			if(pair.rootElement.IsExpired() || pair.window.expired())
+		for(auto &hEl : m_windowRootElements) {
+			if(hEl.expired())
 				continue;
-			auto *el = FindByFilter(filter, pair.window.lock().get());
+			auto *window = static_cast<const WIRoot *>(hEl.get())->GetWindow();
+			if(!window)
+				continue;
+			auto *el = FindByFilter(filter, window);
 			if(el)
 				return el;
 		}
@@ -628,8 +619,8 @@ WIBase *WGUI::FindByIndex(uint64_t index) const
 
 prosper::Window *WGUI::FindWindow(WIBase &elRoot)
 {
-	auto it = std::find_if(m_windowRootElements.begin(), m_windowRootElements.end(), [&elRoot](const WindowRootPair &pair) { return pair.rootElement.get() == &elRoot; });
-	auto *window = (it != m_windowRootElements.end()) ? const_cast<prosper::Window *>(it->window.lock().get()) : nullptr;
+	auto it = std::find_if(m_windowRootElements.begin(), m_windowRootElements.end(), [&elRoot](const WIHandle &hEl) { return hEl.get() == &elRoot; });
+	auto *window = (it != m_windowRootElements.end()) ? static_cast<WIRoot *>(it->get())->GetWindow() : nullptr;
 	return window && window->IsValid() ? window : nullptr;
 }
 
@@ -723,38 +714,36 @@ prosper::Window *WGUI::GetWindow(prosper::Window *window)
 	}
 	return window;
 }
-WGUI::WindowRootPair *WGUI::FindWindowRootPair(const prosper::Window &window)
+WIRoot *WGUI::FindWindowRootElement(const prosper::Window &window)
 {
-	auto it = std::find_if(m_windowRootElements.begin(), m_windowRootElements.end(), [&window](const WindowRootPair &pair) { return !pair.window.expired() && pair.window.lock().get() == &window; });
-	return (it != m_windowRootElements.end()) ? &*it : nullptr;
+	auto it = std::find_if(m_windowRootElements.begin(), m_windowRootElements.end(), [&window](const WIHandle &hEl) {
+		if(hEl.expired())
+			return false;
+		auto *ptrWindow = static_cast<const WIRoot *>(hEl.get())->GetWindow();
+		return ptrWindow ? ptrWindow == &window : false;
+	});
+	return (it != m_windowRootElements.end()) ? static_cast<WIRoot *>(it->get()) : nullptr;
 }
 
-WGUI::WindowRootPair *WGUI::FindFocusedWindowRootPair()
+WIRoot *WGUI::FindWindowRootElementUnderCursor()
 {
-	for(auto &pair : m_windowRootElements) {
-		auto window = pair.window.lock();
-		if(!window || window->IsValid() == false || (*window)->IsFocused() == false)
+	WIRoot *rootCandidate = nullptr;
+	for(auto &hEl : m_windowRootElements) {
+		auto *elRoot = static_cast<WIRoot *>(hEl.get());
+		if(!elRoot)
 			continue;
-		return &pair;
-	}
-	return nullptr;
-}
-WGUI::WindowRootPair *WGUI::FindWindowRootPairUnderCursor()
-{
-	WGUI::WindowRootPair *pairCandidate = nullptr;
-	for(auto &pair : m_windowRootElements) {
-		auto window = pair.window.lock();
+		auto *window = elRoot->GetWindow();
 		if(!window || window->IsValid() == false)
 			continue;
 		auto pos = (*window)->GetCursorPos();
 		auto size = (*window)->GetSize();
 		if(pos.x >= 0 && pos.y >= 0 && pos.x < size.x && pos.y < size.y) {
-			pairCandidate = &pair;
+			rootCandidate = elRoot;
 			if((*window)->IsFocused())
-				return pairCandidate;
+				return rootCandidate;
 		}
 	}
-	return pairCandidate;
+	return rootCandidate;
 }
 
 bool WGUI::HandleJoystickInput(prosper::Window &window, const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state) { return WIBase::__wiJoystickCallback(window, joystick, key, state); }

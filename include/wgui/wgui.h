@@ -72,6 +72,7 @@ namespace wgui {
 	};
 };
 
+class WIRoot;
 class DLLWGUI WGUI : public prosper::ContextObject {
   public:
 	friend WIBase;
@@ -120,8 +121,8 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	void SetFocusEnabled(const prosper::Window &window, bool enabled);
 	bool IsFocusEnabled(const prosper::Window &window) const;
 	const std::vector<WIHandle> &GetBaseElements() const { return m_rootElements; }
-	WIBase *GetBaseElement(const prosper::Window *optWindow = nullptr);
-	WIBase *AddBaseElement(const prosper::Window *optWindow = nullptr);
+	WIRoot *GetBaseElement(const prosper::Window *optWindow = nullptr);
+	WIRoot *AddBaseElement(const prosper::Window *optWindow = nullptr);
 	WIBase *GetFocusedElement(const prosper::Window *optWindow = nullptr);
 	uint32_t GetFocusCount(const prosper::Window *optWindow = nullptr);
 	void IncrementFocusCount(const prosper::Window *optWindow = nullptr);
@@ -142,9 +143,9 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	void SetFocusCallback(const std::function<void(WIBase *, WIBase *)> &onFocusChanged);
 	void GetMousePos(int &x, int &y, const prosper::Window *optWindow = nullptr);
 	prosper::Window *FindFocusedWindow();
-	WIBase *FindFocusedWindowRootElement();
+	WIRoot *FindFocusedWindowRootElement();
 	prosper::Window *FindWindowUnderCursor();
-	WIBase *FindRootElementUnderCursor();
+	WIRoot *FindRootElementUnderCursor();
 	template<class TSkin>
 	TSkin *RegisterSkin(std::string id, bool bReload = false);
 	void SetSkin(std::string skin);
@@ -196,25 +197,12 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	std::shared_ptr<prosper::IUniformResizableBuffer> m_elementBuffer = nullptr;
 	std::vector<WIHandle> m_rootElements {};
 	std::shared_ptr<prosper::IRenderPass> m_msaaRenderPass = nullptr;
-	struct WindowRootPair {
-		std::weak_ptr<const prosper::Window> window {};
-		WIHandle rootElement {};
-		WIHandle elFocused = {};
-		uint32_t focusCount = 0; // Used to detect changes
-		std::deque<WIHandle> focusTrapStack;
-		bool focusEnabled = true;
-		void RestoreTrappedFocus(WIBase *elRef = nullptr);
-
-		GLFW::Cursor::Shape cursor = GLFW::Cursor::Shape::Arrow;
-		GLFW::CursorHandle customCursor = {};
-	};
-	WindowRootPair *FindWindowRootPair(const prosper::Window &window);
-	WindowRootPair *FindFocusedWindowRootPair();
-	WindowRootPair *FindWindowRootPairUnderCursor();
+	WIRoot *FindWindowRootElement(const prosper::Window &window);
+	WIRoot *FindWindowRootElementUnderCursor();
 	const prosper::Window *GetWindow(const prosper::Window *window) const { return const_cast<WGUI *>(this)->GetWindow(const_cast<prosper::Window *>(window)); }
 	prosper::Window *GetWindow(prosper::Window *window);
 	void ClearWindow(const prosper::Window &window);
-	std::vector<WindowRootPair> m_windowRootElements {};
+	std::vector<WIHandle> m_windowRootElements {};
 	uint64_t m_nextGuiElementIndex = 0u;
 
 	// In general very few elements actually need to apply any continuous logic,
