@@ -62,7 +62,7 @@ class DLLWGUI WIBase : public CallbackHandler {
   public:
 	friend WGUI;
   public:
-	enum class StateFlags : uint32_t {
+	enum class StateFlags : uint64_t {
 		None = 0u,
 		AcceptMouseInputBit = 1u,
 		AcceptKeyboardInputBit = AcceptMouseInputBit << 1u,
@@ -95,7 +95,8 @@ class DLLWGUI WIBase : public CallbackHandler {
 		StencilEnabled = DontRemoveOnParentRemoval << 1u,
 		FullyTransparent = StencilEnabled << 1u,
 		ScheduleUpdateOnVisible = FullyTransparent << 1u,
-		SkinCallbacksEnabled = ScheduleUpdateOnVisible << 1u
+		SkinCallbacksEnabled = ScheduleUpdateOnVisible << 1u,
+		IsInThinkingList = SkinCallbacksEnabled << 1u
 	};
 	struct DLLWGUI DrawInfo {
 		DrawInfo(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuf) : commandBuffer {cmdBuf} {}

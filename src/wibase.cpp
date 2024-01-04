@@ -1602,16 +1602,18 @@ void WIBase::OnRemove() {}
 void WIBase::UpdateThink()
 {
 	auto &wgui = WGUI::GetInstance();
-	auto it = std::find_if(wgui.m_thinkingElements.begin(), wgui.m_thinkingElements.end(), [this](const WIHandle &hEl) { return hEl.get() == this; });
+	auto it = umath::is_flag_set(m_stateFlags, StateFlags::IsInThinkingList) ? std::find_if(wgui.m_thinkingElements.begin(), wgui.m_thinkingElements.end(), [this](const WIHandle &hEl) { return hEl.get() == this; }) : wgui.m_thinkingElements.end();
 	if(ShouldThink()) {
 		if(it != wgui.m_thinkingElements.end())
 			return;
 		wgui.m_thinkingElements.push_back(GetHandle());
+		m_stateFlags |= StateFlags::IsInThinkingList;
 		return;
 	}
 	if(it == wgui.m_thinkingElements.end())
 		return;
 	wgui.m_thinkingElements.erase(it);
+	m_stateFlags &= ~StateFlags::IsInThinkingList;
 }
 bool WIBase::ShouldThink() const
 {
@@ -1939,17 +1941,6 @@ WIBase *WIBase::FindDeepestChild(const std::function<bool(const WIBase &)> &pred
 }
 void WIBase::InjectMouseMoveInput(int32_t x, int32_t y)
 {
-	std::function<void(WIBase &, int, int)> iterateChildren = nullptr;
-	iterateChildren = [&iterateChildren](WIBase &el, int x, int y) {
-		el.UpdateCursorMove(x, y);
-		for(auto &hChild : el.m_children) {
-			if(hChild.IsValid() == false)
-				continue;
-			iterateChildren(*hChild.get(), x - hChild->GetX(), y - hChild->GetY());
-		}
-	};
-	iterateChildren(*this, x, y);
-
 	OnCursorMoved(x, y);
 	UpdateChildrenMouseInBounds(false);
 }
