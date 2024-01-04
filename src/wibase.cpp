@@ -491,10 +491,10 @@ void WIBase::SetAlpha(float alpha)
 }
 void WIBase::GetMousePos(int *x, int *y) const
 {
-	auto *window = GetRootWindow();
+	auto *el = GetBaseRootElement();
 	Vector2 cursorPos {};
-	if(window) {
-		cursorPos = (*window)->GetCursorPos();
+	if(el) {
+		cursorPos = el->GetCursorPos();
 		Vector2i cur = GetAbsolutePos();
 		cursorPos.x -= cur.x;
 		cursorPos.y -= cur.y;
@@ -709,6 +709,13 @@ bool WIBase::IsParentVisible() const { return umath::is_flag_set(m_stateFlags, S
 bool WIBase::IsSelfVisible() const { return *m_bVisible && (m_color->GetValue().a > 0.f || umath::is_flag_set(m_stateFlags, StateFlags::RenderIfZeroAlpha)); }
 bool WIBase::IsVisible() const { return (IsSelfVisible() && IsParentVisible()) ? true : false; }
 void WIBase::OnVisibilityChanged(bool) {}
+WIRoot *WIBase::GetBaseRootElement()
+{
+	auto *el = GetRootElement();
+	if(!el || typeid(*el) != typeid(WIRoot))
+		return nullptr;
+	return static_cast<WIRoot *>(el);
+}
 WIBase *WIBase::GetRootElement()
 {
 	auto *parent = GetParent();
@@ -1766,8 +1773,8 @@ const util::PBoolProperty &WIBase::GetMouseInBoundsProperty() const { return m_b
 bool WIBase::MouseInBounds() const
 {
 	auto &context = WGUI::GetInstance().GetContext();
-	auto *window = GetRootWindow();
-	auto cursorPos = window ? (*window)->GetCursorPos() : Vector2 {};
+	auto *el = GetBaseRootElement();
+	auto cursorPos = el ? el->GetCursorPos() : Vector2 {};
 	return PosInBounds(static_cast<int>(cursorPos.x), static_cast<int>(cursorPos.y));
 }
 bool WIBase::GetMouseInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit); }
@@ -1795,8 +1802,8 @@ void WIBase::UpdateMouseInBounds(const Vector2 &relPos, bool forceFalse)
 void WIBase::UpdateMouseInBounds(bool forceFalse)
 {
 	auto &context = WGUI::GetInstance().GetContext();
-	auto *window = GetRootWindow();
-	auto cursorPos = window ? (*window)->GetCursorPos() : Vector2 {};
+	auto *el = GetBaseRootElement();
+	auto cursorPos = el ? el->GetCursorPos() : Vector2 {};
 	AbsolutePosToRelative(cursorPos);
 	return UpdateMouseInBounds(cursorPos, forceFalse);
 }
@@ -1821,8 +1828,8 @@ void WIBase::DoUpdateChildrenMouseInBounds(const Mat4 &parentPose, const Vector2
 void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility, bool forceFalse)
 {
 	auto &context = WGUI::GetInstance().GetContext();
-	auto *window = GetRootWindow();
-	auto cursorPos = window ? (*window)->GetCursorPos() : Vector2 {};
+	auto *el = GetBaseRootElement();
+	auto cursorPos = el ? el->GetCursorPos() : Vector2 {};
 	DoUpdateChildrenMouseInBounds(GetAbsolutePose(), cursorPos, ignoreVisibility, forceFalse);
 }
 void WIBase::OnCursorEntered() { CallCallbacks<void>("OnCursorEntered"); }

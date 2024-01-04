@@ -58,6 +58,7 @@ namespace wgui {
 namespace umath::intersection {
 	enum class Intersect : uint8_t;
 };
+class WIRoot;
 class DLLWGUI WIBase : public CallbackHandler {
   public:
 	friend WGUI;
@@ -378,6 +379,8 @@ class DLLWGUI WIBase : public CallbackHandler {
 
 	WIBase *GetRootElement();
 	const WIBase *GetRootElement() const { return const_cast<WIBase *>(this)->GetRootElement(); }
+	WIRoot *GetBaseRootElement();
+	const WIRoot *GetBaseRootElement() const { return const_cast<WIBase *>(this)->GetBaseRootElement(); }
 	prosper::Window *GetRootWindow();
 	const prosper::Window *GetRootWindow() const { return const_cast<WIBase *>(this)->GetRootWindow(); }
 

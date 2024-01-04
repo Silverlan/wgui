@@ -18,6 +18,11 @@ class DLLWGUI WIRoot : public WIBase {
 	const prosper::Window *GetWindow() const;
 	prosper::Window *GetWindow();
 	void Setup();
+
+	Vector2 GetCursorPos() const;
+	void SetCursorPosOverride(const Vector2 &pos);
+	const std::optional<Vector2> &GetCursorPosOverride() const { return m_cursorPosOverride; }
+	void ClearCursorPosOverride();
   protected:
 	friend WGUI;
 	friend WIBase;
@@ -42,6 +47,7 @@ class DLLWGUI WIRoot : public WIBase {
 	WIHandle m_hTooltipTarget;
 	util::Clock::time_point m_tCursorOver;
 	std::weak_ptr<const prosper::Window> m_window {};
+	std::optional<Vector2> m_cursorPosOverride = {};
 
 	WIHandle m_elFocused = {};
 	uint32_t m_focusCount = 0; // Used to detect changes

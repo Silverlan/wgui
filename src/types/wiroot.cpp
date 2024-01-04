@@ -5,6 +5,8 @@
 #include "stdafx_wgui.h"
 #include "wgui/types/wiroot.h"
 #include "wgui/types/witooltip.h"
+#include <image/prosper_render_target.hpp>
+#include <prosper_window.hpp>
 
 constexpr uint32_t TOOLTIP_HOVER_DELAY_MS = 750;
 WIRoot::WIRoot() : WIBase(), m_hTooltipTarget {}, m_tCursorOver() {}
@@ -18,6 +20,16 @@ void WIRoot::Initialize()
 	EnableThinking();
 }
 
+Vector2 WIRoot::GetCursorPos() const
+{
+	if(m_cursorPosOverride)
+		return *m_cursorPosOverride;
+	auto *window = GetWindow();
+	return window ? (*window)->GetCursorPos() : Vector2 {};
+}
+
+void WIRoot::SetCursorPosOverride(const Vector2 &pos) { m_cursorPosOverride = pos; }
+void WIRoot::ClearCursorPosOverride() { m_cursorPosOverride = {}; }
 const std::weak_ptr<const prosper::Window> &WIRoot::GetWindowPtr() const { return m_window; }
 void WIRoot::SetWindow(const std::shared_ptr<const prosper::Window> &window) { m_window = window; }
 GLFW::Cursor::Shape WIRoot::GetMainCursor() const { return m_mainCursor; }
