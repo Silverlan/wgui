@@ -627,7 +627,7 @@ bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 	auto &textEl = static_cast<const WIText &>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawCmd};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, drawInfo.msaa) == false)
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == false)
 		return false;
 	uint32_t xScissor, yScissor, wScissor, hScissor;
 	drawState.GetScissor(xScissor, yScissor, wScissor, hScissor);

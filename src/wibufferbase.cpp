@@ -93,7 +93,7 @@ void WIBufferBase::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, 
 		auto *pShader = static_cast<wgui::ShaderColoredRect *>(m_shaderCheap.get());
 		auto &context = WGUI::GetInstance().GetContext();
 		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-		if(pShader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, drawInfo.msaa) == true) {
+		if(pShader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 			pShader->RecordDraw(bindState, {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
 			pShader->RecordEndDraw(bindState);
 		}
@@ -107,7 +107,7 @@ void WIBufferBase::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, 
 	auto &shader = static_cast<wgui::ShaderColored &>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, drawInfo.msaa) == true) {
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 		shader.RecordDraw(bindState, *buf, GetVertexCount(), wgui::ElementData {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
 		shader.RecordEndDraw(bindState);
 	}

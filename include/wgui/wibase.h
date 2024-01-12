@@ -100,6 +100,13 @@ class DLLWGUI WIBase : public CallbackHandler {
 		IsInThinkingList = SkinCallbacksEnabled << 1u
 	};
 	struct DLLWGUI DrawInfo {
+		enum class Flags : uint8_t {
+			None = 0u,
+			UseScissor = 1u,
+			UseStencil = UseScissor << 1u,
+			Msaa = UseStencil << 1u,
+			DontSkipIfOutOfBounds = Msaa << 1u, // This will apply to all children as well
+		};
 		DrawInfo(const std::shared_ptr<prosper::ICommandBuffer> &cmdBuf) : commandBuffer {cmdBuf} {}
 		Vector2i offset = {};
 		Vector2i size = {};
@@ -107,9 +114,7 @@ class DLLWGUI WIBase : public CallbackHandler {
 		Mat4 transform = umat::identity();
 		std::optional<Mat4> postTransform = {};
 		mutable std::shared_ptr<prosper::ICommandBuffer> commandBuffer;
-		bool useScissor = true;
-		bool useStencil = false;
-		bool msaa = false;
+		Flags flags = Flags::UseScissor;
 
 		Vector4 GetColor(WIBase &el, const wgui::DrawState &drawState) const;
 	};
@@ -485,6 +490,7 @@ class DLLWGUI WIBase : public CallbackHandler {
 	static util::EventReply InjectMouseButtonCallback(WIBase &el, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)
+REGISTER_BASIC_BITWISE_OPERATORS(WIBase::DrawInfo::Flags)
 
 DLLWGUI std::ostream &operator<<(std::ostream &stream, WIBase &el);
 

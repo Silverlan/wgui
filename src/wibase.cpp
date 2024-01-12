@@ -1070,7 +1070,7 @@ void WIBase::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, const 
 	assert(shader != nullptr);
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, drawInfo.msaa) == true) {
+	if(shader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 		shader->RecordDraw(bindState, {matDraw, Vector4 {}, wgui::ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
 		shader->RecordEndDraw(bindState);
 	}
@@ -1231,11 +1231,13 @@ void WIBase::Draw(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Ve
 	const auto &origin = drawInfo.offset;
 
 	auto rootPose = drawInfo.transform;
-	auto useScissor = drawInfo.useScissor;
-	auto useStencilGlobal = drawInfo.useStencil;
+	auto useScissor = umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseScissor);
+	auto useStencilGlobal = umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseStencil);
+	auto dontSkipIfOutOfBounds = umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::DontSkipIfOutOfBounds);
 	if(m_rotationMatrix) {
 		useScissor = false;
 		useStencilGlobal = true;
+		dontSkipIfOutOfBounds = true; // We don't have a way for checking rotated bounds at the moment, so we'll skip the boundary check
 	}
 	const auto &postTransform = drawInfo.postTransform;
 
@@ -1244,7 +1246,7 @@ void WIBase::Draw(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Ve
 		poseDraw = *postTransform * poseDraw;
 
 	auto matDraw = poseDraw;
-	auto skipOutOfBounds = (useScissor || (useStencilGlobal && !m_rotationMatrix));
+	auto skipOutOfBounds = (useScissor || useStencilGlobal) && !dontSkipIfOutOfBounds;
 	if(skipOutOfBounds) {
 		// Check if the element is outside the scissor bounds.
 		// If that's the case, we can skip rendering it (and
@@ -1324,8 +1326,9 @@ void WIBase::Draw(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Ve
 			auto childDrawInfo = drawInfo;
 			childDrawInfo.offset = *child->m_pos;
 			childDrawInfo.transform = rootPose;
-			childDrawInfo.useScissor = useScissorChild;
-			childDrawInfo.useStencil = useStencilGlobal;
+			umath::set_flag(childDrawInfo.flags, DrawInfo::Flags::UseScissor, useScissorChild);
+			umath::set_flag(childDrawInfo.flags, DrawInfo::Flags::UseStencil, useStencilGlobal);
+			umath::set_flag(childDrawInfo.flags, DrawInfo::Flags::DontSkipIfOutOfBounds, dontSkipIfOutOfBounds);
 			auto scaleChild = scale * child->GetScale();
 			child->Draw(childDrawInfo, drawState, offsetParentNew, posScissor, szScissor, scaleChild, newStencilLevel);
 			drawState.renderAlpha = aOriginal;
@@ -1342,7 +1345,7 @@ void WIBase::Draw(const DrawInfo &drawInfo, wgui::DrawState &drawState)
 {
 	auto scissorPos = GetPos();
 	auto scissorSize = drawInfo.size;
-	if(drawInfo.useScissor) {
+	if(umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseScissor)) {
 		scissorPos = {};
 		scissorSize = GetSize();
 	}
@@ -1355,7 +1358,7 @@ void WIBase::Draw(int w, int h, std::shared_ptr<prosper::ICommandBuffer> &cmdBuf
 		return;
 	DrawInfo drawInfo {cmdBuf};
 	drawInfo.offset = GetPos();
-	drawInfo.useScissor = GetShouldScissor();
+	umath::set_flag(drawInfo.flags, DrawInfo::Flags::UseScissor, GetShouldScissor());
 	drawInfo.size = {w, h};
 	wgui::DrawState drawState {};
 	Draw(drawInfo, drawState);

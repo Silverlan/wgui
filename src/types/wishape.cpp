@@ -539,7 +539,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawStat
 				return;
 			auto &context = WGUI::GetInstance().GetContext();
 			prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-			if(pShaderExpensive->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, drawInfo.msaa) == true) {
+			if(pShaderExpensive->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 				pShaderExpensive->RecordDraw(bindState,
 				  {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size), std::array<uint32_t, 3> {}, umath::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
 				    m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)), m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)), m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha)), GetAlphaMode(), GetAlphaCutoff()},
@@ -553,7 +553,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawStat
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
 		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-		if(pShaderCheap->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, drawInfo.msaa) == true) {
+		if(pShaderCheap->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 			pShaderCheap->RecordDraw(bindState,
 			  {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size), std::array<uint32_t, 3> {}, umath::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
 			    m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)), m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)), m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha))},
@@ -573,7 +573,7 @@ void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawStat
 	if(vbuf == nullptr || uvBuf == nullptr)
 		return;
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, drawInfo.msaa) == true) {
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 		wgui::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = matDraw;
 		pushConstants.elementData.color = col;

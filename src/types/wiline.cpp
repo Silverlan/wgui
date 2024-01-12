@@ -138,7 +138,7 @@ void WILine::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, const 
 	auto &shader = static_cast<wgui::ShaderColoredLine &>(*pShader);
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, drawInfo.msaa) == true) {
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 		wgui::ElementData pushConstants {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size)};
 		shader.RecordDraw(bindState, s_lineBuffer, m_bufColor, GetVertexCount(), GetLineWidth(), pushConstants, testStencilLevel);
 		shader.RecordEndDraw(bindState);
