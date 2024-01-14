@@ -49,9 +49,14 @@ namespace prosper {
 };
 class DLLWGUI FontInfo : public std::enable_shared_from_this<FontInfo> {
   public:
+	struct DLLWGUI FontSettings {
+		uint32_t fontSize;
+		std::optional<util::Utf8String> requiredChars;
+	};
+
 	~FontInfo();
 	void Clear();
-	bool Initialize(const std::string &cpath, const std::string &name, uint32_t size);
+	bool Initialize(const std::string &cpath, const std::string &name, const FontSettings &fontSettings);
 	const std::string &GetName() const { return m_name; }
 	const FT_Face GetFace() const;
 	const GlyphInfo *GetGlyphInfo(int32_t c) const;
@@ -112,7 +117,7 @@ class DLLWGUI FontManager {
 	static const std::unordered_map<std::string, std::shared_ptr<FontInfo>> &GetFonts();
 	static void SetDefaultFont(const FontInfo &font);
 	static const FT_Library GetFontLibrary();
-	static std::shared_ptr<const FontInfo> LoadFont(const std::string &cidentifier, const std::string &cpath, uint32_t fontSize, bool bForceReload = false);
+	static std::shared_ptr<const FontInfo> LoadFont(const std::string &cidentifier, const std::string &cpath, const FontInfo::FontSettings &fontSettings, bool bForceReload = false);
 	static std::shared_ptr<const FontInfo> GetFont(const std::string &cfontName);
 	static void Close();
 	// Char offset (relative to a line) is required to calculate the correct tab size

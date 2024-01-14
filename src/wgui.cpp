@@ -137,7 +137,7 @@ void wgui::DrawState::GetScissor(uint32_t &x, uint32_t &y, uint32_t &w, uint32_t
 }
 bool wgui::detail::UpdatePriority::operator()(const UpdateInfo &h0, const UpdateInfo &h1) const { return h0.depth < h1.depth; }
 
-WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName)
+WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName, std::optional<util::Utf8String> requiredChars)
 {
 	if(!FontManager::Initialize())
 		return ResultCode::UnableToInitializeFontManager;
@@ -199,10 +199,17 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 	// Font has to be loaded AFTER shaders have been initialized (Requires wguitext shader)
 	if(!fontFileName.has_value())
 		fontFileName = "vera/VeraBd.ttf";
-	auto font = FontManager::LoadFont("default", *fontFileName, 14);
-	FontManager::LoadFont("default_large", *fontFileName, 18);
-	FontManager::LoadFont("default_small", *fontFileName, 10);
-	FontManager::LoadFont("default_tiny", *fontFileName, 8);
+	FontInfo::FontSettings settings {};
+	if(requiredChars)
+		settings.requiredChars = requiredChars;
+	settings.fontSize = 14;
+	auto font = FontManager::LoadFont("default", *fontFileName, settings);
+	settings.fontSize = 18;
+	FontManager::LoadFont("default_large", *fontFileName, settings);
+	settings.fontSize = 10;
+	FontManager::LoadFont("default_small", *fontFileName, settings);
+	settings.fontSize = 8;
+	FontManager::LoadFont("default_tiny", *fontFileName, settings);
 	if(font != nullptr)
 		FontManager::SetDefaultFont(*font);
 	else

@@ -100,7 +100,7 @@ const std::vector<std::shared_ptr<GlyphInfo>> &FontInfo::GetGlyphs() const { ret
 uint32_t FontInfo::GetSize() const { return m_size; }
 
 constexpr uint32_t glyphStartIndex = 32u;
-bool FontInfo::Initialize(const std::string &cpath, const std::string &name, uint32_t fontSize)
+bool FontInfo::Initialize(const std::string &cpath, const std::string &name, const FontSettings &fontSettings)
 {
 	m_name = name;
 	if(m_bInitialized || wgui::ShaderText::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
@@ -115,12 +115,12 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, uin
 	auto lib = FontManager::GetFontLibrary();
 	auto &face = m_face.GetFtFace();
 	auto &ncFace = const_cast<FT_Face &>(face);
-	if(FT_New_Memory_Face(lib, &m_data[0], static_cast<FT_Long>(size), 0, &ncFace) != 0 || FT_Set_Pixel_Sizes(face, 0, fontSize) != 0) {
+	if(FT_New_Memory_Face(lib, &m_data[0], static_cast<FT_Long>(size), 0, &ncFace) != 0 || FT_Set_Pixel_Sizes(face, 0, fontSettings.fontSize) != 0) {
 		m_data.clear();
 		return false;
 	}
 	//FT_Select_Charmap(m_face,FT_ENCODING_UNICODE);
-	m_size = fontSize;
+	m_size = fontSettings.fontSize;
 
 	uint32_t hMax = 0;
 	uint32_t szMax = 0;
@@ -131,32 +131,78 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, uin
 
 	std::vector<GlyphRange> ranges;
 	constexpr uint32_t asciiEndIdx = 255u;
-	ranges.push_back({glyphStartIndex, asciiEndIdx - glyphStartIndex}); // Ascii range
+	auto numAscii = asciiEndIdx - glyphStartIndex;
+	ranges.push_back({glyphStartIndex, numAscii}); // Ascii range
 
-	std::optional<uint32_t> start {};
-	constexpr uint32_t utf8EndIdx = 1'000'000;
-	for(uint32_t i = glyphStartIndex; i < utf8EndIdx; ++i) {
-		if(FT_Get_Char_Index(face, i) != 0) {
-			if(!start.has_value())
-				start = i;
+	// Only load glyphs that we actually need
+	auto &requiredChars = fontSettings.requiredChars;
+	std::vector<bool> isGlyphRequired;
+	if(requiredChars.has_value() && !requiredChars->empty()) {
+		auto max = std::max_element(requiredChars->begin(), requiredChars->end());
+		isGlyphRequired.resize(*max + 1, false);
+		for(auto idx : *requiredChars)
+			isGlyphRequired[idx] = true;
+	}
+
+	struct FtGlyphInfo {
+		uint32_t glyphIndex;
+		uint32_t charIndex;
+	};
+	std::vector<FtGlyphInfo> tmpGlyphInfos;
+	tmpGlyphInfos.reserve(numAscii + (requiredChars ? requiredChars->size() : 0));
+
+	FT_ULong charcode;
+	FT_UInt gindex;
+
+	charcode = FT_Get_First_Char(face, &gindex);
+	while(gindex != 0) {
+		auto glyphIdx = FT_Get_Char_Index(face, charcode);
+		if(!isGlyphRequired.empty() && (charcode >= isGlyphRequired.size() || !isGlyphRequired[charcode])) {
+			// Don't need this glyph
+			glyphIdx = 0;
 		}
-		else if(start.has_value()) {
-			if(!ranges.empty()) {
-				auto &last = ranges.back();
-				if(static_cast<int32_t>(*start - last.unicodeStartIndex) - static_cast<int32_t>(last.count) <= 100) {
-					last.count = i - last.unicodeStartIndex;
-					start = {};
-					continue;
-				}
+		if(glyphIdx != 0) {
+			if(tmpGlyphInfos.size() == tmpGlyphInfos.capacity())
+				tmpGlyphInfos.reserve(tmpGlyphInfos.size() * 1.5 + 500);
+			tmpGlyphInfos.push_back({glyphIdx, charcode});
+		}
+
+		charcode = FT_Get_Next_Char(face, charcode, &gindex);
+	}
+
+	// Sort by unicode character index
+	std::sort(tmpGlyphInfos.begin(), tmpGlyphInfos.end(), [](const FtGlyphInfo &info0, const FtGlyphInfo &info1) { return info0.charIndex < info1.charIndex; });
+
+	for(auto &info : tmpGlyphInfos) {
+		if(!ranges.empty()) {
+			auto &last = ranges.back();
+			if(info.charIndex == last.unicodeStartIndex + last.count) {
+				++last.count;
+				continue;
 			}
-			ranges.push_back(GlyphRange {*start, i - *start});
-			start = {};
 		}
+		if(ranges.size() == ranges.capacity())
+			ranges.reserve(ranges.size() * 1.5 + 500);
+		ranges.push_back(GlyphRange {info.charIndex, 1});
 	}
-	if(start.has_value()) {
-		ranges.push_back(GlyphRange {*start, utf8EndIdx - *start});
-		start = {};
-	}
+
+	// TODO: Sort by unicodeStartIndex?
+
+	auto numRanges = ranges.size();
+	/*
+	// Merging ranges speeds up lookup times, but also results in glyphs being rendered that
+	// wouldn't need to be rendered otherwise
+	if(numRanges > 1) {
+		for(auto i = static_cast<int32_t>(numRanges - 2); i >= 0; --i) {
+			auto &r1 = ranges[i + 1];
+			auto &r0 = ranges[i];
+			auto diff = r1.unicodeStartIndex - (r0.unicodeStartIndex + r0.count);
+			if(diff < 20) { // Merge ranges where the distance is less than 100 characters
+				r0.count += diff + r1.count;
+				ranges.erase(ranges.begin() + (i + 1));
+			}
+		}
+	}*/
 
 	uint32_t numGlyphs = 0;
 	for(auto &range : ranges) {
@@ -174,8 +220,8 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, uin
 	uint32_t glyphIdx = 0;
 	for(auto range : ranges) {
 		for(auto i = range.unicodeStartIndex; i < (range.unicodeStartIndex + range.count); ++i) {
-			auto charIdx = FT_Get_Char_Index(face, i);
-			if(charIdx != 0 && FT_Load_Char(face, i, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT) == 0) {
+			auto ftGlyphIdx = FT_Get_Char_Index(face, i);
+			if(ftGlyphIdx != 0 && FT_Load_Char(face, i, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT) == 0) {
 				auto gslot = face->glyph;
 				// Outline
 				/*if(gslot->format == FT_GLYPH_FORMAT_OUTLINE)
@@ -222,7 +268,7 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, uin
 				auto u_yMax = static_cast<unsigned int>(yMax);
 				if(u_yMax > hMax)
 					hMax = u_yMax;
-				auto u_szMax = static_cast<unsigned int>(u_yMax) + static_cast<unsigned int>(static_cast<int>(fontSize) - glyph->GetTop());
+				auto u_szMax = static_cast<unsigned int>(u_yMax) + static_cast<unsigned int>(static_cast<int>(fontSettings.fontSize) - glyph->GetTop());
 				if(u_szMax < 0)
 					u_szMax = 0;
 				if(u_szMax > szMax)
@@ -364,6 +410,7 @@ uint32_t FontInfo::CharToGlyphMapIndex(int32_t c) const
 	auto itSim = std::upper_bound(m_glyphIndexRanges.begin(), m_glyphIndexRanges.end(), c, [](int32_t value, const GlyphRange &range) { return value < (range.unicodeStartIndex + range.count); });
 	if(itSim == m_glyphIndexRanges.end())
 		return 0;
+
 	return itSim->glyphMapStartIndex + (c - itSim->unicodeStartIndex);
 }
 
@@ -417,7 +464,7 @@ std::shared_ptr<const FontInfo> FontManager::GetFont(const std::string &cfontNam
 	return it->second;
 }
 
-std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidentifier, const std::string &cpath, uint32_t size, bool bForceReload)
+std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidentifier, const std::string &cpath, const FontInfo::FontSettings &fontSettings, bool bForceReload)
 {
 	auto &lib = m_lib.GetFtLibrary();
 	if(lib == nullptr)
@@ -445,7 +492,7 @@ std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidenti
 	}
 	if(font == nullptr)
 		font = std::shared_ptr<FontInfo>(new FontInfo());
-	if(!font->Initialize(path.c_str(), identifier, size))
+	if(!font->Initialize(path.c_str(), identifier, fontSettings))
 		return nullptr;
 	m_fonts.insert(decltype(m_fonts)::value_type(identifier, font));
 	return font;

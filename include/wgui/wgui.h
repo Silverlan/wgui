@@ -16,6 +16,7 @@
 #include <iglfw/glfw_window.h>
 #include <prosper_context_object.hpp>
 #include <sharedutils/chronotime.h>
+#include <sharedutils/util_utf8.hpp>
 #include "types.hpp"
 
 #undef GetClassName
@@ -108,7 +109,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	static WGUI &GetInstance();
 	static bool IsOpen();
 
-	ResultCode Initialize(std::optional<Vector2i> resolution = {}, std::optional<std::string> fontFileName = {});
+	ResultCode Initialize(std::optional<Vector2i> resolution = {}, std::optional<std::string> fontFileName = {}, std::optional<util::Utf8String> requiredChars = {});
 	template<class TElement>
 	TElement *Create(WIBase *parent = nullptr);
 	template<class TElement>
