@@ -1109,6 +1109,13 @@ void WIBase::ResetSkin()
 }
 void WIBase::SetRemoveOnParentRemoval(bool b) { umath::set_flag(m_stateFlags, StateFlags::DontRemoveOnParentRemoval, !b); }
 void WIBase::OnSkinApplied() {}
+void WIBase::RefreshSkin()
+{
+	if(m_skin == nullptr)
+		return;
+	umath::set_flag(m_stateFlags, StateFlags::SkinAppliedBit, false);
+	ApplySkin();
+}
 void WIBase::ApplySkin(WISkin *skin)
 {
 	if(umath::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == true)

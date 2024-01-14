@@ -367,6 +367,7 @@ class DLLWGUI WIBase : public CallbackHandler {
 	void DisableThinking();
 	void SetThinkingEnabled(bool enabled);
 	void ApplySkin(WISkin *skin = nullptr);
+	void RefreshSkin();
 
 	void SetRemoveOnParentRemoval(bool b);
 
