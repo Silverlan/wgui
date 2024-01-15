@@ -164,7 +164,7 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, con
 		if(glyphIdx != 0) {
 			if(tmpGlyphInfos.size() == tmpGlyphInfos.capacity())
 				tmpGlyphInfos.reserve(tmpGlyphInfos.size() * 1.5 + 500);
-			tmpGlyphInfos.push_back({glyphIdx, charcode});
+			tmpGlyphInfos.push_back({glyphIdx, static_cast<uint32_t>(charcode)});
 		}
 
 		charcode = FT_Get_Next_Char(face, charcode, &gindex);
