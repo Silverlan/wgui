@@ -1975,7 +1975,7 @@ util::EventReply WIBase::InjectScrollInput(Vector2 offset, bool offsetAsPixels)
 	auto *el = FindDeepestChild([](const WIBase &el) { return el.IsSelfVisible() && el.MouseInBounds(); }, [](const WIBase &el) { return el.GetScrollInputEnabled() && el.IsSelfVisible(); });
 	if(el != nullptr)
 		return el->ScrollCallback(offset, offsetAsPixels);
-	return util::EventReply::Handled;
+	return util::EventReply::Unhandled;
 }
 
 std::vector<std::string> &WIBase::GetStyleClasses() { return m_styleClasses; }
