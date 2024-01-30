@@ -569,8 +569,13 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 		bufInfo.height = subStrInfo.height;
 		bufInfo.sx = subStrInfo.sx;
 		bufInfo.sy = subStrInfo.sy;
-		context.ScheduleRecordUpdateBuffer(bufInfo.buffer, 0ull, glyphBoundsData.size() * sizeof(glyphBoundsData.front()), glyphBoundsData.data());
-
+		auto srcStageMask = prosper::util::PIPELINE_STAGE_SHADER_INPUT_FLAGS | prosper::PipelineStageFlags::TransferBit;
+		auto srcAccessMask = prosper::AccessFlags::ShaderReadBit | prosper::AccessFlags::ShaderWriteBit | prosper::AccessFlags::TransferReadBit | prosper::AccessFlags::TransferWriteBit;
+		auto dstStageMask = prosper::PipelineStageFlags::TransferBit;
+		auto dstAccessMask = prosper::AccessFlags::TransferWriteBit;
+		auto updateSize = glyphBoundsData.size() * sizeof(glyphBoundsData.front());
+		drawCmd->RecordBufferBarrier(*bufInfo.buffer, srcStageMask, dstStageMask, srcAccessMask, dstAccessMask, 0u, updateSize);
+		drawCmd->RecordUpdateBuffer(*bufInfo.buffer, 0u, updateSize, glyphBoundsData.data());
 		drawCmd->RecordBufferBarrier(*bufInfo.buffer, prosper::PipelineStageFlags::TransferBit, prosper::PipelineStageFlags::VertexInputBit, prosper::AccessFlags::TransferWriteBit, prosper::AccessFlags::VertexAttributeReadBit);
 	}
 	lineInfo.ResizeBuffers(bufferOffset);
