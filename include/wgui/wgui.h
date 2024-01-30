@@ -134,7 +134,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	WIBase *FindByIndex(uint64_t index) const;
 	prosper::Window *FindWindow(WIBase &elRoot);
 	const prosper::Window *FindWindow(WIBase &elRoot) const { return const_cast<WGUI *>(this)->FindWindow(elRoot); }
-	void Think();
+	void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
 	void Draw(const prosper::Window &window, prosper::ICommandBuffer &drawCmd);
 	void Draw(WIBase &el, prosper::IRenderPass &rp, prosper::IFramebuffer &fb, prosper::ICommandBuffer &drawCmd);
 	bool HandleJoystickInput(prosper::Window &window, const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state);

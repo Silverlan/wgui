@@ -14,7 +14,7 @@ class DLLWGUI WIRoot : public WIBase {
 	virtual ~WIRoot() override;
 	virtual void Initialize() override;
 	virtual void OnCursorMoved(int x, int y) override;
-	virtual void Think() override;
+	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 	const prosper::Window *GetWindow() const;
 	prosper::Window *GetWindow();
 	void Setup();

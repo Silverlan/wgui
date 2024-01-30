@@ -214,9 +214,9 @@ bool WITextEntryBase::IsMultiLine() const { return umath::is_flag_set(m_stateFla
 void WITextEntryBase::SetMultiLine(bool bMultiLine) { umath::set_flag(m_stateFlags, StateFlags::MultiLine, bMultiLine); }
 
 int WITextEntryBase::GetCaretPos() const { return m_posCaret; }
-void WITextEntryBase::Think()
+void WITextEntryBase::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	WIBase::Think();
+	WIBase::Think(drawCmd);
 	if(HasFocus()) {
 		if(m_hCaret.IsValid()) {
 			WIRect *pCaret = static_cast<WIRect *>(m_hCaret.get());

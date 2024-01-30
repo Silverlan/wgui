@@ -324,7 +324,7 @@ prosper::Window *WGUI::FindWindowUnderCursor()
 }
 WIRoot *WGUI::FindRootElementUnderCursor() { return FindWindowRootElementUnderCursor(); }
 size_t WGUI::GetLastThinkIndex() const { return m_thinkIndex; }
-void WGUI::Think()
+void WGUI::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	while(!m_removeQueue.empty()) {
 		auto &hEl = m_removeQueue.front();
@@ -372,7 +372,7 @@ void WGUI::Think()
 			continue;
 		}
 		auto *pEl = hEl.get();
-		pEl->Think();
+		pEl->Think(drawCmd);
 
 		// Calling 'Think' may have removed the element from the thinking elements,
 		// so we must only increment i if that wasn't the case.

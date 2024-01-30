@@ -20,7 +20,7 @@ class DLLWGUI WITextEntryBase : public WIBase {
 	WITextEntryBase();
 	virtual ~WITextEntryBase() override;
 	virtual void Initialize() override;
-	virtual void Think() override;
+	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 	virtual void RequestFocus() override;
 	virtual void OnFocusGained() override;
 	virtual void OnFocusKilled() override;

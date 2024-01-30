@@ -42,6 +42,7 @@ namespace util {
 };
 namespace prosper {
 	class IBuffer;
+	class IPrimaryCommandBuffer;
 	class ICommandBuffer;
 	class Window;
 };
@@ -161,7 +162,7 @@ class DLLWGUI WIBase : public CallbackHandler {
 	// Anything with a higher z-position will be drawn in front of everything with a lower one.
 	virtual void SetZPos(int zpos);
 	int GetZPos() const;
-	virtual void Think();
+	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
 	virtual bool HasFocus();
 	virtual void RequestFocus();
 	const util::PBoolProperty &GetFocusProperty() const;

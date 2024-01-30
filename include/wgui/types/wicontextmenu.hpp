@@ -21,7 +21,7 @@ class DLLWGUI WIContextMenu : public WIRect {
 	virtual void Initialize() override;
 	virtual void OnRemove() override;
 	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) override;
-	virtual void Think() override;
+	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 
 	bool IsCursorInMenuBounds() const;
 	WIMenuItem *GetSelectedItem();

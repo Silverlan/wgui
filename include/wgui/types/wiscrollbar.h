@@ -38,7 +38,7 @@ class DLLWGUI WIScrollBarSlider : public WIRect {
 	virtual void Initialize() override;
 	virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
-	virtual void Think() override;
+	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 	void SetHorizontal(bool b);
 	bool IsHorizontal();
 	bool IsVertical();

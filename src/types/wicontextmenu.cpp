@@ -72,9 +72,9 @@ util::EventReply WIContextMenu::KeyboardCallback(GLFW::Key key, int scanCode, GL
 	pItem->SetRightText(s_fBindKey(key, cmd));
 	return util::EventReply::Handled;
 }
-void WIContextMenu::Think()
+void WIContextMenu::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	WIRect::Think();
+	WIRect::Think(drawCmd);
 	UpdateChildrenMouseInBounds();
 }
 void WIContextMenu::DoUpdate()

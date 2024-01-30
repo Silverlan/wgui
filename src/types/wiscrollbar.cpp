@@ -334,9 +334,9 @@ void WIScrollBarSlider::UpdatePosition()
 	CallCallbacks<void>("OnDrag");
 }
 
-void WIScrollBarSlider::Think()
+void WIScrollBarSlider::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	WIRect::Think();
+	WIRect::Think(drawCmd);
 	UpdatePosition();
 }
 

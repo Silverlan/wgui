@@ -327,10 +327,10 @@ void WIText::SetFlag(Flags flag, bool enabled)
 		EnableThinking();
 }
 
-void WIText::Think()
+void WIText::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	WIBase::Think();
-	UpdateRenderTexture();
+	WIBase::Think(drawCmd);
+	UpdateRenderTexture(drawCmd);
 	if(umath::is_flag_set(m_flags, Flags::ApplySubTextTags | Flags::RenderTextScheduled | Flags::FullUpdateScheduled) == false)
 		DisableThinking();
 }

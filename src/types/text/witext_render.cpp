@@ -166,13 +166,13 @@ void WIText::SelectShader()
 	// Deprecated?
 }
 
-void WIText::UpdateRenderTexture()
+void WIText::UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	if(IsCacheEnabled() == false) {
 		if((m_flags & (Flags::RenderTextScheduled | Flags::FullUpdateScheduled)) != Flags::None) {
 			m_flags &= ~(Flags::RenderTextScheduled | Flags::FullUpdateScheduled);
 			UpdateSubLines();
-			InitializeTextBuffers();
+			InitializeTextBuffers(drawCmd);
 		}
 		if((m_flags & Flags::ApplySubTextTags) != Flags::None) {
 			m_flags &= ~Flags::ApplySubTextTags;
@@ -398,12 +398,12 @@ void WIText::RenderText(Mat4 &)
 	//prosper::util::record_set_scissor(*drawCmd,windowSize.at(0),windowSize.at(1));
 }
 
-void WIText::InitializeTextBuffers()
+void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	util::text::LineIndex lineIndex = 0;
 	for(auto &lineInfo : m_lineInfos) {
 		if(lineInfo.bufferUpdateRequired == true)
-			InitializeTextBuffers(lineInfo, lineIndex);
+			InitializeTextBuffers(drawCmd, lineInfo, lineIndex);
 		if(lineInfo.subLines.empty() == false)
 			lineIndex += lineInfo.subLines.size();
 		else
@@ -411,7 +411,7 @@ void WIText::InitializeTextBuffers()
 	}
 }
 
-void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lineIndex)
+void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, util::text::LineIndex lineIndex)
 {
 	lineInfo.bufferUpdateRequired = false;
 	if(lineInfo.wpLine.expired() == true) {
@@ -571,7 +571,7 @@ void WIText::InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lin
 		bufInfo.sy = subStrInfo.sy;
 		context.ScheduleRecordUpdateBuffer(bufInfo.buffer, 0ull, glyphBoundsData.size() * sizeof(glyphBoundsData.front()), glyphBoundsData.data());
 
-		context.GetWindow().GetDrawCommandBuffer()->RecordBufferBarrier(*bufInfo.buffer, prosper::PipelineStageFlags::TransferBit, prosper::PipelineStageFlags::VertexInputBit, prosper::AccessFlags::TransferWriteBit, prosper::AccessFlags::VertexAttributeReadBit);
+		drawCmd->RecordBufferBarrier(*bufInfo.buffer, prosper::PipelineStageFlags::TransferBit, prosper::PipelineStageFlags::VertexInputBit, prosper::AccessFlags::TransferWriteBit, prosper::AccessFlags::VertexAttributeReadBit);
 	}
 	lineInfo.ResizeBuffers(bufferOffset);
 }

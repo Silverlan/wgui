@@ -67,9 +67,9 @@ prosper::Window *WIRoot::GetWindow()
 	return const_cast<prosper::Window *>(m_window.lock().get());
 }
 
-void WIRoot::Think()
+void WIRoot::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	WIBase::Think();
+	WIBase::Think(drawCmd);
 	if(!m_hTooltip.IsValid())
 		return;
 	if(m_hTooltipTarget.IsValid() == true) {

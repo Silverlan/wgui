@@ -194,7 +194,7 @@ class DLLWGUI WIText : public WIBase {
 	//
 
 	virtual void SelectShader();
-	virtual void Think() override;
+	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 	virtual void SizeToContents(bool x = true, bool y = true) override;
 
 	void SetCacheEnabled(bool bEnabled);
@@ -256,9 +256,9 @@ class DLLWGUI WIText : public WIBase {
 	void SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const WITextTagArgument &arg);
 	void ApplySubTextTags();
 	void ApplySubTextTag(WITextDecorator &tag);
-	void InitializeTextBuffers();
-	void InitializeTextBuffers(LineInfo &lineInfo, util::text::LineIndex lineIndex);
-	void UpdateRenderTexture();
+	void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
+	void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, util::text::LineIndex lineIndex);
+	void UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
 	void GetTextSize(int *w, int *h, const util::Utf8StringView *inText = nullptr);
 	void RenderText();
 	void RenderText(Mat4 &mat);

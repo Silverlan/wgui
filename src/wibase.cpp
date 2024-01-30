@@ -1167,7 +1167,7 @@ void WIBase::UpdateCursorMove(int x, int y)
 		m_lastMouseY = y;
 	}
 }
-void WIBase::Think()
+void WIBase::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	if(umath::is_flag_set(m_stateFlags, StateFlags::RemoveScheduledBit) == true)
 		return;
