@@ -2087,24 +2087,45 @@ bool WIBase::__wiKeyCallback(prosper::Window &window, GLFW::Key key, int scanCod
 		__lastKeyboardGUIElements.erase(it);
 	}
 	if(state == GLFW::KeyState::Press || state == GLFW::KeyState::Repeat) {
-		WIBase *gui = WGUI::GetInstance().GetFocusedElement(&window);
-		while(gui) {
-			if(key == GLFW::Key::Escape && !gui->IsFocusTrapped()) {
-				gui->KillFocus();
-				break;
-			}
-			else if(gui->GetKeyboardInputEnabled()) {
-				__lastKeyboardGUIElements.insert(std::unordered_map<GLFW::Key, WIHandle>::value_type(key, gui->GetHandle()));
-				auto result = gui->KeyboardCallback(key, scanCode, state, mods);
-				// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
-				auto it = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [gui](const std::pair<GLFW::Key, WIHandle> &p) { return (p.second.get() == gui) ? true : false; });
-				if(it != __lastKeyboardGUIElements.end() && (!is_valid(it->second) || state == GLFW::KeyState::Release))
-					__lastKeyboardGUIElements.erase(it);
-				if(result == util::EventReply::Handled)
-					return true;
-			}
+		for(auto &hEl : WGUI::GetInstance().GetBaseElements()) {
+			if(hEl.expired())
+				continue;
+			auto *elRoot = const_cast<WIRoot *>(static_cast<const WIRoot *>(hEl.get()));
+			auto *gui = elRoot->GetFocusedElement();
+			while(gui) {
+				if(key == GLFW::Key::Escape && !gui->IsFocusTrapped()) {
+					gui->KillFocus();
+					break;
+				}
+				else if(gui->GetKeyboardInputEnabled()) {
+					auto itCur = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [key](const std::pair<GLFW::Key, WIHandle> &p) { return (p.first == key) ? true : false; });
+					WIHandle hCur {};
+					if(itCur != __lastKeyboardGUIElements.end())
+						hCur = itCur->second;
+					__lastKeyboardGUIElements[key] = gui->GetHandle();
+					auto result = gui->KeyboardCallback(key, scanCode, state, mods);
 
-			gui = gui->GetParent();
+					// Callback may have invoked key release-event already, so we have to check if our element's still there
+					auto it = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [gui, key](const std::pair<GLFW::Key, WIHandle> &p) { return (p.first == key && p.second.get() == gui) ? true : false; });
+					if(it != __lastKeyboardGUIElements.end()) {
+						if(!is_valid(it->second) || state == GLFW::KeyState::Release)
+							__lastKeyboardGUIElements.erase(it); // Key is already released
+					}
+
+					if(state != GLFW::KeyState::Release && result == util::EventReply::Unhandled && hCur.IsValid()) {
+						// The "gui" element chose not to handle the keyboard event, so we'll restore the previous reference.
+						// Effectively this means:
+						// - Whichever element handled the "Press" event, gets to handle the "Release" event.
+						// - If no element handled the "Press" event, it's first-come-first-serve
+						__lastKeyboardGUIElements[key] = hCur;
+					}
+
+					if(result == util::EventReply::Handled)
+						return true;
+				}
+
+				gui = gui->GetParent();
+			}
 		}
 	}
 	return false;
@@ -2114,10 +2135,18 @@ bool WIBase::__wiCharCallback(prosper::Window &window, unsigned int c)
 {
 	if(!WGUI::IsOpen())
 		return false;
-	WIBase *gui = WGUI::GetInstance().GetFocusedElement(&window);
-	if(gui != NULL) {
-		if(gui->GetKeyboardInputEnabled())
-			return gui->CharCallback(c) == util::EventReply::Handled;
+	for(auto &hEl : WGUI::GetInstance().GetBaseElements()) {
+		if(hEl.expired())
+			continue;
+		auto *elRoot = const_cast<WIRoot *>(static_cast<const WIRoot *>(hEl.get()));
+		auto *gui = elRoot->GetFocusedElement();
+		if(gui) {
+			if(gui->GetKeyboardInputEnabled()) {
+				auto res = gui->CharCallback(c);
+				if(res == util::EventReply::Handled)
+					return true;
+			}
+		}
 	}
 	return false;
 }
