@@ -23,6 +23,9 @@ class DLLWGUI WIRoot : public WIBase {
 	void SetCursorPosOverride(const Vector2 &pos);
 	const std::optional<Vector2> &GetCursorPosOverride() const { return m_cursorPosOverride; }
 	void ClearCursorPosOverride();
+
+	const WIBase *GetFocusedElement() const { return const_cast<WIRoot *>(this)->GetFocusedElement(); }
+	WIBase *GetFocusedElement();
   protected:
 	friend WGUI;
 	friend WIBase;
@@ -35,7 +38,6 @@ class DLLWGUI WIRoot : public WIBase {
 	void SetMainCustomCursor(const GLFW::CursorHandle &hCursor);
 	void SetFocusEnabled(bool enabled);
 	bool IsFocusEnabled() const;
-	WIBase *GetFocusedElement();
 	void SetFocusedElement(WIBase *el);
 	uint32_t GetFocusCount() const;
 	void SetFocusCount(uint32_t focusCount);

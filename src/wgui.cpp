@@ -443,6 +443,37 @@ WIRoot *WGUI::GetBaseElement(const prosper::Window *window)
 	return FindWindowRootElement(*window);
 }
 
+WIBase *WGUI::GetFocusedElement(const prosper::Window *window)
+{
+	window = GetWindow(window);
+	if(!window)
+		return GetFocusedElement(static_cast<WIRoot *>(nullptr));
+	auto *el = FindWindowRootElement(*window);
+	if(!el)
+		return nullptr;
+	return GetFocusedElement(el);
+}
+uint32_t WGUI::GetFocusCount(const prosper::Window *window)
+{
+	window = GetWindow(window);
+	if(!window)
+		return GetFocusCount(static_cast<WIRoot *>(nullptr));
+	auto *el = FindWindowRootElement(*window);
+	if(!el)
+		return 0;
+	return GetFocusCount(el);
+}
+void WGUI::IncrementFocusCount(const prosper::Window *window)
+{
+	window = GetWindow(window);
+	if(!window)
+		return IncrementFocusCount(static_cast<WIRoot *>(nullptr));
+	auto *el = FindWindowRootElement(*window);
+	if(!el)
+		return;
+	return IncrementFocusCount(el);
+}
+
 WIRoot *WGUI::AddBaseElement(const prosper::Window *window)
 {
 	if(window) {
@@ -521,20 +552,18 @@ void WGUI::ClearFocus(WIBase &el)
 	g_exemptFromFocus.clear();
 }
 
-bool WGUI::SetFocusedElement(WIBase *gui, prosper::Window *window)
+bool WGUI::SetFocusedElement(WIBase *gui, WIRoot *optElRoot)
 {
 	if(g_exemptFromFocus.find(gui) != g_exemptFromFocus.end())
 		return false;
-	window = GetWindow(window);
-	if(!window)
-		return false;
-	auto *elRoot = FindWindowRootElement(*window);
+	auto *elRoot = GetRootElement(optElRoot);
 	if(!elRoot)
 		return false;
+	auto *window = elRoot->GetWindow();
 	auto *pPrevFocused = elRoot->GetFocusedElement();
 	auto &context = GetContext();
 	if(gui != NULL && pPrevFocused != nullptr) {
-		WIBase *root = GetBaseElement(window);
+		WIBase *root = elRoot;
 		WIBase *parent = pPrevFocused;
 		while(parent != NULL && parent != root && parent != elRoot->GetFocusedElement()) {
 			if(parent->IsFocusTrapped())
@@ -544,13 +573,15 @@ bool WGUI::SetFocusedElement(WIBase *gui, prosper::Window *window)
 		elRoot->GetFocusedElement()->KillFocus(true);
 	}
 	if(gui == NULL) {
-		(*window)->SetCursorInputMode(GLFW::CursorMode::Hidden);
+		if(window)
+			(*window)->SetCursorInputMode(GLFW::CursorMode::Hidden);
 		elRoot->SetFocusedElement(nullptr);
 		if(m_onFocusChangedCallback != nullptr)
 			m_onFocusChangedCallback(pPrevFocused, elRoot->GetFocusedElement());
 		return true;
 	}
-	(*window)->SetCursorInputMode(GLFW::CursorMode::Normal);
+	if(window)
+		(*window)->SetCursorInputMode(GLFW::CursorMode::Normal);
 
 	elRoot->SetFocusedElement(gui);
 	elRoot->SetFocusCount(elRoot->GetFocusCount() + 1);
@@ -559,33 +590,28 @@ bool WGUI::SetFocusedElement(WIBase *gui, prosper::Window *window)
 	return true;
 }
 
-void WGUI::IncrementFocusCount(const prosper::Window *window)
+void WGUI::IncrementFocusCount(WIRoot *optElRoot)
 {
-	window = GetWindow(window);
-	if(!window)
+	optElRoot = GetRootElement(optElRoot);
+	if(!optElRoot)
 		return;
-	auto *elRoot = FindWindowRootElement(*window);
-	if(!elRoot)
-		return;
-	elRoot->SetFocusCount(elRoot->GetFocusCount() + 1);
+	optElRoot->SetFocusCount(optElRoot->GetFocusCount() + 1);
 }
 
-uint32_t WGUI::GetFocusCount(const prosper::Window *window)
+uint32_t WGUI::GetFocusCount(const WIRoot *optElRoot)
 {
-	window = GetWindow(window);
-	if(!window)
+	optElRoot = GetRootElement(optElRoot);
+	if(!optElRoot)
 		return 0;
-	auto *elRoot = FindWindowRootElement(*window);
-	return elRoot ? elRoot->GetFocusCount() : 0u;
+	return optElRoot->GetFocusCount();
 }
 
-WIBase *WGUI::GetFocusedElement(const prosper::Window *window)
+WIBase *WGUI::GetFocusedElement(const WIRoot *optElRoot)
 {
-	window = GetWindow(window);
-	if(!window)
+	optElRoot = GetRootElement(optElRoot);
+	if(!optElRoot)
 		return nullptr;
-	auto *elRoot = FindWindowRootElement(*window);
-	return (elRoot && elRoot->IsFocusEnabled()) ? elRoot->GetFocusedElement() : nullptr;
+	return optElRoot->IsFocusEnabled() ? const_cast<WIBase *>(optElRoot->GetFocusedElement()) : nullptr;
 }
 
 WIBase *WGUI::FindByFilter(const std::function<bool(WIBase &)> &filter, const prosper::Window *window) const
@@ -710,6 +736,14 @@ void WGUI::SetCreateCallback(const std::function<void(WIBase &)> &onCreate) { m_
 void WGUI::SetRemoveCallback(const std::function<void(WIBase &)> &onRemove) { m_removeCallback = onRemove; }
 void WGUI::SetFocusCallback(const std::function<void(WIBase *, WIBase *)> &onFocusChanged) { m_onFocusChangedCallback = onFocusChanged; }
 
+WIRoot *WGUI::GetRootElement(WIRoot *elRoot)
+{
+	if(!elRoot) {
+		auto &window = GetContext().GetWindow();
+		elRoot = FindWindowRootElement(window);
+	}
+	return elRoot;
+}
 prosper::Window *WGUI::GetWindow(prosper::Window *window)
 {
 	if(window && window->IsValid() == false)

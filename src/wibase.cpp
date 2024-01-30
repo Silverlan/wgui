@@ -614,12 +614,12 @@ bool WIBase::IsBackgroundElement() const { return umath::is_flag_set(m_stateFlag
 bool WIBase::HasFocus() { return *m_bHasFocus; }
 void WIBase::RequestFocus()
 {
-	auto *window = GetRootWindow();
+	auto *elRoot = GetBaseRootElement();
 	if(HasFocus()) {
-		WGUI::GetInstance().IncrementFocusCount(window);
+		WGUI::GetInstance().IncrementFocusCount(elRoot);
 		return;
 	}
-	if(window && !WGUI::GetInstance().SetFocusedElement(this, window))
+	if(elRoot && !WGUI::GetInstance().SetFocusedElement(this, elRoot))
 		return;
 	*m_bHasFocus = true;
 	OnFocusGained();
@@ -630,12 +630,10 @@ void WIBase::KillFocus(bool bForceKill)
 	if(!HasFocus() || (bForceKill == false && IsFocusTrapped() && IsVisible()))
 		return;
 	*m_bHasFocus = false;
-	auto *window = GetRootWindow();
-	if(window)
-		WGUI::GetInstance().SetFocusedElement(NULL, window);
+	auto *elRoot = GetBaseRootElement();
+	if(elRoot)
+		WGUI::GetInstance().SetFocusedElement(NULL, elRoot);
 	if(bForceKill == false) {
-		auto *window = GetRootWindow();
-		auto *elRoot = window ? WGUI::GetInstance().FindWindowRootElement(*window) : nullptr;
 		if(elRoot)
 			elRoot->RestoreTrappedFocus(this);
 		/*

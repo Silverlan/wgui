@@ -124,9 +124,12 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	const std::vector<WIHandle> &GetBaseElements() const { return m_rootElements; }
 	WIRoot *GetBaseElement(const prosper::Window *optWindow = nullptr);
 	WIRoot *AddBaseElement(const prosper::Window *optWindow = nullptr);
-	WIBase *GetFocusedElement(const prosper::Window *optWindow = nullptr);
-	uint32_t GetFocusCount(const prosper::Window *optWindow = nullptr);
-	void IncrementFocusCount(const prosper::Window *optWindow = nullptr);
+	WIBase *GetFocusedElement(const prosper::Window *window);
+	uint32_t GetFocusCount(const prosper::Window *window);
+	void IncrementFocusCount(const prosper::Window *window);
+	WIBase *GetFocusedElement(const WIRoot *optElRoot = nullptr);
+	uint32_t GetFocusCount(const WIRoot *optElRoot = nullptr);
+	void IncrementFocusCount(WIRoot *optElRoot = nullptr);
 	WIBase *FindByFilter(const std::function<bool(WIBase &)> &filter, const prosper::Window *optWindow = nullptr) const;
 	WIBase *FindByIndex(uint64_t index) const;
 	prosper::Window *FindWindow(WIBase &elRoot);
@@ -202,6 +205,8 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	WIRoot *FindWindowRootElementUnderCursor();
 	const prosper::Window *GetWindow(const prosper::Window *window) const { return const_cast<WGUI *>(this)->GetWindow(const_cast<prosper::Window *>(window)); }
 	prosper::Window *GetWindow(prosper::Window *window);
+	const WIRoot *GetRootElement(const WIRoot *elRoot) const { return const_cast<WGUI *>(this)->GetRootElement(const_cast<WIRoot *>(elRoot)); }
+	WIRoot *GetRootElement(WIRoot *elRoot);
 	void ClearWindow(const prosper::Window &window);
 	std::vector<WIHandle> m_windowRootElements {};
 	uint64_t m_nextGuiElementIndex = 0u;
@@ -233,7 +238,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	util::WeakHandle<prosper::Shader> m_shaderTexturedExpensive = {};
 	util::WeakHandle<prosper::Shader> m_shaderStencil = {};
 
-	bool SetFocusedElement(WIBase *gui, prosper::Window *optWindow = nullptr);
+	bool SetFocusedElement(WIBase *gui, WIRoot *optElRoot = nullptr);
 	void ClearSkin();
 };
 REGISTER_BASIC_ARITHMETIC_OPERATORS(WGUI::ElementBuffer);
