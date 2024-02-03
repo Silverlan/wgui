@@ -428,6 +428,9 @@ void WIDropDownMenu::OpenMenu()
 	if(!m_hList.IsValid())
 		return;
 	WIRect *pList = static_cast<WIRect *>(m_hList.get());
+	auto *elRoot = GetRootElement();
+	if(elRoot)
+		pList->SetParent(elRoot);
 	if(pList->IsVisible())
 		return;
 	SetScrollInputEnabled(true);
