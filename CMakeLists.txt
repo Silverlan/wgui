@@ -125,7 +125,7 @@ if(NOT DEFINED DEPENDENCY_SHAREDUTILS_LIBRARY_STATIC)
 endif()
 link_external_library(mathutil "${CMAKE_CURRENT_LIST_DIR}/external_libs/mathutil/include" "${CMAKE_CURRENT_BINARY_DIR}/external_libs/mathutil/${CMAKE_BUILD_TYPE}" "mathutil" 0)
 link_external_library(glfw "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/glfw/include" "${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/glfw/src/${CMAKE_BUILD_TYPE}" "glfw3dll" 0)
-link_external_library(freetype "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/freetype/include" "${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/freetype/${CMAKE_BUILD_TYPE}" "freetype" 0)
+#link_external_library(freetype "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/freetype/include" "${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/freetype/${CMAKE_BUILD_TYPE}" "freetype" 0)
 
 if(WIN32)
 	set(LIBPNG_LIB_NAME "libpng16" CACHE INTERNAL "" FORCE)
@@ -154,11 +154,17 @@ add_include_dir(exprtk "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/exprtk")
 
 if(WGUI_INCLUDE_DEPENDENCIES)
 	# Freetype
+	#
+if(UNIX)
+    find_package(Freetype REQUIRED)
+    set(DEPENDENCY_FREETYPE_INCLUDE ${FREETYPE_INCLUDE_DIR_freetype2} CACHE STRING "" FORCE)
+    set(DEPENDENCY_FREETYPE_LIBRARY ${FREETYPE_LIBRARIES} CACHE STRING "" FORCE)
+else()
+
 	register_third_party_library(freetype)
 	set_target_properties(freetype PROPERTIES FOLDER third_party_libs)
 	target_include_directories(freetype PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib)
-	#
-
+endif()
 	# squish
 	register_third_party_library(squish)
 	set_target_properties(squish PROPERTIES FOLDER third_party_libs)
@@ -207,7 +213,12 @@ set(DEFINITIONS
 	WGUI_DLL
 )
 
+
+
+set(INCLUDE_DIRS ${INCLUDE_DIRS} DEPENDENCY_FREETYPE_INCLUDE)
+set(LIBRARIES ${LIBRARIES} DEPENDENCY_FREETYPE_LIBRARY)
 ##### CONFIGURATION #####
+
 
 set(LIB_TYPE SHARED)
 if(ENABLE_STATIC_LIBRARY_FLAG)
@@ -285,7 +296,9 @@ if(WGUI_INCLUDE_DEPENDENCIES)
 	##### DEPENDENCIES #####
 
 	add_dependencies(png zlib)
+if(WIN32)
 	add_dependencies(freetype zlib)
+endif()
 	add_dependencies(mathutil sharedutils-static)
 	add_dependencies(sharedutils mathutil)
 	add_dependencies(vfilesystem sharedutils)

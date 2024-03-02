@@ -109,7 +109,7 @@ class DLLWGUI WIText : public WIBase {
 	  private:
 		std::vector<WITextBase::SubBufferInfo> buffers = {};
 	};
-	static const auto MAX_CHARS_PER_BUFFER = 32u;
+    static constexpr auto MAX_CHARS_PER_BUFFER = 32u;
 
 	WIText();
 	virtual ~WIText() override;
