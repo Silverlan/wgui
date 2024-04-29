@@ -198,7 +198,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 
 	// Font has to be loaded AFTER shaders have been initialized (Requires wguitext shader)
 	if(!fontFileName.has_value())
-		fontFileName = "vera/VeraBd.ttf";
+		fontFileName = "dejavu/DejaVuSans-Bold.ttf";
 	FontInfo::FontSettings settings {};
 	if(requiredChars)
 		settings.requiredChars = requiredChars;
