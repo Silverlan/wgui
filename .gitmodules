@@ -52,3 +52,6 @@
 [submodule "external_libs/util_image"]
 	path = external_libs/util_image
 	url = https://github.com/Silverlan/util_image.git
+[submodule "external_libs/vfilesystem"]
+	path = external_libs/vfilesystem
+	url = https://github.com/Silverlan/vfilesystem.git
