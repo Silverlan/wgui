@@ -351,6 +351,8 @@ void WITexturedShape::ClearTexture()
 {
 	ClearTextureLoadCallback();
 	m_hMaterial = nullptr;
+	if(m_texture)
+		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_texture);
 	m_texture = nullptr;
 }
 void WITexturedShape::SetTexture(prosper::Texture &tex, std::optional<uint32_t> layerIndex)
