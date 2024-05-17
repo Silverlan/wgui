@@ -16,13 +16,15 @@
 #include <iglfw/glfw_window.h>
 #include <prosper_context_object.hpp>
 #include <sharedutils/chronotime.h>
-#include <sharedutils/util_utf8.hpp>
 #include "types.hpp"
 
 #undef GetClassName
 #undef FindWindow
 #undef DrawState
 
+namespace util {
+	class Utf8String;
+};
 namespace GLFW {
 	class Joystick;
 };
@@ -109,7 +111,8 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	static WGUI &GetInstance();
 	static bool IsOpen();
 
-	ResultCode Initialize(std::optional<Vector2i> resolution = {}, std::optional<std::string> fontFileName = {}, std::optional<util::Utf8String> requiredChars = {});
+	ResultCode Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName, const std::optional<util::Utf8String> &requiredChars);
+	ResultCode Initialize(std::optional<Vector2i> resolution = {}, std::optional<std::string> fontFileName = {});
 	template<class TElement>
 	TElement *Create(WIBase *parent = nullptr);
 	template<class TElement>

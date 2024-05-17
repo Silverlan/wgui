@@ -6,6 +6,7 @@
 #include "wgui/types/wibutton.h"
 #include "wgui/types/witext.h"
 #include "wgui/types/wirect.h"
+#include <util_unicode.hpp>
 
 LINK_WGUI_TO_CLASS(WIButton, WIButton);
 
@@ -22,7 +23,7 @@ void WIButton::Initialize()
 	m_text = CreateChild<WIText>();
 }
 void WIButton::SetSize(int x, int y) { WIBase::SetSize(x, y); }
-void WIButton::SetText(util::Utf8String text)
+void WIButton::SetText(const util::Utf8StringArg &text)
 {
 	if(!m_text.IsValid())
 		return;
@@ -30,11 +31,13 @@ void WIButton::SetText(util::Utf8String text)
 	pText->SetText(text);
 	pText->SizeToContents();
 }
-util::Utf8String WIButton::GetText()
+const util::Utf8String &WIButton::GetText() const
 {
-	if(!m_text.IsValid())
-		return "";
-	return static_cast<WIText *>(m_text.get())->GetText();
+	if(!m_text.IsValid()) {
+		static util::Utf8String emptyString {};
+		return emptyString;
+	}
+	return static_cast<const WIText *>(m_text.get())->GetText();
 }
 util::EventReply WIButton::MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
 {

@@ -26,6 +26,7 @@
 #include <prosper_render_pass.hpp>
 #include <shader/prosper_pipeline_loader.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
+#include <util_unicode.hpp>
 
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 prosper::SampleCountFlags WGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
@@ -137,7 +138,8 @@ void wgui::DrawState::GetScissor(uint32_t &x, uint32_t &y, uint32_t &w, uint32_t
 }
 bool wgui::detail::UpdatePriority::operator()(const UpdateInfo &h0, const UpdateInfo &h1) const { return h0.depth < h1.depth; }
 
-WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName, std::optional<util::Utf8String> requiredChars)
+WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName) { return Initialize(resolution, fontFileName, {}); }
+WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName, const std::optional<util::Utf8String> &requiredChars)
 {
 	if(!FontManager::Initialize())
 		return ResultCode::UnableToInitializeFontManager;
@@ -201,7 +203,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 		fontFileName = "dejavu/DejaVuSans-Bold.ttf";
 	FontInfo::FontSettings settings {};
 	if(requiredChars)
-		settings.requiredChars = requiredChars;
+		settings.requiredChars = requiredChars ? std::make_unique<util::Utf8String>(*requiredChars) : std::unique_ptr<util::Utf8String> {};
 	settings.fontSize = 14;
 	auto font = FontManager::LoadFont("default", *fontFileName, settings);
 	settings.fontSize = 18;

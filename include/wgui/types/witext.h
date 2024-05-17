@@ -13,7 +13,6 @@
 #include <image/prosper_render_target.hpp>
 #include <sharedutils/property/util_property.hpp>
 #include <sharedutils/util_shared_handle.hpp>
-#include <sharedutils/util_utf8.hpp>
 #include <util_formatted_text_types.hpp>
 #include <string_view>
 #include <queue>
@@ -35,6 +34,8 @@ namespace util {
 		class TextTag;
 		class FormattedTextLine;
 	};
+	class Utf8String;
+	class Utf8StringArg;
 };
 class WGUIShaderText;
 class WITextTag;
@@ -109,7 +110,7 @@ class DLLWGUI WIText : public WIBase {
 	  private:
 		std::vector<WITextBase::SubBufferInfo> buffers = {};
 	};
-    static constexpr auto MAX_CHARS_PER_BUFFER = 32u;
+	static constexpr auto MAX_CHARS_PER_BUFFER = 32u;
 
 	WIText();
 	virtual ~WIText() override;
@@ -131,7 +132,7 @@ class DLLWGUI WIText : public WIBase {
 	util::text::FormattedText &GetFormattedTextObject();
 	const util::Utf8String &GetText() const;
 	const util::Utf8String &GetFormattedText() const;
-	void SetText(const util::Utf8StringView &text);
+	void SetText(const util::Utf8StringArg &text);
 	void SetFont(const std::string_view &font);
 	void SetFont(const FontInfo *font);
 	void SetAutoBreakMode(AutoBreak b);
@@ -155,9 +156,9 @@ class DLLWGUI WIText : public WIBase {
 	void HideText(bool hide = true);
 
 	void UpdateSubLines();
-	void AppendText(const util::Utf8StringView &text);
-	bool InsertText(const util::Utf8StringView &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset = util::text::LAST_CHAR);
-	void AppendLine(const util::Utf8StringView &line);
+	void AppendText(const util::Utf8StringArg &text);
+	bool InsertText(const util::Utf8StringArg &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset = util::text::LAST_CHAR);
+	void AppendLine(const util::Utf8StringArg &line);
 	void PopFrontLine();
 	void PopBackLine();
 	void RemoveLine(util::text::LineIndex lineIdx);

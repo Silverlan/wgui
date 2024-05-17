@@ -6,8 +6,10 @@
 #define __WITOOLTIP_H__
 
 #include "wgui/wibase.h"
-#include <sharedutils/util_utf8.hpp>
 
+namespace util {
+	class Utf8String;
+};
 class DLLWGUI WITooltip : public WIBase {
   protected:
 	WIHandle m_hText;

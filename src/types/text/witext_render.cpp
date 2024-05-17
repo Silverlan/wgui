@@ -424,7 +424,6 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 	// Initialize Buffers
 	struct SubStringInfo {
 		util::Utf8StringView subString;
-		size_t hash;
 		uint32_t width;
 		uint32_t height;
 		float sx;
@@ -447,7 +446,6 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 		auto &info = subStrings.back();
 		info.subString = substr;
 		info.charOffset = charOffset;
-		info.hash = std::hash<std::string_view> {}(info.subString.c_str());
 		info.absLineIndex = lineIndex;
 
 		int w, h;

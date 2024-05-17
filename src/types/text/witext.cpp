@@ -177,7 +177,7 @@ std::pair<Vector2i, Vector2i> WIText::GetCharacterPixelBounds(util::text::LineIn
 
 	auto endOffset = startOffset;
 	endOffset.y += GetLineHeight();
-	FontManager::GetTextSize(strViewLine.get(charOffset), charOffset, GetFont(), &endOffset.x);
+	FontManager::GetTextSize(strViewLine.at(charOffset), charOffset, GetFont(), &endOffset.x);
 	endOffset.x += startOffset.x;
 	return {startOffset, endOffset};
 }
@@ -374,9 +374,9 @@ void WIText::SetAutoBreakMode(AutoBreak b)
 	SizeToContents();
 }
 
-void WIText::AppendText(const util::Utf8StringView &text) { m_text->AppendText(text); }
-bool WIText::InsertText(const util::Utf8StringView &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset) { return m_text->InsertText(text, lineIdx, charOffset); }
-void WIText::AppendLine(const util::Utf8StringView &line) { m_text->AppendLine(line); }
+void WIText::AppendText(const util::Utf8StringArg &text) { m_text->AppendText(text); }
+bool WIText::InsertText(const util::Utf8StringArg &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset) { return m_text->InsertText(text, lineIdx, charOffset); }
+void WIText::AppendLine(const util::Utf8StringArg &line) { m_text->AppendLine(line); }
 void WIText::PopFrontLine() { m_text->PopFrontLine(); }
 void WIText::PopBackLine() { m_text->PopBackLine(); }
 void WIText::RemoveLine(util::text::LineIndex lineIdx) { m_text->RemoveLine(lineIdx); }

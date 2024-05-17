@@ -9,6 +9,9 @@
 #include "witextentry.h"
 #include "wgui/wihandle.h"
 
+namespace util {
+	class Utf8StringArg;
+};
 class DLLWGUI WIDropDownMenu;
 class DLLWGUI WIDropDownMenuOption : public WIBase {
   public:
@@ -32,7 +35,7 @@ class DLLWGUI WIDropDownMenuOption : public WIBase {
 	const std::string &GetValue();
 	void SetIndex(int idx);
 	int GetIndex();
-	void SetText(const util::Utf8StringView &text);
+	void SetText(const util::Utf8StringArg &text);
 	util::Utf8StringView GetText() const;
 	WIText *GetTextElement();
 	virtual void SetSize(int x, int y) override;
@@ -70,7 +73,7 @@ class DLLWGUI WIDropDownMenu : public WITextEntry {
 	void SetListItemCount(uint32_t n);
 	void SelectOption(unsigned int idx);
 	void SelectOption(const std::string &value);
-	void SelectOptionByText(const util::Utf8StringView &name);
+	void SelectOptionByText(const util::Utf8StringArg &name);
 	const WIDropDownMenuOption *FindOptionByValue(const std::string &value) const;
 	WIDropDownMenuOption *FindOptionByValue(const std::string &value);
 	bool HasOption(const std::string &value) const;
@@ -83,7 +86,7 @@ class DLLWGUI WIDropDownMenu : public WITextEntry {
 	std::string GetOptionValue(uint32_t idx);
 	void SetOptionText(uint32_t idx, const std::string &text);
 	void SetOptionValue(uint32_t idx, const std::string &val);
-	void SetText(const util::Utf8StringView &text);
+	void SetText(const util::Utf8StringArg &text);
 	unsigned int GetOptionCount();
 	WIDropDownMenuOption *AddOption(const std::string &option, const std::string &value);
 	WIDropDownMenuOption *AddOption(const std::string &option);

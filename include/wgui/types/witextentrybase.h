@@ -7,12 +7,16 @@
 #include "wgui/wibase.h"
 #include "wgui/wihandle.h"
 #include <util_formatted_text_types.hpp>
-#include <sharedutils/util_utf8.hpp>
 #include <string_view>
 
 class WIText;
 class WIRect;
 class WITextDecorator;
+namespace util {
+	class Utf8String;
+	class Utf8StringView;
+	class Utf8StringArg;
+};
 class DLLWGUI WITextEntryBase : public WIBase {
   public:
 	enum class StateFlags : uint32_t { None = 0u, Numeric = 1u, MultiLine = Numeric << 1u, Editable = MultiLine << 1u, Selectable = Editable << 1u };
@@ -28,9 +32,9 @@ class DLLWGUI WITextEntryBase : public WIBase {
 	bool IsInputHidden() const;
 	util::Utf8StringView GetText() const;
 	WIText *GetTextElement();
-	void SetText(util::Utf8StringView text);
-	void InsertText(const util::Utf8StringView &instext, int pos);
-	void InsertText(const util::Utf8StringView &text);
+	void SetText(const util::Utf8StringArg &text);
+	void InsertText(const util::Utf8StringArg &instext, int pos);
+	void InsertText(const util::Utf8StringArg &text);
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual util::EventReply CharCallback(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None) override;

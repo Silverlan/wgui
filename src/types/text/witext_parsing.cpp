@@ -74,7 +74,7 @@ bool WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineS
 		auto lastSpaceCharOffset = util::text::LAST_CHAR;
 		while(charOffset < strView.length()) {
 			int32_t wChar = 0;
-			auto c = strView.get(charOffset);
+			auto c = strView.at(charOffset);
 			FontManager::GetTextSize(c, 0u, font, &wChar);
 			if(wText + wChar > w) {
 				// Break
@@ -117,18 +117,18 @@ bool WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineS
 	return subLinesHaveChanged;
 }
 
-void WIText::SetText(const util::Utf8StringView &text)
+void WIText::SetText(const util::Utf8StringArg &text)
 {
-	if(IsDirty() == false && *m_text == text)
+	if(IsDirty() == false && *m_text == *text)
 		return;
 	umath::set_flag(m_flags, Flags::TextDirty, false);
 	umath::set_flag(m_flags, Flags::ApplySubTextTags);
 	ScheduleRenderUpdate(true);
 	util::Utf8String oldText = *m_text;
-	auto textCpy = text;
+	auto textCpy = *text;
 
 	m_text->Clear();
-	m_text->SetText(text);
+	m_text->SetText(*text);
 
 	util::Utf8String newText = *m_text;
 	CallCallbacks<void, std::reference_wrapper<const util::Utf8String>>("OnTextChanged", std::reference_wrapper<const util::Utf8String>(newText));

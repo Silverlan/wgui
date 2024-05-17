@@ -6,6 +6,7 @@
 #include "wgui/types/witooltip.h"
 #include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
+#include <util_unicode.hpp>
 
 LINK_WGUI_TO_CLASS(WITooltip, WITooltip);
 

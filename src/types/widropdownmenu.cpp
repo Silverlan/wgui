@@ -8,6 +8,7 @@
 #include "wgui/types/wiscrollbar.h"
 #include "wgui/types/wiarrow.h"
 #include "wgui/types/wiroot.h"
+#include <util_unicode.hpp>
 
 LINK_WGUI_TO_CLASS(WIDropDownMenu, WIDropDownMenu);
 
@@ -171,9 +172,9 @@ void WIDropDownMenu::SelectOption(const std::string &value)
 	SelectOption(option->GetIndex());
 }
 
-void WIDropDownMenu::SelectOptionByText(const util::Utf8StringView &name)
+void WIDropDownMenu::SelectOptionByText(const util::Utf8StringArg &name)
 {
-	auto it = std::find_if(m_options.begin(), m_options.end(), [&name](const WIHandle &hOption) { return (hOption.IsValid() && static_cast<const WIDropDownMenuOption *>(hOption.get())->GetText() == name) ? true : false; });
+	auto it = std::find_if(m_options.begin(), m_options.end(), [&name](const WIHandle &hOption) { return (hOption.IsValid() && static_cast<const WIDropDownMenuOption *>(hOption.get())->GetText() == *name) ? true : false; });
 	if(it == m_options.end())
 		return;
 	SelectOption(static_cast<WIDropDownMenuOption *>(it->get())->GetIndex());
@@ -220,7 +221,7 @@ std::string WIDropDownMenu::GetValue()
 
 int32_t WIDropDownMenu::GetSelectedOption() const { return m_selected; }
 
-void WIDropDownMenu::SetText(const util::Utf8StringView &text)
+void WIDropDownMenu::SetText(const util::Utf8StringArg &text)
 {
 	WITextEntry::SetText(text);
 	//SetText(text);
@@ -569,7 +570,7 @@ void WIDropDownMenuOption::Initialize()
 	SetScrollInputEnabled(true);
 }
 
-void WIDropDownMenuOption::SetText(const util::Utf8StringView &text)
+void WIDropDownMenuOption::SetText(const util::Utf8StringArg &text)
 {
 	if(!m_hText.IsValid())
 		return;

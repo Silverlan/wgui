@@ -7,6 +7,7 @@
 #include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
 #include "wgui/types/wiarrow.h"
+#include <util_unicode.hpp>
 
 LINK_WGUI_TO_CLASS(WITextEntry, WITextEntry);
 LINK_WGUI_TO_CLASS(WINumericEntry, WINumericEntry);
@@ -219,11 +220,11 @@ util::Utf8StringView WITextEntry::GetText() const
 		return {};
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->GetText();
 }
-void WITextEntry::SetText(util::Utf8StringView text)
+void WITextEntry::SetText(const util::Utf8StringArg &text)
 {
 	if(!m_hBase.IsValid())
 		return;
-	static_cast<WITextEntryBase *>(m_hBase.get())->SetText(text);
+	static_cast<WITextEntryBase *>(m_hBase.get())->SetText(*text);
 }
 void WITextEntry::InsertText(util::Utf8StringView instext, int pos)
 {

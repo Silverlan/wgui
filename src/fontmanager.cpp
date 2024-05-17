@@ -7,13 +7,13 @@
 #include <fsys/filesystem.h>
 #include "wgui/shaders/wishader_text.hpp"
 #include <sharedutils/util_file.h>
-#include <sharedutils/util_utf8.hpp>
 #include <prosper_util.hpp>
 #include <prosper_descriptor_set_group.hpp>
 #include <prosper_command_buffer.hpp>
 #include <image/prosper_sampler.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_context.hpp>
+#include <util_unicode.hpp>
 
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
@@ -88,6 +88,8 @@ int32_t GlyphInfo::GetHeight() const { return m_height; }
 
 /////////////////////
 
+FontInfo::FontSettings::FontSettings() : requiredChars {} {}
+FontInfo::FontSettings::~FontSettings() {}
 FontInfo::~FontInfo() { Clear(); }
 const GlyphInfo *FontInfo::GetGlyphInfo(int32_t c) const
 {
@@ -137,7 +139,7 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, con
 	// Only load glyphs that we actually need
 	auto &requiredChars = fontSettings.requiredChars;
 	std::vector<bool> isGlyphRequired;
-	if(requiredChars.has_value() && !requiredChars->empty()) {
+	if(requiredChars && !requiredChars->empty()) {
 		auto max = std::max_element(requiredChars->begin(), requiredChars->end());
 		isGlyphRequired.resize(*max + 1, false);
 		for(auto idx : *requiredChars)
@@ -523,7 +525,7 @@ void FontManager::Close()
 	m_fonts.clear();
 	m_lib = {};
 }
-uint32_t FontManager::GetTextSize(const util::Utf8StringView &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
+uint32_t FontManager::GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
 	if(font == nullptr) {
 		if(width != nullptr)
@@ -542,7 +544,7 @@ uint32_t FontManager::GetTextSize(const util::Utf8StringView &text, uint32_t cha
 	auto sx = 2.f / static_cast<float>(scrW);
 	auto sy = 2.f / static_cast<float>(scrH);
 	auto offset = charOffset;
-	for(auto c : text) {
+	for(auto c : *text) {
 		auto multiplier = 1u;
 		if(c == '\t') {
 			c = ' ';
@@ -580,14 +582,14 @@ uint32_t FontManager::GetTextSize(const util::Utf8StringView &text, uint32_t cha
 	return offset - charOffset;
 }
 
-uint32_t FontManager::GetTextSize(const util::Utf8StringView &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height) { return GetTextSize(text, charOffset, GetFont(font).get(), width, height); }
+uint32_t FontManager::GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height) { return GetTextSize(text, charOffset, GetFont(font).get(), width, height); }
 uint32_t FontManager::GetTextSize(int32_t c, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
-	util::Utf8String str {static_cast<uint16_t>(c)};
+	util::Utf8String str {static_cast<char16_t>(c)};
 	return GetTextSize(str, charOffset, font, width, height);
 }
 uint32_t FontManager::GetTextSize(int32_t c, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height)
 {
-	util::Utf8String str {static_cast<uint16_t>(c)};
+	util::Utf8String str {static_cast<char16_t>(c)};
 	return GetTextSize(str, charOffset, font, width, height);
 }

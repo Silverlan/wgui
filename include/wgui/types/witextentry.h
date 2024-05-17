@@ -32,7 +32,7 @@ class DLLWGUI WITextEntry : public WIBase {
 	WIText *GetTextElement();
 	void SetInputHidden(bool b);
 	util::Utf8StringView GetText() const;
-	void SetText(util::Utf8StringView text);
+	void SetText(const util::Utf8StringArg &text);
 	void InsertText(util::Utf8StringView instext, int pos);
 	void InsertText(util::Utf8StringView text);
 	int GetCaretPos() const;

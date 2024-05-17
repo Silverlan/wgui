@@ -194,15 +194,16 @@ util::Utf8StringView WITextEntryBase::GetText() const
 	return static_cast<const WIText *>(m_hText.get())->GetText();
 }
 
-void WITextEntryBase::SetText(util::Utf8StringView text)
+void WITextEntryBase::SetText(const util::Utf8StringArg &text)
 {
 	if(!m_hText.IsValid())
 		return;
+	auto view = *text;
 	if(m_maxLength >= 0)
-		text = text.substr(0, m_maxLength);
+		view = view.substr(0, m_maxLength);
 	auto *pText = GetTextElement();
 	if(pText)
-		pText->SetText(text);
+		pText->SetText(view);
 	SetCaretPos(GetCaretPos());
 }
 
@@ -813,7 +814,7 @@ util::EventReply WITextEntryBase::OnDoubleClick()
 	return util::EventReply::Handled;
 }
 
-void WITextEntryBase::InsertText(const util::Utf8StringView &instext, int pos)
+void WITextEntryBase::InsertText(const util::Utf8StringArg &instext, int pos)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
@@ -821,15 +822,15 @@ void WITextEntryBase::InsertText(const util::Utf8StringView &instext, int pos)
 	auto &formattedText = pText->GetFormattedTextObject();
 	auto relOffset = formattedText.GetRelativeCharOffset(pos);
 	if(relOffset.has_value())
-		pText->InsertText(instext, relOffset->first, relOffset->second);
+		pText->InsertText(*instext, relOffset->first, relOffset->second);
 	else
-		pText->AppendText(instext);
+		pText->AppendText(*instext);
 
 	OnTextChanged(true);
-	SetCaretPos(GetCaretPos() + static_cast<int>(instext.length()));
+	SetCaretPos(GetCaretPos() + static_cast<int>(instext->length()));
 }
 
-void WITextEntryBase::InsertText(const util::Utf8StringView &text)
+void WITextEntryBase::InsertText(const util::Utf8StringArg &text)
 {
 	RemoveSelectedText();
 	InsertText(text, GetCaretPos());
