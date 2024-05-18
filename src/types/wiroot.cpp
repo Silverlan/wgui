@@ -133,3 +133,25 @@ void WIRoot::Setup()
 	pTooltip->SetZPos(100'000);
 	m_hTooltip = pTooltip->GetHandle();
 }
+
+void WIRoot::SetIMETarget(WIBase *el)
+{
+	m_hImeTarget = el ? m_hImeTarget->GetHandle() : WIHandle {};
+	if(m_hImeTarget.expired()) {
+		auto *window = GetWindow();
+		if(window)
+			(*window)->ResetPreeditText();
+		return;
+	}
+	UpdateIMETarget();
+}
+
+void WIRoot::UpdateIMETarget()
+{
+	auto *window = GetWindow();
+	if(!window || (*window)->IsIMEEnabled() == false || m_hImeTarget.expired())
+		return;
+	Vector2i pos, size;
+	m_hImeTarget->GetAbsoluteVisibleBounds(pos, size);
+	(*window)->SetPreeditCursorRectangle(pos.x, pos.y, size.x, size.y);
+}

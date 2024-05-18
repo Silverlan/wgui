@@ -94,6 +94,7 @@ void WITextEntry::Initialize()
 
 	m_hBase = CreateChild<WITextEntryBase>();
 	WITextEntryBase *pBase = static_cast<WITextEntryBase *>(m_hBase.get());
+	pBase->SetEntryFieldElement(this);
 	pBase->SetSize(size.x, size.y);
 	pBase->AddCallback("OnTextEntered",
 	  FunctionCallback<>::Create(std::bind(

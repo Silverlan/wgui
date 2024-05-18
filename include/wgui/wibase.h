@@ -291,6 +291,9 @@ class DLLWGUI WIBase : public CallbackHandler {
 	void SetStencilEnabled(bool enabled);
 	bool IsStencilEnabled() const;
 
+	void SetIMETarget();
+	void ClearIMETarget();
+
 	void SetBackgroundElement(bool backgroundElement, bool autoAlignToParent = true);
 	bool IsBackgroundElement() const;
 

@@ -63,11 +63,13 @@ class DLLWGUI WITextEntryBase : public WIBase {
 	void OnEnter();
 	void SetMaxLength(int length);
 	int GetMaxLength() const;
+	void SetEntryFieldElement(WIBase *el);
   protected:
 	virtual void OnTextContentsChanged();
 	std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;
 	WIHandle m_hText;
 	WIHandle m_hCaret;
+	WIHandle m_hEntryFieldElement;
 	int m_maxLength;
 	int m_posCaret;
 	StateFlags m_stateFlags = static_cast<StateFlags>(umath::to_integral(StateFlags::Editable) | umath::to_integral(StateFlags::Selectable));

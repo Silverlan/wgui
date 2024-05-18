@@ -136,6 +136,8 @@ void WITextEntryBase::SetMaxLength(int length)
 }
 int WITextEntryBase::GetMaxLength() const { return m_maxLength; }
 
+void WITextEntryBase::SetEntryFieldElement(WIBase *el) { m_hEntryFieldElement = el ? el->GetHandle() : WIHandle {}; }
+
 WITextEntryBase::~WITextEntryBase() { KillFocus(); }
 
 void WITextEntryBase::OnEnter() { CallCallbacks<void>("OnTextEntered"); }
@@ -175,6 +177,8 @@ void WITextEntryBase::OnFocusGained()
 		m_tBlink = GLFW::get_time();
 	}
 	EnableThinking();
+	auto *elIme = m_hEntryFieldElement.valid() ? m_hEntryFieldElement.get() : this;
+	elIme->SetIMETarget();
 }
 
 void WITextEntryBase::OnFocusKilled()
@@ -185,6 +189,7 @@ void WITextEntryBase::OnFocusKilled()
 		pRect->SetVisible(false);
 	}
 	DisableThinking();
+	ClearIMETarget();
 }
 
 util::Utf8StringView WITextEntryBase::GetText() const

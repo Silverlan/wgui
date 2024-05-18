@@ -799,6 +799,14 @@ bool WGUI::HandleCharInput(prosper::Window &window, unsigned int c) { return WIB
 
 bool WGUI::HandleScrollInput(prosper::Window &window, Vector2 offset) { return WIBase::__wiScrollCallback(window, offset); }
 
+void WGUI::HandleIMEStatusChanged(prosper::Window &window, bool imeEnabled)
+{
+	auto *elRoot = FindWindowRootElement(window);
+	if(!elRoot)
+		return;
+	elRoot->UpdateIMETarget();
+}
+
 static WIBase *check_children(WIBase *gui, int x, int y, int32_t &bestZPos, const std::function<bool(WIBase *)> &condition)
 {
 	if(gui->IsVisible() == false || gui->PosInBounds(x, y) == false)

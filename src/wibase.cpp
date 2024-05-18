@@ -598,6 +598,22 @@ void WIBase::ClampToVisibleBounds(Vector2i &pos, Vector2i &size) const
 }
 void WIBase::SetStencilEnabled(bool enabled) { umath::set_flag(m_stateFlags, StateFlags::StencilEnabled, enabled); }
 bool WIBase::IsStencilEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::StencilEnabled); }
+void WIBase::SetIMETarget()
+{
+	auto *window = GetRootWindow();
+	if(!window)
+		return;
+	Vector2i pos, size;
+	GetAbsoluteVisibleBounds(pos, size);
+	(*window)->SetPreeditCursorRectangle(pos.x, pos.y, size.x, size.y);
+}
+void WIBase::ClearIMETarget()
+{
+	auto *window = GetRootWindow();
+	if(!window)
+		return;
+	(*window)->ResetPreeditText();
+}
 void WIBase::SetBackgroundElement(bool backgroundElement, bool autoAlignToParent)
 {
 	umath::set_flag(m_stateFlags, StateFlags::IsBackgroundElement, backgroundElement);

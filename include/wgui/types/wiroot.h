@@ -19,6 +19,8 @@ class DLLWGUI WIRoot : public WIBase {
 	prosper::Window *GetWindow();
 	void Setup();
 
+	void SetIMETarget(WIBase *el);
+
 	Vector2 GetCursorPos() const;
 	void SetCursorPosOverride(const Vector2 &pos);
 	const std::optional<Vector2> &GetCursorPosOverride() const { return m_cursorPosOverride; }
@@ -30,6 +32,7 @@ class DLLWGUI WIRoot : public WIBase {
 	friend WGUI;
 	friend WIBase;
 
+	void UpdateIMETarget();
 	const std::weak_ptr<const prosper::Window> &GetWindowPtr() const;
 	void SetWindow(const std::shared_ptr<const prosper::Window> &window);
 	GLFW::Cursor::Shape GetMainCursor() const;
@@ -47,6 +50,7 @@ class DLLWGUI WIRoot : public WIBase {
   private:
 	WIHandle m_hTooltip;
 	WIHandle m_hTooltipTarget;
+	WIHandle m_hImeTarget;
 	util::Clock::time_point m_tCursorOver;
 	std::weak_ptr<const prosper::Window> m_window {};
 	std::optional<Vector2> m_cursorPosOverride = {};
