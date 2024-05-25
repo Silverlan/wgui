@@ -117,10 +117,10 @@ Mat4 WILine::GetTransformPose(const Vector2i &origin, int w, int h, const Mat4 &
 	Vector3 normScale {size.x * scale.x, size.y * scale.y, 0};
 
 	if(!m_rotationMatrix)
-		return poseParent * glm::scale(glm::translate(normOrigin), normScale);
+		return poseParent * glm::gtc::scale(glm::gtc::translate(normOrigin), normScale);
 
-	auto t = glm::translate(normOrigin);
-	auto s = glm::scale(normScale);
+	auto t = glm::gtc::translate(normOrigin);
+	auto s = glm::gtc::scale(normScale);
 	auto &r = *m_rotationMatrix;
 	auto m = t * r * s;
 	return poseParent * m;

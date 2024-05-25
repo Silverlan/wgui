@@ -130,7 +130,7 @@ void WIShape::SetShape(BasicShape shape)
 			lpos -= Vector2 {el.GetHalfWidth(), el.GetHalfHeight()};
 			lpos.y *= ratio;
 
-			auto d = glm::length2(lpos);
+			auto d = glm::gtx::length2(lpos);
 			auto r = el.GetHalfWidth();
 			return d < (r * r);
 		});

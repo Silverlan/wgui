@@ -16,6 +16,7 @@
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <sharedutils/scope_guard.h>
 #include <util_formatted_text.hpp>
+#include <cassert>
 
 WIText::LineInfo::~LineInfo() { ClearBuffers(); }
 const std::vector<WITextBase::SubBufferInfo> &WIText::LineInfo::GetBuffers() const { return buffers; }
@@ -265,7 +266,7 @@ void WIText::UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandB
 void WIText::RenderText()
 {
 	Mat4 mat(1.f);
-	mat = glm::translate(mat, Vector3(-1.f, 0.f, 0.f));
+	mat = glm::gtc::translate(mat, Vector3(-1.f, 0.f, 0.f));
 	RenderText(mat);
 }
 std::shared_ptr<prosper::Texture> WIText::GetTexture() const { return (m_renderTarget != nullptr) ? m_renderTarget->GetTexture().shared_from_this() : nullptr; }
