@@ -100,7 +100,7 @@ if(WGUI_INCLUDE_DEPENDENCIES)
 	set_target_properties(glfw PROPERTIES FOLDER third_party_libs/glfw)
 	#
 endif()
-pr_add_external_dependency(${PROJ_NAME} freetype LIBRARY)
+pr_add_external_dependency(${PROJ_NAME} freetype LIBRARY PUBLIC)
 
 if(WGUI_INCLUDE_DEPENDENCIES)
 	message("Processing external libraries...")
