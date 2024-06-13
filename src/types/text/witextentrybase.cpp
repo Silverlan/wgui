@@ -288,7 +288,8 @@ void WITextEntryBase::SetCaretPos(int pos)
 					int32_t w = 0;
 					auto relPos = pos - lineInfo.GetAbsCharStartOffset();
 					auto startOffset = lineInfo.relCharStartOffset;
-					auto text = util::Utf8StringView {lineInfo.line->GetFormattedLine().GetText()}.substr(startOffset, relPos);
+					util::Utf8StringView view {lineInfo.line->GetFormattedLine().GetText()};
+					auto text = view.substr(startOffset, relPos);
 					std::string strHidden;
 					if(IsInputHidden()) {
 						strHidden = std::string(text.length(), '*');
