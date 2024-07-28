@@ -111,8 +111,11 @@ void WIRoot::OnCursorMoved(int x, int y)
 	auto *pTooltip = static_cast<WITooltip *>(m_hTooltip.get());
 	auto *el = WGUI::GetInstance().GetGUIElement(this, x, y, [](WIBase *elChild) -> bool { return elChild->HasTooltip(); });
 	if(el == nullptr || el == this) {
+		auto *elTgt = m_hTooltipTarget.get();
 		m_hTooltipTarget = WIHandle {};
 		pTooltip->SetVisible(false);
+		if(elTgt)
+			elTgt->CallCallbacks<void, WITooltip *>("OnHideTooltip", pTooltip);
 		//pTooltip->SetAlpha(0.f);
 		return;
 	}
@@ -123,7 +126,10 @@ void WIRoot::OnCursorMoved(int x, int y)
 		m_tCursorOver -= std::chrono::milliseconds(TOOLTIP_HOVER_DELAY_MS);
 		pTooltip->SetVisible(false);
 	}
+	auto *elTgtPrev = m_hTooltipTarget.get();
 	m_hTooltipTarget = el->GetHandle();
+	if(elTgtPrev)
+		elTgtPrev->CallCallbacks<void, WITooltip *>("OnHideTooltip", pTooltip);
 }
 
 void WIRoot::Setup()

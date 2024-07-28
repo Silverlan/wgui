@@ -58,6 +58,7 @@ WIBase::WIBase()
 	RegisterCallback<void>("OnUpdated");
 	RegisterCallback<void>("OnSkinApplied");
 	RegisterCallback<void, WITooltip *>("OnShowTooltip");
+	RegisterCallback<void, WITooltip *>("OnHideTooltip");
 	RegisterCallbackWithOptionalReturn<util::EventReply, GLFW::MouseButton, GLFW::KeyState, GLFW::Modifier>("OnMouseEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMousePressed");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMouseReleased");
