@@ -17,8 +17,7 @@ using namespace wgui;
 decltype(Shader::VERTEX_BINDING_VERTEX) Shader::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
 decltype(Shader::VERTEX_ATTRIBUTE_POSITION) Shader::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX, prosper::CommonBufferCache::GetSquareVertexFormat()};
 
-decltype(Shader::DESCRIPTOR_SET) Shader::DESCRIPTOR_SET = {{prosper::DescriptorSetInfo::Binding {prosper::DescriptorType::UniformBufferDynamic, prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit}}};
-Shader::Shader(prosper::IPrContext &context, const std::string &identifier) : ShaderGraphics(context, identifier, "wgui/vs_wgui_colored", "wgui/fs_wgui_colored") { SetPipelineCount(umath::to_integral(wgui::StencilPipeline::Count) * 2); }
+Shader::Shader(prosper::IPrContext &context, const std::string &identifier) : ShaderGraphics(context, identifier, "programs/gui/colored", "programs/gui/colored") { SetPipelineCount(umath::to_integral(wgui::StencilPipeline::Count) * 2); }
 
 Shader::Shader(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : ShaderGraphics(context, identifier, vsShader, fsShader, gsShader)
 {

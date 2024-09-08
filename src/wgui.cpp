@@ -195,9 +195,6 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 
 	GetContext().GetPipelineLoader().Flush();
 
-	if(wgui::Shader::DESCRIPTOR_SET.IsValid() == false)
-		return ResultCode::ErrorInitializingShaders;
-
 	// Font has to be loaded AFTER shaders have been initialized (Requires wguitext shader)
 	if(!fontFileName.has_value())
 		fontFileName = "dejavu/DejaVuSans-Bold.ttf";

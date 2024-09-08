@@ -15,15 +15,20 @@ using namespace wgui;
 
 decltype(ShaderColoredLine::VERTEX_BINDING_VERTEX) ShaderColoredLine::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
 decltype(ShaderColoredLine::VERTEX_ATTRIBUTE_COLOR) ShaderColoredLine::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_VERTEX, prosper::Format::R32G32B32A32_SFloat};
-ShaderColoredLine::ShaderColoredLine(prosper::IPrContext &context, const std::string &identifier) : ShaderColored(context, identifier, "wgui/vs_wgui_colored_vertex", "wgui/fs_wgui_colored_vertex") { SetBaseShader<ShaderColored>(); }
+ShaderColoredLine::ShaderColoredLine(prosper::IPrContext &context, const std::string &identifier) : ShaderColored(context, identifier, "programs/gui/colored_vertex", "programs/gui/colored_vertex") { SetBaseShader<ShaderColored>(); }
 
+void ShaderColoredLine::InitializeShaderResources()
+{
+	ShaderColored::InitializeShaderResources();
+
+	AddVertexAttribute(VERTEX_ATTRIBUTE_COLOR);
+}
 void ShaderColoredLine::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	ShaderColored::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
 
 	pipelineInfo.SetPrimitiveTopology(prosper::PrimitiveTopology::LineList);
 	pipelineInfo.ToggleDynamicStates(true, {prosper::DynamicState::LineWidth});
-	AddVertexAttribute(pipelineInfo, VERTEX_ATTRIBUTE_COLOR);
 }
 
 bool ShaderColoredLine::RecordDraw(prosper::ShaderBindState &bindState, const std::shared_ptr<prosper::IBuffer> &vertBuffer, const std::shared_ptr<prosper::IBuffer> &colorBuffer, uint32_t vertCount, float lineWidth, const wgui::ElementData &pushConstants, uint32_t testStencilLevel) const

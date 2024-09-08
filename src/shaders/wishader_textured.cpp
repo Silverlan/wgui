@@ -18,8 +18,11 @@ decltype(ShaderTextured::VERTEX_ATTRIBUTE_POSITION) ShaderTextured::VERTEX_ATTRI
 decltype(ShaderTextured::VERTEX_BINDING_UV) ShaderTextured::VERTEX_BINDING_UV = {prosper::VertexInputRate::Vertex};
 decltype(ShaderTextured::VERTEX_ATTRIBUTE_UV) ShaderTextured::VERTEX_ATTRIBUTE_UV = {VERTEX_BINDING_UV, prosper::CommonBufferCache::GetSquareUvFormat()};
 
-decltype(ShaderTextured::DESCRIPTOR_SET_TEXTURE) ShaderTextured::DESCRIPTOR_SET_TEXTURE = {{prosper::DescriptorSetInfo::Binding {prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}}};
-ShaderTextured::ShaderTextured(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "wgui/vs_wgui_textured", "wgui/fs_wgui_textured") {}
+decltype(ShaderTextured::DESCRIPTOR_SET_TEXTURE) ShaderTextured::DESCRIPTOR_SET_TEXTURE = {
+  "TEXTURE",
+  {prosper::DescriptorSetInfo::Binding {"TEXTURE", prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}},
+};
+ShaderTextured::ShaderTextured(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/textured", "programs/gui/textured") {}
 
 ShaderTextured::ShaderTextured(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
 
@@ -32,20 +35,25 @@ bool ShaderTextured::RecordDraw(prosper::ShaderBindState &bindState, const std::
 	return true;
 }
 
+void ShaderTextured::InitializeShaderResources()
+{
+	Shader::InitializeShaderResources();
+
+	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
+	AddVertexAttribute(VERTEX_ATTRIBUTE_UV);
+	AddDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+}
+
 void ShaderTextured::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
-
-	AddVertexAttribute(pipelineInfo, VERTEX_ATTRIBUTE_POSITION);
-	AddVertexAttribute(pipelineInfo, VERTEX_ATTRIBUTE_UV);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo, pipelineIdx, 0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
 
-ShaderTexturedRectExpensive::ShaderTexturedRectExpensive(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "wgui/vs_wgui_textured_expensive", "wgui/fs_wgui_textured_expensive") {}
+ShaderTexturedRectExpensive::ShaderTexturedRectExpensive(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/textured_expensive", "programs/gui/textured_expensive") {}
 ShaderTexturedRectExpensive::ShaderTexturedRectExpensive(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
 
 bool ShaderTexturedRectExpensive::RecordDraw(prosper::ShaderBindState &bindState, const PushConstants &pushConstants, prosper::IDescriptorSet &descSet, uint32_t testStencilLevel) const
@@ -56,20 +64,24 @@ bool ShaderTexturedRectExpensive::RecordDraw(prosper::ShaderBindState &bindState
 	return true;
 }
 
+void ShaderTexturedRectExpensive::InitializeShaderResources()
+{
+	Shader::InitializeShaderResources();
+
+	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
+	AddVertexAttribute(ShaderTextured::VERTEX_ATTRIBUTE_UV);
+	AddDescriptorSetGroup(ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+}
 void ShaderTexturedRectExpensive::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
-
-	AddVertexAttribute(pipelineInfo, VERTEX_ATTRIBUTE_POSITION);
-	AddVertexAttribute(pipelineInfo, ShaderTextured::VERTEX_ATTRIBUTE_UV);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, ShaderTextured::DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo, pipelineIdx, 0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
 
-ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "wgui/vs_wgui_textured_cheap", "wgui/fs_wgui_textured_cheap") {}
+ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/textured_cheap", "programs/gui/textured_cheap") {}
 ShaderTexturedRect::ShaderTexturedRect(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
 
 bool ShaderTexturedRect::RecordDraw(prosper::ShaderBindState &bindState, const PushConstants &pushConstants, prosper::IDescriptorSet &descSet, uint32_t testStencilLevel) const
@@ -84,9 +96,14 @@ void ShaderTexturedRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateIn
 {
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
+}
 
-	AddVertexAttribute(pipelineInfo, VERTEX_ATTRIBUTE_POSITION);
-	AddVertexAttribute(pipelineInfo, ShaderTextured::VERTEX_ATTRIBUTE_UV);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, ShaderTextured::DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo, pipelineIdx, 0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+void ShaderTexturedRect::InitializeShaderResources()
+{
+	Shader::InitializeShaderResources();
+
+	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
+	AddVertexAttribute(ShaderTextured::VERTEX_ATTRIBUTE_UV);
+	AddDescriptorSetGroup(ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }

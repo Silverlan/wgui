@@ -12,7 +12,7 @@
 
 using namespace wgui;
 
-ShaderColored::ShaderColored(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "wgui/vs_wgui_colored", "wgui/fs_wgui_colored") {}
+ShaderColored::ShaderColored(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored", "programs/gui/colored") {}
 
 ShaderColored::ShaderColored(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
 
@@ -23,19 +23,23 @@ bool ShaderColored::RecordDraw(prosper::ShaderBindState &bindState, prosper::IBu
 	return true;
 }
 
+void ShaderColored::InitializeShaderResources()
+{
+	Shader::InitializeShaderResources();
+
+	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
+	AttachPushConstantRange(0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+}
+
 void ShaderColored::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
-
-	AddVertexAttribute(pipelineInfo, VERTEX_ATTRIBUTE_POSITION);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, DESCRIPTOR_SET);
-	AttachPushConstantRange(pipelineInfo, pipelineIdx, 0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
 ///////////////////////
 
-ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "wgui/vs_wgui_colored_cheap", "wgui/fs_wgui_colored_cheap") {}
+ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored_cheap", "programs/gui/colored_cheap") {}
 
 ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
 
@@ -47,19 +51,22 @@ bool ShaderColoredRect::RecordDraw(prosper::ShaderBindState &bindState, const wg
 	return true;
 }
 
+void ShaderColoredRect::InitializeShaderResources()
+{
+	Shader::InitializeShaderResources();
+
+	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
+	AttachPushConstantRange(0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
+}
 void ShaderColoredRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
-
-	AddVertexAttribute(pipelineInfo, VERTEX_ATTRIBUTE_POSITION);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, DESCRIPTOR_SET);
-	AttachPushConstantRange(pipelineInfo, pipelineIdx, 0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
 }
 
 ///////////////////////
 
-ShaderStencil::ShaderStencil(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "wgui/vs_wgui_colored_cheap", "wgui/fs_wgui_stencil") {}
+ShaderStencil::ShaderStencil(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored_cheap", "programs/gui/stencil") {}
 
 bool ShaderStencil::RecordDraw(prosper::ShaderBindState &bindState, const wgui::ElementData &pushConstants, uint32_t testStencilLevel) const
 {
@@ -92,8 +99,10 @@ void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 		  prosper::CompareOp::Equal, ~0, ~0, 0);
 		break;
 	}
+}
 
-	AddVertexAttribute(pipelineInfo, VERTEX_ATTRIBUTE_POSITION);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, DESCRIPTOR_SET);
-	AttachPushConstantRange(pipelineInfo, pipelineIdx, 0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
+void ShaderStencil::InitializeShaderResources()
+{
+	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
+	AttachPushConstantRange(0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
 }

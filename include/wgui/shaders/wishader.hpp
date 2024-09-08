@@ -24,7 +24,6 @@ namespace wgui {
 	  public:
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
 		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_POSITION;
-		static prosper::DescriptorSetInfo DESCRIPTOR_SET;
 		static wgui::StencilPipeline ToStencilPipelineIndex(uint32_t pipelineIdx, bool *optOutMsaa = nullptr);
 		static uint32_t ToAbsolutePipelineIndex(wgui::StencilPipeline pipelineIdx, bool msaa);
 		static bool IsMsaaPipeline(uint32_t pipelineIdx);
