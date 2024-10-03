@@ -20,7 +20,7 @@
 
 class DynamicFontMap {
   public:
-	static std::unique_ptr<DynamicFontMap> Create(const std::string &cpath, const std::string &name, const FontSettings &fontSettings);
+	static std::unique_ptr<DynamicFontMap> Create(const std::string &cpath, const FontSettings &fontSettings);
 	static constexpr auto INVALID_GLYPH_INDEX = std::numeric_limits<uint32_t>::max();
 #pragma pack(push, 1)
 	struct GlyphBounds {
@@ -161,7 +161,7 @@ int32_t GlyphInfo::GetHeight() const { return m_height; }
 
 /////////////////////
 
-FontSettings::FontSettings() : requiredChars {} {}
+FontSettings::FontSettings() {}
 FontSettings::~FontSettings() {}
 FontInfo::~FontInfo() { Clear(); }
 const GlyphInfo *FontInfo::InitializeGlyph(int32_t c) const
@@ -173,7 +173,7 @@ const GlyphInfo *FontInfo::GetGlyphInfo(int32_t c) const { return m_dynamicFontM
 const std::vector<std::shared_ptr<GlyphInfo>> &FontInfo::GetGlyphs() const { return m_dynamicFontMap->GetGlyphs(); }
 uint32_t FontInfo::GetSize() const { return m_size; }
 
-std::unique_ptr<DynamicFontMap> DynamicFontMap::Create(const std::string &cpath, const std::string &name, const FontSettings &fontSettings)
+std::unique_ptr<DynamicFontMap> DynamicFontMap::Create(const std::string &cpath, const FontSettings &fontSettings)
 {
 	auto fontMap = std::unique_ptr<DynamicFontMap> {new DynamicFontMap {}};
 	auto f = FileManager::OpenFile(cpath.c_str(), "rb");
@@ -193,7 +193,7 @@ std::unique_ptr<DynamicFontMap> DynamicFontMap::Create(const std::string &cpath,
 	fontMap->m_fontSize = fontSettings.fontSize;
 	return fontMap;
 }
-DynamicFontMap::DynamicFontMap() {}
+DynamicFontMap::DynamicFontMap() { FontManager::SetFontsDirty(); }
 void DynamicFontMap::AddCharacter(int32_t c)
 {
 	if(m_glyphIndexMap.find(c) != m_glyphIndexMap.end())
@@ -269,6 +269,7 @@ void DynamicFontMap::ClearMap()
 {
 	if(m_dirtyGlyphMap)
 		return;
+	FontManager::SetFontsDirty();
 	m_dirtyGlyphMap = true;
 	auto &context = WGUI::GetInstance().GetContext();
 	context.WaitIdle();
@@ -397,7 +398,7 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, con
 	m_name = name;
 	if(m_bInitialized || wgui::ShaderText::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
 		return true;
-	auto fontMap = DynamicFontMap::Create(cpath, name, fontSettings);
+	auto fontMap = DynamicFontMap::Create(cpath, fontSettings);
 	if(!fontMap)
 		return false;
 	m_size = fontSettings.fontSize;
@@ -436,6 +437,7 @@ void FontInfo::Clear()
 /////////////////////
 
 decltype(FontManager::m_fontDefault) FontManager::m_fontDefault = nullptr;
+decltype(FontManager::m_fallbackFonts) FontManager::m_fallbackFonts = {};
 decltype(FontManager::m_lib) FontManager::m_lib = {};
 decltype(FontManager::m_fonts) FontManager::m_fonts;
 
@@ -459,6 +461,15 @@ std::shared_ptr<const FontInfo> FontManager::GetFont(const std::string &cfontNam
 	return it->second;
 }
 
+static std::string get_font_file_path(const std::string &cpath)
+{
+	auto file = cpath;
+	std::string ext;
+	if(ufile::get_extension(file, &ext) == false || (ext != "ttf" && ext != "otf"))
+		file += ".ttf";
+
+	return "fonts/" + file;
+}
 std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidentifier, const std::string &cpath, const FontSettings &fontSettings, bool bForceReload)
 {
 	auto &lib = m_lib.GetFtLibrary();
@@ -471,12 +482,8 @@ std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidenti
 		if(it != m_fonts.end())
 			return it->second;
 	}
-	auto file = cpath;
-	std::string ext;
-	if(ufile::get_extension(file, &ext) == false || (ext != "ttf" && ext != "otf"))
-		file += ".ttf";
 
-	auto path = "fonts\\" + file;
+	auto path = get_font_file_path(cpath);
 	std::shared_ptr<FontInfo> font = nullptr;
 	if(bForceReload == true) {
 		auto it = m_fonts.find(identifier);
@@ -487,8 +494,15 @@ std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidenti
 	}
 	if(font == nullptr)
 		font = std::shared_ptr<FontInfo>(new FontInfo());
-	if(!font->Initialize(path.c_str(), identifier, fontSettings))
+	if(!font->Initialize(path, identifier, fontSettings))
 		return nullptr;
+	for(auto &fallbackFont : FontManager::GetFallbackFonts()) {
+		auto path = get_font_file_path(fallbackFont);
+		auto fontFallback = std::shared_ptr<FontInfo>(new FontInfo());
+		if(!fontFallback->Initialize(path, identifier, fontSettings))
+			continue;
+		font->AddFallbackFont(*fontFallback);
+	}
 	m_fonts.insert(decltype(m_fonts)::value_type(identifier, font));
 	return font;
 }
@@ -512,10 +526,17 @@ bool FontManager::Initialize()
 
 const FT_Library FontManager::GetFontLibrary() { return m_lib.GetFtLibrary(); }
 
+static bool g_fontsDirty = false;
+void FontManager::SetFontsDirty() { g_fontsDirty = true; }
 void FontManager::UpdateDirtyFonts()
 {
+	if(!g_fontsDirty)
+		return;
+	g_fontsDirty = false;
 	for(auto &[name, fontInfo] : m_fonts) {
 		fontInfo->m_dynamicFontMap->GenerateImageMap();
+		for(auto &fallbackFont : fontInfo->GetFallbackFonts())
+			fallbackFont->m_dynamicFontMap->GenerateImageMap();
 	}
 }
 void FontManager::Close()
@@ -537,6 +558,8 @@ void FontManager::InitializeFontGlyphs(const util::Utf8StringArg &text, const Fo
 		}
 	}
 }
+void FontManager::AddFallbackFont(const std::string &fallbackFont) { m_fallbackFonts.push_back(fallbackFont); }
+const std::vector<std::string> &FontManager::GetFallbackFonts() { return m_fallbackFonts; }
 uint32_t FontManager::GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
 	if(font == nullptr) {

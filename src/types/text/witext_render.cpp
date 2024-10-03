@@ -730,6 +730,8 @@ bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 
 			auto &font = *bufInfo.font;
 			auto glyphMap = font.GetGlyphMap();
+			if(!glyphMap)
+				continue;
 			auto glyphMapExtents = glyphMap->GetImage().GetExtents();
 			auto maxGlyphBitmapWidth = font.GetMaxGlyphBitmapWidth();
 			auto maxGlyphBitmapHeight = font.GetMaxGlyphBitmapHeight();
