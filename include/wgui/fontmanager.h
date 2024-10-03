@@ -34,11 +34,8 @@ class DLLWGUI GlyphInfo {
 	int32_t m_advanceX = 0;
 	int32_t m_advanceY = 0;
 	std::array<int32_t, 4> m_bbox;
-	friend FontManager;
-  protected:
-	GlyphInfo();
-	friend FontInfo;
   public:
+	GlyphInfo();
 	void Initialize(FT_GlyphSlot glyph);
 	void GetAdvance(int32_t &advanceX, int32_t &advanceY) const;
 	void GetDimensions(int32_t &left, int32_t &top, int32_t &width, int32_t &height) const;
@@ -52,21 +49,30 @@ class DLLWGUI GlyphInfo {
 namespace prosper {
 	class DescriptorSetGroup;
 };
+struct DLLWGUI FontSettings {
+	FontSettings();
+	~FontSettings();
+	uint32_t fontSize;
+	std::unique_ptr<util::Utf8String> requiredChars;
+};
+struct DLLWGUI FontFace {
+  private:
+	FT_Face m_ftFace = nullptr;
+  public:
+	FontFace() = default;
+	~FontFace();
+	const FT_Face &GetFtFace() const;
+};
+class DynamicFontMap;
 class DLLWGUI FontInfo : public std::enable_shared_from_this<FontInfo> {
   public:
-	struct DLLWGUI FontSettings {
-		FontSettings();
-		~FontSettings();
-		uint32_t fontSize;
-		std::unique_ptr<util::Utf8String> requiredChars;
-	};
-
 	~FontInfo();
 	void Clear();
 	bool Initialize(const std::string &cpath, const std::string &name, const FontSettings &fontSettings);
 	const std::string &GetName() const { return m_name; }
 	const FT_Face GetFace() const;
 	const GlyphInfo *GetGlyphInfo(int32_t c) const;
+	const GlyphInfo *InitializeGlyph(int32_t c) const;
 	uint32_t CharToGlyphMapIndex(int32_t c) const;
 	const std::vector<std::shared_ptr<GlyphInfo>> &GetGlyphs() const;
 	uint32_t GetSize() const;
@@ -81,39 +87,16 @@ class DLLWGUI FontInfo : public std::enable_shared_from_this<FontInfo> {
 	std::shared_ptr<prosper::IBuffer> GetGlyphBoundsBuffer() const;
 	prosper::IDescriptorSet *GetGlyphBoundsDescriptorSet() const;
   protected:
-	FontInfo() = default;
+	FontInfo();
 	friend FontManager;
   private:
-	struct DLLWGUI Face {
-	  private:
-		FT_Face m_ftFace = nullptr;
-	  public:
-		Face() = default;
-		~Face();
-		const FT_Face &GetFtFace() const;
-	} m_face;
-	struct DLLWGUI GlyphRange {
-		uint32_t unicodeStartIndex = 0;
-		uint32_t count = 0;
-
-		uint32_t glyphMapStartIndex = 0;
-	};
-	std::vector<uint8_t> m_data;
-	std::vector<std::shared_ptr<GlyphInfo>> m_glyphs;
-	std::vector<GlyphRange> m_glyphIndexRanges;
+	std::unordered_map<uint32_t, uint32_t> m_glyphIndexMap;
 	bool m_bInitialized = false;
 	std::string m_name;
 	uint32_t m_size = 0;
 	uint32_t m_maxGlyphHeight = 0;
 	uint32_t m_maxGlyphSize = 0;
-	int32_t m_glyphTopMax = 0;
-	uint32_t m_maxBitmapWidth = 0;
-	uint32_t m_maxBitmapHeight = 0;
-	uint32_t m_numGlyphsPerRow = 0;
-	std::shared_ptr<prosper::Texture> m_glyphMap = nullptr;
-	std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphMapDescSetGroup = nullptr;
-	std::shared_ptr<prosper::IBuffer> m_glyphBoundsBuffer = nullptr;
-	std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphBoundsDsg = nullptr;
+	std::unique_ptr<DynamicFontMap> m_dynamicFontMap;
 };
 
 class DLLWGUI FontManager {
@@ -124,9 +107,10 @@ class DLLWGUI FontManager {
 	static const std::unordered_map<std::string, std::shared_ptr<FontInfo>> &GetFonts();
 	static void SetDefaultFont(const FontInfo &font);
 	static const FT_Library GetFontLibrary();
-	static std::shared_ptr<const FontInfo> LoadFont(const std::string &cidentifier, const std::string &cpath, const FontInfo::FontSettings &fontSettings, bool bForceReload = false);
+	static std::shared_ptr<const FontInfo> LoadFont(const std::string &cidentifier, const std::string &cpath, const FontSettings &fontSettings, bool bForceReload = false);
 	static std::shared_ptr<const FontInfo> GetFont(const std::string &cfontName);
 	static void Close();
+	static void UpdateDirtyFonts();
 	// Char offset (relative to a line) is required to calculate the correct tab size
 	static uint32_t GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height = nullptr);
 	static uint32_t GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);

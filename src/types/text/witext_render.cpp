@@ -734,6 +734,8 @@ void WITextBase::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, co
 		}*/
 
 		auto glyphMap = pFont->GetGlyphMap();
+		if(!glyphMap)
+			return;
 		auto glyphMapExtents = glyphMap->GetImage().GetExtents();
 		auto maxGlyphBitmapWidth = pFont->GetMaxGlyphBitmapWidth();
 		auto maxGlyphBitmapHeight = pFont->GetMaxGlyphBitmapHeight();

@@ -177,6 +177,8 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	bool IsLockedForDrawing() const { return m_lockedForDrawing; }
 	void SetLockedForDrawing(bool locked) { m_lockedForDrawing = locked; }
 	uint64_t GetNextGuiElementIndex() const { return m_nextGuiElementIndex; }
+	void BeginDraw();
+	void EndDraw();
 
 	size_t GetLastThinkIndex() const;
 

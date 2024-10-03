@@ -198,7 +198,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 	// Font has to be loaded AFTER shaders have been initialized (Requires wguitext shader)
 	if(!fontFileName.has_value())
 		fontFileName = "dejavu/DejaVuSans-Bold.ttf";
-	FontInfo::FontSettings settings {};
+	FontSettings settings {};
 	if(requiredChars)
 		settings.requiredChars = requiredChars ? std::make_unique<util::Utf8String>(*requiredChars) : std::unique_ptr<util::Utf8String> {};
 	settings.fontSize = 14;
@@ -323,6 +323,12 @@ prosper::Window *WGUI::FindWindowUnderCursor()
 }
 WIRoot *WGUI::FindRootElementUnderCursor() { return FindWindowRootElementUnderCursor(); }
 size_t WGUI::GetLastThinkIndex() const { return m_thinkIndex; }
+void WGUI::BeginDraw()
+{
+	WGUI::GetInstance().SetLockedForDrawing(true);
+	FontManager::UpdateDirtyFonts();
+}
+void WGUI::EndDraw() { WGUI::GetInstance().SetLockedForDrawing(false); }
 void WGUI::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	while(!m_removeQueue.empty()) {
