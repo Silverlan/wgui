@@ -86,10 +86,13 @@ class DLLWGUI FontInfo : public std::enable_shared_from_this<FontInfo> {
 	prosper::IDescriptorSet *GetGlyphMapDescriptorSet() const;
 	std::shared_ptr<prosper::IBuffer> GetGlyphBoundsBuffer() const;
 	prosper::IDescriptorSet *GetGlyphBoundsDescriptorSet() const;
+	void AddFallbackFont(FontInfo &font);
+	const std::vector<std::shared_ptr<FontInfo>> &GetFallbackFonts() const { return m_fallbackFonts; }
   protected:
 	FontInfo();
 	friend FontManager;
   private:
+	std::vector<std::shared_ptr<FontInfo>> m_fallbackFonts;
 	std::unordered_map<uint32_t, uint32_t> m_glyphIndexMap;
 	bool m_bInitialized = false;
 	std::string m_name;
@@ -111,6 +114,7 @@ class DLLWGUI FontManager {
 	static std::shared_ptr<const FontInfo> GetFont(const std::string &cfontName);
 	static void Close();
 	static void UpdateDirtyFonts();
+	static void InitializeFontGlyphs(const util::Utf8StringArg &text, const FontInfo &font);
 	// Char offset (relative to a line) is required to calculate the correct tab size
 	static uint32_t GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height = nullptr);
 	static uint32_t GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);

@@ -21,6 +21,7 @@
 class DynamicFontMap {
   public:
 	static std::unique_ptr<DynamicFontMap> Create(const std::string &cpath, const std::string &name, const FontSettings &fontSettings);
+	static constexpr auto INVALID_GLYPH_INDEX = std::numeric_limits<uint32_t>::max();
 #pragma pack(push, 1)
 	struct GlyphBounds {
 		int32_t left;
@@ -61,7 +62,7 @@ class DynamicFontMap {
 	{
 		auto it = m_glyphIndexMap.find(c);
 		if(it == m_glyphIndexMap.end())
-			return 0;
+			return INVALID_GLYPH_INDEX;
 		return it->second;
 	}
   private:
@@ -201,66 +202,68 @@ void DynamicFontMap::AddCharacter(int32_t c)
 
 	auto &face = m_face.GetFtFace();
 	auto ftGlyphIdx = FT_Get_Char_Index(face, c);
-	if(ftGlyphIdx != 0 && FT_Load_Char(face, c, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT) == 0) {
-		auto gslot = face->glyph;
-		// Outline
-		/*if(gslot->format == FT_GLYPH_FORMAT_OUTLINE)
+	if(ftGlyphIdx == 0 || FT_Load_Char(face, c, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT) != 0) {
+		m_glyphIndexMap[c] = INVALID_GLYPH_INDEX;
+		return;
+	}
+	auto gslot = face->glyph;
+	// Outline
+	/*if(gslot->format == FT_GLYPH_FORMAT_OUTLINE)
 				{
 					std::vector<Span> spans;
 					RenderSpans(lib,gslot->outline,spans);
 				}*/
-		//
-		m_glyphs.push_back({});
-		m_glyphExtents.push_back({});
-		auto &glyph = m_glyphs[m_curGlyphIndex] = std::shared_ptr<GlyphInfo> {new GlyphInfo {}};
-		auto &glyphInfo = m_glyphExtents[m_curGlyphIndex];
-		if(gslot->bitmap.width > 0 && gslot->bitmap.rows > 0) {
-			auto &data = m_glyphImageBufData;
-			auto glyphDataSize = gslot->bitmap.width * gslot->bitmap.rows;
-			if((data.size() + glyphDataSize) >= data.capacity())
-				data.reserve((data.size() + glyphDataSize) * 1.5 + 1'000);
-			auto offset = data.size();
-			data.resize(offset + glyphDataSize);
-			auto *ptr = data.data() + offset;
-			m_maxBitmapWidth = umath::max(m_maxBitmapWidth, gslot->bitmap.width);
-			m_maxBitmapHeight = umath::max(m_maxBitmapHeight, gslot->bitmap.rows);
+	//
+	m_glyphs.push_back({});
+	m_glyphExtents.push_back({});
+	auto &glyph = m_glyphs[m_curGlyphIndex] = std::shared_ptr<GlyphInfo> {new GlyphInfo {}};
+	auto &glyphInfo = m_glyphExtents[m_curGlyphIndex];
+	if(gslot->bitmap.width > 0 && gslot->bitmap.rows > 0) {
+		auto &data = m_glyphImageBufData;
+		auto glyphDataSize = gslot->bitmap.width * gslot->bitmap.rows;
+		if((data.size() + glyphDataSize) >= data.capacity())
+			data.reserve((data.size() + glyphDataSize) * 1.5 + 1'000);
+		auto offset = data.size();
+		data.resize(offset + glyphDataSize);
+		auto *ptr = data.data() + offset;
+		m_maxBitmapWidth = umath::max(m_maxBitmapWidth, gslot->bitmap.width);
+		m_maxBitmapHeight = umath::max(m_maxBitmapHeight, gslot->bitmap.rows);
 
-			size_t pos = 0;
-			for(auto y = decltype(gslot->bitmap.rows) {0}; y < gslot->bitmap.rows; ++y) {
-				auto *row = ptr;
-				for(auto x = decltype(gslot->bitmap.width) {0}; x < gslot->bitmap.width; ++x) {
-					auto *px = row;
-					px[0] = gslot->bitmap.buffer[pos];
-					++pos;
-					++row;
-				}
-				ptr += gslot->bitmap.width;
+		size_t pos = 0;
+		for(auto y = decltype(gslot->bitmap.rows) {0}; y < gslot->bitmap.rows; ++y) {
+			auto *row = ptr;
+			for(auto x = decltype(gslot->bitmap.width) {0}; x < gslot->bitmap.width; ++x) {
+				auto *px = row;
+				px[0] = gslot->bitmap.buffer[pos];
+				++pos;
+				++row;
 			}
-
-			glyphInfo.width = gslot->bitmap.width;
-			glyphInfo.height = gslot->bitmap.rows;
+			ptr += gslot->bitmap.width;
 		}
 
-		glyph->Initialize(gslot);
-		int32_t yMin, yMax;
-		glyph->GetBounds(nullptr, &yMin, nullptr, &yMax);
-		yMax -= yMin;
-		if(yMax < 0)
-			yMax = 0;
-		auto u_yMax = static_cast<unsigned int>(yMax);
-		if(u_yMax > m_maxGlyphHeight)
-			m_maxGlyphHeight = u_yMax;
-		auto u_szMax = static_cast<unsigned int>(u_yMax) + static_cast<unsigned int>(static_cast<int>(m_fontSize) - glyph->GetTop());
-		if(u_szMax < 0)
-			u_szMax = 0;
-		if(u_szMax > m_maxGlyphSize)
-			m_maxGlyphSize = u_szMax;
-		int top = glyph->GetTop();
-		if(top > m_glyphTopMax)
-			m_glyphTopMax = top;
-		m_glyphIndexMap[c] = m_curGlyphIndex;
-		++m_curGlyphIndex;
+		glyphInfo.width = gslot->bitmap.width;
+		glyphInfo.height = gslot->bitmap.rows;
 	}
+
+	glyph->Initialize(gslot);
+	int32_t yMin, yMax;
+	glyph->GetBounds(nullptr, &yMin, nullptr, &yMax);
+	yMax -= yMin;
+	if(yMax < 0)
+		yMax = 0;
+	auto u_yMax = static_cast<unsigned int>(yMax);
+	if(u_yMax > m_maxGlyphHeight)
+		m_maxGlyphHeight = u_yMax;
+	auto u_szMax = static_cast<unsigned int>(u_yMax) + static_cast<unsigned int>(static_cast<int>(m_fontSize) - glyph->GetTop());
+	if(u_szMax < 0)
+		u_szMax = 0;
+	if(u_szMax > m_maxGlyphSize)
+		m_maxGlyphSize = u_szMax;
+	int top = glyph->GetTop();
+	if(top > m_glyphTopMax)
+		m_glyphTopMax = top;
+	m_glyphIndexMap[c] = m_curGlyphIndex;
+	++m_curGlyphIndex;
 }
 void DynamicFontMap::ClearMap()
 {
@@ -411,6 +414,7 @@ std::shared_ptr<prosper::Texture> FontInfo::GetGlyphMap() const { return m_dynam
 std::shared_ptr<prosper::IBuffer> FontInfo::GetGlyphBoundsBuffer() const { return m_dynamicFontMap->GetGlyphBoundsBuffer(); }
 prosper::IDescriptorSet *FontInfo::GetGlyphBoundsDescriptorSet() const { return m_dynamicFontMap->GetGlyphBoundsDescriptorSet(); }
 prosper::IDescriptorSet *FontInfo::GetGlyphMapDescriptorSet() const { return m_dynamicFontMap->GetGlyphMapDescriptorSet(); }
+void FontInfo::AddFallbackFont(FontInfo &font) { m_fallbackFonts.push_back(font.shared_from_this()); }
 
 const FT_Face FontInfo::GetFace() const { return m_dynamicFontMap->GetFace(); }
 
@@ -520,6 +524,19 @@ void FontManager::Close()
 	m_fonts.clear();
 	m_lib = {};
 }
+void FontManager::InitializeFontGlyphs(const util::Utf8StringArg &text, const FontInfo &font)
+{
+	for(auto c : *text) {
+		auto *glyph = font.InitializeGlyph(c);
+		if(glyph == nullptr) {
+			for(auto &fallbackFont : font.GetFallbackFonts()) {
+				glyph = fallbackFont->InitializeGlyph(c);
+				if(glyph)
+					break;
+			}
+		}
+	}
+}
 uint32_t FontManager::GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
 	if(font == nullptr) {
@@ -547,6 +564,13 @@ uint32_t FontManager::GetTextSize(const util::Utf8StringArg &text, uint32_t char
 			multiplier = tabSpaceCount;
 		}
 		auto *glyph = font->InitializeGlyph(c);
+		if(glyph == nullptr) {
+			for(auto &fallbackFont : font->GetFallbackFonts()) {
+				glyph = fallbackFont->InitializeGlyph(c);
+				if(glyph)
+					break;
+			}
+		}
 		if(glyph != nullptr) {
 			int32_t advanceX, advanceY;
 			glyph->GetAdvance(advanceX, advanceY);

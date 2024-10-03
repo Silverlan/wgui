@@ -48,6 +48,7 @@ class DLLWGUI WITextBase : public WIBase {
 	struct SubBufferInfo {
 		std::shared_ptr<prosper::IBuffer> buffer;
 		std::shared_ptr<prosper::IBuffer> colorBuffer;
+		const FontInfo *font = nullptr;
 		util::text::TextLength numChars = 0u;
 		util::text::CharOffset charOffset = 0u;
 		util::text::LineIndex absLineIndex = 0;
@@ -260,7 +261,7 @@ class DLLWGUI WIText : public WIBase {
 	void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
 	void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, util::text::LineIndex lineIndex);
 	void UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
-	void GetTextSize(int *w, int *h, const util::Utf8StringView *inText = nullptr);
+	void GetTextSize(int *w, int *h, const util::Utf8StringView *inText = nullptr, const FontInfo *font = nullptr);
 	void RenderText();
 	void RenderText(Mat4 &mat);
 	void InitializeShadow(bool bReload = false);

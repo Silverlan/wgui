@@ -12,6 +12,7 @@
 #include <prosper_util.hpp>
 #include <shader/prosper_shader_blur.hpp>
 #include <prosper_command_buffer.hpp>
+#include <prosper_descriptor_set_group.hpp>
 #include <prosper_window.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <sharedutils/scope_guard.h>
@@ -432,73 +433,124 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 		std::vector<Vector4> glyphBounds;
 		std::vector<uint32_t> glyphIndices;
 		util::text::LineIndex absLineIndex;
+		const FontInfo *font = nullptr;
 	};
 
 	std::vector<SubStringInfo> subStrings {};
 	auto numChars = m_text->GetCharCount();
 
-	const auto fAddSubString = [this, &subStrings](const util::Utf8StringView &substr, util::text::LineIndex lineIndex, util::text::CharOffset charOffset, int32_t &inOutX, int32_t &inOutY) {
+	std::function<void(const util::Utf8StringView &, util::text::LineIndex, util::text::CharOffset, int32_t &, int32_t &)> fAddSubString = nullptr;
+	fAddSubString = [this, &subStrings](const util::Utf8StringView &substr, util::text::LineIndex lineIndex, util::text::CharOffset charOffset, int32_t &inOutX, int32_t &inOutY) {
 		if(substr.empty())
 			return;
-		if(subStrings.size() == subStrings.capacity())
-			subStrings.reserve(subStrings.size() + 20);
-		subStrings.push_back({});
-		auto &info = subStrings.back();
-		info.subString = substr;
-		info.charOffset = charOffset;
-		info.absLineIndex = lineIndex;
-
-		int w, h;
-		GetTextSize(&w, &h, &info.subString);
-		if(w <= 0)
-			w = 1;
-		if(h <= 0)
-			h = 1;
-		info.width = w;
-		info.height = h;
-		auto sx = info.sx = 2.f / float(w);
-		auto sy = info.sy = 2.f / float(h);
-
-		info.glyphBounds.reserve(substr.length());
-		info.glyphIndices.reserve(substr.length());
-
-		// Populate glyph bounds and indices
-		auto fontSize = m_font->GetSize();
-		auto offset = 0u;
+		// The sub-string may have to be cut into further sub-strings if the font changes
+		// mid-string (usually if a fallback font is required).
+		struct FontSubstr {
+			const FontInfo *font;
+			util::Utf8StringView view;
+		};
+		std::vector<FontSubstr> fontSubstrs;
+		const FontInfo *curFont = nullptr;
+		util::Utf8StringView u8Str {substr};
 		auto isHidden = IsTextHidden();
-		util::Utf8StringView u8Str {info.subString};
+		size_t startOffset = 0;
+		size_t len = 0;
 		for(auto c : u8Str) {
 			if(isHidden)
 				c = '*';
-			auto multiplier = 1u;
-			if(c == '\t') {
-				auto tabSpaceCount = FontManager::TAB_WIDTH_SPACE_COUNT - (offset % FontManager::TAB_WIDTH_SPACE_COUNT);
-				multiplier = tabSpaceCount;
-				c = ' ';
-			}
+			auto *font = m_font.get();
+			if(!font)
+				std::cout << "";
 			auto *glyph = m_font->GetGlyphInfo(c);
-			if(glyph == nullptr)
-				continue;
-			int32_t left, top, width, height;
-			glyph->GetDimensions(left, top, width, height);
-			width *= multiplier;
-			int32_t advanceX, advanceY;
-			glyph->GetAdvance(advanceX, advanceY);
+			if(glyph == nullptr) {
+				for(auto &fallbackFont : m_font->GetFallbackFonts()) {
+					glyph = fallbackFont->GetGlyphInfo(c);
+					if(glyph) {
+						font = fallbackFont.get();
+						break;
+					}
+				}
+				if(!glyph) {
+					++len;
+					continue;
+				}
+			}
+			if(font != curFont) {
+				if(len > 0 && curFont)
+					fontSubstrs.push_back({curFont, u8Str.substr(startOffset, len)});
+				startOffset += len;
+				len = 0;
+				curFont = font;
+			}
+			++len;
+		}
+		if(len > 0 && curFont)
+			fontSubstrs.push_back({curFont, u8Str.substr(startOffset, len)});
 
-			auto x2 = (inOutX + left) * sx - 1.f;
-			auto y2 = (inOutY - (top - static_cast<int>(fontSize))) * sy - 1.f;
-			auto w = width * sx;
-			auto h = height * sy;
+		for(auto &fontSubstr : fontSubstrs) {
+			auto &substr = fontSubstr.view;
+			auto &font = *fontSubstr.font;
+			if(subStrings.size() == subStrings.capacity())
+				subStrings.reserve(subStrings.size() + 20);
+			subStrings.push_back({});
+			auto &info = subStrings.back();
+			info.subString = substr;
+			info.charOffset = charOffset;
+			info.absLineIndex = lineIndex;
+			info.font = &font;
 
-			info.glyphBounds.push_back({x2, y2, width, height});
-			info.glyphIndices.push_back(m_font->CharToGlyphMapIndex(c));
+			int w, h;
+			GetTextSize(&w, &h, &info.subString, &font);
+			if(w <= 0)
+				w = 1;
+			if(h <= 0)
+				h = 1;
+			info.width = w;
+			info.height = h;
+			auto sx = info.sx = 2.f / float(w);
+			auto sy = info.sy = 2.f / float(h);
 
-			advanceX >>= 6;
-			advanceX *= multiplier;
-			advanceY >>= 6;
-			inOutX += advanceX;
-			inOutY += advanceY;
-			offset += multiplier;
+			info.glyphBounds.reserve(substr.length());
+			info.glyphIndices.reserve(substr.length());
+
+			// Populate glyph bounds and indices
+			auto fontSize = font.GetSize();
+			auto offset = 0u;
+			util::Utf8StringView u8Str {info.subString};
+			for(auto c : u8Str) {
+				if(isHidden)
+					c = '*';
+				auto multiplier = 1u;
+				if(c == '\t') {
+					auto tabSpaceCount = FontManager::TAB_WIDTH_SPACE_COUNT - (offset % FontManager::TAB_WIDTH_SPACE_COUNT);
+					multiplier = tabSpaceCount;
+					c = ' ';
+				}
+
+				auto *glyph = font.GetGlyphInfo(c);
+				if(!glyph)
+					continue;
+				int32_t left, top, width, height;
+				glyph->GetDimensions(left, top, width, height);
+				width *= multiplier;
+				int32_t advanceX, advanceY;
+				glyph->GetAdvance(advanceX, advanceY);
+
+				auto x2 = (inOutX + left) * sx - 1.f;
+				auto y2 = (inOutY - (top - static_cast<int>(fontSize))) * sy - 1.f;
+				auto w = width * sx;
+				auto h = height * sy;
+
+				info.glyphBounds.push_back({x2, y2, width, height});
+				info.glyphIndices.push_back(font.CharToGlyphMapIndex(c));
+
+				advanceX >>= 6;
+				advanceX *= multiplier;
+				advanceY >>= 6;
+				inOutX += advanceX;
+				inOutY += advanceY;
+				offset += multiplier;
+			}
 		}
 	};
 	int32_t y = 0u; // lineIndex *GetLineHeight();
@@ -561,6 +613,7 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 		bufInfo.numChars = glyphBoundsData.size();
 		bufInfo.charOffset = subStrInfo.charOffset;
 		bufInfo.absLineIndex = subStrInfo.absLineIndex;
+		bufInfo.font = subStrInfo.font;
 		bufInfo.colorBuffer = nullptr;
 
 		bufInfo.width = subStrInfo.width;
@@ -636,7 +689,6 @@ bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 	drawState.GetScissor(xScissor, yScissor, wScissor, hScissor);
 
 	auto bHasColorBuffers = false;
-	auto *descSet = textEl.m_font->GetGlyphMapDescriptorSet();
 	auto lineHeight = textEl.GetLineHeight();
 	uint32_t lineIndex = 0;
 	for(auto &lineInfo : textEl.m_lineInfos) {
@@ -676,9 +728,21 @@ bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 			inOutPushConstants.elementData.modelMatrix = poseText;
 			inOutPushConstants.elementData.viewportSize = wgui::ElementData::ToViewportSize(Vector2i {drawInfo.size.x, drawInfo.size.y});
 
-			inOutPushConstants.fontInfo.yOffset = bufInfo.absLineIndex * lineHeight;
+			auto &font = *bufInfo.font;
+			auto glyphMap = font.GetGlyphMap();
+			auto glyphMapExtents = glyphMap->GetImage().GetExtents();
+			auto maxGlyphBitmapWidth = font.GetMaxGlyphBitmapWidth();
+			auto maxGlyphBitmapHeight = font.GetMaxGlyphBitmapHeight();
+			inOutPushConstants.fontInfo.glyphMapWidth = glyphMapExtents.width;
+			inOutPushConstants.fontInfo.glyphMapHeight = glyphMapExtents.height;
+			inOutPushConstants.fontInfo.maxGlyphBitmapWidth = maxGlyphBitmapWidth;
+			inOutPushConstants.fontInfo.maxGlyphBitmapHeight = maxGlyphBitmapHeight;
+			inOutPushConstants.fontInfo.numGlyphsPerRow = font.GetGlyphCountPerRow();
 
-			fDraw(bindState, bufInfo, *descSet);
+			inOutPushConstants.fontInfo.yOffset = bufInfo.absLineIndex * lineHeight;
+			auto *glyphMapDescSet = font.GetGlyphMapDescriptorSet();
+			if(glyphMapDescSet)
+				fDraw(bindState, bufInfo, *glyphMapDescSet);
 		}
 	}
 	shader.RecordEndDraw(bindState);
@@ -719,9 +783,6 @@ void WITextBase::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, co
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
 	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
 	if(pShaderTextRect != nullptr) {
-		auto *pFont = textEl.GetFont();
-		if(pFont == nullptr)
-			return;
 		auto &context = WGUI::GetInstance().GetContext();
 		/*for(auto &lineInfo : textEl.m_lineInfos)
 		{
@@ -733,13 +794,6 @@ void WITextBase::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, co
 			}
 		}*/
 
-		auto glyphMap = pFont->GetGlyphMap();
-		if(!glyphMap)
-			return;
-		auto glyphMapExtents = glyphMap->GetImage().GetExtents();
-		auto maxGlyphBitmapWidth = pFont->GetMaxGlyphBitmapWidth();
-		auto maxGlyphBitmapHeight = pFont->GetMaxGlyphBitmapHeight();
-
 		auto col = drawInfo.GetColor(*this, drawState);
 		if(col.a <= 0.f && umath::is_flag_set(m_stateFlags, StateFlags::RenderIfZeroAlpha) == false)
 			return;
@@ -749,11 +803,11 @@ void WITextBase::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, co
 
 		//auto matText = GetTransformedMatrix(origin,width,height,matParent);
 
-		wgui::ShaderTextRect::PushConstants pushConstants {wgui::ElementData {Mat4 {}, col}, 0.f, 0.f, glyphMapExtents.width, glyphMapExtents.height, maxGlyphBitmapWidth, maxGlyphBitmapHeight, 0, pFont->GetGlyphCountPerRow()};
+		wgui::ShaderTextRect::PushConstants pushConstants {wgui::ElementData {Mat4 {}, col}, 0.f, 0.f, 0, 0, 0, 0, 0, 0};
 		Vector2i absPos, absSize;
 		CalcBounds(matDraw, drawInfo.size.x, drawInfo.size.y, absPos, absSize);
 		auto &commandBuffer = drawInfo.commandBuffer;
-		const auto fDraw = [&context, &commandBuffer, &pushConstants, &size, &drawInfo, &drawState, &matDraw, pFont, this, &textEl, &absPos, &absSize, &scale, testStencilLevel, stencilPipeline](
+		const auto fDraw = [&context, &commandBuffer, &pushConstants, &size, &drawInfo, &drawState, &matDraw, this, &textEl, &absPos, &absSize, &scale, testStencilLevel, stencilPipeline](
 		                     bool bClear) { RenderLines(commandBuffer, drawInfo, drawState, absPos, matDraw, scale, size, pushConstants, testStencilLevel, stencilPipeline); };
 
 		// Render Shadow
