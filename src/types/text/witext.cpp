@@ -263,6 +263,8 @@ void WIText::SetFont(const FontInfo *font)
 	if(m_font.get() == font)
 		return;
 	m_font = (font != nullptr) ? font->shared_from_this() : nullptr;
+	if(m_font)
+		FontManager::InitializeFontGlyphs(GetText(), *m_font);
 	SetDirty();
 	CallCallbacks<void, const FontInfo *>("OnFontChanged", font);
 }
@@ -293,15 +295,20 @@ Vector2i WIText::CalcTextSize() const
 	return sz;
 }
 
-void WIText::GetTextSize(int *w, int *h, const util::Utf8StringView *inText)
+void WIText::GetTextSize(int *w, int *h, const util::Utf8StringView *inText, const FontInfo *pfont)
 {
-	if(m_font == nullptr) {
+	auto *font = pfont;
+	if(!font)
+		font = m_font.get();
+	if(font == nullptr) {
 		*w = 0;
 		*h = 0;
 		return;
 	}
 	int wText = 0;
 	if(inText == nullptr) {
+		if(pfont)
+			throw std::invalid_argument {"Custom font argument must not be supplied if no text argument was given!"};
 		for(auto &line : m_text->GetLines()) {
 			auto &formattedLine = line->GetFormattedLine();
 			int w;
@@ -316,8 +323,8 @@ void WIText::GetTextSize(int *w, int *h, const util::Utf8StringView *inText)
 		*h = hText * lineCount + 3;
 		return;
 	}
-	FontManager::GetTextSize(*inText, 0u, m_font.get(), w);
-	*h = m_font->GetMaxGlyphSize() + 1;
+	FontManager::GetTextSize(*inText, 0u, font, w);
+	*h = (m_font ? m_font->GetMaxGlyphSize() : 0) + 1;
 }
 
 void WIText::SetFlag(Flags flag, bool enabled)

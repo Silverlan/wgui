@@ -111,7 +111,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	static WGUI &GetInstance();
 	static bool IsOpen();
 
-	ResultCode Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName, const std::optional<util::Utf8String> &requiredChars);
+	ResultCode Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName, const std::vector<std::string> &fallbackFontFileNames = {});
 	ResultCode Initialize(std::optional<Vector2i> resolution = {}, std::optional<std::string> fontFileName = {});
 	template<class TElement>
 	TElement *Create(WIBase *parent = nullptr);
@@ -177,6 +177,8 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	bool IsLockedForDrawing() const { return m_lockedForDrawing; }
 	void SetLockedForDrawing(bool locked) { m_lockedForDrawing = locked; }
 	uint64_t GetNextGuiElementIndex() const { return m_nextGuiElementIndex; }
+	void BeginDraw();
+	void EndDraw();
 
 	size_t GetLastThinkIndex() const;
 

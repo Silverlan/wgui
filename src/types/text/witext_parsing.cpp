@@ -131,6 +131,9 @@ void WIText::SetText(const util::Utf8StringArg &text)
 	m_text->SetText(*text);
 
 	util::Utf8String newText = *m_text;
+	auto *font = GetFont();
+	if(font)
+		FontManager::InitializeFontGlyphs(newText, *font);
 	CallCallbacks<void, std::reference_wrapper<const util::Utf8String>>("OnTextChanged", std::reference_wrapper<const util::Utf8String>(newText));
 	CallCallbacks<void>("OnContentsChanged");
 }
