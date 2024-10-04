@@ -55,6 +55,8 @@ WIBase::WIBase()
 	RegisterCallback<void, WIBase *>("OnChildRemoved");
 	RegisterCallback<void>("OnCursorEntered");
 	RegisterCallback<void>("OnCursorExited");
+	RegisterCallback<void>("OnFileDragEntered");
+	RegisterCallback<void>("OnFileDragExited");
 	RegisterCallback<void>("OnUpdated");
 	RegisterCallback<void>("OnSkinApplied");
 	RegisterCallback<void, WITooltip *>("OnShowTooltip");
@@ -1195,8 +1197,11 @@ void WIBase::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCm
 	{
 		auto &context = WGUI::GetInstance().GetContext();
 		auto *window = GetRootWindow();
-		if(window && (*window)->IsFocused())
-			UpdateChildrenMouseInBounds();
+		if(window) {
+			auto *el = GetBaseRootElement();
+			if((*window)->IsFocused() || (el && el->IsMainFileHovering()))
+				UpdateChildrenMouseInBounds();
+		}
 	}
 
 	if(umath::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit) && IsVisible()) {
@@ -1805,6 +1810,7 @@ bool WIBase::MouseInBounds() const
 bool WIBase::GetMouseInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit); }
 bool WIBase::GetKeyboardInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::AcceptKeyboardInputBit); }
 bool WIBase::GetScrollInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::AcceptScrollInputBit); }
+bool WIBase::GetFileDropInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::FileDropInputEnabled); }
 void WIBase::AbsolutePosToRelative(Vector2 &pos) const
 {
 	pos = glm::inverse(GetAbsolutePose()) * Vector4 {pos * 2.f, 0.f, 1.f};
@@ -1857,8 +1863,44 @@ void WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibility, bool forceFalse)
 	auto cursorPos = el ? el->GetCursorPos() : Vector2 {};
 	DoUpdateChildrenMouseInBounds(GetAbsolutePose(), cursorPos, ignoreVisibility, forceFalse);
 }
-void WIBase::OnCursorEntered() { CallCallbacks<void>("OnCursorEntered"); }
-void WIBase::OnCursorExited() { CallCallbacks<void>("OnCursorExited"); }
+util::EventReply WIBase::OnFilesDropped(const std::vector<std::string> &files) { return util::EventReply::Unhandled; }
+bool WIBase::IsFileHovering() const { return umath::is_flag_set(m_stateFlags, StateFlags::FileDropHover); }
+void WIBase::SetFileHovering(bool hover)
+{
+	if(hover) {
+		umath::set_flag(m_stateFlags, StateFlags::FileDropHover);
+		auto *elRoot = GetBaseRootElement();
+		if(elRoot)
+			elRoot->SetFileHoverElement(*this, true);
+		OnFileDragEntered();
+		return;
+	}
+	if(!umath::is_flag_set(m_stateFlags, StateFlags::FileDropHover))
+		return;
+	umath::set_flag(m_stateFlags, StateFlags::FileDropHover, false);
+	auto *elRoot = GetBaseRootElement();
+	if(elRoot)
+		elRoot->SetFileHoverElement(*this, false);
+	OnFileDragExited();
+}
+void WIBase::OnFileDragEntered() { CallCallbacks<void>("OnFileDragEntered"); }
+void WIBase::OnFileDragExited() { CallCallbacks<void>("OnFileDragExited"); }
+void WIBase::OnCursorEntered()
+{
+	std::cout << "OnCursorEntered: " << std::endl;
+	if(umath::is_flag_set(m_stateFlags, StateFlags::FileDropInputEnabled)) {
+		auto *elRoot = GetBaseRootElement();
+		if(elRoot && elRoot->IsMainFileHovering())
+			SetFileHovering(true);
+	}
+	CallCallbacks<void>("OnCursorEntered");
+}
+void WIBase::OnCursorExited()
+{
+	if(umath::is_flag_set(m_stateFlags, StateFlags::FileDropHover))
+		SetFileHovering(false);
+	CallCallbacks<void>("OnCursorExited");
+}
 void WIBase::SetMouseInputEnabled(bool b)
 {
 	umath::set_flag(m_stateFlags, StateFlags::AcceptMouseInputBit, b);
@@ -1869,6 +1911,12 @@ void WIBase::SetMouseInputEnabled(bool b)
 }
 void WIBase::SetKeyboardInputEnabled(bool b) { umath::set_flag(m_stateFlags, StateFlags::AcceptKeyboardInputBit, b); }
 void WIBase::SetScrollInputEnabled(bool b) { umath::set_flag(m_stateFlags, StateFlags::AcceptScrollInputBit, b); }
+void WIBase::SetFileDropInputEnabled(bool b)
+{
+	umath::set_flag(m_stateFlags, StateFlags::FileDropInputEnabled, b);
+	if(b)
+		SetMouseMovementCheckEnabled(true);
+}
 util::EventReply WIBase::MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
 {
 	auto hThis = GetHandle();
@@ -2184,6 +2232,37 @@ bool WIBase::__wiScrollCallback(prosper::Window &window, Vector2 offset)
 		}
 	}
 	return false;
+}
+
+bool WIBase::__wiFileDragEnterCallback(prosper::Window &window)
+{
+	if(!WGUI::IsOpen())
+		return false;
+	auto *el = WGUI::GetInstance().GetBaseElement(&window);
+	if(!el)
+		return false;
+	el->SetMainFileHovering(true);
+	return true;
+}
+bool WIBase::__wiFileDragExitCallback(prosper::Window &window)
+{
+	if(!WGUI::IsOpen())
+		return false;
+	auto *el = WGUI::GetInstance().GetBaseElement(&window);
+	if(!el)
+		return false;
+	el->SetMainFileHovering(false);
+	return true;
+}
+bool WIBase::__wiFileDropCallback(prosper::Window &window, const std::vector<std::string> &files)
+{
+	if(!WGUI::IsOpen())
+		return false;
+	auto *el = WGUI::GetInstance().GetBaseElement(&window);
+	if(!el)
+		return false;
+	el->DropFiles(files);
+	return true;
 }
 
 void WIBase::FadeIn(float tFade, float alphaTarget)

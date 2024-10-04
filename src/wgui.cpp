@@ -803,6 +803,10 @@ bool WGUI::HandleCharInput(prosper::Window &window, unsigned int c) { return WIB
 
 bool WGUI::HandleScrollInput(prosper::Window &window, Vector2 offset) { return WIBase::__wiScrollCallback(window, offset); }
 
+bool WGUI::HandleFileDragEnter(prosper::Window &window) { return WIBase::__wiFileDragEnterCallback(window); }
+bool WGUI::HandleFileDragExit(prosper::Window &window) { return WIBase::__wiFileDragExitCallback(window); }
+bool WGUI::HandleFileDrop(prosper::Window &window, const std::vector<std::string> &files) { return WIBase::__wiFileDropCallback(window, files); }
+
 void WGUI::HandleIMEStatusChanged(prosper::Window &window, bool imeEnabled)
 {
 	auto *elRoot = FindWindowRootElement(window);

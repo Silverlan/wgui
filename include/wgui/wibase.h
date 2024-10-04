@@ -98,7 +98,9 @@ class DLLWGUI WIBase : public CallbackHandler {
 		FullyTransparent = StencilEnabled << 1u,
 		ScheduleUpdateOnVisible = FullyTransparent << 1u,
 		SkinCallbacksEnabled = ScheduleUpdateOnVisible << 1u,
-		IsInThinkingList = SkinCallbacksEnabled << 1u
+		IsInThinkingList = SkinCallbacksEnabled << 1u,
+		FileDropInputEnabled = IsInThinkingList << 1u,
+		FileDropHover = FileDropInputEnabled << 1u,
 	};
 	struct DLLWGUI DrawInfo {
 		enum class Flags : uint8_t {
@@ -179,10 +181,12 @@ class DLLWGUI WIBase : public CallbackHandler {
 	bool GetMouseInputEnabled() const;
 	bool GetKeyboardInputEnabled() const;
 	bool GetScrollInputEnabled() const;
+	bool GetFileDropInputEnabled() const;
 	bool GetMouseMovementCheckEnabled();
 	virtual void SetMouseInputEnabled(bool b);
 	virtual void SetKeyboardInputEnabled(bool b);
 	virtual void SetScrollInputEnabled(bool b);
+	virtual void SetFileDropInputEnabled(bool b);
 	void SetMouseMovementCheckEnabled(bool b);
 	void Update();
 	virtual void SizeToContents(bool x = true, bool y = true);
@@ -274,6 +278,11 @@ class DLLWGUI WIBase : public CallbackHandler {
 	virtual void OnCursorEntered();
 	virtual void OnCursorExited();
 	virtual void OnCursorMoved(int x, int y);
+	virtual void OnFileDragEntered();
+	virtual void OnFileDragExited();
+	virtual util::EventReply OnFilesDropped(const std::vector<std::string> &files);
+	bool IsFileHovering() const;
+	void SetFileHovering(bool hover);
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
 	virtual util::EventReply OnDoubleClick();
 	virtual util::EventReply JoystickCallback(const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state);
@@ -492,6 +501,10 @@ class DLLWGUI WIBase : public CallbackHandler {
 	static bool __wiCharCallback(prosper::Window &window, unsigned int c);
 	static bool __wiMouseButtonCallback(prosper::Window &window, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
 	static bool __wiScrollCallback(prosper::Window &window, Vector2 offset);
+	static bool __wiFileDragEnterCallback(prosper::Window &window);
+	static bool __wiFileDragExitCallback(prosper::Window &window);
+	static bool __wiFileDropCallback(prosper::Window &window, const std::vector<std::string> &files);
+
 	static util::EventReply InjectMouseButtonCallback(WIBase &el, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)

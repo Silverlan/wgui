@@ -46,6 +46,11 @@ class DLLWGUI WIRoot : public WIBase {
 	void SetFocusCount(uint32_t focusCount);
 	std::deque<WIHandle> &GetFocusTrapStack();
 
+	bool IsMainFileHovering() const;
+	void SetMainFileHovering(bool hovering);
+	void SetFileHoverElement(WIBase &el, bool hovering);
+	void DropFiles(const std::vector<std::string> &files);
+
 	void RestoreTrappedFocus(WIBase *elRef = nullptr);
   private:
 	WIHandle m_hTooltip;
@@ -59,6 +64,9 @@ class DLLWGUI WIRoot : public WIBase {
 	uint32_t m_focusCount = 0; // Used to detect changes
 	std::deque<WIHandle> m_focusTrapStack;
 	bool m_focusEnabled = true;
+
+	bool m_fileDragHover = false;
+	std::vector<WIHandle> m_fileHoverElements;
 
 	GLFW::Cursor::Shape m_mainCursor = GLFW::Cursor::Shape::Arrow;
 	GLFW::CursorHandle m_mainCustomCursor = {};

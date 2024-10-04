@@ -161,3 +161,57 @@ void WIRoot::UpdateIMETarget()
 	m_hImeTarget->GetAbsoluteVisibleBounds(pos, size);
 	(*window)->SetPreeditCursorRectangle(pos.x, pos.y, size.x, size.y);
 }
+
+bool WIRoot::IsMainFileHovering() const { return m_fileDragHover; }
+void WIRoot::SetMainFileHovering(bool hovering)
+{
+	m_fileDragHover = hovering;
+	if(hovering == false) {
+		auto hoverElements = std::move(m_fileHoverElements);
+		m_fileHoverElements.clear();
+		for(auto &hEl : hoverElements) {
+			if(!hEl.IsValid())
+				continue;
+			hEl.get()->SetFileHovering(false);
+		}
+	}
+	else {
+		std::function<void(WIBase &)> updateHoverStates = nullptr;
+		updateHoverStates = [&updateHoverStates](WIBase &el) {
+			if(el.IsVisible() == false)
+				return;
+			if(*el.GetMouseInBoundsProperty() && el.GetFileDropInputEnabled())
+				el.SetFileHovering(true);
+			for(auto &hEl : *el.GetChildren()) {
+				if(!hEl.IsValid())
+					continue;
+				updateHoverStates(*hEl.get());
+			}
+		};
+		updateHoverStates(*this);
+	}
+}
+void WIRoot::SetFileHoverElement(WIBase &el, bool hovering)
+{
+	auto it = std::find_if(m_fileHoverElements.begin(), m_fileHoverElements.end(), [&el](const WIHandle &hEl) { return hEl.get() == &el; });
+	if(hovering) {
+		if(it != m_fileHoverElements.end())
+			return;
+		m_fileHoverElements.push_back(el.GetHandle());
+		return;
+	}
+	if(it == m_fileHoverElements.end())
+		return;
+	m_fileHoverElements.erase(it);
+}
+
+void WIRoot::DropFiles(const std::vector<std::string> &files)
+{
+	for(auto &hEl : m_fileHoverElements) {
+		if(!hEl.IsValid() || !hEl->IsFileHovering())
+			continue;
+		if(hEl->OnFilesDropped(files) == util::EventReply::Handled)
+			break;
+	}
+	SetMainFileHovering(false);
+}

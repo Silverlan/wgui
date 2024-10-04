@@ -145,6 +145,9 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	bool HandleKeyboardInput(prosper::Window &window, GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods);
 	bool HandleCharInput(prosper::Window &window, unsigned int c);
 	bool HandleScrollInput(prosper::Window &window, Vector2 offset);
+	bool HandleFileDragEnter(prosper::Window &window);
+	bool HandleFileDragExit(prosper::Window &window);
+	bool HandleFileDrop(prosper::Window &window, const std::vector<std::string> &files);
 	void HandleIMEStatusChanged(prosper::Window &window, bool imeEnabled);
 	void SetCreateCallback(const std::function<void(WIBase &)> &onCreate);
 	void SetRemoveCallback(const std::function<void(WIBase &)> &onRemove);
