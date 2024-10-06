@@ -1887,7 +1887,6 @@ void WIBase::OnFileDragEntered() { CallCallbacks<void>("OnFileDragEntered"); }
 void WIBase::OnFileDragExited() { CallCallbacks<void>("OnFileDragExited"); }
 void WIBase::OnCursorEntered()
 {
-	std::cout << "OnCursorEntered: " << std::endl;
 	if(umath::is_flag_set(m_stateFlags, StateFlags::FileDropInputEnabled)) {
 		auto *elRoot = GetBaseRootElement();
 		if(elRoot && elRoot->IsMainFileHovering())
