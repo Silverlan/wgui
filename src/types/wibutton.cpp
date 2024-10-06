@@ -6,7 +6,8 @@
 #include "wgui/types/wibutton.h"
 #include "wgui/types/witext.h"
 #include "wgui/types/wirect.h"
-#include <util_unicode.hpp>
+
+import pragma.string.unicode;
 
 LINK_WGUI_TO_CLASS(WIButton, WIButton);
 
@@ -23,7 +24,7 @@ void WIButton::Initialize()
 	m_text = CreateChild<WIText>();
 }
 void WIButton::SetSize(int x, int y) { WIBase::SetSize(x, y); }
-void WIButton::SetText(const util::Utf8StringArg &text)
+void WIButton::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(!m_text.IsValid())
 		return;
@@ -31,10 +32,10 @@ void WIButton::SetText(const util::Utf8StringArg &text)
 	pText->SetText(text);
 	pText->SizeToContents();
 }
-const util::Utf8String &WIButton::GetText() const
+const pragma::string::Utf8String &WIButton::GetText() const
 {
 	if(!m_text.IsValid()) {
-		static util::Utf8String emptyString {};
+		static pragma::string::Utf8String emptyString {};
 		return emptyString;
 	}
 	return static_cast<const WIText *>(m_text.get())->GetText();

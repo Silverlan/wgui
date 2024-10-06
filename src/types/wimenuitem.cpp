@@ -6,7 +6,8 @@
 #include "wgui/types/wimenuitem.hpp"
 #include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
-#include <util_unicode.hpp>
+
+import pragma.string.unicode;
 
 LINK_WGUI_TO_CLASS(WIMenuItem, WIMenuItem);
 

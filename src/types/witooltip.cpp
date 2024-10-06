@@ -6,7 +6,8 @@
 #include "wgui/types/witooltip.h"
 #include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
-#include <util_unicode.hpp>
+
+import pragma.string.unicode;
 
 LINK_WGUI_TO_CLASS(WITooltip, WITooltip);
 
@@ -32,10 +33,10 @@ void WITooltip::SetText(const std::string &text)
 	pText->SetText(text);
 	pText->SizeToContents();
 }
-const util::Utf8String &WITooltip::GetText() const
+const pragma::string::Utf8String &WITooltip::GetText() const
 {
 	if(!m_hText.IsValid()) {
-		static util::Utf8String r;
+		static pragma::string::Utf8String r;
 		return r;
 	}
 	return static_cast<const WIText *>(m_hText.get())->GetText();

@@ -22,7 +22,7 @@
 #undef FindWindow
 #undef DrawState
 
-namespace util {
+namespace pragma::string {
 	class Utf8String;
 };
 namespace GLFW {

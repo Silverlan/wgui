@@ -25,8 +25,9 @@
 #include <prosper_window.hpp>
 #include <prosper_render_pass.hpp>
 #include <shader/prosper_pipeline_loader.hpp>
-#include <buffers/prosper_uniform_resizable_buffer.hpp>
-#include <util_unicode.hpp>
+#include <buffers/prosper_uniform_resizable_buffer.hpp>=
+
+import pragma.string.unicode;
 
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 prosper::SampleCountFlags WGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;

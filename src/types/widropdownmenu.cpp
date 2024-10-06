@@ -8,7 +8,8 @@
 #include "wgui/types/wiscrollbar.h"
 #include "wgui/types/wiarrow.h"
 #include "wgui/types/wiroot.h"
-#include <util_unicode.hpp>
+
+import pragma.string.unicode;
 
 LINK_WGUI_TO_CLASS(WIDropDownMenu, WIDropDownMenu);
 
@@ -33,7 +34,7 @@ WIDropDownMenu::~WIDropDownMenu()
 
 void WIDropDownMenu::SetListItemCount(uint32_t n) { m_numListItems = n; }
 
-void WIDropDownMenu::OnTextChanged(const util::Utf8String &text, bool changedByUser)
+void WIDropDownMenu::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser)
 {
 	WITextEntry::OnTextChanged(text, changedByUser);
 	if(changedByUser)
@@ -172,7 +173,7 @@ void WIDropDownMenu::SelectOption(const std::string &value)
 	SelectOption(option->GetIndex());
 }
 
-void WIDropDownMenu::SelectOptionByText(const util::Utf8StringArg &name)
+void WIDropDownMenu::SelectOptionByText(const pragma::string::Utf8StringArg &name)
 {
 	auto it = std::find_if(m_options.begin(), m_options.end(), [&name](const WIHandle &hOption) { return (hOption.IsValid() && static_cast<const WIDropDownMenuOption *>(hOption.get())->GetText() == *name) ? true : false; });
 	if(it == m_options.end())
@@ -180,7 +181,7 @@ void WIDropDownMenu::SelectOptionByText(const util::Utf8StringArg &name)
 	SelectOption(static_cast<WIDropDownMenuOption *>(it->get())->GetIndex());
 }
 
-util::Utf8StringView WIDropDownMenu::GetOptionText(uint32_t idx)
+pragma::string::Utf8StringView WIDropDownMenu::GetOptionText(uint32_t idx)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return {};
@@ -208,7 +209,7 @@ void WIDropDownMenu::SetOptionValue(uint32_t idx, const std::string &val)
 	static_cast<WIDropDownMenuOption *>(m_options[idx].get())->SetValue(val);
 }
 
-util::Utf8StringView WIDropDownMenu::GetText() const { return WITextEntry::GetText(); }
+pragma::string::Utf8StringView WIDropDownMenu::GetText() const { return WITextEntry::GetText(); }
 
 std::string WIDropDownMenu::GetValue()
 {
@@ -221,7 +222,7 @@ std::string WIDropDownMenu::GetValue()
 
 int32_t WIDropDownMenu::GetSelectedOption() const { return m_selected; }
 
-void WIDropDownMenu::SetText(const util::Utf8StringArg &text)
+void WIDropDownMenu::SetText(const pragma::string::Utf8StringArg &text)
 {
 	WITextEntry::SetText(text);
 	//SetText(text);
@@ -570,7 +571,7 @@ void WIDropDownMenuOption::Initialize()
 	SetScrollInputEnabled(true);
 }
 
-void WIDropDownMenuOption::SetText(const util::Utf8StringArg &text)
+void WIDropDownMenuOption::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(!m_hText.IsValid())
 		return;
@@ -583,7 +584,7 @@ void WIDropDownMenuOption::SetText(const util::Utf8StringArg &text)
 
 WIText *WIDropDownMenuOption::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }
 
-util::Utf8StringView WIDropDownMenuOption::GetText() const
+pragma::string::Utf8StringView WIDropDownMenuOption::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};

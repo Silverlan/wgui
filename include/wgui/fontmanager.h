@@ -16,7 +16,7 @@ namespace prosper {
 	class IDescriptorSet;
 };
 
-namespace util {
+namespace pragma::string {
 	class Utf8String;
 	class Utf8StringView;
 	class Utf8StringArg;
@@ -114,12 +114,12 @@ class DLLWGUI FontManager {
 	static void Close();
 	static void UpdateDirtyFonts();
 	static void SetFontsDirty();
-	static void InitializeFontGlyphs(const util::Utf8StringArg &text, const FontInfo &font);
+	static void InitializeFontGlyphs(const pragma::string::Utf8StringArg &text, const FontInfo &font);
 	static void AddFallbackFont(const std::string &fallbackFont);
 	static const std::vector<std::string> &GetFallbackFonts();
 	// Char offset (relative to a line) is required to calculate the correct tab size
-	static uint32_t GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height = nullptr);
-	static uint32_t GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);
+	static uint32_t GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height = nullptr);
+	static uint32_t GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);
 	static uint32_t GetTextSize(int32_t c, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height = nullptr);
 	static uint32_t GetTextSize(int32_t c, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);
   private:

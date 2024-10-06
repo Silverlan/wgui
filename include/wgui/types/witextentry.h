@@ -15,7 +15,7 @@ class DLLWGUI WITextEntry : public WIBase {
 	WIHandle m_hBg;
 
 	virtual void OnTextEntered();
-	virtual void OnTextChanged(const util::Utf8String &text, bool changedByUser);
+	virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
 	virtual void OnContentsChanged();
   public:
 	WITextEntry();
@@ -31,10 +31,10 @@ class DLLWGUI WITextEntry : public WIBase {
 
 	WIText *GetTextElement();
 	void SetInputHidden(bool b);
-	util::Utf8StringView GetText() const;
-	void SetText(const util::Utf8StringArg &text);
-	void InsertText(util::Utf8StringView instext, int pos);
-	void InsertText(util::Utf8StringView text);
+	pragma::string::Utf8StringView GetText() const;
+	void SetText(const pragma::string::Utf8StringArg &text);
+	void InsertText(pragma::string::Utf8StringView instext, int pos);
+	void InsertText(pragma::string::Utf8StringView text);
 	int GetCaretPos() const;
 	void SetCaretPos(int pos);
 	WIRect *GetCaretElement();

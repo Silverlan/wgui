@@ -7,7 +7,7 @@
 
 #include "wgui/wibase.h"
 
-namespace util {
+namespace pragma::string {
 	class Utf8String;
 };
 class DLLWGUI WITooltip : public WIBase {
@@ -17,7 +17,7 @@ class DLLWGUI WITooltip : public WIBase {
 	WITooltip();
 	virtual void Initialize() override;
 	void SetText(const std::string &text);
-	const util::Utf8String &GetText() const;
+	const pragma::string::Utf8String &GetText() const;
 };
 
 #endif

@@ -20,7 +20,7 @@ WITextEntryBase::WITextEntryBase() : WIBase(), m_posCaret(0), m_tBlink(0), m_sel
 {
 	RegisterCallback<void>("OnTextEntered");
 	RegisterCallback<void>("OnContentsChanged");
-	RegisterCallback<void, std::reference_wrapper<const util::Utf8String>, bool>("OnTextChanged");
+	RegisterCallback<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged");
 }
 
 void WITextEntryBase::OnTextContentsChanged()
@@ -53,14 +53,14 @@ bool WITextEntryBase::IsInputHidden() const { return m_hText.IsValid() ? static_
 
 WIText *WITextEntryBase::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }
 
-void WITextEntryBase::OnTextChanged(const util::Utf8String &text, bool changedByUser)
+void WITextEntryBase::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
 		return;
 	if(pText->GetAutoBreakMode() == WIText::AutoBreak::NONE)
 		pText->SizeToContents();
-	CallCallbacks<void, std::reference_wrapper<const util::Utf8String>, bool>("OnTextChanged", text, changedByUser);
+	CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged", text, changedByUser);
 }
 
 void WITextEntryBase::OnTextChanged(bool changedByUser)
@@ -103,8 +103,8 @@ void WITextEntryBase::Initialize()
 		te->OnTextContentsChanged();
 	}));
 	pText->AddCallback("OnTextChanged",
-	  FunctionCallback<void, std::reference_wrapper<const util::Utf8String>>::Create(std::bind(
-	    [](WIHandle hTeBase, std::reference_wrapper<const util::Utf8String> text) {
+	  FunctionCallback<void, std::reference_wrapper<const pragma::string::Utf8String>>::Create(std::bind(
+	    [](WIHandle hTeBase, std::reference_wrapper<const pragma::string::Utf8String> text) {
 		    if(!hTeBase.IsValid())
 			    return;
 		    WITextEntryBase *te = static_cast<WITextEntryBase *>(hTeBase.get());
@@ -192,14 +192,14 @@ void WITextEntryBase::OnFocusKilled()
 	ClearIMETarget();
 }
 
-util::Utf8StringView WITextEntryBase::GetText() const
+pragma::string::Utf8StringView WITextEntryBase::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};
 	return static_cast<const WIText *>(m_hText.get())->GetText();
 }
 
-void WITextEntryBase::SetText(const util::Utf8StringArg &text)
+void WITextEntryBase::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(!m_hText.IsValid())
 		return;
@@ -288,7 +288,7 @@ void WITextEntryBase::SetCaretPos(int pos)
 					int32_t w = 0;
 					auto relPos = pos - lineInfo.GetAbsCharStartOffset();
 					auto startOffset = lineInfo.relCharStartOffset;
-					util::Utf8StringView view {lineInfo.line->GetFormattedLine().GetText()};
+					pragma::string::Utf8StringView view {lineInfo.line->GetFormattedLine().GetText()};
 					auto text = view.substr(startOffset, relPos);
 					std::string strHidden;
 					if(IsInputHidden()) {
@@ -516,7 +516,7 @@ void WITextEntryBase::GetSelectionBounds(int *start, int *end) const
 
 void WITextEntryBase::ClearSelection() { SetSelectionBounds(-1, -1); }
 
-std::pair<util::text::LineIndex, util::text::LineIndex> WITextEntryBase::GetLineInfo(int pos, util::Utf8StringView &outLine, int *lpos) const
+std::pair<util::text::LineIndex, util::text::LineIndex> WITextEntryBase::GetLineInfo(int pos, pragma::string::Utf8StringView &outLine, int *lpos) const
 {
 	if(!m_hText.IsValid())
 		return {util::text::INVALID_LINE_INDEX, util::text::INVALID_LINE_INDEX};
@@ -529,7 +529,7 @@ std::pair<util::text::LineIndex, util::text::LineIndex> WITextEntryBase::GetLine
 		auto &strLine = lineInfo.line->GetFormattedLine().GetText();
 		int len = lineInfo.charCountSubLine;
 		if(pos < len) {
-			outLine = util::Utf8StringView {strLine}.substr(lineInfo.relCharStartOffset, len);
+			outLine = pragma::string::Utf8StringView {strLine}.substr(lineInfo.relCharStartOffset, len);
 			*lpos = pos;
 			return {lineInfo.lineIndex, lineInfo.relSubLineIndex};
 		}
@@ -631,7 +631,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(GLFW::Key key, int scanCode, 
 					WIText *pText = static_cast<WIText *>(m_hText.get());
 					auto &lines = pText->GetLines();
 					int pos = GetCaretPos();
-					util::Utf8StringView line;
+					pragma::string::Utf8StringView line;
 					int lpos;
 					auto curLine = GetLineInfo(pos, line, &lpos);
 					if(curLine.first != util::text::INVALID_LINE_INDEX) {
@@ -820,7 +820,7 @@ util::EventReply WITextEntryBase::OnDoubleClick()
 	return util::EventReply::Handled;
 }
 
-void WITextEntryBase::InsertText(const util::Utf8StringArg &instext, int pos)
+void WITextEntryBase::InsertText(const pragma::string::Utf8StringArg &instext, int pos)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
@@ -836,7 +836,7 @@ void WITextEntryBase::InsertText(const util::Utf8StringArg &instext, int pos)
 	SetCaretPos(GetCaretPos() + static_cast<int>(instext->length()));
 }
 
-void WITextEntryBase::InsertText(const util::Utf8StringArg &text)
+void WITextEntryBase::InsertText(const pragma::string::Utf8StringArg &text)
 {
 	RemoveSelectedText();
 	InsertText(text, GetCaretPos());

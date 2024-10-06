@@ -7,7 +7,8 @@
 #include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
 #include "wgui/types/wiarrow.h"
-#include <util_unicode.hpp>
+
+import pragma.string.unicode;
 
 LINK_WGUI_TO_CLASS(WITextEntry, WITextEntry);
 LINK_WGUI_TO_CLASS(WINumericEntry, WINumericEntry);
@@ -15,7 +16,7 @@ LINK_WGUI_TO_CLASS(WINumericEntry, WINumericEntry);
 WITextEntry::WITextEntry() : WIBase()
 {
 	RegisterCallback<void>("OnTextEntered");
-	RegisterCallback<void, std::reference_wrapper<const util::Utf8String>, bool>("OnTextChanged");
+	RegisterCallback<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged");
 	RegisterCallback<void>("OnContentsChanged");
 }
 
@@ -106,8 +107,8 @@ void WITextEntry::Initialize()
 	    },
 	    this->GetHandle())));
 	pBase->AddCallback("OnTextChanged",
-	  FunctionCallback<void, std::reference_wrapper<const util::Utf8String>, bool>::Create(std::bind(
-	    [](WIHandle hTextEntry, std::reference_wrapper<const util::Utf8String> text, bool changedByUser) {
+	  FunctionCallback<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>::Create(std::bind(
+	    [](WIHandle hTextEntry, std::reference_wrapper<const pragma::string::Utf8String> text, bool changedByUser) {
 		    if(!hTextEntry.IsValid())
 			    return;
 		    WITextEntry *te = static_cast<WITextEntry *>(hTextEntry.get());
@@ -155,7 +156,7 @@ void WITextEntry::Initialize()
 
 void WITextEntry::OnTextEntered() { CallCallbacks<void>("OnTextEntered"); }
 
-void WITextEntry::OnTextChanged(const util::Utf8String &text, bool changedByUser) { CallCallbacks<void, std::reference_wrapper<const util::Utf8String>, bool>("OnTextChanged", text, changedByUser); }
+void WITextEntry::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser) { CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged", text, changedByUser); }
 
 void WITextEntry::OnContentsChanged()
 {
@@ -215,25 +216,25 @@ int WITextEntry::GetMaxLength() const
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->GetMaxLength();
 }
 
-util::Utf8StringView WITextEntry::GetText() const
+pragma::string::Utf8StringView WITextEntry::GetText() const
 {
 	if(!m_hBase.IsValid())
 		return {};
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->GetText();
 }
-void WITextEntry::SetText(const util::Utf8StringArg &text)
+void WITextEntry::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetText(*text);
 }
-void WITextEntry::InsertText(util::Utf8StringView instext, int pos)
+void WITextEntry::InsertText(pragma::string::Utf8StringView instext, int pos)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->InsertText(instext, pos);
 }
-void WITextEntry::InsertText(util::Utf8StringView text)
+void WITextEntry::InsertText(pragma::string::Utf8StringView text)
 {
 	if(!m_hBase.IsValid())
 		return;

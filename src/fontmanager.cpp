@@ -13,10 +13,11 @@
 #include <image/prosper_sampler.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_context.hpp>
-#include <util_unicode.hpp>
 
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
+
+import pragma.string.unicode;
 
 class DynamicFontMap {
   public:
@@ -545,7 +546,7 @@ void FontManager::Close()
 	m_fonts.clear();
 	m_lib = {};
 }
-void FontManager::InitializeFontGlyphs(const util::Utf8StringArg &text, const FontInfo &font)
+void FontManager::InitializeFontGlyphs(const pragma::string::Utf8StringArg &text, const FontInfo &font)
 {
 	for(auto c : *text) {
 		auto *glyph = font.InitializeGlyph(c);
@@ -560,7 +561,7 @@ void FontManager::InitializeFontGlyphs(const util::Utf8StringArg &text, const Fo
 }
 void FontManager::AddFallbackFont(const std::string &fallbackFont) { m_fallbackFonts.push_back(fallbackFont); }
 const std::vector<std::string> &FontManager::GetFallbackFonts() { return m_fallbackFonts; }
-uint32_t FontManager::GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
+uint32_t FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
 	if(font == nullptr) {
 		if(width != nullptr)
@@ -624,14 +625,14 @@ uint32_t FontManager::GetTextSize(const util::Utf8StringArg &text, uint32_t char
 	return offset - charOffset;
 }
 
-uint32_t FontManager::GetTextSize(const util::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height) { return GetTextSize(text, charOffset, GetFont(font).get(), width, height); }
+uint32_t FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height) { return GetTextSize(text, charOffset, GetFont(font).get(), width, height); }
 uint32_t FontManager::GetTextSize(int32_t c, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
-	util::Utf8String str {static_cast<char16_t>(c)};
+	pragma::string::Utf8String str {static_cast<char16_t>(c)};
 	return GetTextSize(str, charOffset, font, width, height);
 }
 uint32_t FontManager::GetTextSize(int32_t c, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height)
 {
-	util::Utf8String str {static_cast<char16_t>(c)};
+	pragma::string::Utf8String str {static_cast<char16_t>(c)};
 	return GetTextSize(str, charOffset, font, width, height);
 }

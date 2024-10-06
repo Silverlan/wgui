@@ -12,7 +12,7 @@
 class WIText;
 class WIRect;
 class WITextDecorator;
-namespace util {
+namespace pragma::string {
 	class Utf8String;
 	class Utf8StringView;
 	class Utf8StringArg;
@@ -30,11 +30,11 @@ class DLLWGUI WITextEntryBase : public WIBase {
 	virtual void OnFocusKilled() override;
 	void SetInputHidden(bool b);
 	bool IsInputHidden() const;
-	util::Utf8StringView GetText() const;
+	pragma::string::Utf8StringView GetText() const;
 	WIText *GetTextElement();
-	void SetText(const util::Utf8StringArg &text);
-	void InsertText(const util::Utf8StringArg &instext, int pos);
-	void InsertText(const util::Utf8StringArg &text);
+	void SetText(const pragma::string::Utf8StringArg &text);
+	void InsertText(const pragma::string::Utf8StringArg &instext, int pos);
+	void InsertText(const pragma::string::Utf8StringArg &text);
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual util::EventReply CharCallback(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None) override;
@@ -83,9 +83,9 @@ class DLLWGUI WITextEntryBase : public WIBase {
 	void SetSelectionStart(int pos);
 	void SetSelectionEnd(int pos);
 	void UpdateSelection();
-	std::pair<util::text::LineIndex, util::text::LineIndex> GetLineInfo(int pos, util::Utf8StringView &outLine, int *lpos) const;
+	std::pair<util::text::LineIndex, util::text::LineIndex> GetLineInfo(int pos, pragma::string::Utf8StringView &outLine, int *lpos) const;
 	void UpdateTextPosition();
-	virtual void OnTextChanged(const util::Utf8String &text, bool changedByUser);
+	virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
 	void OnTextChanged(bool changedByUser);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WITextEntryBase::StateFlags)

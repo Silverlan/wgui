@@ -28,14 +28,17 @@ namespace prosper {
 	class IDescriptorSet;
 };
 
+namespace pragma::string {
+	class Utf8String;
+	class Utf8StringArg;
+};
+
 namespace util {
 	namespace text {
 		class FormattedText;
 		class TextTag;
 		class FormattedTextLine;
 	};
-	class Utf8String;
-	class Utf8StringArg;
 };
 class WGUIShaderText;
 class WITextTag;
@@ -131,9 +134,9 @@ class DLLWGUI WIText : public WIBase {
 	void SetBreakHeight(int breakHeight);
 	const util::text::FormattedText &GetFormattedTextObject() const;
 	util::text::FormattedText &GetFormattedTextObject();
-	const util::Utf8String &GetText() const;
-	const util::Utf8String &GetFormattedText() const;
-	void SetText(const util::Utf8StringArg &text);
+	const pragma::string::Utf8String &GetText() const;
+	const pragma::string::Utf8String &GetFormattedText() const;
+	void SetText(const pragma::string::Utf8StringArg &text);
 	void SetFont(const std::string_view &font);
 	void SetFont(const FontInfo *font);
 	void SetAutoBreakMode(AutoBreak b);
@@ -157,16 +160,16 @@ class DLLWGUI WIText : public WIBase {
 	void HideText(bool hide = true);
 
 	void UpdateSubLines();
-	void AppendText(const util::Utf8StringArg &text);
-	bool InsertText(const util::Utf8StringArg &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset = util::text::LAST_CHAR);
-	void AppendLine(const util::Utf8StringArg &line);
+	void AppendText(const pragma::string::Utf8StringArg &text);
+	bool InsertText(const pragma::string::Utf8StringArg &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset = util::text::LAST_CHAR);
+	void AppendLine(const pragma::string::Utf8StringArg &line);
 	void PopFrontLine();
 	void PopBackLine();
 	void RemoveLine(util::text::LineIndex lineIdx);
 	bool RemoveText(util::text::LineIndex lineIdx, util::text::CharOffset charOffset, util::text::TextLength len);
 	bool RemoveText(util::text::TextOffset offset, util::text::TextLength len);
 	bool MoveText(util::text::LineIndex lineIdx, util::text::CharOffset startOffset, util::text::TextLength len, util::text::LineIndex targetLineIdx, util::text::CharOffset targetCharOffset = util::text::LAST_CHAR);
-	util::Utf8StringView Substr(util::text::TextOffset startOffset, util::text::TextLength len) const;
+	pragma::string::Utf8StringView Substr(util::text::TextOffset startOffset, util::text::TextLength len) const;
 	void Clear();
 
 	void SetTabSpaceCount(uint32_t numberOfSpaces);
@@ -261,7 +264,7 @@ class DLLWGUI WIText : public WIBase {
 	void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
 	void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, util::text::LineIndex lineIndex);
 	void UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
-	void GetTextSize(int *w, int *h, const util::Utf8StringView *inText = nullptr, const FontInfo *font = nullptr);
+	void GetTextSize(int *w, int *h, const pragma::string::Utf8StringView *inText = nullptr, const FontInfo *font = nullptr);
 	void RenderText();
 	void RenderText(Mat4 &mat);
 	void InitializeShadow(bool bReload = false);

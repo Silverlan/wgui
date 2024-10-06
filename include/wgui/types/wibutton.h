@@ -8,7 +8,7 @@
 #include "wgui/wibufferbase.h"
 #include "wgui/wihandle.h"
 
-namespace util {
+namespace pragma::string {
 	class Utf8StringArg;
 };
 class DLLWGUI WIButton : public WIBase {
@@ -19,8 +19,8 @@ class DLLWGUI WIButton : public WIBase {
 	WIButton();
 	virtual ~WIButton() override;
 	virtual void Initialize() override;
-	void SetText(const util::Utf8StringArg &text);
-	const util::Utf8String &GetText() const;
+	void SetText(const pragma::string::Utf8StringArg &text);
+	const pragma::string::Utf8String &GetText() const;
 	virtual void SetSize(int x, int y) override;
 	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
 	virtual void SizeToContents(bool x = true, bool y = true) override;

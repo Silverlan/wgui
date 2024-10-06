@@ -114,7 +114,7 @@ WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(0), m_wTexture(0), m
 	auto &shaderManager = WGUI::GetInstance().GetContext().GetShaderManager();
 	m_shader = shaderManager.GetShader("wguitext");
 
-	RegisterCallback<void, std::reference_wrapper<const util::Utf8String>>("OnTextChanged");
+	RegisterCallback<void, std::reference_wrapper<const pragma::string::Utf8String>>("OnTextChanged");
 	RegisterCallback<void, const FontInfo *>("OnFontChanged");
 	RegisterCallback<void, std::reference_wrapper<const std::shared_ptr<prosper::RenderTarget>>>("OnTextRendered");
 	RegisterCallback<void>("OnContentsChanged");
@@ -149,7 +149,7 @@ std::pair<Vector2i, Vector2i> WIText::GetCharacterPixelBounds(util::text::LineIn
 		return {{0, 0}, {0, 0}};
 	if(charOffset >= strLine.size())
 		charOffset = strLine.size() - 1;
-	auto strViewLine = util::Utf8StringView {strLine};
+	auto strViewLine = pragma::string::Utf8StringView {strLine};
 
 	std::string strHidden;
 	if(IsTextHidden()) {
@@ -253,8 +253,8 @@ int WIText::GetBreakHeight() { return m_breakHeight; }
 void WIText::SetBreakHeight(int breakHeight) { m_breakHeight = breakHeight; }
 const util::text::FormattedText &WIText::GetFormattedTextObject() const { return const_cast<WIText *>(this)->GetFormattedTextObject(); }
 util::text::FormattedText &WIText::GetFormattedTextObject() { return *m_text; }
-const util::Utf8String &WIText::GetText() const { return m_text->GetUnformattedText(); }
-const util::Utf8String &WIText::GetFormattedText() const { return m_text->GetFormattedText(); }
+const pragma::string::Utf8String &WIText::GetText() const { return m_text->GetUnformattedText(); }
+const pragma::string::Utf8String &WIText::GetFormattedText() const { return m_text->GetFormattedText(); }
 void WIText::SetTabSpaceCount(uint32_t numberOfSpaces) { m_tabSpaceCount = numberOfSpaces; }
 uint32_t WIText::GetTabSpaceCount() const { return m_tabSpaceCount; }
 void WIText::SetFont(const std::string_view &font) { SetFont(FontManager::GetFont(font.data()).get()); }
@@ -295,7 +295,7 @@ Vector2i WIText::CalcTextSize() const
 	return sz;
 }
 
-void WIText::GetTextSize(int *w, int *h, const util::Utf8StringView *inText, const FontInfo *pfont)
+void WIText::GetTextSize(int *w, int *h, const pragma::string::Utf8StringView *inText, const FontInfo *pfont)
 {
 	auto *font = pfont;
 	if(!font)
@@ -381,15 +381,15 @@ void WIText::SetAutoBreakMode(AutoBreak b)
 	SizeToContents();
 }
 
-void WIText::AppendText(const util::Utf8StringArg &text) { m_text->AppendText(text); }
-bool WIText::InsertText(const util::Utf8StringArg &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset) { return m_text->InsertText(text, lineIdx, charOffset); }
-void WIText::AppendLine(const util::Utf8StringArg &line) { m_text->AppendLine(line); }
+void WIText::AppendText(const pragma::string::Utf8StringArg &text) { m_text->AppendText(text); }
+bool WIText::InsertText(const pragma::string::Utf8StringArg &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset) { return m_text->InsertText(text, lineIdx, charOffset); }
+void WIText::AppendLine(const pragma::string::Utf8StringArg &line) { m_text->AppendLine(line); }
 void WIText::PopFrontLine() { m_text->PopFrontLine(); }
 void WIText::PopBackLine() { m_text->PopBackLine(); }
 void WIText::RemoveLine(util::text::LineIndex lineIdx) { m_text->RemoveLine(lineIdx); }
 bool WIText::RemoveText(util::text::LineIndex lineIdx, util::text::CharOffset charOffset, util::text::TextLength len) { return m_text->RemoveText(lineIdx, charOffset, len); }
 bool WIText::RemoveText(util::text::TextOffset offset, util::text::TextLength len) { return m_text->RemoveText(offset, len); }
 bool WIText::MoveText(util::text::LineIndex lineIdx, util::text::CharOffset startOffset, util::text::TextLength len, util::text::LineIndex targetLineIdx, util::text::CharOffset targetCharOffset) { return m_text->MoveText(lineIdx, startOffset, len, targetLineIdx, targetCharOffset); }
-util::Utf8StringView WIText::Substr(util::text::TextOffset startOffset, util::text::TextLength len) const { return m_text->Substr(startOffset, len); }
+pragma::string::Utf8StringView WIText::Substr(util::text::TextOffset startOffset, util::text::TextLength len) const { return m_text->Substr(startOffset, len); }
 void WIText::Clear() { return m_text->Clear(); }
 #pragma optimize("", on)

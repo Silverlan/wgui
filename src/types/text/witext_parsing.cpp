@@ -47,7 +47,7 @@ bool WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineS
 	auto &lineInfo = m_lineInfos.at(lineIndex);
 	auto line = lineInfo.wpLine.lock();
 	auto &strLine = line->GetFormattedLine().GetText();
-	auto strView = util::Utf8StringView {strLine};
+	auto strView = pragma::string::Utf8StringView {strLine};
 	auto len = line->GetAbsFormattedLength() - 1;
 	auto i = line->GetAbsFormattedLength();
 	auto breakMode = m_autoBreak;
@@ -117,24 +117,24 @@ bool WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineS
 	return subLinesHaveChanged;
 }
 
-void WIText::SetText(const util::Utf8StringArg &text)
+void WIText::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(IsDirty() == false && *m_text == *text)
 		return;
 	umath::set_flag(m_flags, Flags::TextDirty, false);
 	umath::set_flag(m_flags, Flags::ApplySubTextTags);
 	ScheduleRenderUpdate(true);
-	util::Utf8String oldText = *m_text;
+	pragma::string::Utf8String oldText = *m_text;
 	auto textCpy = *text;
 
 	m_text->Clear();
 	m_text->SetText(*text);
 
-	util::Utf8String newText = *m_text;
+	pragma::string::Utf8String newText = *m_text;
 	auto *font = GetFont();
 	if(font)
 		FontManager::InitializeFontGlyphs(newText, *font);
-	CallCallbacks<void, std::reference_wrapper<const util::Utf8String>>("OnTextChanged", std::reference_wrapper<const util::Utf8String>(newText));
+	CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>>("OnTextChanged", std::reference_wrapper<const pragma::string::Utf8String>(newText));
 	CallCallbacks<void>("OnContentsChanged");
 }
 void WIText::PerformTextPostProcessing()

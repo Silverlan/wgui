@@ -424,7 +424,7 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 
 	// Initialize Buffers
 	struct SubStringInfo {
-		util::Utf8StringView subString;
+		pragma::string::Utf8StringView subString;
 		uint32_t width;
 		uint32_t height;
 		float sx;
@@ -439,19 +439,19 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 	std::vector<SubStringInfo> subStrings {};
 	auto numChars = m_text->GetCharCount();
 
-	std::function<void(const util::Utf8StringView &, util::text::LineIndex, util::text::CharOffset, int32_t &, int32_t &)> fAddSubString = nullptr;
-	fAddSubString = [this, &subStrings](const util::Utf8StringView &substr, util::text::LineIndex lineIndex, util::text::CharOffset charOffset, int32_t &inOutX, int32_t &inOutY) {
+	std::function<void(const pragma::string::Utf8StringView &, util::text::LineIndex, util::text::CharOffset, int32_t &, int32_t &)> fAddSubString = nullptr;
+	fAddSubString = [this, &subStrings](const pragma::string::Utf8StringView &substr, util::text::LineIndex lineIndex, util::text::CharOffset charOffset, int32_t &inOutX, int32_t &inOutY) {
 		if(substr.empty())
 			return;
 		// The sub-string may have to be cut into further sub-strings if the font changes
 		// mid-string (usually if a fallback font is required).
 		struct FontSubstr {
 			const FontInfo *font;
-			util::Utf8StringView view;
+			pragma::string::Utf8StringView view;
 		};
 		std::vector<FontSubstr> fontSubstrs;
 		const FontInfo *curFont = nullptr;
-		util::Utf8StringView u8Str {substr};
+		pragma::string::Utf8StringView u8Str {substr};
 		auto isHidden = IsTextHidden();
 		size_t startOffset = 0;
 		size_t len = 0;
@@ -516,7 +516,7 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 			// Populate glyph bounds and indices
 			auto fontSize = font.GetSize();
 			auto offset = 0u;
-			util::Utf8StringView u8Str {info.subString};
+			pragma::string::Utf8StringView u8Str {info.subString};
 			for(auto c : u8Str) {
 				if(isHidden)
 					c = '*';
@@ -556,7 +556,7 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 	int32_t y = 0u; // lineIndex *GetLineHeight();
 	int32_t x = 0u;
 	auto pLine = lineInfo.wpLine.lock();
-	auto lineView = util::Utf8StringView {static_cast<const util::Utf8String &>(pLine->GetFormattedLine())};
+	auto lineView = pragma::string::Utf8StringView {static_cast<const pragma::string::Utf8String &>(pLine->GetFormattedLine())};
 	auto subString = lineView;
 	util::text::CharOffset offset = 0;
 	auto subLines = lineInfo.subLines;

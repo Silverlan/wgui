@@ -9,7 +9,7 @@
 #include "witextentry.h"
 #include "wgui/wihandle.h"
 
-namespace util {
+namespace pragma::string {
 	class Utf8StringArg;
 };
 class DLLWGUI WIDropDownMenu;
@@ -35,8 +35,8 @@ class DLLWGUI WIDropDownMenuOption : public WIBase {
 	const std::string &GetValue();
 	void SetIndex(int idx);
 	int GetIndex();
-	void SetText(const util::Utf8StringArg &text);
-	util::Utf8StringView GetText() const;
+	void SetText(const pragma::string::Utf8StringArg &text);
+	pragma::string::Utf8StringView GetText() const;
 	WIText *GetTextElement();
 	virtual void SetSize(int x, int y) override;
 	virtual void OnCursorEntered() override;
@@ -61,7 +61,7 @@ class DLLWGUI WIDropDownMenu : public WITextEntry {
 
 	void UpdateTextPos();
 	void UpdateText();
-	virtual void OnTextChanged(const util::Utf8String &text, bool changedByUser) override;
+	virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser) override;
 	void UpdateListWindow();
 	void UpdateOptionItems(std::optional<uint32_t> oldOffset);
   public:
@@ -73,20 +73,20 @@ class DLLWGUI WIDropDownMenu : public WITextEntry {
 	void SetListItemCount(uint32_t n);
 	void SelectOption(unsigned int idx);
 	void SelectOption(const std::string &value);
-	void SelectOptionByText(const util::Utf8StringArg &name);
+	void SelectOptionByText(const pragma::string::Utf8StringArg &name);
 	const WIDropDownMenuOption *FindOptionByValue(const std::string &value) const;
 	WIDropDownMenuOption *FindOptionByValue(const std::string &value);
 	bool HasOption(const std::string &value) const;
 	void OnOptionSelected(WIDropDownMenuOption *option);
 	void ClearSelectedOption();
-	util::Utf8StringView GetText() const;
+	pragma::string::Utf8StringView GetText() const;
 	std::string GetValue();
 	int32_t GetSelectedOption() const;
-	util::Utf8StringView GetOptionText(uint32_t idx);
+	pragma::string::Utf8StringView GetOptionText(uint32_t idx);
 	std::string GetOptionValue(uint32_t idx);
 	void SetOptionText(uint32_t idx, const std::string &text);
 	void SetOptionValue(uint32_t idx, const std::string &val);
-	void SetText(const util::Utf8StringArg &text);
+	void SetText(const pragma::string::Utf8StringArg &text);
 	unsigned int GetOptionCount();
 	WIDropDownMenuOption *AddOption(const std::string &option, const std::string &value);
 	WIDropDownMenuOption *AddOption(const std::string &option);
