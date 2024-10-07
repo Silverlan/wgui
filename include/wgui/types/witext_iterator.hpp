@@ -6,6 +6,13 @@
 #define __WITEXT_ITERATOR_HPP__
 
 #include "wgui/wguidefinitions.h"
+
+namespace pragma::string {
+	class Utf8String;
+	class Utf8StringView;
+	class Utf8StringArg;
+};
+
 #include <util_formatted_text_line.hpp>
 
 class WIText;
