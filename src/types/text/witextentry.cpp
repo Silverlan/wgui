@@ -324,6 +324,7 @@ void WINumericEntry::Initialize()
 {
 	WITextEntry::Initialize();
 
+	static_cast<WITextEntryBase *>(m_hBase.get())->SetNumeric(true);
 	m_numeric.min = nullptr;
 	m_numeric.max = nullptr;
 	if(!m_numeric.hUpArrow.IsValid()) {
