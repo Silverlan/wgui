@@ -12,10 +12,12 @@
 #include <util_formatted_text_line.hpp>
 #include <prosper_context.hpp>
 #include <prosper_window.hpp>
+#include <exprtk.hpp>
 #include <codecvt>
 
-LINK_WGUI_TO_CLASS(WITextEntryBase, WITextEntryBase);
+import pragma.string.unicode;
 
+LINK_WGUI_TO_CLASS(WITextEntryBase, WITextEntryBase);
 WITextEntryBase::WITextEntryBase() : WIBase(), m_posCaret(0), m_tBlink(0), m_selectStart(-1), m_selectEnd(-1), m_maxLength(-1)
 {
 	RegisterCallback<void>("OnTextEntered");
@@ -140,7 +142,30 @@ void WITextEntryBase::SetEntryFieldElement(WIBase *el) { m_hEntryFieldElement = 
 
 WITextEntryBase::~WITextEntryBase() { KillFocus(); }
 
-void WITextEntryBase::OnEnter() { CallCallbacks<void>("OnTextEntered"); }
+void WITextEntryBase::OnEnter()
+{
+	if(IsNumeric()) {
+		using T = float;
+		typedef exprtk::symbol_table<T> symbol_table_t;
+		typedef exprtk::expression<T> expression_t;
+		typedef exprtk::parser<T> parser_t;
+
+		const std::string expression_string = GetText();
+
+		symbol_table_t symbol_table;
+		symbol_table.add_function("deg", +[](float v) -> float { return umath::rad_to_deg(v); });
+		symbol_table.add_function("rad", +[](float v) -> float { return umath::deg_to_rad(v); });
+
+		expression_t expression;
+		expression.register_symbol_table(symbol_table);
+
+		parser_t parser;
+		if(parser.compile(expression_string, expression))
+			SetText(std::to_string(expression.value()));
+	}
+
+	CallCallbacks<void>("OnTextEntered");
+}
 
 void WITextEntryBase::SetSize(int x, int y)
 {
@@ -771,7 +796,7 @@ util::EventReply WITextEntryBase::CharCallback(unsigned int c, GLFW::Modifier mo
 	//std::cout<<"CharCallback: "<<c<<std::endl;
 	if(IsEditable() == false)
 		return util::EventReply::Unhandled;
-	if(!IsNumeric() || (c >= 48 && c <= 57) || (IsMultiLine() && c == '\n')) {
+	if(/*!IsNumeric() ||*/ true || (c >= 48 && c <= 57) || (IsMultiLine() && c == '\n')) {
 		auto *pText = GetTextElement();
 		auto shouldInsert = true;
 		if(pText && m_maxLength >= 0) {
