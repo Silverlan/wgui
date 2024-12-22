@@ -2045,6 +2045,9 @@ void WIBase::AddStyleClass(const std::string &className)
 {
 	auto lname = className;
 	ustring::to_lower(lname);
+	auto it = std::find(m_styleClasses.begin(), m_styleClasses.end(), lname);
+	if(it != m_styleClasses.end())
+		return;
 	m_styleClasses.push_back(lname);
 }
 void WIBase::RemoveStyleClass(const std::string &className)
@@ -2222,8 +2225,7 @@ bool WIBase::__wiScrollCallback(prosper::Window &window, Vector2 offset)
 	auto cursorPos = window->GetCursorPos();
 	WIBase *gui = WGUI::GetInstance().GetBaseElement(&window);
 	if(gui->IsVisible()) {
-		gui = WGUI::GetInstance().GetGUIElement(
-		  gui, static_cast<int>(cursorPos.x), static_cast<int>(cursorPos.y), [](WIBase *elChild) -> bool { return elChild->GetScrollInputEnabled(); }, &window);
+		gui = WGUI::GetInstance().GetGUIElement(gui, static_cast<int>(cursorPos.x), static_cast<int>(cursorPos.y), [](WIBase *elChild) -> bool { return elChild->GetScrollInputEnabled(); }, &window);
 		while(gui != nullptr) {
 			if(gui->GetScrollInputEnabled() && gui->ScrollCallback(offset) == util::EventReply::Handled)
 				return true;
