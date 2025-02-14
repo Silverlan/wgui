@@ -229,6 +229,8 @@ void WITexturedShape::ReloadDescriptorSet()
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to reload GUI element descriptor set during rendering, this is not allowed!"};
+	if(m_descSetTextureGroup)
+		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_descSetTextureGroup);
 	m_descSetTextureGroup = nullptr;
 	if(wgui::ShaderTextured::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
 		return;
