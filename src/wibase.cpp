@@ -40,7 +40,7 @@ Vector4 WIBase::DrawInfo::GetColor(WIBase &el, const wgui::DrawState &drawState)
 bool is_valid(const WIHandle &hEl) { return hEl.IsValid() && !hEl->IsRemovalScheduled(); }
 
 WIBase::WIBase()
-    : CallbackHandler(), m_cursor(GLFW::Cursor::Shape::Default), m_color(util::ColorProperty::Create(Color::White)), m_pos(util::Vector2iProperty::Create()), m_size(util::Vector2iProperty::Create()), m_bVisible(util::BoolProperty::Create(true)),
+    : CallbackHandler(), m_cursor(pragma::platform::Cursor::Shape::Default), m_color(util::ColorProperty::Create(Color::White)), m_pos(util::Vector2iProperty::Create()), m_size(util::Vector2iProperty::Create()), m_bVisible(util::BoolProperty::Create(true)),
       m_bHasFocus(util::BoolProperty::Create(false)), m_bMouseInBounds(util::BoolProperty::Create(false)), m_scale {util::Vector2Property::Create(Vector2 {1.f, 1.f})}
 {
 	RegisterCallback<void>("OnFocusGained");
@@ -61,13 +61,13 @@ WIBase::WIBase()
 	RegisterCallback<void>("OnSkinApplied");
 	RegisterCallback<void, WITooltip *>("OnShowTooltip");
 	RegisterCallback<void, WITooltip *>("OnHideTooltip");
-	RegisterCallbackWithOptionalReturn<util::EventReply, GLFW::MouseButton, GLFW::KeyState, GLFW::Modifier>("OnMouseEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier>("OnMouseEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMousePressed");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMouseReleased");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnDoubleClick");
-	RegisterCallbackWithOptionalReturn<util::EventReply, std::reference_wrapper<const GLFW::Joystick>, uint32_t, GLFW::KeyState>("OnJoystickEvent");
-	RegisterCallbackWithOptionalReturn<util::EventReply, GLFW::Key, int, GLFW::KeyState, GLFW::Modifier>("OnKeyEvent");
-	RegisterCallbackWithOptionalReturn<util::EventReply, int, GLFW::Modifier>("OnCharEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply, std::reference_wrapper<const pragma::platform::Joystick>, uint32_t, pragma::platform::KeyState>("OnJoystickEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier>("OnKeyEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply, int, pragma::platform::Modifier>("OnCharEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply, Vector2, bool>("OnScroll");
 
 	//auto hThis = GetHandle();
@@ -187,8 +187,8 @@ std::ostream &WIBase::Print(std::ostream &stream) const
 	stream << t.name();
 	return stream;
 }
-GLFW::Cursor::Shape WIBase::GetCursor() const { return m_cursor; }
-void WIBase::SetCursor(GLFW::Cursor::Shape cursor) { m_cursor = cursor; }
+pragma::platform::Cursor::Shape WIBase::GetCursor() const { return m_cursor; }
+void WIBase::SetCursor(pragma::platform::Cursor::Shape cursor) { m_cursor = cursor; }
 void WIBase::RemoveSafely()
 {
 	SetVisible(false);
@@ -1916,11 +1916,11 @@ void WIBase::SetFileDropInputEnabled(bool b)
 	if(b)
 		SetMouseMovementCheckEnabled(true);
 }
-util::EventReply WIBase::MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
+util::EventReply WIBase::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	auto hThis = GetHandle();
 
-	if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press) {
+	if(button == pragma::platform::MouseButton::Left && state == pragma::platform::KeyState::Press) {
 		ChronoTimePoint now = util::Clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_clickStart);
 		if(duration.count() <= 300) {
@@ -1935,13 +1935,13 @@ util::EventReply WIBase::MouseCallback(GLFW::MouseButton button, GLFW::KeyState 
 	}
 
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, GLFW::MouseButton, GLFW::KeyState, GLFW::Modifier>("OnMouseEvent", reply, button, state, mods);
+	CallCallbacksWithOptionalReturn<util::EventReply, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier>("OnMouseEvent", reply, button, state, mods);
 	if(reply == util::EventReply::Handled)
 		return util::EventReply::Handled;
 	if(!hThis.IsValid())
 		return util::EventReply::Unhandled;
-	if(button == GLFW::MouseButton::Left) {
-		if(state == GLFW::KeyState::Press) {
+	if(button == pragma::platform::MouseButton::Left) {
+		if(state == pragma::platform::KeyState::Press) {
 			auto reply = util::EventReply::Unhandled;
 			CallCallbacksWithOptionalReturn<util::EventReply>("OnMousePressed", reply);
 			if(!hThis.IsValid())
@@ -1950,7 +1950,7 @@ util::EventReply WIBase::MouseCallback(GLFW::MouseButton button, GLFW::KeyState 
 				return OnMousePressed();
 			return reply;
 		}
-		else if(state == GLFW::KeyState::Release) {
+		else if(state == pragma::platform::KeyState::Release) {
 			auto reply = util::EventReply::Unhandled;
 			CallCallbacksWithOptionalReturn<util::EventReply>("OnMouseReleased", reply);
 			if(!hThis.IsValid())
@@ -1971,24 +1971,24 @@ util::EventReply WIBase::OnDoubleClick()
 	CallCallbacksWithOptionalReturn<util::EventReply>("OnDoubleClick", reply);
 	return reply;
 }
-util::EventReply WIBase::JoystickCallback(const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state)
+util::EventReply WIBase::JoystickCallback(const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state)
 {
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, std::reference_wrapper<const GLFW::Joystick>, uint32_t, GLFW::KeyState>("OnJoystickEvent", reply, std::ref(joystick), key, state);
+	CallCallbacksWithOptionalReturn<util::EventReply, std::reference_wrapper<const pragma::platform::Joystick>, uint32_t, pragma::platform::KeyState>("OnJoystickEvent", reply, std::ref(joystick), key, state);
 	return reply;
 }
-util::EventReply WIBase::KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods)
+util::EventReply WIBase::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	//std::cout<<"KeyboardCallback: "<<key<<","<<action<<std::endl;
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, GLFW::Key, int, GLFW::KeyState, GLFW::Modifier>("OnKeyEvent", reply, key, scanCode, state, mods);
+	CallCallbacksWithOptionalReturn<util::EventReply, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier>("OnKeyEvent", reply, key, scanCode, state, mods);
 	return reply;
 }
-util::EventReply WIBase::CharCallback(unsigned int c, GLFW::Modifier mods)
+util::EventReply WIBase::CharCallback(unsigned int c, pragma::platform::Modifier mods)
 {
 	//std::cout<<"CharCallback: "<<char(c)<<","<<action<<std::endl;
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, int, GLFW::Modifier>("OnCharEvent", reply, c, mods);
+	CallCallbacksWithOptionalReturn<util::EventReply, int, pragma::platform::Modifier>("OnCharEvent", reply, c, mods);
 	return reply;
 }
 util::EventReply WIBase::ScrollCallback(Vector2 offset, bool offsetAsPixels)
@@ -2023,15 +2023,15 @@ void WIBase::InjectMouseMoveInput(int32_t x, int32_t y)
 	OnCursorMoved(x, y);
 	UpdateChildrenMouseInBounds(false);
 }
-util::EventReply WIBase::InjectMouseInput(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
+util::EventReply WIBase::InjectMouseInput(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) { return el.IsSelfVisible() && el.MouseInBounds(); }, [](const WIBase &el) { return el.GetMouseInputEnabled() && el.IsSelfVisible(); });
 	if(el == nullptr)
 		return util::EventReply::Handled;
 	return InjectMouseButtonCallback(*el, button, state, mods);
 }
-util::EventReply WIBase::InjectKeyboardInput(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) { return KeyboardCallback(key, scanCode, state, mods); }
-util::EventReply WIBase::InjectCharInput(unsigned int c, GLFW::Modifier mods) { return CharCallback(c, mods); }
+util::EventReply WIBase::InjectKeyboardInput(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods) { return KeyboardCallback(key, scanCode, state, mods); }
+util::EventReply WIBase::InjectCharInput(unsigned int c, pragma::platform::Modifier mods) { return CharCallback(c, mods); }
 util::EventReply WIBase::InjectScrollInput(Vector2 offset, bool offsetAsPixels)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) { return el.IsSelfVisible() && el.MouseInBounds(); }, [](const WIBase &el) { return el.GetScrollInputEnabled() && el.IsSelfVisible(); });
@@ -2063,8 +2063,8 @@ void WIBase::ClearStyleClasses() { m_styleClasses.clear(); }
 
 /////////////////
 
-static std::unordered_map<GLFW::MouseButton, WIHandle> __lastMouseGUIElements;
-util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
+static std::unordered_map<pragma::platform::MouseButton, WIHandle> __lastMouseGUIElements;
+util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	auto hEl = el.GetHandle();
 
@@ -2081,8 +2081,8 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el, GLFW::MouseButton
 			return result; // Mouse button press was hijacked by another element
 	}
 	// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
-	auto it = std::find_if(__lastMouseGUIElements.begin(), __lastMouseGUIElements.end(), [&el](const std::pair<GLFW::MouseButton, WIHandle> &p) { return (p.second.get() == &el) ? true : false; });
-	if(it != __lastMouseGUIElements.end() && (!is_valid(it->second) || state == GLFW::KeyState::Release))
+	auto it = std::find_if(__lastMouseGUIElements.begin(), __lastMouseGUIElements.end(), [&el](const std::pair<pragma::platform::MouseButton, WIHandle> &p) { return (p.second.get() == &el) ? true : false; });
+	if(it != __lastMouseGUIElements.end() && (!is_valid(it->second) || state == pragma::platform::KeyState::Release))
 		__lastMouseGUIElements.erase(it);
 
 	if(wgui.GetFocusCount() != c)
@@ -2096,7 +2096,7 @@ util::EventReply WIBase::InjectMouseButtonCallback(WIBase &el, GLFW::MouseButton
 	}
 	return result;
 }
-bool WIBase::__wiMouseButtonCallback(prosper::Window &window, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
+bool WIBase::__wiMouseButtonCallback(prosper::Window &window, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	if(!WGUI::IsOpen())
 		return false;
@@ -2105,9 +2105,9 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window, GLFW::MouseButton 
 		auto hEl = i->second;
 		__lastMouseGUIElements.erase(i);
 		if(is_valid(hEl) && hEl->IsVisible() && hEl->GetMouseInputEnabled())
-			hEl->MouseCallback(button, GLFW::KeyState::Release, mods);
+			hEl->MouseCallback(button, pragma::platform::KeyState::Release, mods);
 	}
-	if(state == GLFW::KeyState::Press) {
+	if(state == pragma::platform::KeyState::Press) {
 		auto *pContextMenu = WIContextMenu::GetActiveContextMenu();
 		if(pContextMenu && pContextMenu->IsCursorInMenuBounds() == false)
 			WIContextMenu::CloseContextMenu();
@@ -2135,37 +2135,37 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window, GLFW::MouseButton 
 	return false;
 }
 
-static std::unordered_map<GLFW::Key, WIHandle> __lastKeyboardGUIElements;
-bool WIBase::__wiJoystickCallback(prosper::Window &window, const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state)
+static std::unordered_map<pragma::platform::Key, WIHandle> __lastKeyboardGUIElements;
+bool WIBase::__wiJoystickCallback(prosper::Window &window, const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state)
 {
 	if(!WGUI::IsOpen())
 		return false;
 	// TODO
 	return false;
 }
-bool WIBase::__wiKeyCallback(prosper::Window &window, GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods)
+bool WIBase::__wiKeyCallback(prosper::Window &window, pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	if(!WGUI::IsOpen())
 		return false;
 	auto it = __lastKeyboardGUIElements.find(key);
 	if(it != __lastKeyboardGUIElements.end()) {
 		if(is_valid(it->second) && it->second->GetKeyboardInputEnabled())
-			it->second->KeyboardCallback(key, scanCode, GLFW::KeyState::Release, mods);
+			it->second->KeyboardCallback(key, scanCode, pragma::platform::KeyState::Release, mods);
 		__lastKeyboardGUIElements.erase(it);
 	}
-	if(state == GLFW::KeyState::Press || state == GLFW::KeyState::Repeat) {
+	if(state == pragma::platform::KeyState::Press || state == pragma::platform::KeyState::Repeat) {
 		for(auto &hEl : WGUI::GetInstance().GetBaseElements()) {
 			if(hEl.expired())
 				continue;
 			auto *elRoot = const_cast<WIRoot *>(static_cast<const WIRoot *>(hEl.get()));
 			auto *gui = elRoot->GetFocusedElement();
 			while(gui) {
-				if(key == GLFW::Key::Escape && !gui->IsFocusTrapped()) {
+				if(key == pragma::platform::Key::Escape && !gui->IsFocusTrapped()) {
 					gui->KillFocus();
 					break;
 				}
 				else if(gui->GetKeyboardInputEnabled()) {
-					auto itCur = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [key](const std::pair<GLFW::Key, WIHandle> &p) { return (p.first == key) ? true : false; });
+					auto itCur = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [key](const std::pair<pragma::platform::Key, WIHandle> &p) { return (p.first == key) ? true : false; });
 					WIHandle hCur {};
 					if(itCur != __lastKeyboardGUIElements.end())
 						hCur = itCur->second;
@@ -2173,13 +2173,13 @@ bool WIBase::__wiKeyCallback(prosper::Window &window, GLFW::Key key, int scanCod
 					auto result = gui->KeyboardCallback(key, scanCode, state, mods);
 
 					// Callback may have invoked key release-event already, so we have to check if our element's still there
-					auto it = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [gui, key](const std::pair<GLFW::Key, WIHandle> &p) { return (p.first == key && p.second.get() == gui) ? true : false; });
+					auto it = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [gui, key](const std::pair<pragma::platform::Key, WIHandle> &p) { return (p.first == key && p.second.get() == gui) ? true : false; });
 					if(it != __lastKeyboardGUIElements.end()) {
-						if(!is_valid(it->second) || state == GLFW::KeyState::Release)
+						if(!is_valid(it->second) || state == pragma::platform::KeyState::Release)
 							__lastKeyboardGUIElements.erase(it); // Key is already released
 					}
 
-					if(state != GLFW::KeyState::Release && result == util::EventReply::Unhandled && hCur.IsValid()) {
+					if(state != pragma::platform::KeyState::Release && result == util::EventReply::Unhandled && hCur.IsValid()) {
 						// The "gui" element chose not to handle the keyboard event, so we'll restore the previous reference.
 						// Effectively this means:
 						// - Whichever element handled the "Press" event, gets to handle the "Release" event.

@@ -15,12 +15,12 @@ class DLLWGUI WIContextMenu : public WIRect {
 	static WIContextMenu *OpenContextMenu();
 	static bool IsContextMenuOpen();
 	static WIContextMenu *GetActiveContextMenu();
-	static void SetKeyBindHandler(const std::function<std::string(GLFW::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey);
+	static void SetKeyBindHandler(const std::function<std::string(pragma::platform::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey);
 
 	WIContextMenu();
 	virtual void Initialize() override;
 	virtual void OnRemove() override;
-	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual util::EventReply KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
 	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 
 	bool IsCursorInMenuBounds() const;

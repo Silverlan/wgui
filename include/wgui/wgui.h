@@ -13,10 +13,11 @@
 #include <unordered_map>
 #include <algorithm>
 #include <queue>
-#include <iglfw/glfw_window.h>
 #include <prosper_context_object.hpp>
 #include <sharedutils/chronotime.h>
 #include "types.hpp"
+
+import pragma.platform;
 
 #undef GetClassName
 #undef FindWindow
@@ -140,9 +141,9 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
 	void Draw(const prosper::Window &window, prosper::ICommandBuffer &drawCmd);
 	void Draw(WIBase &el, prosper::IRenderPass &rp, prosper::IFramebuffer &fb, prosper::ICommandBuffer &drawCmd);
-	bool HandleJoystickInput(prosper::Window &window, const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state);
-	bool HandleMouseInput(prosper::Window &window, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
-	bool HandleKeyboardInput(prosper::Window &window, GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods);
+	bool HandleJoystickInput(prosper::Window &window, const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state);
+	bool HandleMouseInput(prosper::Window &window, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
+	bool HandleKeyboardInput(prosper::Window &window, pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods);
 	bool HandleCharInput(prosper::Window &window, unsigned int c);
 	bool HandleScrollInput(prosper::Window &window, Vector2 offset);
 	bool HandleFileDragEnter(prosper::Window &window);
@@ -163,12 +164,12 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	std::string GetSkinName();
 	WISkin *GetSkin();
 	WISkin *GetSkin(std::string name);
-	void SetCursor(GLFW::Cursor::Shape cursor, prosper::Window *optWindow = nullptr);
-	void SetCursor(GLFW::Cursor &cursor, prosper::Window *optWindow = nullptr);
+	void SetCursor(pragma::platform::Cursor::Shape cursor, prosper::Window *optWindow = nullptr);
+	void SetCursor(pragma::platform::Cursor &cursor, prosper::Window *optWindow = nullptr);
 	void ResetCursor(prosper::Window *optWindow = nullptr);
-	void SetCursorInputMode(GLFW::CursorMode mode, prosper::Window *optWindow = nullptr);
-	GLFW::Cursor::Shape GetCursor(const prosper::Window *optWindow = nullptr);
-	GLFW::CursorMode GetCursorInputMode(const prosper::Window *optWindow = nullptr);
+	void SetCursorInputMode(pragma::platform::CursorMode mode, prosper::Window *optWindow = nullptr);
+	pragma::platform::Cursor::Shape GetCursor(const prosper::Window *optWindow = nullptr);
+	pragma::platform::CursorMode GetCursorInputMode(const prosper::Window *optWindow = nullptr);
 	msys::MaterialManager &GetMaterialManager();
 	void SetMaterialLoadHandler(const std::function<Material *(const std::string &)> &handler);
 	const std::function<Material *(const std::string &)> &GetMaterialLoadHandler() const;
@@ -227,7 +228,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	std::priority_queue<wgui::detail::UpdateInfo, std::vector<wgui::detail::UpdateInfo>, wgui::detail::UpdatePriority> m_updateQueue;
 	std::optional<uint32_t> m_currentUpdateDepth = {};
 	std::queue<WIHandle> m_removeQueue;
-	std::vector<std::unique_ptr<GLFW::Cursor>> m_cursors;
+	std::vector<std::unique_ptr<pragma::platform::Cursor>> m_cursors;
 	std::function<void(WIBase &)> m_createCallback = nullptr;
 	std::function<void(WIBase &)> m_removeCallback = nullptr;
 	std::function<void(WIBase *, WIBase *)> m_onFocusChangedCallback = nullptr;

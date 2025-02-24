@@ -30,7 +30,7 @@ void WITextTagLink::InitializeOverlay(WIBase &overlay)
 	overlay.SetZPos(20);
 	overlay.SetMouseInputEnabled(true);
 	overlay.SetMouseMovementCheckEnabled(true);
-	overlay.SetCursor(GLFW::Cursor::Shape::Hand);
+	overlay.SetCursor(pragma::platform::Cursor::Shape::Hand);
 }
 void WITextTagLink::Initialize()
 {

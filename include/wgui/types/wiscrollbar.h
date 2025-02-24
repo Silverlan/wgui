@@ -37,7 +37,7 @@ class DLLWGUI WIScrollBarSlider : public WIRect {
 	virtual ~WIScrollBarSlider() override = default;
 	virtual void Initialize() override;
 	virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
 	virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 	void SetHorizontal(bool b);
 	bool IsHorizontal();
@@ -84,7 +84,7 @@ class DLLWGUI WIScrollBar : public WIBase {
 	bool IsHorizontal();
 	bool IsVertical();
 	virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
 	virtual void SetSize(int x, int y) override;
 };
 

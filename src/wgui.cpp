@@ -145,12 +145,12 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 	if(!FontManager::Initialize())
 		return ResultCode::UnableToInitializeFontManager;
 	m_cursors.reserve(6);
-	m_cursors.push_back(GLFW::Cursor::Create(GLFW::Cursor::Shape::Arrow));
-	m_cursors.push_back(GLFW::Cursor::Create(GLFW::Cursor::Shape::IBeam));
-	m_cursors.push_back(GLFW::Cursor::Create(GLFW::Cursor::Shape::Crosshair));
-	m_cursors.push_back(GLFW::Cursor::Create(GLFW::Cursor::Shape::Hand));
-	m_cursors.push_back(GLFW::Cursor::Create(GLFW::Cursor::Shape::HResize));
-	m_cursors.push_back(GLFW::Cursor::Create(GLFW::Cursor::Shape::VResize));
+	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::Arrow));
+	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::IBeam));
+	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::Crosshair));
+	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::Hand));
+	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::HResize));
+	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::VResize));
 
 	m_time.Update();
 	m_tLastThink = static_cast<double>(m_time());
@@ -225,7 +225,7 @@ prosper::IRenderPass &WGUI::GetMsaaRenderPass() const { return *m_msaaRenderPass
 
 msys::MaterialManager &WGUI::GetMaterialManager() { return *m_matManager.lock(); }
 
-void WGUI::SetCursor(GLFW::Cursor::Shape cursor, prosper::Window *window)
+void WGUI::SetCursor(pragma::platform::Cursor::Shape cursor, prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
@@ -235,20 +235,20 @@ void WGUI::SetCursor(GLFW::Cursor::Shape cursor, prosper::Window *window)
 		return;
 	if(elRoot->GetMainCustomCursor() == nullptr && cursor == elRoot->GetMainCursor())
 		return;
-	if(cursor == GLFW::Cursor::Shape::Hidden) {
-		SetCursorInputMode(GLFW::CursorMode::Hidden, window);
+	if(cursor == pragma::platform::Cursor::Shape::Hidden) {
+		SetCursorInputMode(pragma::platform::CursorMode::Hidden, window);
 		return;
 	}
-	else if(elRoot->GetMainCursor() == GLFW::Cursor::Shape::Hidden)
-		SetCursorInputMode(GLFW::CursorMode::Normal, window);
-	auto icursor = static_cast<uint32_t>(cursor) - static_cast<uint32_t>(GLFW::Cursor::Shape::Arrow);
-	if(icursor > static_cast<uint32_t>(GLFW::Cursor::Shape::VResize))
+	else if(elRoot->GetMainCursor() == pragma::platform::Cursor::Shape::Hidden)
+		SetCursorInputMode(pragma::platform::CursorMode::Normal, window);
+	auto icursor = static_cast<uint32_t>(cursor) - static_cast<uint32_t>(pragma::platform::Cursor::Shape::Arrow);
+	if(icursor > static_cast<uint32_t>(pragma::platform::Cursor::Shape::VResize))
 		return;
 	SetCursor(*m_cursors[icursor].get(), window);
 	elRoot->SetMainCursor(cursor);
-	elRoot->SetMainCustomCursor(GLFW::CursorHandle());
+	elRoot->SetMainCustomCursor(pragma::platform::CursorHandle());
 }
-void WGUI::SetCursor(GLFW::Cursor &cursor, prosper::Window *window)
+void WGUI::SetCursor(pragma::platform::Cursor &cursor, prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
@@ -262,29 +262,29 @@ void WGUI::SetCursor(GLFW::Cursor &cursor, prosper::Window *window)
 	(*window)->SetCursor(cursor);
 	elRoot->SetMainCustomCursor(cursor.GetHandle());
 }
-void WGUI::SetCursorInputMode(GLFW::CursorMode mode, prosper::Window *window)
+void WGUI::SetCursorInputMode(pragma::platform::CursorMode mode, prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
 		return;
 	(*window)->SetCursorInputMode(mode);
 }
-GLFW::Cursor::Shape WGUI::GetCursor(const prosper::Window *window)
+pragma::platform::Cursor::Shape WGUI::GetCursor(const prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
-		return GLFW::Cursor::Shape::Default;
+		return pragma::platform::Cursor::Shape::Default;
 	auto *elRoot = FindWindowRootElement(*window);
-	return elRoot ? elRoot->GetMainCursor() : GLFW::Cursor::Shape::Default;
+	return elRoot ? elRoot->GetMainCursor() : pragma::platform::Cursor::Shape::Default;
 }
-GLFW::CursorMode WGUI::GetCursorInputMode(const prosper::Window *window)
+pragma::platform::CursorMode WGUI::GetCursorInputMode(const prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
-		return GLFW::CursorMode::Normal;
+		return pragma::platform::CursorMode::Normal;
 	return (*window)->GetCursorInputMode();
 }
-void WGUI::ResetCursor(prosper::Window *window) { SetCursor(GLFW::Cursor::Shape::Arrow, window); }
+void WGUI::ResetCursor(prosper::Window *window) { SetCursor(pragma::platform::Cursor::Shape::Arrow, window); }
 
 void WGUI::GetMousePos(int &x, int &y, const prosper::Window *window)
 {
@@ -394,10 +394,10 @@ void WGUI::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 		return;
 	}
 	auto *el = GetCursorGUIElement(
-	  elBase, [](WIBase *el) -> bool { return el->GetCursor() != GLFW::Cursor::Shape::Default; }, window);
-	while(el && el->GetCursor() == GLFW::Cursor::Shape::Default)
+	  elBase, [](WIBase *el) -> bool { return el->GetCursor() != pragma::platform::Cursor::Shape::Default; }, window);
+	while(el && el->GetCursor() == pragma::platform::Cursor::Shape::Default)
 		el = el->GetParent();
-	SetCursor(el ? el->GetCursor() : GLFW::Cursor::Shape::Arrow, window);
+	SetCursor(el ? el->GetCursor() : pragma::platform::Cursor::Shape::Arrow, window);
 
 	++m_thinkIndex;
 }
@@ -581,14 +581,14 @@ bool WGUI::SetFocusedElement(WIBase *gui, WIRoot *optElRoot)
 	}
 	if(gui == NULL) {
 		if(window)
-			(*window)->SetCursorInputMode(GLFW::CursorMode::Hidden);
+			(*window)->SetCursorInputMode(pragma::platform::CursorMode::Hidden);
 		elRoot->SetFocusedElement(nullptr);
 		if(m_onFocusChangedCallback != nullptr)
 			m_onFocusChangedCallback(pPrevFocused, elRoot->GetFocusedElement());
 		return true;
 	}
 	if(window)
-		(*window)->SetCursorInputMode(GLFW::CursorMode::Normal);
+		(*window)->SetCursorInputMode(pragma::platform::CursorMode::Normal);
 
 	elRoot->SetFocusedElement(gui);
 	elRoot->SetFocusCount(elRoot->GetFocusCount() + 1);
@@ -794,11 +794,11 @@ WIRoot *WGUI::FindWindowRootElementUnderCursor()
 	return rootCandidate;
 }
 
-bool WGUI::HandleJoystickInput(prosper::Window &window, const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state) { return WIBase::__wiJoystickCallback(window, joystick, key, state); }
+bool WGUI::HandleJoystickInput(prosper::Window &window, const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state) { return WIBase::__wiJoystickCallback(window, joystick, key, state); }
 
-bool WGUI::HandleMouseInput(prosper::Window &window, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) { return WIBase::__wiMouseButtonCallback(window, button, state, mods); }
+bool WGUI::HandleMouseInput(prosper::Window &window, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) { return WIBase::__wiMouseButtonCallback(window, button, state, mods); }
 
-bool WGUI::HandleKeyboardInput(prosper::Window &window, GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods) { return WIBase::__wiKeyCallback(window, key, scanCode, state, mods); }
+bool WGUI::HandleKeyboardInput(prosper::Window &window, pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods) { return WIBase::__wiKeyCallback(window, key, scanCode, state, mods); }
 
 bool WGUI::HandleCharInput(prosper::Window &window, unsigned int c) { return WIBase::__wiCharCallback(window, c); }
 

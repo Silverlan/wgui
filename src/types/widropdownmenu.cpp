@@ -273,13 +273,13 @@ WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option, const
 		*reply = util::EventReply::Handled;
 		return CallbackReturnType::HasReturnValue;
 	}));
-	pOption->AddCallback("OnMouseEvent", FunctionCallback<util::EventReply, GLFW::MouseButton, GLFW::KeyState, GLFW::Modifier>::CreateWithOptionalReturn([hOption](util::EventReply *reply, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier) mutable -> CallbackReturnType {
+	pOption->AddCallback("OnMouseEvent", FunctionCallback<util::EventReply, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier>::CreateWithOptionalReturn([hOption](util::EventReply *reply, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier) mutable -> CallbackReturnType {
 		if(!hOption.IsValid()) {
 			*reply = util::EventReply::Handled;
 			return CallbackReturnType::HasReturnValue;
 		}
 		WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
-		if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press) {
+		if(button == pragma::platform::MouseButton::Left && state == pragma::platform::KeyState::Press) {
 			WIDropDownMenu *dm = pOption->GetDropDownMenu();
 			if(dm != nullptr) {
 				dm->OnOptionSelected(pOption);
@@ -502,11 +502,11 @@ void WIDropDownMenu::ToggleMenu()
 	else
 		OpenMenu();
 }
-util::EventReply WIDropDownMenu::MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
+util::EventReply WIDropDownMenu::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	if(WITextEntry::MouseCallback(button, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
-	if(button == GLFW::MouseButton::Left && state == GLFW::KeyState::Press) {
+	if(button == pragma::platform::MouseButton::Left && state == pragma::platform::KeyState::Press) {
 		if(!IsMenuOpen()) {
 			if(!HasFocus())
 				OpenMenu();

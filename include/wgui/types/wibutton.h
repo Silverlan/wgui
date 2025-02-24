@@ -22,7 +22,7 @@ class DLLWGUI WIButton : public WIBase {
 	void SetText(const pragma::string::Utf8StringArg &text);
 	const pragma::string::Utf8String &GetText() const;
 	virtual void SetSize(int x, int y) override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
 	virtual void SizeToContents(bool x = true, bool y = true) override;
 };
 

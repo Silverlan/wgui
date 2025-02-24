@@ -9,9 +9,9 @@
 LINK_WGUI_TO_CLASS(WIContextMenu, WIContextMenu);
 
 static WIContextMenu *s_contextMenu = nullptr;
-static std::function<std::string(GLFW::Key, const std::string &)> s_fBindKey = nullptr;
+static std::function<std::string(pragma::platform::Key, const std::string &)> s_fBindKey = nullptr;
 static std::function<std::optional<std::string>(const std::string &)> s_fGetBoundKey = nullptr;
-void WIContextMenu::SetKeyBindHandler(const std::function<std::string(GLFW::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey)
+void WIContextMenu::SetKeyBindHandler(const std::function<std::string(pragma::platform::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey)
 {
 	s_fBindKey = fBindKey;
 	s_fGetBoundKey = fGetBoundKey;
@@ -59,7 +59,7 @@ void WIContextMenu::Initialize()
 	m_hBgOutline = pBgOutline->GetHandle();
 }
 void WIContextMenu::OnRemove() { WIRect::OnRemove(); }
-util::EventReply WIContextMenu::KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods)
+util::EventReply WIContextMenu::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	if(WIRect::KeyboardCallback(key, scanCode, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;

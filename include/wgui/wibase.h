@@ -17,11 +17,12 @@
 #include <algorithm>
 #include <chrono>
 #include <deque>
-#include <iglfw/glfw_window.h>
 #include <sharedutils/property/util_property_vector.h>
 #include <sharedutils/property/util_property_color.hpp>
 #include <sharedutils/util_event_reply.hpp>
 #include <sharedutils/util_clock.hpp>
+
+import pragma.platform;
 
 #undef DrawState
 
@@ -128,8 +129,8 @@ class DLLWGUI WIBase : public CallbackHandler {
 	WIBase(const WIBase &) = delete;
 	WIBase &operator=(const WIBase &) = delete;
 	virtual std::ostream &Print(std::ostream &stream) const;
-	GLFW::Cursor::Shape GetCursor() const;
-	void SetCursor(GLFW::Cursor::Shape cursor);
+	pragma::platform::Cursor::Shape GetCursor() const;
+	void SetCursor(pragma::platform::Cursor::Shape cursor);
 	void Resize();
 	void SetSkin(std::string skin);
 	void ResetSkin();
@@ -283,11 +284,11 @@ class DLLWGUI WIBase : public CallbackHandler {
 	virtual util::EventReply OnFilesDropped(const std::vector<std::string> &files);
 	bool IsFileHovering() const;
 	void SetFileHovering(bool hover);
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
+	virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
 	virtual util::EventReply OnDoubleClick();
-	virtual util::EventReply JoystickCallback(const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state);
-	virtual util::EventReply KeyboardCallback(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods);
-	virtual util::EventReply CharCallback(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None);
+	virtual util::EventReply JoystickCallback(const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state);
+	virtual util::EventReply KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods);
+	virtual util::EventReply CharCallback(unsigned int c, pragma::platform::Modifier mods = pragma::platform::Modifier::None);
 	virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false);
 
 	void ClampToBounds(Vector2i &pos) const;
@@ -307,9 +308,9 @@ class DLLWGUI WIBase : public CallbackHandler {
 	bool IsBackgroundElement() const;
 
 	void InjectMouseMoveInput(int32_t x, int32_t y);
-	util::EventReply InjectMouseInput(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
-	util::EventReply InjectKeyboardInput(GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods);
-	util::EventReply InjectCharInput(unsigned int c, GLFW::Modifier mods = GLFW::Modifier::None);
+	util::EventReply InjectMouseInput(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
+	util::EventReply InjectKeyboardInput(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods);
+	util::EventReply InjectCharInput(unsigned int c, pragma::platform::Modifier mods = pragma::platform::Modifier::None);
 	util::EventReply InjectScrollInput(Vector2 offset, bool offsetAsPixels = false);
 
 	void GetMousePos(int *x, int *y) const;
@@ -447,7 +448,7 @@ class DLLWGUI WIBase : public CallbackHandler {
 	std::optional<WIAnchor> m_anchor = {};
 	std::unordered_map<std::string, std::shared_ptr<WIAttachment>> m_attachments = {};
 	std::unique_ptr<WIFadeInfo> m_fade = nullptr;
-	GLFW::Cursor::Shape m_cursor = {};
+	pragma::platform::Cursor::Shape m_cursor = {};
 	CallbackHandle m_callbackFocusGained = {};
 	CallbackHandle m_callbackFocusKilled = {};
 	Mat4 m_mvpLast = umat::identity();
@@ -496,16 +497,16 @@ class DLLWGUI WIBase : public CallbackHandler {
 	std::vector<std::string> m_styleClasses;
 	WISkin *m_skin = nullptr;
 	ChronoTimePoint m_clickStart;
-	static bool __wiJoystickCallback(prosper::Window &window, const GLFW::Joystick &joystick, uint32_t key, GLFW::KeyState state);
-	static bool __wiKeyCallback(prosper::Window &window, GLFW::Key key, int scanCode, GLFW::KeyState state, GLFW::Modifier mods);
+	static bool __wiJoystickCallback(prosper::Window &window, const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state);
+	static bool __wiKeyCallback(prosper::Window &window, pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods);
 	static bool __wiCharCallback(prosper::Window &window, unsigned int c);
-	static bool __wiMouseButtonCallback(prosper::Window &window, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
+	static bool __wiMouseButtonCallback(prosper::Window &window, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
 	static bool __wiScrollCallback(prosper::Window &window, Vector2 offset);
 	static bool __wiFileDragEnterCallback(prosper::Window &window);
 	static bool __wiFileDragExitCallback(prosper::Window &window);
 	static bool __wiFileDropCallback(prosper::Window &window, const std::vector<std::string> &files);
 
-	static util::EventReply InjectMouseButtonCallback(WIBase &el, GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods);
+	static util::EventReply InjectMouseButtonCallback(WIBase &el, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
 };
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::StateFlags)
 REGISTER_BASIC_BITWISE_OPERATORS(WIBase::DrawInfo::Flags)

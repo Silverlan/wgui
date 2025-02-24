@@ -35,10 +35,10 @@ class DLLWGUI WIRoot : public WIBase {
 	void UpdateIMETarget();
 	const std::weak_ptr<const prosper::Window> &GetWindowPtr() const;
 	void SetWindow(const std::shared_ptr<const prosper::Window> &window);
-	GLFW::Cursor::Shape GetMainCursor() const;
-	const GLFW::CursorHandle &GetMainCustomCursor() const;
-	void SetMainCursor(GLFW::Cursor::Shape cursor);
-	void SetMainCustomCursor(const GLFW::CursorHandle &hCursor);
+	pragma::platform::Cursor::Shape GetMainCursor() const;
+	const pragma::platform::CursorHandle &GetMainCustomCursor() const;
+	void SetMainCursor(pragma::platform::Cursor::Shape cursor);
+	void SetMainCustomCursor(const pragma::platform::CursorHandle &hCursor);
 	void SetFocusEnabled(bool enabled);
 	bool IsFocusEnabled() const;
 	void SetFocusedElement(WIBase *el);
@@ -68,8 +68,8 @@ class DLLWGUI WIRoot : public WIBase {
 	bool m_fileDragHover = false;
 	std::vector<WIHandle> m_fileHoverElements;
 
-	GLFW::Cursor::Shape m_mainCursor = GLFW::Cursor::Shape::Arrow;
-	GLFW::CursorHandle m_mainCustomCursor = {};
+	pragma::platform::Cursor::Shape m_mainCursor = pragma::platform::Cursor::Shape::Arrow;
+	pragma::platform::CursorHandle m_mainCustomCursor = {};
 };
 
 #endif

@@ -32,10 +32,10 @@ void WIRoot::SetCursorPosOverride(const Vector2 &pos) { m_cursorPosOverride = po
 void WIRoot::ClearCursorPosOverride() { m_cursorPosOverride = {}; }
 const std::weak_ptr<const prosper::Window> &WIRoot::GetWindowPtr() const { return m_window; }
 void WIRoot::SetWindow(const std::shared_ptr<const prosper::Window> &window) { m_window = window; }
-GLFW::Cursor::Shape WIRoot::GetMainCursor() const { return m_mainCursor; }
-const GLFW::CursorHandle &WIRoot::GetMainCustomCursor() const { return m_mainCustomCursor; }
-void WIRoot::SetMainCursor(GLFW::Cursor::Shape cursor) { m_mainCursor = cursor; }
-void WIRoot::SetMainCustomCursor(const GLFW::CursorHandle &hCursor) { m_mainCustomCursor = hCursor; }
+pragma::platform::Cursor::Shape WIRoot::GetMainCursor() const { return m_mainCursor; }
+const pragma::platform::CursorHandle &WIRoot::GetMainCustomCursor() const { return m_mainCustomCursor; }
+void WIRoot::SetMainCursor(pragma::platform::Cursor::Shape cursor) { m_mainCursor = cursor; }
+void WIRoot::SetMainCustomCursor(const pragma::platform::CursorHandle &hCursor) { m_mainCustomCursor = hCursor; }
 void WIRoot::SetFocusEnabled(bool enabled) { m_focusEnabled = enabled; }
 bool WIRoot::IsFocusEnabled() const { return m_focusEnabled; }
 WIBase *WIRoot::GetFocusedElement() { return m_elFocused.get(); }

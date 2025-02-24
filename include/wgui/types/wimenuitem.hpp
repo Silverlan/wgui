@@ -18,7 +18,7 @@ class DLLWGUI WIMenuItem : public WIBase {
 	bool IsSelected() const;
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
-	virtual util::EventReply MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods) override;
+	virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
 	virtual void SetSize(int x, int y) override;
 	using WIBase::SetSize;
 	virtual void SizeToContents(bool x = true, bool y = true) override;

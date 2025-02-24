@@ -40,15 +40,15 @@ const pragma::string::Utf8String &WIButton::GetText() const
 	}
 	return static_cast<const WIText *>(m_text.get())->GetText();
 }
-util::EventReply WIButton::MouseCallback(GLFW::MouseButton button, GLFW::KeyState state, GLFW::Modifier mods)
+util::EventReply WIButton::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	auto hThis = GetHandle();
 	auto reply = WIBase::MouseCallback(button, state, mods);
 	if(reply == util::EventReply::Handled || hThis.IsValid() == false)
 		return util::EventReply::Handled;
 	auto response = util::EventReply::Handled;
-	if(button == GLFW::MouseButton::Left) {
-		if(state == GLFW::KeyState::Press)
+	if(button == pragma::platform::MouseButton::Left) {
+		if(state == pragma::platform::KeyState::Press)
 			m_bPressed = true;
 		else {
 			if(m_bPressed == true)
