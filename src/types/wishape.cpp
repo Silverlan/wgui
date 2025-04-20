@@ -514,18 +514,18 @@ void WITexturedShape::SizeToTexture()
 	auto size = GetTextureSize();
 	SetSize(size.x, size.y);
 }
-void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline)
+bool WITexturedShape::PrepareRender(const DrawInfo &drawInfo, wgui::DrawState &drawState, Vector4 &outColor)
 {
 	if(m_hMaterial == nullptr && m_texture == nullptr)
-		return;
+		return false;
 	auto col = drawInfo.GetColor(*this, drawState);
 	if(col.a <= 0.f)
-		return;
+		return false;
 	col.a *= GetLocalAlpha();
 	if(m_hMaterial) {
 		auto *map = m_hMaterial->GetDiffuseMap();
 		if(!map || !map->texture)
-			return;
+			return false;
 		if(m_hMaterial->GetUpdateIndex() != m_matUpdateCountRef)
 			UpdateMaterialDescriptorSetTexture();
 		else {
@@ -534,6 +534,14 @@ void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawStat
 				UpdateMaterialDescriptorSetTexture();
 		}
 	}
+	outColor = col;
+	return true;
+}
+void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline)
+{
+	Vector4 col;
+	if(!PrepareRender(drawInfo, drawState, col))
+		return;
 
 	// Try to use cheap shader if no custom vertex buffer was used
 	if(umath::is_flag_set(m_stateFlags, StateFlags::ShaderOverride) == false && ((m_vertexBufferData == nullptr && m_uvBuffer == nullptr) || m_shader.expired())) {
@@ -578,6 +586,8 @@ void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawStat
 		return;
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
 	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
+		BindShader(shader, bindState, drawState);
+
 		wgui::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = matDraw;
 		pushConstants.elementData.color = col;
@@ -591,3 +601,5 @@ void WITexturedShape::Render(const DrawInfo &drawInfo, wgui::DrawState &drawStat
 		shader.RecordEndDraw(bindState);
 	}
 }
+
+void WITexturedShape::BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState) {}

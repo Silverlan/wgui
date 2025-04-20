@@ -16,6 +16,7 @@
 #include "wgui/shaders/wishader_coloredline.hpp"
 #include "wgui/shaders/wishader_text.hpp"
 #include "wgui/shaders/wishader_textured.hpp"
+#include "wgui/shaders/witexturedsubrect.hpp"
 #include "wgui/types/wicontextmenu.hpp"
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
@@ -25,7 +26,7 @@
 #include <prosper_window.hpp>
 #include <prosper_render_pass.hpp>
 #include <shader/prosper_pipeline_loader.hpp>
-#include <buffers/prosper_uniform_resizable_buffer.hpp>=
+#include <buffers/prosper_uniform_resizable_buffer.hpp>
 
 import pragma.string.unicode;
 
@@ -121,6 +122,7 @@ wgui::ShaderTextured *WGUI::GetTexturedShader() { return static_cast<wgui::Shade
 wgui::ShaderTexturedRect *WGUI::GetTexturedRectShader() { return static_cast<wgui::ShaderTexturedRect *>(m_shaderTexturedCheap.get()); }
 wgui::ShaderTexturedRectExpensive *WGUI::GetTexturedRectExpensiveShader() { return static_cast<wgui::ShaderTexturedRectExpensive *>(m_shaderTexturedExpensive.get()); }
 wgui::ShaderStencil *WGUI::GetStencilShader() { return static_cast<wgui::ShaderStencil *>(m_shaderStencil.get()); }
+wgui::ShaderTexturedSubRect *WGUI::GetTexturedSubRectShader() { return static_cast<wgui::ShaderTexturedSubRect *>(m_shaderTexturedSubRect.get()); }
 
 void wgui::DrawState::SetScissor(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
@@ -182,6 +184,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 	shaderManager.RegisterShader("wguitextured_cheap", [](prosper::IPrContext &context, const std::string &identifier) { return new wgui::ShaderTexturedRect(context, identifier); });
 	shaderManager.RegisterShader("wguitextured_expensive", [](prosper::IPrContext &context, const std::string &identifier) { return new wgui::ShaderTexturedRectExpensive(context, identifier); });
 	shaderManager.RegisterShader("wguistencil", [](prosper::IPrContext &context, const std::string &identifier) { return new wgui::ShaderStencil(context, identifier); });
+	shaderManager.RegisterShader("wguisubtexturedrect", [](prosper::IPrContext &context, const std::string &identifier) { return new wgui::ShaderTexturedSubRect(context, identifier); });
 
 	m_shaderColored = shaderManager.GetShader("wguicolored");
 	m_shaderColoredCheap = shaderManager.GetShader("wguicolored_cheap");
@@ -193,6 +196,7 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 	m_shaderTexturedCheap = shaderManager.GetShader("wguitextured_cheap");
 	m_shaderTexturedExpensive = shaderManager.GetShader("wguitextured_expensive");
 	m_shaderStencil = shaderManager.GetShader("wguistencil");
+	m_shaderTexturedSubRect = shaderManager.GetShader("wguisubtexturedrect");
 
 	GetContext().GetPipelineLoader().Flush();
 
@@ -393,8 +397,7 @@ void WGUI::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 		++m_thinkIndex;
 		return;
 	}
-	auto *el = GetCursorGUIElement(
-	  elBase, [](WIBase *el) -> bool { return el->GetCursor() != pragma::platform::Cursor::Shape::Default; }, window);
+	auto *el = GetCursorGUIElement(elBase, [](WIBase *el) -> bool { return el->GetCursor() != pragma::platform::Cursor::Shape::Default; }, window);
 	while(el && el->GetCursor() == pragma::platform::Cursor::Shape::Default)
 		el = el->GetParent();
 	SetCursor(el ? el->GetCursor() : pragma::platform::Cursor::Shape::Arrow, window);

@@ -71,6 +71,7 @@ class DLLWGUI WITexturedShape : public WIShape {
 	void ClearTexture();
 	const std::shared_ptr<prosper::Texture> &GetTexture() const;
 	virtual void Render(const DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
+	virtual void BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState);
 	void SizeToTexture();
 	Vector2i GetTextureSize() const;
 	void SetShader(wgui::ShaderTextured &shader);
@@ -88,6 +89,7 @@ class DLLWGUI WITexturedShape : public WIShape {
 	virtual void UpdateTransparencyState() override;
 	void UpdateShaderState();
 	virtual void DoUpdate() override;
+	bool PrepareRender(const DrawInfo &drawInfo, wgui::DrawState &drawState, Vector4 &outColor);
 	msys::MaterialHandle m_hMaterial;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	std::shared_ptr<bool> m_texLoadCallback;
@@ -100,10 +102,11 @@ class DLLWGUI WITexturedShape : public WIShape {
 
 	void ReloadDescriptorSet();
 	virtual void SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap = nullptr) override;
-  private:
-	StateFlags m_stateFlags = StateFlags::None;
+  protected:
 	util::WeakHandle<prosper::Shader> m_shader = {};
 	std::shared_ptr<prosper::IDescriptorSetGroup> m_descSetTextureGroup = nullptr;
+  private:
+	StateFlags m_stateFlags = StateFlags::None;
 	uint32_t m_matUpdateCountRef = std::numeric_limits<uint32_t>::max();
 	uint32_t m_texUpdateCountRef = std::numeric_limits<uint32_t>::max();
 	void UpdateMaterialDescriptorSetTexture();

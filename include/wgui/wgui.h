@@ -54,6 +54,7 @@ namespace wgui {
 	class ShaderTexturedRect;
 	class ShaderTexturedRectExpensive;
 	class ShaderStencil;
+	class ShaderTexturedSubRect;
 };
 
 namespace wgui {
@@ -193,6 +194,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	wgui::ShaderTextRect *GetTextRectShader();
 	wgui::ShaderTextRectColor *GetTextRectColorShader();
 	wgui::ShaderTextured *GetTexturedShader();
+	wgui::ShaderTexturedSubRect *GetTexturedSubRectShader();
 	wgui::ShaderTexturedRect *GetTexturedRectShader();
 	wgui::ShaderTexturedRectExpensive *GetTexturedRectExpensiveShader();
 	wgui::ShaderStencil *GetStencilShader();
@@ -244,6 +246,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	util::WeakHandle<prosper::Shader> m_shaderTextCheap = {};
 	util::WeakHandle<prosper::Shader> m_shaderTextCheapColor = {};
 	util::WeakHandle<prosper::Shader> m_shaderTextured = {};
+	util::WeakHandle<prosper::Shader> m_shaderTexturedSubRect = {};
 	util::WeakHandle<prosper::Shader> m_shaderTexturedCheap = {};
 	util::WeakHandle<prosper::Shader> m_shaderTexturedExpensive = {};
 	util::WeakHandle<prosper::Shader> m_shaderStencil = {};

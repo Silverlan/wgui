@@ -35,6 +35,8 @@ bool ShaderTextured::RecordDraw(prosper::ShaderBindState &bindState, const std::
 	return true;
 }
 
+void ShaderTextured::InitializePushConstantRanges() { AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit); }
+
 void ShaderTextured::InitializeShaderResources()
 {
 	Shader::InitializeShaderResources();
@@ -42,7 +44,7 @@ void ShaderTextured::InitializeShaderResources()
 	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
 	AddVertexAttribute(VERTEX_ATTRIBUTE_UV);
 	AddDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+	InitializePushConstantRanges();
 }
 
 void ShaderTextured::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
