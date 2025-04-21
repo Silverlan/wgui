@@ -64,6 +64,7 @@ void wgui::WI9SliceRect::UpdateSegments()
 		el->SetRenderImageOffset(offset);
 		el->SetRenderImageScale(scale);
 		el->SetPos(x, y);
+		el->GetColorProperty()->Link(*GetColorProperty());
 		return el;
 	};
 
