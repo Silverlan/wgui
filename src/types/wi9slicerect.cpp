@@ -41,111 +41,209 @@ void wgui::WI9SliceRect::Initialize()
 	UpdateSegments();
 }
 
+std::tuple<float, float, float, float> wgui::WI9SliceRect::GetSegmentAnchor(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const
+{
+	switch(segment) {
+	case Segment::TopLeftCorner:
+		return {0.f, 0.f, 0.f, 0.f};
+	case Segment::TopRightCorner:
+		return {1.f, 0.f, 1.f, 0.f};
+	case Segment::BottomLeftCorner:
+		return {0.f, 1.f, 0.f, 1.f};
+	case Segment::BottomRightCorner:
+		return {1.f, 1.f, 1.f, 1.f};
+	case Segment::TopEdge:
+		return {0.f, 0.f, 1.f, 0.f};
+	case Segment::BottomEdge:
+		return {0.f, 1.f, 1.f, 1.f};
+	case Segment::LeftEdge:
+		return {0.f, 0.f, 0.f, 1.f};
+	case Segment::RightEdge:
+		return {1.f, 0.f, 1.f, 1.f};
+	case Segment::Center:
+		return {0.f, 0.f, 1.f, 1.f};
+	}
+	return {0.f, 0.f, 0.f, 0.f};
+}
+
+std::pair<int32_t, int32_t> wgui::WI9SliceRect::GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const
+{
+	uint32_t x = 0;
+	switch(segment) {
+	case Segment::TopLeftCorner:
+	case Segment::LeftEdge:
+	case Segment::BottomLeftCorner:
+		x = 0;
+		break;
+	case Segment::TopRightCorner:
+	case Segment::RightEdge:
+	case Segment::BottomRightCorner:
+		x = imgWidth - m_nineSlice.right;
+		break;
+	case Segment::TopEdge:
+	case Segment::BottomEdge:
+	case Segment::Center:
+		x = m_nineSlice.left;
+		break;
+	}
+
+	uint32_t y = 0;
+	switch(segment) {
+	case Segment::TopLeftCorner:
+	case Segment::TopEdge:
+	case Segment::TopRightCorner:
+		y = 0;
+		break;
+	case Segment::BottomLeftCorner:
+	case Segment::BottomEdge:
+	case Segment::BottomRightCorner:
+		y = imgHeight - m_nineSlice.bottom;
+		break;
+	case Segment::LeftEdge:
+	case Segment::RightEdge:
+	case Segment::Center:
+		y = m_nineSlice.top;
+		break;
+	}
+	return {x, y};
+}
+
+std::pair<int32_t, int32_t> wgui::WI9SliceRect::GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const
+{
+	uint32_t w = 0;
+	switch(segment) {
+	case Segment::TopLeftCorner:
+	case Segment::BottomLeftCorner:
+	case Segment::LeftEdge:
+		w = m_nineSlice.left;
+		break;
+	case Segment::TopRightCorner:
+	case Segment::BottomRightCorner:
+	case Segment::RightEdge:
+		w = m_nineSlice.right;
+		break;
+	case Segment::TopEdge:
+	case Segment::BottomEdge:
+	case Segment::Center:
+		w = imgWidth - (m_nineSlice.left + m_nineSlice.right);
+		break;
+	}
+
+	uint32_t h = 0;
+	switch(segment) {
+	case Segment::TopLeftCorner:
+	case Segment::TopRightCorner:
+	case Segment::TopEdge:
+		h = m_nineSlice.top;
+		break;
+	case Segment::BottomLeftCorner:
+	case Segment::BottomRightCorner:
+	case Segment::BottomEdge:
+		h = m_nineSlice.bottom;
+		break;
+	case Segment::LeftEdge:
+	case Segment::RightEdge:
+	case Segment::Center:
+		h = imgHeight - (m_nineSlice.top + m_nineSlice.bottom);
+		break;
+	}
+	return {w, h};
+}
+
 void wgui::WI9SliceRect::UpdateSegments()
 {
 	if(!m_material)
 		return;
 	auto *albedoMap = m_material->GetAlbedoMap();
-	if(!albedoMap)
+	if(!albedoMap || !albedoMap->texture)
 		return;
-	uint32_t imgWidth = albedoMap->width;
-	uint32_t imgHeight = albedoMap->height;
-	uint32_t topLeftCornerWidth = 32;
-	uint32_t topLeftCornerHeight = 32;
+	auto &tex = *static_cast<Texture *>(albedoMap->texture.get());
+	uint32_t imgWidth = tex.GetWidth();
+	uint32_t imgHeight = tex.GetHeight();
 	Vector2 offset {0.f, 0.f};
-	Vector2 scale {};
-	scale.x = static_cast<float>(topLeftCornerWidth) / static_cast<float>(imgWidth);
-	scale.y = static_cast<float>(topLeftCornerHeight) / static_cast<float>(imgHeight);
+	Vector2 scale {0.f, 0.f};
 
-	auto updateSegment = [this](Segment segment, const Vector2 &offset, const Vector2 &scale, int32_t x, int32_t y) -> WI9SliceRectSegment * {
+	auto updateOffsetScale = [&](Segment segment) {
+		auto [x, y] = GetSegmentOffset(segment, imgWidth, imgHeight);
+		auto [w, h] = GetSegmentSize(segment, imgWidth, imgHeight);
+
+		// Half pixel offset to prevent texture bleeding
+		offset.x = (x + 0.5f) / float(imgWidth);
+		offset.y = (y + 0.5f) / float(imgHeight);
+		scale.x = (w - 1.0f) / float(imgWidth);
+		scale.y = (h - 1.0f) / float(imgHeight);
+	};
+
+	auto updateSegment = [this, imgWidth, imgHeight](Segment segment, const Vector2 &offset, const Vector2 &scale, int32_t x, int32_t y) -> WI9SliceRectSegment * {
 		auto *el = static_cast<WI9SliceRectSegment *>(m_segmentElements[umath::to_integral(segment)].get());
 		if(!el)
 			return nullptr;
+		auto [w, h] = GetSegmentSize(segment, imgWidth, imgHeight);
 		el->SetRenderImageOffset(offset);
 		el->SetRenderImageScale(scale);
+		el->SetSize(w, h);
 		el->SetPos(x, y);
 		el->GetColorProperty()->Link(*GetColorProperty());
 		return el;
 	};
 
 	// Top left corner
+	updateOffsetScale(Segment::TopLeftCorner);
 	auto *elTopLeft = updateSegment(Segment::TopLeftCorner, offset, scale, 0, 0);
 
 	// Top right corner
-	offset.x = static_cast<float>(imgWidth - topLeftCornerWidth) / static_cast<float>(imgWidth);
-	auto *elTopRight = updateSegment(Segment::TopRightCorner, offset, scale, GetWidth() - 32, 0);
+	updateOffsetScale(Segment::TopRightCorner);
+	auto *elTopRight = updateSegment(Segment::TopRightCorner, offset, scale, GetWidth() - m_nineSlice.right, 0);
 
 	// Bottom left corner
-	offset.x = 0.f;
-	offset.y = static_cast<float>(imgHeight - topLeftCornerHeight) / static_cast<float>(imgHeight);
-	auto *elBottomLeft = updateSegment(Segment::BottomLeftCorner, offset, scale, 0, GetHeight() - 32);
+	updateOffsetScale(Segment::BottomLeftCorner);
+	auto *elBottomLeft = updateSegment(Segment::BottomLeftCorner, offset, scale, 0, GetHeight() - m_nineSlice.bottom);
 
 	// Bottom right corner
-	offset.x = static_cast<float>(imgWidth - topLeftCornerWidth) / static_cast<float>(imgWidth);
-	offset.y = static_cast<float>(imgHeight - topLeftCornerHeight) / static_cast<float>(imgHeight);
-	auto *elBottomRight = updateSegment(Segment::BottomRightCorner, offset, scale, GetWidth() - 32, GetHeight() - 32);
+	updateOffsetScale(Segment::BottomRightCorner);
+	auto *elBottomRight = updateSegment(Segment::BottomRightCorner, offset, scale, GetWidth() - m_nineSlice.right, GetHeight() - m_nineSlice.bottom);
 
 	// Top edge
-	offset.x = static_cast<float>(topLeftCornerWidth) / static_cast<float>(imgWidth);
-	offset.y = 0.f;
-	auto horizontalEdgeScale = scale;
-	horizontalEdgeScale.x = 1.f - horizontalEdgeScale.x * 2.f;
-	auto *elTop = updateSegment(Segment::TopEdge, offset, horizontalEdgeScale, 32, 0);
+	updateOffsetScale(Segment::TopEdge);
+	auto *elTop = updateSegment(Segment::TopEdge, offset, scale, m_nineSlice.left, 0);
 	if(elTop)
-		elTop->SetWidth(GetWidth() - 64, false);
+		elTop->SetWidth(GetWidth() - (m_nineSlice.left + m_nineSlice.right), false);
 
 	// Bottom edge
-	offset.y = 1.f - scale.y;
-	auto *elBottom = updateSegment(Segment::BottomEdge, offset, horizontalEdgeScale, 32, GetHeight() - 32);
+	updateOffsetScale(Segment::BottomEdge);
+	auto *elBottom = updateSegment(Segment::BottomEdge, offset, scale, m_nineSlice.left, GetHeight() - m_nineSlice.bottom);
 	if(elBottom)
-		elBottom->SetWidth(GetWidth() - 64, false);
+		elBottom->SetWidth(GetWidth() - (m_nineSlice.left + m_nineSlice.right), false);
 
 	// Left edge
-	offset.x = 0.f;
-	offset.y = static_cast<float>(topLeftCornerHeight) / static_cast<float>(imgHeight);
-	auto verticalEdgeScale = scale;
-	verticalEdgeScale.y = 1.f - verticalEdgeScale.y * 2.f;
-	auto *elLeft = updateSegment(Segment::LeftEdge, offset, verticalEdgeScale, 0, 32);
+	updateOffsetScale(Segment::LeftEdge);
+	auto *elLeft = updateSegment(Segment::LeftEdge, offset, scale, 0, m_nineSlice.top);
 	if(elLeft)
-		elLeft->SetHeight(GetHeight() - 64, false);
+		elLeft->SetHeight(GetHeight() - (m_nineSlice.top + m_nineSlice.bottom), false);
 
 	// Right edge
-	offset.x = 1.f - scale.x;
-	auto *elRight = updateSegment(Segment::RightEdge, offset, verticalEdgeScale, GetWidth() - 32, 32);
+	updateOffsetScale(Segment::RightEdge);
+	auto *elRight = updateSegment(Segment::RightEdge, offset, scale, GetWidth() - m_nineSlice.right, m_nineSlice.top);
 	if(elRight)
-		elRight->SetHeight(GetHeight() - 64, false);
+		elRight->SetHeight(GetHeight() - (m_nineSlice.top + m_nineSlice.bottom), false);
 
 	// Center
-	offset.x = static_cast<float>(topLeftCornerWidth) / static_cast<float>(imgWidth);
-	offset.y = static_cast<float>(topLeftCornerHeight) / static_cast<float>(imgHeight);
-	auto centerScale = scale;
-	centerScale.x = 1.f - centerScale.x * 2.f;
-	centerScale.y = 1.f - centerScale.y * 2.f;
-	auto *elCenter = updateSegment(Segment::Center, offset, centerScale, 32, 32);
+	updateOffsetScale(Segment::Center);
+	auto *elCenter = updateSegment(Segment::Center, offset, scale, m_nineSlice.left, m_nineSlice.top);
 	if(elCenter) {
-		elCenter->SetWidth(GetWidth() - 64, false);
-		elCenter->SetHeight(GetHeight() - 64, false);
-		elCenter->SetPos(32, 32);
+		elCenter->SetWidth(GetWidth() - (m_nineSlice.left + m_nineSlice.right), false);
+		elCenter->SetHeight(GetHeight() - (m_nineSlice.top + m_nineSlice.bottom), false);
+		elCenter->SetPos(m_nineSlice.left, m_nineSlice.top);
 	}
 
-	if(elTopLeft)
-		elTopLeft->SetAnchor(0.f, 0.f, 0.f, 0.f);
-	if(elTopRight)
-		elTopRight->SetAnchor(1.f, 0.f, 1.f, 0.f);
-	if(elBottomLeft)
-		elBottomLeft->SetAnchor(0.f, 1.f, 0.f, 1.f);
-	if(elBottomRight)
-		elBottomRight->SetAnchor(1.f, 1.f, 1.f, 1.f);
-	if(elTop)
-		elTop->SetAnchor(0.f, 0.f, 1.f, 0.f);
-	if(elBottom)
-		elBottom->SetAnchor(0.f, 1.f, 1.f, 1.f);
-	if(elLeft)
-		elLeft->SetAnchor(0.f, 0.f, 0.f, 1.f);
-	if(elRight)
-		elRight->SetAnchor(1.f, 0.f, 1.f, 1.f);
-	if(elCenter)
-		elCenter->SetAnchor(0.f, 0.f, 1.f, 1.f);
+	for(size_t i = 0; i < m_segmentElements.size(); ++i) {
+		auto &hEl = m_segmentElements[i];
+		if(!hEl.IsValid())
+			continue;
+		auto segment = static_cast<Segment>(i);
+		auto [xAnchor, yAnchor, xScale, yScale] = GetSegmentAnchor(segment, imgWidth, imgHeight);
+		hEl->SetAnchor(xAnchor, yAnchor, xScale, yScale);
+	}
 }
 
 void wgui::WI9SliceRect::SetMaterial(const std::string &matPath)
@@ -157,20 +255,21 @@ void wgui::WI9SliceRect::SetMaterial(const std::string &matPath)
 	if(!mat)
 		return;
 	auto *albedoMap = mat->GetAlbedoMap();
-	if(!albedoMap)
+	if(!albedoMap || !albedoMap->texture)
 		return;
+	auto &tex = *static_cast<Texture *>(albedoMap->texture.get());
 	m_nineSlice = {};
 	auto &slice = m_nineSlice;
-	auto texWidth = albedoMap->width;
-	if(!mat->GetProperty<uint32_t>("leftInset", &slice.left))
+	auto texWidth = tex.GetWidth();
+	if(!mat->GetProperty<uint32_t>("9slice/leftInset", &slice.left))
 		slice.left = texWidth / 4;
-	if(!mat->GetProperty<uint32_t>("rightInset", &slice.right))
+	if(!mat->GetProperty<uint32_t>("9slice/rightInset", &slice.right))
 		slice.right = slice.left;
 
-	auto texHeight = albedoMap->height;
-	if(!mat->GetProperty<uint32_t>("topInset", &slice.top))
+	auto texHeight = tex.GetHeight();
+	if(!mat->GetProperty<uint32_t>("9slice/topInset", &slice.top))
 		slice.top = texHeight / 4;
-	if(!mat->GetProperty<uint32_t>("bottomInset", &slice.bottom))
+	if(!mat->GetProperty<uint32_t>("9slice/bottomInset", &slice.bottom))
 		slice.bottom = slice.top;
 
 	for(auto &hEl : m_segmentElements) {
