@@ -630,6 +630,8 @@ void WIBase::SetBackgroundElement(bool backgroundElement, bool autoAlignToParent
 	}
 }
 bool WIBase::IsBackgroundElement() const { return umath::is_flag_set(m_stateFlags, StateFlags::IsBackgroundElement); }
+void WIBase::SetBaseElement(bool baseElement) { umath::set_flag(m_stateFlags, StateFlags::IsBaseElement, baseElement); }
+bool WIBase::IsBaseElement() const { return umath::is_flag_set(m_stateFlags, StateFlags::IsBaseElement); }
 bool WIBase::HasFocus() { return *m_bHasFocus; }
 void WIBase::RequestFocus()
 {

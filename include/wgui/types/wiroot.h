@@ -32,6 +32,7 @@ class DLLWGUI WIRoot : public WIBase {
 	friend WGUI;
 	friend WIBase;
 
+	WIBase &FindTooltipBaseElement(WIBase &el);
 	void UpdateIMETarget();
 	const std::weak_ptr<const prosper::Window> &GetWindowPtr() const;
 	void SetWindow(const std::shared_ptr<const prosper::Window> &window);

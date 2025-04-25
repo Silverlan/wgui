@@ -94,7 +94,8 @@ class DLLWGUI WIBase : public CallbackHandler {
 		IsBeingUpdated = IsBeingRemoved << 1u,
 		IsBackgroundElement = IsBeingUpdated << 1u,
 		FirstThink = IsBackgroundElement << 1u,
-		DontRemoveOnParentRemoval = FirstThink << 1u,
+		IsBaseElement = FirstThink << 1u,
+		DontRemoveOnParentRemoval = IsBaseElement << 1u,
 		StencilEnabled = DontRemoveOnParentRemoval << 1u,
 		FullyTransparent = StencilEnabled << 1u,
 		ScheduleUpdateOnVisible = FullyTransparent << 1u,
@@ -306,6 +307,9 @@ class DLLWGUI WIBase : public CallbackHandler {
 
 	void SetBackgroundElement(bool backgroundElement, bool autoAlignToParent = true);
 	bool IsBackgroundElement() const;
+
+	void SetBaseElement(bool baseElement);
+	bool IsBaseElement() const;
 
 	void InjectMouseMoveInput(int32_t x, int32_t y);
 	util::EventReply InjectMouseInput(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);

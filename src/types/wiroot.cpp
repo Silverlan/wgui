@@ -16,6 +16,7 @@ WIRoot::~WIRoot() {}
 void WIRoot::Initialize()
 {
 	WIBase::Initialize();
+	SetBaseElement(true);
 	SetMouseMovementCheckEnabled(true);
 	EnableThinking();
 }
@@ -67,11 +68,26 @@ prosper::Window *WIRoot::GetWindow()
 	return const_cast<prosper::Window *>(m_window.lock().get());
 }
 
+WIBase &WIRoot::FindTooltipBaseElement(WIBase &el)
+{
+	auto *p = &el;
+	while(p) {
+		if(p->IsBaseElement())
+			return *p;
+		p = p->GetParent();
+	}
+	return *this;
+}
+
 void WIRoot::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	WIBase::Think(drawCmd);
-	if(!m_hTooltip.IsValid())
-		return;
+	if(!m_hTooltip.IsValid()) {
+		auto *pTooltip = WGUI::GetInstance().Create<WITooltip>(this);
+		pTooltip->SetVisible(false);
+		pTooltip->SetZPos(100'000);
+		m_hTooltip = pTooltip->GetHandle();
+	}
 	if(m_hTooltipTarget.IsValid() == true) {
 		auto *pTooltip = static_cast<WITooltip *>(m_hTooltip.get());
 		if(pTooltip->IsVisible() == false) {
@@ -82,9 +98,11 @@ void WIRoot::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCm
 				int32_t x, y;
 				WGUI::GetInstance().GetMousePos(x, y);
 				//pTooltip->FadeIn(0.1f);
+				pTooltip->SetParent(&FindTooltipBaseElement(*el));
 				pTooltip->SetText(el->GetTooltip());
 				pTooltip->SetZPos(std::numeric_limits<int>::max());
 				pTooltip->SetName("tooltip");
+				pTooltip->RefreshSkin();
 				auto xMax = GetWidth() - pTooltip->GetWidth();
 				auto yMax = GetHeight() - pTooltip->GetHeight();
 				if(xMax >= 0 && xMax < x)
@@ -132,13 +150,7 @@ void WIRoot::OnCursorMoved(int x, int y)
 		elTgtPrev->CallCallbacks<void, WITooltip *>("OnHideTooltip", pTooltip);
 }
 
-void WIRoot::Setup()
-{
-	auto *pTooltip = WGUI::GetInstance().Create<WITooltip>(this);
-	pTooltip->SetVisible(false);
-	pTooltip->SetZPos(100'000);
-	m_hTooltip = pTooltip->GetHandle();
-}
+void WIRoot::Setup() {}
 
 void WIRoot::SetIMETarget(WIBase *el)
 {
