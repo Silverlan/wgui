@@ -246,6 +246,40 @@ void wgui::WI9SliceRect::UpdateSegments()
 	}
 }
 
+Material *wgui::WI9SliceRect::GetMaterial() { return m_material.get(); }
+
+void wgui::WI9SliceRect::SetMaterial(Material &mat)
+{
+	if(&mat == m_material.get())
+		return;
+	auto *albedoMap = mat.GetAlbedoMap();
+	if(!albedoMap || !albedoMap->texture)
+		return;
+	auto &tex = *static_cast<Texture *>(albedoMap->texture.get());
+	m_nineSlice = {};
+	auto &slice = m_nineSlice;
+	auto texWidth = tex.GetWidth();
+	if(!mat.GetProperty<uint32_t>("9slice/leftInset", &slice.left))
+		slice.left = texWidth / 4;
+	if(!mat.GetProperty<uint32_t>("9slice/rightInset", &slice.right))
+		slice.right = slice.left;
+
+	auto texHeight = tex.GetHeight();
+	if(!mat.GetProperty<uint32_t>("9slice/topInset", &slice.top))
+		slice.top = texHeight / 4;
+	if(!mat.GetProperty<uint32_t>("9slice/bottomInset", &slice.bottom))
+		slice.bottom = slice.top;
+
+	for(auto &hEl : m_segmentElements) {
+		if(!hEl.IsValid())
+			continue;
+		static_cast<WI9SliceRectSegment *>(hEl.get())->SetMaterial(&mat);
+	}
+	m_material = mat.GetHandle();
+
+	UpdateSegments();
+}
+
 void wgui::WI9SliceRect::SetMaterial(const std::string &matPath)
 {
 	auto &matLoadHandler = WGUI::GetInstance().GetMaterialLoadHandler();
@@ -254,31 +288,5 @@ void wgui::WI9SliceRect::SetMaterial(const std::string &matPath)
 	auto *mat = matLoadHandler(matPath);
 	if(!mat)
 		return;
-	auto *albedoMap = mat->GetAlbedoMap();
-	if(!albedoMap || !albedoMap->texture)
-		return;
-	auto &tex = *static_cast<Texture *>(albedoMap->texture.get());
-	m_nineSlice = {};
-	auto &slice = m_nineSlice;
-	auto texWidth = tex.GetWidth();
-	if(!mat->GetProperty<uint32_t>("9slice/leftInset", &slice.left))
-		slice.left = texWidth / 4;
-	if(!mat->GetProperty<uint32_t>("9slice/rightInset", &slice.right))
-		slice.right = slice.left;
-
-	auto texHeight = tex.GetHeight();
-	if(!mat->GetProperty<uint32_t>("9slice/topInset", &slice.top))
-		slice.top = texHeight / 4;
-	if(!mat->GetProperty<uint32_t>("9slice/bottomInset", &slice.bottom))
-		slice.bottom = slice.top;
-
-	for(auto &hEl : m_segmentElements) {
-		if(!hEl.IsValid())
-			continue;
-		static_cast<WI9SliceRectSegment *>(hEl.get())->SetMaterial(matPath);
-	}
-	m_materialPath = matPath;
-	m_material = mat->GetHandle();
-
-	UpdateSegments();
+	SetMaterial(*mat);
 }

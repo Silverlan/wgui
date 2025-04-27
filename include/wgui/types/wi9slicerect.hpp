@@ -48,14 +48,14 @@ namespace wgui {
 		WI9SliceRect();
 		virtual void Initialize() override;
 		void SetMaterial(const std::string &matPath);
-		const std::string &GetMaterial() const { return m_materialPath; }
+		void SetMaterial(Material &mat);
+		Material *GetMaterial();
 	  private:
 		std::pair<int32_t, int32_t> GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		std::pair<int32_t, int32_t> GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		std::tuple<float, float, float, float> GetSegmentAnchor(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		void UpdateSegments();
 		std::array<WIHandle, umath::to_integral(Segment::Count)> m_segmentElements;
-		std::string m_materialPath;
 		msys::MaterialHandle m_material;
 		NineSlice m_nineSlice;
 	};
