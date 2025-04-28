@@ -5,12 +5,6 @@
 #ifndef __FONTLOADER_H__
 #define __FONTLOADER_H__
 
-namespace pragma::string {
-	class Utf8String;
-	class Utf8StringView;
-	class Utf8StringArg;
-};
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <unordered_map>
@@ -18,6 +12,8 @@ namespace pragma::string {
 #include <vector>
 #include <image/prosper_texture.hpp>
 #include "wguidefinitions.h"
+
+import pragma.string.unicode;
 
 namespace prosper {
 	class IDescriptorSet;
