@@ -7,9 +7,8 @@
 
 #include "wgui/wibase.h"
 
-namespace pragma::string {
-	class Utf8String;
-};
+import pragma.string.unicode;
+
 class DLLWGUI WITooltip : public WIBase {
   protected:
 	WIHandle m_hText;

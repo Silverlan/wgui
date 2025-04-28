@@ -9,14 +9,11 @@
 #include <util_formatted_text_types.hpp>
 #include <string_view>
 
+import pragma.string.unicode;
+
 class WIText;
 class WIRect;
 class WITextDecorator;
-namespace pragma::string {
-	class Utf8String;
-	class Utf8StringView;
-	class Utf8StringArg;
-};
 class DLLWGUI WITextEntryBase : public WIBase {
   public:
 	enum class StateFlags : uint32_t { None = 0u, Numeric = 1u, MultiLine = Numeric << 1u, Editable = MultiLine << 1u, Selectable = Editable << 1u };

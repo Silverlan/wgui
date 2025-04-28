@@ -20,17 +20,14 @@
 #include "wgui/types/witext_tags.hpp"
 #endif
 
+import pragma.string.unicode;
+
 namespace prosper {
 	class IBuffer;
 	class Shader;
 	class BlurSet;
 	class IUniformResizableBuffer;
 	class IDescriptorSet;
-};
-
-namespace pragma::string {
-	class Utf8String;
-	class Utf8StringArg;
 };
 
 namespace util {

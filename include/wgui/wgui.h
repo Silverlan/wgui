@@ -18,14 +18,12 @@
 #include "types.hpp"
 
 import pragma.platform;
+import pragma.string.unicode;
 
 #undef GetClassName
 #undef FindWindow
 #undef DrawState
 
-namespace pragma::string {
-	class Utf8String;
-};
 namespace GLFW {
 	class Joystick;
 };
