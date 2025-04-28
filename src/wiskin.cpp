@@ -8,6 +8,7 @@
 #include "wgui/wibase.h"
 
 WISkin::WISkin(std::string id) : m_identifier(id) {}
+WISkin::WISkin() {}
 
 WISkin::~WISkin() {}
 

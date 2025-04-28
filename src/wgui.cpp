@@ -707,21 +707,69 @@ void WGUI::ClearSkin()
 	m_skin = nullptr;
 }
 
+WISkin *WGUI::RegisterSkin(std::string id, std::unique_ptr<WISkin> &&skin)
+{
+	ustring::to_lower(id);
+	auto it = m_skins.find(id);
+	if(it != m_skins.end()) {
+		auto curSkin = std::move(it->second);
+		m_skins.erase(it);
+
+		std::vector<WIHandle> elements;
+		std::function<void(WIBase &)> findSkinElements = nullptr;
+		findSkinElements = [&findSkinElements, &curSkin, &elements](WIBase &el) {
+			for(auto &hChild : *el.GetChildren()) {
+				if(!hChild.IsValid())
+					continue;
+				findSkinElements(*hChild.get());
+			}
+			if(el.m_skin != curSkin.get())
+				return;
+			if(elements.size() == elements.capacity())
+				elements.reserve(elements.size() * 1.5 + 100);
+			elements.push_back(el.GetHandle());
+			el.m_skin = nullptr;
+		};
+		for(auto &hEl : WGUI::GetInstance().GetBaseElements()) {
+			if(!hEl.IsValid())
+				continue;
+			findSkinElements(const_cast<WIBase &>(*hEl.get()));
+		}
+		skin->SetIdentifier(id);
+		auto *pSkin = skin.get();
+		m_skins[id] = std::move(skin);
+
+		if(m_skin == curSkin.get())
+			ClearSkin();
+
+		for(auto &hEl : elements) {
+			if(!hEl.IsValid())
+				continue;
+			hEl->SetSkin(id);
+			// hEl->RefreshSkin();
+		}
+		return pSkin;
+	}
+	auto *pSkin = skin.get();
+	m_skins[id] = std::move(skin);
+	return pSkin;
+}
+
 void WGUI::SetSkin(std::string skin)
 {
 	for(auto &hEl : m_rootElements) {
 		if(hEl.IsValid() == false)
 			continue;
-		StringToLower(skin);
-		std::unordered_map<std::string, WISkin *>::iterator it = m_skins.find(skin);
-		if(m_skin != nullptr && it != m_skins.end() && it->second == m_skin)
+		ustring::to_lower(skin);
+		auto it = m_skins.find(skin);
+		if(m_skin != nullptr && it != m_skins.end() && it->second.get() == m_skin)
 			return;
 		hEl->ResetSkin();
 		if(it == m_skins.end()) {
 			m_skin = nullptr;
 			return;
 		}
-		m_skin = it->second;
+		m_skin = it->second.get();
 		if(m_skin == nullptr)
 			return;
 		hEl->ApplySkin(m_skin);
@@ -730,10 +778,10 @@ void WGUI::SetSkin(std::string skin)
 WISkin *WGUI::GetSkin() { return m_skin; }
 WISkin *WGUI::GetSkin(std::string name)
 {
-	std::unordered_map<std::string, WISkin *>::iterator it = m_skins.find(name);
+	auto it = m_skins.find(name);
 	if(it == m_skins.end())
 		return NULL;
-	return it->second;
+	return it->second.get();
 }
 std::string WGUI::GetSkinName()
 {

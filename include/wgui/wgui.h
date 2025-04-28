@@ -161,6 +161,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	WIRoot *FindRootElementUnderCursor();
 	template<class TSkin>
 	TSkin *RegisterSkin(std::string id, bool bReload = false);
+	WISkin *RegisterSkin(std::string id, std::unique_ptr<WISkin> &&skin);
 	void SetSkin(std::string skin);
 	std::string GetSkinName();
 	WISkin *GetSkin();
@@ -207,7 +208,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	std::atomic<bool> m_lockedForDrawing = false;
 	WISkin *m_skin = nullptr;
 	bool m_bGUIUpdateRequired = false;
-	std::unordered_map<std::string, WISkin *> m_skins = {};
+	std::unordered_map<std::string, std::unique_ptr<WISkin>> m_skins = {};
 	std::weak_ptr<msys::MaterialManager> m_matManager = {};
 	std::function<Material *(const std::string &)> m_materialLoadHandler = nullptr;
 	std::shared_ptr<prosper::IUniformResizableBuffer> m_elementBuffer = nullptr;
@@ -262,19 +263,11 @@ REGISTER_BASIC_ARITHMETIC_OPERATORS(WGUI::ElementBuffer);
 template<class TSkin>
 TSkin *WGUI::RegisterSkin(std::string id, bool bReload)
 {
-	std::transform(id.begin(), id.end(), id.begin(), ::tolower);
-	std::unordered_map<std::string, WISkin *>::iterator it = m_skins.find(id);
-	if(it != m_skins.end()) {
-		if(bReload == false)
-			return NULL;
-		if(m_skin == it->second)
-			ClearSkin();
-		delete it->second;
-		m_skins.erase(it);
-	}
-	TSkin *skin = new TSkin(id);
-	m_skins.insert(std::unordered_map<std::string, WISkin *>::value_type(id, skin));
-	return skin;
+	ustring::to_lower(id);
+	if(m_skins.find(id) != m_skins.end() && !bReload)
+		return nullptr;
+	auto skin = std::unique_ptr<WISkin> {new TSkin {id}};
+	return static_cast<TSkin *>(RegisterSkin(id, std::move(skin)));
 }
 
 template<class TElement>
