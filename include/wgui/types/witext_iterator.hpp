@@ -6,10 +6,17 @@
 #define __WITEXT_ITERATOR_HPP__
 
 #include "wgui/wguidefinitions.h"
+#ifdef _WIN32
+namespace pragma::string {
+	class Utf8String;
+	class Utf8StringView;
+	class Utf8StringArg;
+};
+#endif
 #include <util_formatted_text_line.hpp>
-
+#ifdef __linux__
 import pragma.string.unicode;
-
+#endif
 class WIText;
 class DLLWGUI TextLineIteratorBase {
   public:

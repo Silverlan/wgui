@@ -18,7 +18,13 @@
 #include "types.hpp"
 
 import pragma.platform;
+#ifdef __linux__
 import pragma.string.unicode;
+#else
+namespace pragma::string {
+	class Utf8String;
+};
+#endif
 
 #undef GetClassName
 #undef FindWindow

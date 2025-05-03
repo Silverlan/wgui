@@ -8,9 +8,15 @@
 #include "wgui/wihandle.h"
 #include <util_formatted_text_types.hpp>
 #include <string_view>
-
+#ifdef __linux__
 import pragma.string.unicode;
-
+#else
+namespace pragma::string {
+	class Utf8String;
+	class Utf8StringView;
+	class Utf8StringArg;
+};
+#endif
 class WIText;
 class WIRect;
 class WITextDecorator;

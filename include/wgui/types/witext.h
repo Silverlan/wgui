@@ -19,9 +19,14 @@
 #ifdef __linux__
 #include "wgui/types/witext_tags.hpp"
 #endif
-
+#ifdef __linux__
 import pragma.string.unicode;
-
+#else
+namespace pragma::string {
+	class Utf8String;
+	class Utf8StringArg;
+};
+#endif
 namespace prosper {
 	class IBuffer;
 	class Shader;

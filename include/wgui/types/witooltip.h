@@ -6,9 +6,13 @@
 #define __WITOOLTIP_H__
 
 #include "wgui/wibase.h"
-
+#ifdef __linux__
 import pragma.string.unicode;
-
+#else
+namespace pragma::string {
+	class Utf8String;
+};
+#endif
 class DLLWGUI WITooltip : public WIBase {
   protected:
 	WIHandle m_hText;
