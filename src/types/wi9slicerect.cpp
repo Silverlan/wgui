@@ -41,7 +41,7 @@ void wgui::WI9SliceRect::Initialize()
 	UpdateSegments();
 }
 
-std::tuple<float, float, float, float> wgui::WI9SliceRect::GetSegmentAnchor(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const
+std::tuple<float, float, float, float> wgui::WI9SliceRect::GetSegmentAnchor(Segment segment) const
 {
 	switch(segment) {
 	case Segment::TopLeftCorner:
@@ -163,6 +163,17 @@ void wgui::WI9SliceRect::UpdateSegments()
 	Vector2 offset {0.f, 0.f};
 	Vector2 scale {0.f, 0.f};
 
+	auto origWidth = GetWidth();
+	auto origHeight = GetHeight();
+	SetSize(imgWidth, imgHeight);
+
+	for(auto &hEl : m_segmentElements) {
+		if(!hEl.IsValid())
+			continue;
+		hEl->ClearAnchor();
+		hEl->SetSize(0, 0);
+	}
+
 	auto updateOffsetScale = [&](Segment segment) {
 		auto [x, y] = GetSegmentOffset(segment, imgWidth, imgHeight);
 		auto [w, h] = GetSegmentSize(segment, imgWidth, imgHeight);
@@ -241,9 +252,10 @@ void wgui::WI9SliceRect::UpdateSegments()
 		if(!hEl.IsValid())
 			continue;
 		auto segment = static_cast<Segment>(i);
-		auto [xAnchor, yAnchor, xScale, yScale] = GetSegmentAnchor(segment, imgWidth, imgHeight);
+		auto [xAnchor, yAnchor, xScale, yScale] = GetSegmentAnchor(segment);
 		hEl->SetAnchor(xAnchor, yAnchor, xScale, yScale);
 	}
+	SetSize(origWidth, origHeight);
 }
 
 Material *wgui::WI9SliceRect::GetMaterial() { return m_material.get(); }

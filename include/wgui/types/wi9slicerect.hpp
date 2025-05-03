@@ -53,7 +53,7 @@ namespace wgui {
 	  private:
 		std::pair<int32_t, int32_t> GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		std::pair<int32_t, int32_t> GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
-		std::tuple<float, float, float, float> GetSegmentAnchor(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
+		std::tuple<float, float, float, float> GetSegmentAnchor(Segment segment) const;
 		void UpdateSegments();
 		std::array<WIHandle, umath::to_integral(Segment::Count)> m_segmentElements;
 		msys::MaterialHandle m_material;
