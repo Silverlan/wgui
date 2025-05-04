@@ -258,15 +258,20 @@ const pragma::string::Utf8String &WIText::GetFormattedText() const { return m_te
 void WIText::SetTabSpaceCount(uint32_t numberOfSpaces) { m_tabSpaceCount = numberOfSpaces; }
 uint32_t WIText::GetTabSpaceCount() const { return m_tabSpaceCount; }
 void WIText::SetFont(const std::string_view &font) { SetFont(FontManager::GetFont(font.data()).get()); }
-void WIText::SetFont(const FontInfo *font)
+void WIText::SetFont(const FontInfo *font, bool reload)
 {
-	if(m_font.get() == font)
+	if(m_font.get() == font && !reload)
 		return;
 	m_font = (font != nullptr) ? font->shared_from_this() : nullptr;
 	if(m_font)
 		FontManager::InitializeFontGlyphs(GetText(), *m_font);
 	SetDirty();
 	CallCallbacks<void, const FontInfo *>("OnFontChanged", font);
+}
+void WIText::ReloadFont()
+{
+	SetFont(m_font.get(), true);
+	SetText(GetText());
 }
 
 void WIText::SetCacheEnabled(bool bEnabled)
