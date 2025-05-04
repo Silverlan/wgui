@@ -97,6 +97,7 @@ class DLLWGUI WITexturedShape : public WIShape {
 	std::vector<Vector2> m_uvs;
 	AlphaMode m_alphaMode = AlphaMode::Blend;
 	float m_alphaCutoff = 1.f;
+	Vector4 m_materialColor {1.f, 1.f, 1.f, 1.f};
 	std::array<wgui::ShaderTextured::Channel, 4> m_channels = {wgui::ShaderTextured::Channel::Red, wgui::ShaderTextured::Channel::Green, wgui::ShaderTextured::Channel::Blue, wgui::ShaderTextured::Channel::Alpha};
 	float m_lod = -1.f;
 

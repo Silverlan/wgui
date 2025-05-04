@@ -327,6 +327,7 @@ void WITexturedShape::SetMaterial(Material *material)
 	m_hMaterial = material ? material->GetHandle() : msys::MaterialHandle {};
 	if(!m_hMaterial)
 		return;
+	m_materialColor = material->GetProperty<Vector4>("color_factor", Vector4 {1.f, 1.f, 1.f, 1.f});
 	auto *diffuseMap = m_hMaterial->GetDiffuseMap();
 	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
 		return;
@@ -352,6 +353,7 @@ Material *WITexturedShape::GetMaterial()
 void WITexturedShape::ClearTexture()
 {
 	ClearTextureLoadCallback();
+	m_materialColor = {1.f, 1.f, 1.f, 1.f};
 	m_hMaterial = nullptr;
 	if(m_texture)
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_texture);
@@ -534,6 +536,7 @@ bool WITexturedShape::PrepareRender(const DrawInfo &drawInfo, wgui::DrawState &d
 				UpdateMaterialDescriptorSetTexture();
 		}
 	}
+	col *= m_materialColor;
 	outColor = col;
 	return true;
 }
