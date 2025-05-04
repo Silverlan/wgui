@@ -170,6 +170,7 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	std::string GetSkinName();
 	WISkin *GetSkin();
 	WISkin *GetSkin(std::string name);
+	void ClearSkins();
 	void SetCursor(pragma::platform::Cursor::Shape cursor, prosper::Window *optWindow = nullptr);
 	void SetCursor(pragma::platform::Cursor &cursor, prosper::Window *optWindow = nullptr);
 	void ResetCursor(prosper::Window *optWindow = nullptr);

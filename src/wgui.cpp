@@ -789,6 +789,11 @@ std::string WGUI::GetSkinName()
 		return "";
 	return m_skin->m_identifier;
 }
+void WGUI::ClearSkins()
+{
+	m_skin = nullptr;
+	m_skins.clear();
+}
 
 void WGUI::SetCreateCallback(const std::function<void(WIBase &)> &onCreate) { m_createCallback = onCreate; }
 void WGUI::SetRemoveCallback(const std::function<void(WIBase &)> &onRemove) { m_removeCallback = onRemove; }
