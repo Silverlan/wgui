@@ -1105,6 +1105,12 @@ void WIBase::SetSkin(std::string skinName)
 	ResetSkin();
 	m_skin = skin;
 }
+std::optional<std::string> WIBase::GetSkinName() const
+{
+	if(!m_skin)
+		return {};
+	return m_skin->GetIdentifier();
+}
 void WIBase::ResetSkin()
 {
 	if(umath::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == true) {

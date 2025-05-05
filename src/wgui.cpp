@@ -751,6 +751,7 @@ WISkin *WGUI::RegisterSkin(std::string id, std::unique_ptr<WISkin> &&skin)
 		return pSkin;
 	}
 	auto *pSkin = skin.get();
+	pSkin->SetIdentifier(id);
 	m_skins[id] = std::move(skin);
 	return pSkin;
 }

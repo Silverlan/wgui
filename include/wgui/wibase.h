@@ -135,6 +135,7 @@ class DLLWGUI WIBase : public CallbackHandler {
 	void Resize();
 	void SetSkin(std::string skin);
 	void ResetSkin();
+	std::optional<std::string> GetSkinName() const;
 	void SetSkinCallbacksEnabled(bool enabled);
 	const std::string &GetName() const;
 	void SetName(const std::string &name);
