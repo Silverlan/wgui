@@ -17,18 +17,8 @@ pr_add_dependency(${PROJ_NAME} squish TARGET)
 pr_add_dependency(${PROJ_NAME} libz2 TARGET)
 pr_add_external_dependency(${PROJ_NAME} exprtk HEADER_ONLY)
 pr_add_external_dependency(${PROJ_NAME} gli HEADER_ONLY)
-
-# libpng
-if(WIN32)
-	set(LIBPNG_LIB_NAME "libpng16")
-else()
-	set(LIBPNG_LIB_NAME "png16")
-endif()
-if(WGUI_INCLUDE_DEPENDENCIES)
-	pr_set_default_include_path(lpng "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/libpng")
-	pr_set_default_library_file_path(lpng "${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/libpng/${CMAKE_BUILD_TYPE}" SHARED LIB_NAME ${LIBPNG_LIB_NAME})
-endif()
-pr_add_dependency(${PROJ_NAME} png_static TARGET)
+pr_add_external_dependency(${PROJ_NAME} libpng LIBRARY PRIVATE)
+pr_add_external_dependency(${PROJ_NAME} zlib LIBRARY PRIVATE)
 
 # zlib
 if(WIN32)
@@ -40,7 +30,6 @@ if(WGUI_INCLUDE_DEPENDENCIES)
 	pr_set_default_include_path(zlib "${CMAKE_CURRENT_LIST_DIR}/third_party_libs/zlib")
 	pr_set_default_library_file_path(zlib "${CMAKE_CURRENT_BINARY_DIR}/third_party_libs/zlib/${CMAKE_BUILD_TYPE}" SHARED LIB_NAME ${ZLIB_LIB_NAME})
 endif()
-pr_add_dependency(${PROJ_NAME} zlib TARGET)
 
 # Reset paths (TODO: Why do we need to do this?)
 set(ZLIB_INCLUDE_DIR ${DEPENDENCY_ZLIB_INCLUDE} CACHE STRING "" FORCE)
