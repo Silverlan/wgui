@@ -8,9 +8,14 @@
 #include "wgui/wibufferbase.h"
 #include "wgui/wihandle.h"
 
+#ifdef _MSC_VER
 namespace pragma::string {
 	class Utf8StringArg;
 };
+#else
+import pragma.string.unicode;
+#endif
+
 class DLLWGUI WIButton : public WIBase {
   protected:
 	WIHandle m_text;

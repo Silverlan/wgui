@@ -9,9 +9,14 @@
 #include "witextentry.h"
 #include "wgui/wihandle.h"
 
+#ifdef _MSC_VER
 namespace pragma::string {
 	class Utf8StringArg;
 };
+#else
+import pragma.string.unicode;
+#endif
+
 class DLLWGUI WIDropDownMenu;
 class DLLWGUI WIDropDownMenuOption : public WIBase {
   public:
