@@ -349,6 +349,8 @@ void WIText::RenderText(Mat4 &)
 	//prosper::util::record_set_scissor(*drawCmd,w,h);
 
 	auto glyphMap = m_font->GetGlyphMap();
+	if(!glyphMap)
+		return;
 	auto glyphMapExtents = glyphMap->GetImage().GetExtents();
 	auto maxGlyphBitmapWidth = m_font->GetMaxGlyphBitmapWidth();
 	auto maxGlyphBitmapHeight = m_font->GetMaxGlyphBitmapHeight();
