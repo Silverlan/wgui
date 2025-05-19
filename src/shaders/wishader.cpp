@@ -115,7 +115,7 @@ void wgui::initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pi
 		prosper::BlendFactor dstAlphaBlendFactor;
 		pipelineInfo.GetColorBlendAttachmentProperties(0, &blendingEnabled, &blendOpColor, &blendOpAlpha, &srcColorBlendFactor, &dstColorBlendFactor, &srcAlphaBlendFactor, &dstAlphaBlendFactor, nullptr);
 		// Disable color write
-		pipelineInfo.SetColorBlendAttachmentProperties(0, &blendingEnabled, blendOpColor, blendOpAlpha, srcColorBlendFactor, dstColorBlendFactor, srcAlphaBlendFactor, dstAlphaBlendFactor, prosper::ColorComponentFlags::None);
+		pipelineInfo.SetColorBlendAttachmentProperties(0, blendingEnabled, blendOpColor, blendOpAlpha, srcColorBlendFactor, dstColorBlendFactor, srcAlphaBlendFactor, dstAlphaBlendFactor, prosper::ColorComponentFlags::None);
 		break;
 	}
 }
