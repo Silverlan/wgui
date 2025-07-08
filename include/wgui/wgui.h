@@ -235,7 +235,6 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	std::priority_queue<wgui::detail::UpdateInfo, std::vector<wgui::detail::UpdateInfo>, wgui::detail::UpdatePriority> m_updateQueue;
 	std::optional<uint32_t> m_currentUpdateDepth = {};
 	std::queue<WIHandle> m_removeQueue;
-	std::vector<std::unique_ptr<pragma::platform::Cursor>> m_cursors;
 	std::function<void(WIBase &)> m_createCallback = nullptr;
 	std::function<void(WIBase &)> m_removeCallback = nullptr;
 	std::function<void(WIBase *, WIBase *)> m_onFocusChangedCallback = nullptr;

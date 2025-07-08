@@ -145,13 +145,6 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 {
 	if(!FontManager::Initialize())
 		return ResultCode::UnableToInitializeFontManager;
-	m_cursors.reserve(6);
-	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::Arrow));
-	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::IBeam));
-	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::Crosshair));
-	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::Hand));
-	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::HResize));
-	m_cursors.push_back(pragma::platform::Cursor::Create(pragma::platform::Cursor::Shape::VResize));
 
 	m_time.Update();
 	m_tLastThink = static_cast<double>(m_time());
@@ -247,7 +240,7 @@ void WGUI::SetCursor(pragma::platform::Cursor::Shape cursor, prosper::Window *wi
 	auto icursor = static_cast<uint32_t>(cursor) - static_cast<uint32_t>(pragma::platform::Cursor::Shape::Arrow);
 	if(icursor > static_cast<uint32_t>(pragma::platform::Cursor::Shape::VResize))
 		return;
-	SetCursor(*m_cursors[icursor].get(), window);
+	SetCursor(pragma::platform::Cursor::GetStandardCursor(cursor), window);
 	elRoot->SetMainCursor(cursor);
 	elRoot->SetMainCustomCursor(pragma::platform::CursorHandle());
 }
