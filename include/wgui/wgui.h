@@ -157,6 +157,15 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	void SetCreateCallback(const std::function<void(WIBase &)> &onCreate);
 	void SetRemoveCallback(const std::function<void(WIBase &)> &onRemove);
 	void SetFocusCallback(const std::function<void(WIBase *, WIBase *)> &onFocusChanged);
+
+	WIRoot *FindWindowRootElement(const prosper::Window &window);
+	WIRoot *FindWindowRootElementUnderCursor();
+
+	void SetUiMouseButtonCallback(const std::function<void(WIBase&, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> &onMouseButton);
+	void SetUiKeyboardCallback(const std::function<void(WIBase&, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> &onKeyEvent);
+	void SetUiCharCallback(const std::function<void(WIBase&, unsigned int)> &onCharEvent);
+	void SetUiScrollCallback(const std::function<void(WIBase&, Vector2)> &onScrollCallback);
+
 	void GetMousePos(int &x, int &y, const prosper::Window *optWindow = nullptr);
 	prosper::Window *FindFocusedWindow();
 	WIRoot *FindFocusedWindowRootElement();
@@ -218,8 +227,6 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	std::shared_ptr<prosper::IUniformResizableBuffer> m_elementBuffer = nullptr;
 	std::vector<WIHandle> m_rootElements {};
 	std::shared_ptr<prosper::IRenderPass> m_msaaRenderPass = nullptr;
-	WIRoot *FindWindowRootElement(const prosper::Window &window);
-	WIRoot *FindWindowRootElementUnderCursor();
 	const prosper::Window *GetWindow(const prosper::Window *window) const { return const_cast<WGUI *>(this)->GetWindow(const_cast<prosper::Window *>(window)); }
 	prosper::Window *GetWindow(prosper::Window *window);
 	const WIRoot *GetRootElement(const WIRoot *elRoot) const { return const_cast<WGUI *>(this)->GetRootElement(const_cast<WIRoot *>(elRoot)); }
@@ -235,9 +242,16 @@ class DLLWGUI WGUI : public prosper::ContextObject {
 	std::priority_queue<wgui::detail::UpdateInfo, std::vector<wgui::detail::UpdateInfo>, wgui::detail::UpdatePriority> m_updateQueue;
 	std::optional<uint32_t> m_currentUpdateDepth = {};
 	std::queue<WIHandle> m_removeQueue;
+
 	std::function<void(WIBase &)> m_createCallback = nullptr;
 	std::function<void(WIBase &)> m_removeCallback = nullptr;
 	std::function<void(WIBase *, WIBase *)> m_onFocusChangedCallback = nullptr;
+
+	std::function<void(WIBase&, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> m_mouseButtonCallback = nullptr;
+	std::function<void(WIBase&, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> m_keyboardCallback;
+	std::function<void(WIBase&, unsigned int)> m_charCallback;
+	std::function<void(WIBase&, Vector2)> m_scrollCallback;
+
 	ChronoTime m_time = {};
 	double m_tLastThink = 0;
 	double m_tDelta = 0.f;

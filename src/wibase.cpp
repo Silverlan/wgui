@@ -2111,8 +2111,12 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window, pragma::platform::
 	if(i != __lastMouseGUIElements.end()) {
 		auto hEl = i->second;
 		__lastMouseGUIElements.erase(i);
-		if(is_valid(hEl) && hEl->IsVisible() && hEl->GetMouseInputEnabled())
+		if(is_valid(hEl) && hEl->IsVisible() && hEl->GetMouseInputEnabled()) {
 			hEl->MouseCallback(button, pragma::platform::KeyState::Release, mods);
+
+			if (WGUI::GetInstance().m_mouseButtonCallback && hEl.IsValid())
+				WGUI::GetInstance().m_mouseButtonCallback(*hEl.get(), button, pragma::platform::KeyState::Release, mods);
+		}
 	}
 	if(state == pragma::platform::KeyState::Press) {
 		auto *pContextMenu = WIContextMenu::GetActiveContextMenu();
@@ -2132,7 +2136,12 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window, pragma::platform::
 					  return false;
 				  hGui = elChild->GetHandle();
 				  auto result = InjectMouseButtonCallback(*elChild, button, state, mods);
-				  return (result == util::EventReply::Handled) ? true : false;
+					if (result == util::EventReply::Handled) {
+						if (WGUI::GetInstance().m_mouseButtonCallback && hGui.IsValid())
+			  				WGUI::GetInstance().m_mouseButtonCallback(*hGui.get(), button, state, mods);
+						return true;
+					}
+				  return false;
 			  },
 			  &window);
 			if(gui)
@@ -2177,6 +2186,7 @@ bool WIBase::__wiKeyCallback(prosper::Window &window, pragma::platform::Key key,
 					if(itCur != __lastKeyboardGUIElements.end())
 						hCur = itCur->second;
 					__lastKeyboardGUIElements[key] = gui->GetHandle();
+					auto hGui = gui->GetHandle();
 					auto result = gui->KeyboardCallback(key, scanCode, state, mods);
 
 					// Callback may have invoked key release-event already, so we have to check if our element's still there
@@ -2194,8 +2204,11 @@ bool WIBase::__wiKeyCallback(prosper::Window &window, pragma::platform::Key key,
 						__lastKeyboardGUIElements[key] = hCur;
 					}
 
-					if(result == util::EventReply::Handled)
+					if(result == util::EventReply::Handled) {
+						if (WGUI::GetInstance().m_keyboardCallback && hGui.IsValid())
+							WGUI::GetInstance().m_keyboardCallback(*hGui.get(), key, scanCode, state, mods);
 						return true;
+					}
 				}
 
 				gui = gui->GetParent();
@@ -2216,9 +2229,13 @@ bool WIBase::__wiCharCallback(prosper::Window &window, unsigned int c)
 		auto *gui = elRoot->GetFocusedElement();
 		if(gui) {
 			if(gui->GetKeyboardInputEnabled()) {
+				auto hGui = gui->GetHandle();
 				auto res = gui->CharCallback(c);
-				if(res == util::EventReply::Handled)
+				if(res == util::EventReply::Handled) {
+					if (WGUI::GetInstance().m_charCallback && hGui.IsValid())
+						WGUI::GetInstance().m_charCallback(*hGui.get(), c);
 					return true;
+				}
 			}
 		}
 	}
@@ -2234,8 +2251,14 @@ bool WIBase::__wiScrollCallback(prosper::Window &window, Vector2 offset)
 	if(gui->IsVisible()) {
 		gui = WGUI::GetInstance().GetGUIElement(gui, static_cast<int>(cursorPos.x), static_cast<int>(cursorPos.y), [](WIBase *elChild) -> bool { return elChild->GetScrollInputEnabled(); }, &window);
 		while(gui != nullptr) {
-			if(gui->GetScrollInputEnabled() && gui->ScrollCallback(offset) == util::EventReply::Handled)
+			auto hGui = gui->GetHandle();
+			if(gui->GetScrollInputEnabled() && gui->ScrollCallback(offset) == util::EventReply::Handled) {
+				if (WGUI::GetInstance().m_scrollCallback && hGui.IsValid())
+					WGUI::GetInstance().m_scrollCallback(*hGui.get(), offset);
 				return true;
+			}
+			if (!hGui.IsValid())
+				return false;
 			gui = gui->GetParent();
 		}
 	}
