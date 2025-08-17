@@ -792,10 +792,10 @@ void WGUI::SetCreateCallback(const std::function<void(WIBase &)> &onCreate) { m_
 void WGUI::SetRemoveCallback(const std::function<void(WIBase &)> &onRemove) { m_removeCallback = onRemove; }
 void WGUI::SetFocusCallback(const std::function<void(WIBase *, WIBase *)> &onFocusChanged) { m_onFocusChangedCallback = onFocusChanged; }
 
-void WGUI::SetUiMouseButtonCallback(const std::function<void(WIBase&, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> &onMouseButton) { m_mouseButtonCallback = onMouseButton; }
-void WGUI::SetUiKeyboardCallback(const std::function<void(WIBase&, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> &onKeyEvent) { m_keyboardCallback = onKeyEvent; }
-void WGUI::SetUiCharCallback(const std::function<void(WIBase&, unsigned int)> &onCharEvent) { m_charCallback = onCharEvent; }
-void WGUI::SetUiScrollCallback(const std::function<void(WIBase&, Vector2)> &onScrollCallback) { m_scrollCallback = onScrollCallback; }
+void WGUI::SetUiMouseButtonCallback(const std::function<void(WIBase &, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> &onMouseButton) { m_mouseButtonCallback = onMouseButton; }
+void WGUI::SetUiKeyboardCallback(const std::function<void(WIBase &, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> &onKeyEvent) { m_keyboardCallback = onKeyEvent; }
+void WGUI::SetUiCharCallback(const std::function<void(WIBase &, unsigned int)> &onCharEvent) { m_charCallback = onCharEvent; }
+void WGUI::SetUiScrollCallback(const std::function<void(WIBase &, Vector2)> &onScrollCallback) { m_scrollCallback = onScrollCallback; }
 
 WIRoot *WGUI::GetRootElement(WIRoot *elRoot)
 {

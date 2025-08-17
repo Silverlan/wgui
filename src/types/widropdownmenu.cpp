@@ -272,22 +272,24 @@ WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option, const
 		*reply = util::EventReply::Handled;
 		return CallbackReturnType::HasReturnValue;
 	}));
-	pOption->AddCallback("OnMouseEvent", FunctionCallback<util::EventReply, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier>::CreateWithOptionalReturn([hOption](util::EventReply *reply, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier) mutable -> CallbackReturnType {
-		if(!hOption.IsValid()) {
-			*reply = util::EventReply::Handled;
-			return CallbackReturnType::HasReturnValue;
-		}
-		WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
-		if(button == pragma::platform::MouseButton::Left && state == pragma::platform::KeyState::Press) {
-			WIDropDownMenu *dm = pOption->GetDropDownMenu();
-			if(dm != nullptr) {
-				dm->OnOptionSelected(pOption);
-				dm->CloseMenu();
-			}
-		}
-		*reply = util::EventReply::Handled;
-		return CallbackReturnType::HasReturnValue;
-	}));
+	pOption->AddCallback("OnMouseEvent",
+	  FunctionCallback<util::EventReply, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier>::CreateWithOptionalReturn(
+	    [hOption](util::EventReply *reply, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier) mutable -> CallbackReturnType {
+		    if(!hOption.IsValid()) {
+			    *reply = util::EventReply::Handled;
+			    return CallbackReturnType::HasReturnValue;
+		    }
+		    WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
+		    if(button == pragma::platform::MouseButton::Left && state == pragma::platform::KeyState::Press) {
+			    WIDropDownMenu *dm = pOption->GetDropDownMenu();
+			    if(dm != nullptr) {
+				    dm->OnOptionSelected(pOption);
+				    dm->CloseMenu();
+			    }
+		    }
+		    *reply = util::EventReply::Handled;
+		    return CallbackReturnType::HasReturnValue;
+	    }));
 	m_options.push_back(hOption);
 	if(m_hScrollBar.IsValid())
 		static_cast<WIScrollBar *>(m_hScrollBar.get())->SetUp(m_numListItems, static_cast<unsigned int>(m_options.size()));

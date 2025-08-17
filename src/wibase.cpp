@@ -2114,7 +2114,7 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window, pragma::platform::
 		if(is_valid(hEl) && hEl->IsVisible() && hEl->GetMouseInputEnabled()) {
 			hEl->MouseCallback(button, pragma::platform::KeyState::Release, mods);
 
-			if (WGUI::GetInstance().m_mouseButtonCallback && hEl.IsValid())
+			if(WGUI::GetInstance().m_mouseButtonCallback && hEl.IsValid())
 				WGUI::GetInstance().m_mouseButtonCallback(*hEl.get(), button, pragma::platform::KeyState::Release, mods);
 		}
 	}
@@ -2136,11 +2136,11 @@ bool WIBase::__wiMouseButtonCallback(prosper::Window &window, pragma::platform::
 					  return false;
 				  hGui = elChild->GetHandle();
 				  auto result = InjectMouseButtonCallback(*elChild, button, state, mods);
-					if (result == util::EventReply::Handled) {
-						if (WGUI::GetInstance().m_mouseButtonCallback && hGui.IsValid())
-			  				WGUI::GetInstance().m_mouseButtonCallback(*hGui.get(), button, state, mods);
-						return true;
-					}
+				  if(result == util::EventReply::Handled) {
+					  if(WGUI::GetInstance().m_mouseButtonCallback && hGui.IsValid())
+						  WGUI::GetInstance().m_mouseButtonCallback(*hGui.get(), button, state, mods);
+					  return true;
+				  }
 				  return false;
 			  },
 			  &window);
@@ -2205,7 +2205,7 @@ bool WIBase::__wiKeyCallback(prosper::Window &window, pragma::platform::Key key,
 					}
 
 					if(result == util::EventReply::Handled) {
-						if (WGUI::GetInstance().m_keyboardCallback && hGui.IsValid())
+						if(WGUI::GetInstance().m_keyboardCallback && hGui.IsValid())
 							WGUI::GetInstance().m_keyboardCallback(*hGui.get(), key, scanCode, state, mods);
 						return true;
 					}
@@ -2232,7 +2232,7 @@ bool WIBase::__wiCharCallback(prosper::Window &window, unsigned int c)
 				auto hGui = gui->GetHandle();
 				auto res = gui->CharCallback(c);
 				if(res == util::EventReply::Handled) {
-					if (WGUI::GetInstance().m_charCallback && hGui.IsValid())
+					if(WGUI::GetInstance().m_charCallback && hGui.IsValid())
 						WGUI::GetInstance().m_charCallback(*hGui.get(), c);
 					return true;
 				}
@@ -2253,11 +2253,11 @@ bool WIBase::__wiScrollCallback(prosper::Window &window, Vector2 offset)
 		while(gui != nullptr) {
 			auto hGui = gui->GetHandle();
 			if(gui->GetScrollInputEnabled() && gui->ScrollCallback(offset) == util::EventReply::Handled) {
-				if (WGUI::GetInstance().m_scrollCallback && hGui.IsValid())
+				if(WGUI::GetInstance().m_scrollCallback && hGui.IsValid())
 					WGUI::GetInstance().m_scrollCallback(*hGui.get(), offset);
 				return true;
 			}
-			if (!hGui.IsValid())
+			if(!hGui.IsValid())
 				return false;
 			gui = gui->GetParent();
 		}

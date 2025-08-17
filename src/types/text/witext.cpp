@@ -12,7 +12,7 @@
 #include <sharedutils/util.h>
 
 LINK_WGUI_TO_CLASS(WIText, WIText);
-#pragma optimize("",off)
+
 decltype(WIText::s_textBuffer) WIText::s_textBuffer = nullptr;
 WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(0), m_wTexture(0), m_hTexture(0), m_autoBreak(AutoBreak::NONE), m_renderTarget(nullptr)
 {
