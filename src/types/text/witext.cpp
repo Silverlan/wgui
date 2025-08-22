@@ -396,4 +396,3 @@ bool WIText::RemoveText(util::text::TextOffset offset, util::text::TextLength le
 bool WIText::MoveText(util::text::LineIndex lineIdx, util::text::CharOffset startOffset, util::text::TextLength len, util::text::LineIndex targetLineIdx, util::text::CharOffset targetCharOffset) { return m_text->MoveText(lineIdx, startOffset, len, targetLineIdx, targetCharOffset); }
 pragma::string::Utf8StringView WIText::Substr(util::text::TextOffset startOffset, util::text::TextLength len) const { return m_text->Substr(startOffset, len); }
 void WIText::Clear() { return m_text->Clear(); }
-#pragma optimize("", on)
