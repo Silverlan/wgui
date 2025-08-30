@@ -135,6 +135,7 @@ endif()
 
 pr_add_headers(${PROJ_NAME} "include/")
 pr_add_sources(${PROJ_NAME} "src/")
+pr_add_modules(${PROJ_NAME} "src/")
 
 pr_add_compile_definitions(
 	${PROJ_NAME}

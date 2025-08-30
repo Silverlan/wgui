@@ -11,7 +11,6 @@
 #include "wgui/shaders/wishader.hpp"
 #include "wgui/shaders/wishader_colored.hpp"
 #include "wgui/types/wicontextmenu.hpp"
-#include "wgui/types/witooltip.h"
 #include "wgui/types/wiroot.h"
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
@@ -20,6 +19,8 @@
 #include <prosper_window.hpp>
 #include <sharedutils/property/util_property_color.hpp>
 #include <mathutil/umath_geometry.hpp>
+
+import pragma.gui;
 
 LINK_WGUI_TO_CLASS(WIBase, WIBase);
 

@@ -1,12 +1,25 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#include "stdafx_wgui.h"
-#include "wgui/types/witooltip.h"
+module;
+
+#include "wgui/wibase.h"
 #include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
 
+export module pragma.gui:tooltip;
+
 import pragma.string.unicode;
+
+export class DLLWGUI WITooltip : public WIBase {
+  protected:
+	WIHandle m_hText;
+  public:
+	WITooltip();
+	virtual void Initialize() override;
+	void SetText(const std::string &text);
+	const pragma::string::Utf8String &GetText() const;
+};
 
 LINK_WGUI_TO_CLASS(WITooltip, WITooltip);
 

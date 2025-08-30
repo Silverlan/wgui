@@ -3,9 +3,10 @@
 
 #include "stdafx_wgui.h"
 #include "wgui/types/wiroot.h"
-#include "wgui/types/witooltip.h"
 #include <image/prosper_render_target.hpp>
 #include <prosper_window.hpp>
+
+import pragma.gui;
 
 constexpr uint32_t TOOLTIP_HOVER_DELAY_MS = 750;
 WIRoot::WIRoot() : WIBase(), m_hTooltipTarget {}, m_tCursorOver() {}
