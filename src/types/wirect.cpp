@@ -21,6 +21,8 @@ WIRect::WIRect() : WIShape()
 	//Update(); // No update required, updating would generate new buffers
 }
 
+WIRect::~WIRect() {}
+
 ///////////////////
 
 WIOutlinedRect::WIOutlinedRect() : WIBase(), m_lineWidth(1)

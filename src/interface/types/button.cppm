@@ -1,21 +1,17 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __WIBUTTON_H__
-#define __WIBUTTON_H__
+module;
+
 #include "wgui/wibase.h"
 #include "wgui/wibufferbase.h"
 #include "wgui/wihandle.h"
 
-#ifdef _MSC_VER
-namespace pragma::string {
-	class Utf8StringArg;
-};
-#else
-import pragma.string.unicode;
-#endif
+export module pragma.gui:button;
 
-class DLLWGUI WIButton : public WIBase {
+import pragma.string.unicode;
+
+export class DLLWGUI WIButton : public WIBase {
   protected:
 	WIHandle m_text;
 	bool m_bPressed;
@@ -29,5 +25,3 @@ class DLLWGUI WIButton : public WIBase {
 	virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
 	virtual void SizeToContents(bool x = true, bool y = true) override;
 };
-
-#endif

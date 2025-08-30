@@ -5,11 +5,11 @@ module;
 
 #include "stdafx_wgui.h"
 #include "wgui/types/wirect.h"
-#include "wgui/types/wibutton.h"
 #include <prosper_window.hpp>
 
 module pragma.gui;
 
+import :button;
 import :scroll_bar;
 
 LINK_WGUI_TO_CLASS(WIScrollBar, WIScrollBar);

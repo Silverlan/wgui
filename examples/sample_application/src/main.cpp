@@ -10,7 +10,6 @@
 #include <wgui/wgui.h>
 #include <wgui/types/wirect.h>
 #include <wgui/types/witext.h>
-#include <wgui/types/wibutton.h>
 #include <wgui/types/witextentry.h>
 #include <cmaterialmanager.h>
 #include <prosper_context.hpp>
@@ -26,6 +25,9 @@
 #pragma optimize("",off)
 
 #include <shader/prosper_pipeline_create_info.hpp>
+
+import pragma.gui;
+
 class ShaderTest
 	: public prosper::ShaderBaseImageProcessing
 {

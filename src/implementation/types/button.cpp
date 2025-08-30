@@ -1,10 +1,15 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
+module;
+
 #include "stdafx_wgui.h"
-#include "wgui/types/wibutton.h"
 #include "wgui/types/witext.h"
 #include "wgui/types/wirect.h"
+
+module pragma.gui;
+
+import :button;
 
 import pragma.string.unicode;
 

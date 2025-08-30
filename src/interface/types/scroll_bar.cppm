@@ -5,7 +5,6 @@ module;
 
 #include "wgui/wibase.h"
 #include "wgui/types/wirect.h"
-#include "wgui/types/wibutton.h"
 #include "wgui/wihandle.h"
 
 export module pragma.gui:scroll_bar;

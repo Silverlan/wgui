@@ -1,14 +1,15 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __WICONTEXTMENU_HPP__
-#define __WICONTEXTMENU_HPP__
+module;
 
-#include "wirect.h"
+#include "wgui/types/wirect.h"
+#include <wgui/types/wimenuitem.hpp>
 #include <optional>
 
-class WIMenuItem;
-class DLLWGUI WIContextMenu : public WIRect {
+export module pragma.gui:context_menu;
+
+export class DLLWGUI WIContextMenu : public WIRect {
   public:
 	static void CloseContextMenu();
 	static WIContextMenu *OpenContextMenu();
@@ -41,5 +42,3 @@ class DLLWGUI WIContextMenu : public WIRect {
 	WIHandle m_hBg = {};
 	WIHandle m_hBgOutline = {};
 };
-
-#endif

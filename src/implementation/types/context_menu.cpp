@@ -1,9 +1,15 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
+module;
+
 #include "stdafx_wgui.h"
-#include "wgui/types/wicontextmenu.hpp"
 #include "wgui/types/wimenuitem.hpp"
+#include "wgui/types/wirect.h"
+
+module pragma.gui;
+
+import :context_menu;
 
 LINK_WGUI_TO_CLASS(WIContextMenu, WIContextMenu);
 

@@ -12,6 +12,7 @@
 class DLLWGUI WIRect : public WIShape {
   public:
 	WIRect();
+	~WIRect() override;
 };
 
 class DLLWGUI WIOutlinedRect : public WIBase {
