@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: (c) 2025 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __WI9SLICERECT_HPP__
-#define __WI9SLICERECT_HPP__
+module;
 
-#include "wirect.h"
+#include "wgui/types/wirect.h"
 
-namespace wgui {
+export module pragma.gui:nine_slice_rect;
+
+export namespace wgui {
 	class DLLWGUI WI9SliceRectSegment : public WITexturedRect {
 	  public:
 		WI9SliceRectSegment();
@@ -59,5 +60,3 @@ namespace wgui {
 		NineSlice m_nineSlice;
 	};
 };
-
-#endif

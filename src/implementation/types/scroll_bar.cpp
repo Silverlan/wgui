@@ -1,11 +1,16 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
+module;
+
 #include "stdafx_wgui.h"
-#include "wgui/types/wiscrollbar.h"
 #include "wgui/types/wirect.h"
 #include "wgui/types/wibutton.h"
 #include <prosper_window.hpp>
+
+module pragma.gui;
+
+import :scroll_bar;
 
 LINK_WGUI_TO_CLASS(WIScrollBar, WIScrollBar);
 

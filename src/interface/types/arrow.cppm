@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __WIARROW_H__
-#define __WIARROW_H__
+module;
 
-#include "wishape.h"
+#include "wgui/types/wishape.h"
 
-class DLLWGUI WIArrow : public WIShape {
+export module pragma.gui:arrow;
+
+export class DLLWGUI WIArrow : public WIShape {
   public:
 	enum class DLLWGUI Direction { Right = 0, Down = 1, Left = 2, Up = 3 };
 	WIArrow();
@@ -15,5 +16,3 @@ class DLLWGUI WIArrow : public WIShape {
 	virtual void OnCursorEntered() override;
 	virtual void OnCursorExited() override;
 };
-
-#endif

@@ -1,11 +1,16 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
+module;
+
 #include "stdafx_wgui.h"
-#include "wgui/types/wiarrow.h"
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_context.hpp>
+
+module pragma.gui;
+
+import :arrow;
 
 LINK_WGUI_TO_CLASS(WIArrow, WIArrow);
 

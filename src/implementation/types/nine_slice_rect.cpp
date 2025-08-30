@@ -1,11 +1,16 @@
 // SPDX-FileCopyrightText: (c) 2025 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
+module;
+
 #include "stdafx_wgui.h"
-#include "wgui/types/wi9slicerect.hpp"
 #include "wgui/types/wirect.h"
 #include "wgui/shaders/witexturedsubrect.hpp"
 #include <prosper_descriptor_set_group.hpp>
+
+module pragma.gui;
+
+import :nine_slice_rect;
 
 namespace wgui {
 	LINK_WGUI_TO_CLASS(WI9SliceRectSegment, WI9SliceRectSegment);

@@ -5,8 +5,8 @@
 #include "wgui/types/witextentry.h"
 #include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
-#include "wgui/types/wiarrow.h"
 
+import pragma.gui;
 import pragma.string.unicode;
 
 LINK_WGUI_TO_CLASS(WITextEntry, WITextEntry);

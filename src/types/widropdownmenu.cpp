@@ -3,11 +3,11 @@
 
 #include "stdafx_wgui.h"
 #include "wgui/types/widropdownmenu.h"
+#include "wgui/types/wirect.h"
 #include "wgui/types/witext.h"
-#include "wgui/types/wiscrollbar.h"
-#include "wgui/types/wiarrow.h"
 #include "wgui/types/wiroot.h"
 
+import pragma.gui;
 import pragma.string.unicode;
 
 LINK_WGUI_TO_CLASS(WIDropDownMenu, WIDropDownMenu);

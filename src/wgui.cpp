@@ -9,7 +9,6 @@
 #include "wgui/wihandle.h"
 #include <algorithm>
 #include "wgui/wiskin.h"
-#include "wgui/types/wiarrow.h"
 #include "wgui/types/witext.h"
 #include "wgui/shaders/wishader_colored.hpp"
 #include "wgui/shaders/wishader_coloredline.hpp"
@@ -27,6 +26,7 @@
 #include <shader/prosper_pipeline_loader.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 
+import pragma.gui;
 import pragma.string.unicode;
 
 static std::unique_ptr<WGUI> s_wgui = nullptr;
