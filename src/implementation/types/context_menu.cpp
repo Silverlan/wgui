@@ -3,15 +3,13 @@
 
 module;
 
-#include "stdafx_wgui.h"
-#include "wgui/types/wimenuitem.hpp"
-#include "wgui/types/wirect.h"
+#include <string>
+#include <optional>
+#include "sharedutils/functioncallback.h"
 
 module pragma.gui;
 
-import :context_menu;
-
-LINK_WGUI_TO_CLASS(WIContextMenu, WIContextMenu);
+import :types.context_menu;
 
 static WIContextMenu *s_contextMenu = nullptr;
 static std::function<std::string(pragma::platform::Key, const std::string &)> s_fBindKey = nullptr;

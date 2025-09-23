@@ -3,11 +3,17 @@
 
 module;
 
-#include "wgui/types/wirect.h"
-#include <wgui/types/wimenuitem.hpp>
+#include "wgui/wguidefinitions.h"
+#include <functional>
+#include <vector>
+#include <string>
 #include <optional>
 
-export module pragma.gui:context_menu;
+export module pragma.gui:types.context_menu;
+
+import :handle;
+import :types.menu_item;
+import :types.rect;
 
 export class DLLWGUI WIContextMenu : public WIRect {
   public:

@@ -3,16 +3,13 @@
 
 module;
 
-#include "stdafx_wgui.h"
-#include "wgui/types/wirect.h"
 #include <prosper_window.hpp>
+#include "sharedutils/functioncallback.h"
 
 module pragma.gui;
 
-import :button;
-import :scroll_bar;
-
-LINK_WGUI_TO_CLASS(WIScrollBar, WIScrollBar);
+import :types.button;
+import :types.scroll_bar;
 
 WIScrollBar::WIScrollBar() : WIBase(), m_bHorizontal(false), m_offset(0), m_numElements(0), m_numListed(0), m_scrollAmount(1)
 {

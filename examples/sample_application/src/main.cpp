@@ -7,10 +7,6 @@
 #include <Windows.h>
 #undef MemoryBarrier
 #endif
-#include <wgui/wgui.h>
-#include <wgui/types/wirect.h>
-#include <wgui/types/witext.h>
-#include <wgui/types/witextentry.h>
 #include <cmaterialmanager.h>
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>

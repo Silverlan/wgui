@@ -3,12 +3,14 @@
 
 module;
 
-#include "wgui/wibase.h"
-#include "wgui/types/wirect.h"
-#include "wgui/types/witext.h"
+#include "wgui/wguidefinitions.h"
+#include <string>
 
-export module pragma.gui:tooltip;
+export module pragma.gui:types.tooltip;
 
+import :handle;
+import :types.base;
+import :types.text;
 import pragma.string.unicode;
 
 export class DLLWGUI WITooltip : public WIBase {
@@ -20,8 +22,6 @@ export class DLLWGUI WITooltip : public WIBase {
 	void SetText(const std::string &text);
 	const pragma::string::Utf8String &GetText() const;
 };
-
-LINK_WGUI_TO_CLASS(WITooltip, WITooltip);
 
 WITooltip::WITooltip() : WIBase() {}
 

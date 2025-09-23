@@ -3,9 +3,16 @@
 
 module;
 
-#include "wgui/types/wirect.h"
+#include "wgui/wguidefinitions.h"
+#include "mathutil/uvec.h"
+#include "material.h"
 
-export module pragma.gui:nine_slice_rect;
+#undef DrawState
+
+export module pragma.gui:types.nine_slice_rect;
+
+import :shaders.textured;
+import :types.rect;
 
 export namespace wgui {
 	class DLLWGUI WI9SliceRectSegment : public WITexturedRect {

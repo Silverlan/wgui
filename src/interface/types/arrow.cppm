@@ -3,9 +3,11 @@
 
 module;
 
-#include "wgui/types/wishape.h"
+#include "wgui/wguidefinitions.h"
 
-export module pragma.gui:arrow;
+export module pragma.gui:types.arrow;
+
+import :types.shape;
 
 export class DLLWGUI WIArrow : public WIShape {
   public:

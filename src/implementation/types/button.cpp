@@ -3,17 +3,12 @@
 
 module;
 
-#include "stdafx_wgui.h"
-#include "wgui/types/witext.h"
-#include "wgui/types/wirect.h"
 
 module pragma.gui;
 
-import :button;
+import :types.button;
 
 import pragma.string.unicode;
-
-LINK_WGUI_TO_CLASS(WIButton, WIButton);
 
 WIButton::WIButton() : WIBase(), m_bPressed(false)
 {

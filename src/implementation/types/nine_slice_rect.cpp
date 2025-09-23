@@ -3,19 +3,14 @@
 
 module;
 
-#include "stdafx_wgui.h"
-#include "wgui/types/wirect.h"
-#include "wgui/shaders/witexturedsubrect.hpp"
 #include <prosper_descriptor_set_group.hpp>
+
+#undef DrawState
 
 module pragma.gui;
 
-import :nine_slice_rect;
+import :types.nine_slice_rect;
 
-namespace wgui {
-	LINK_WGUI_TO_CLASS(WI9SliceRectSegment, WI9SliceRectSegment);
-	LINK_WGUI_TO_CLASS(WI9SliceRect, WI9SliceRect);
-};
 wgui::WI9SliceRectSegment::WI9SliceRectSegment() : WITexturedRect {} {}
 
 void wgui::WI9SliceRectSegment::BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState) { static_cast<wgui::ShaderTexturedSubRect &>(shader).RecordSetImageOffset(bindState, GetRenderImageOffset(), GetRenderImageScale()); }

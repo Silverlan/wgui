@@ -3,16 +3,13 @@
 
 module;
 
-#include "stdafx_wgui.h"
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_context.hpp>
 
 module pragma.gui;
 
-import :arrow;
-
-LINK_WGUI_TO_CLASS(WIArrow, WIArrow);
+import :types.arrow;
 
 static const Vector4 COLOR_SELECTED {0.1176f, 0.564f, 1.f, 1.f};
 static std::array<std::array<Vector2, 3>, 4> s_vertices {std::array<Vector2, 3> {Vector2 {-1.f, -1.f}, Vector2 {-1.f, 1.f}, Vector2 {1.f, 0.f}}, std::array<Vector2, 3> {Vector2 {0.f, 1.f}, Vector2 {1.f, -1.f}, Vector2 {-1.f, -1.f}},

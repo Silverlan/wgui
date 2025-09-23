@@ -3,11 +3,12 @@
 
 module;
 
-#include "wgui/wibase.h"
-#include "wgui/types/wirect.h"
-#include "wgui/wihandle.h"
+#include "wgui/wguidefinitions.h"
+#include "mathutil/uvec.h"
 
-export module pragma.gui:scroll_bar;
+export module pragma.gui:types.scroll_bar;
+
+import :types.rect;
 
 export
 {

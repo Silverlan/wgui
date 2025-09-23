@@ -3,11 +3,12 @@
 
 module;
 
-#include "wgui/wibase.h"
-#include "wgui/wibufferbase.h"
-#include "wgui/wihandle.h"
+#include "wgui/wguidefinitions.h"
 
-export module pragma.gui:button;
+export module pragma.gui:types.button;
+
+import :handle;
+import :types.base;
 
 import pragma.string.unicode;
 
