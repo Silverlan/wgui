@@ -5,7 +5,7 @@ module;
 
 #include "wgui/wguidefinitions.h"
 #include "buffers/prosper_buffer.hpp"
-#include <sharedutils/property/util_property_vector.h>
+#include "mathutil/uvec.h"
 
 #undef DrawState
 
@@ -14,6 +14,7 @@ export module pragma.gui:types.line;
 import :buffer_base;
 import :draw_info;
 import :draw_state;
+export import pragma.util;
 
 export {
 	class DLLWGUI WILineBase {

@@ -6,7 +6,6 @@ module;
 #include "wgui/wguidefinitions.h"
 #include "util_formatted_text.hpp"
 #include <image/prosper_render_target.hpp>
-#include <sharedutils/property/util_property.hpp>
 #include <sharedutils/util_shared_handle.hpp>
 #include <util_formatted_text_types.hpp>
 #include <string_view>

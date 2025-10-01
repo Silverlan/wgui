@@ -12,11 +12,10 @@ module;
 #include <mathutil/uvec.h>
 #include "mathutil/umath_geometry.hpp"
 #include <mathutil/transform.hpp>
+#include "mathutil/color.h"
 #include <algorithm>
 #include <chrono>
 #include <deque>
-#include <sharedutils/property/util_property_vector.h>
-#include <sharedutils/property/util_property_color.hpp>
 #include <sharedutils/util_event_reply.hpp>
 #include <sharedutils/util_clock.hpp>
 
@@ -32,6 +31,7 @@ import :draw_state;
 import :enums;
 import :handle;
 import pragma.platform;
+export import pragma.util;
 
 export {
 	struct DLLWGUI WIFadeInfo {

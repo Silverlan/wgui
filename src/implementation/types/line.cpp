@@ -7,7 +7,6 @@ module;
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
-#include "sharedutils/property/util_property_vector.h"
 #include "sharedutils/util.h"
 
 #undef DrawState

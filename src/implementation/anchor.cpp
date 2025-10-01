@@ -4,7 +4,6 @@
 module;
 
 #include "sharedutils/functioncallback.h"
-#include "sharedutils/property/util_property_vector.h"
 #include "mathutil/uvec.h"
 
 module pragma.gui;

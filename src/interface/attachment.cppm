@@ -4,11 +4,12 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <sharedutils/property/util_property_vector.h>
+#include "mathutil/uvec.h"
 
 export module pragma.gui:attachment;
 
 import :handle;
+export import pragma.util;
 
 export class DLLWGUI WIAttachment {
   public:

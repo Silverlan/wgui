@@ -3,7 +3,6 @@
 
 module;
 
-#include <sharedutils/property/util_property_color.hpp>
 #include <unordered_map>
 #include <algorithm>
 #include <prosper_context.hpp>
@@ -12,9 +11,9 @@ module;
 #include <atomic>
 #include <unordered_set>
 #include <prosper_window.hpp>
-#include "sharedutils/property/util_property_vector.h"
 #include "sharedutils/util_string.h"
 #include "sharedutils/util_clock.hpp"
+#include "sharedutils/functioncallback.h"
 #include <mathutil/umath_geometry.hpp>
 #include "sharedutils/util_shared_handle.hpp"
 
