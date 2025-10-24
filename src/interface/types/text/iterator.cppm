@@ -14,7 +14,9 @@ export import pragma.string.formatted_text;
 export import pragma.string.unicode;
 
 export {
-	class WIText;
+	namespace wgui {
+		class WIText;
+	}
 	class DLLWGUI TextLineIteratorBase {
 	public:
 		struct DLLWGUI Info {
@@ -42,7 +44,7 @@ export {
 		static const auto INVALID_LINE = std::numeric_limits<util::text::LineIndex>::max();
 		static const Info INVALID_LINE_INFO;
 
-		TextLineIteratorBase(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
+		TextLineIteratorBase(wgui::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase(const TextLineIteratorBase &other) = default;
 		TextLineIteratorBase &operator=(const TextLineIteratorBase &other) = default;
 
@@ -55,20 +57,20 @@ export {
 		bool operator==(const TextLineIteratorBase &other) const;
 		bool operator!=(const TextLineIteratorBase &other) const;
 	private:
-		WIText &GetText() const;
+		wgui::WIText &GetText() const;
 		void UpdateLine();
-		WIText *m_text = nullptr;
+		wgui::WIText *m_text = nullptr;
 		Info m_info = {};
 		bool m_bIterateSubLines = true;
 	};
 
 	class DLLWGUI TextLineIterator {
 	public:
-		TextLineIterator(WIText &text, util::text::LineIndex startLineIndex = 0, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
+		TextLineIterator(wgui::WIText &text, util::text::LineIndex startLineIndex = 0, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase begin() const;
 		TextLineIteratorBase end() const;
 	private:
-		WIText &m_text;
+		wgui::WIText &m_text;
 		bool m_bIterateSubLines = true;
 		util::text::LineIndex m_startLineIndex = 0;
 		util::text::LineIndex m_startSubLineIndex = 0;
@@ -123,12 +125,12 @@ export {
 
 	class DLLWGUI CharIterator {
 	public:
-		CharIterator(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
-		CharIterator(WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
+		CharIterator(wgui::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
+		CharIterator(wgui::WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
 		wgui::CharIteratorBase begin() const;
 		wgui::CharIteratorBase end() const;
 	private:
-		WIText &m_text;
+		wgui::WIText &m_text;
 		util::text::LineIndex m_lineIndex = 0;
 		util::text::LineIndex m_subLineIndex = 0;
 		util::text::TextOffset m_absLineStartOffset = 0;

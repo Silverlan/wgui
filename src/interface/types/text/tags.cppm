@@ -21,7 +21,9 @@ export {
 		std::shared_ptr<void> value;
 	};
 
-	class WIText;
+	namespace wgui {
+		class WIText;
+	}
 	class DLLWGUI WITextDecorator {
 	public:
 		WITextDecorator(WIText &text);

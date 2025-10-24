@@ -15,10 +15,10 @@ export module pragma.gui:types.text;
 import :draw_info;
 import :draw_state;
 import :font_manager;
-import :handle;
+export import :handle;
 import :shaders.text;
-import :text_tags;
-import :types.base;
+export import :text_tags;
+export import :types.base;
 export import pragma.string.formatted_text;
 export import pragma.string.unicode;
 
@@ -40,7 +40,7 @@ export {
 
 		virtual void Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale = {1.f, 1.f}, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
 		void InitializeTexture(prosper::Texture &tex, int32_t w, int32_t h);
-		void SetTextElement(WIText &elText);
+		void SetTextElement(wgui::WIText &elText);
 	private:
 		bool RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, wgui::ShaderTextRect &shader, const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
 		wgui::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, wgui::StencilPipeline stencilPipeline) const;

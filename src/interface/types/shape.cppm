@@ -65,9 +65,9 @@ export {
 			bool GetAlphaOnly() const;
 			float GetLOD() const;
 			void SetLOD(float lod);
-			void SetMaterial(Material *material);
+			void SetMaterial(msys::Material *material);
 			void SetMaterial(const std::string &material);
-			Material *GetMaterial();
+			msys::Material *GetMaterial();
 			void SetTexture(prosper::Texture &tex, std::optional<uint32_t> layerIndex = {});
 			void ClearTexture();
 			const std::shared_ptr<prosper::Texture> &GetTexture() const;
@@ -113,7 +113,7 @@ export {
 			uint32_t m_texUpdateCountRef = std::numeric_limits<uint32_t>::max();
 			void UpdateMaterialDescriptorSetTexture();
 			void ClearTextureLoadCallback();
-			void InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture);
+			void InitializeTextureLoadCallback(const std::shared_ptr<msys::Texture> &texture);
 		};
 		using namespace umath::scoped_enum::bitwise;
 	}

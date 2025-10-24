@@ -47,16 +47,16 @@ export
 		void SetLimits(int min, int max);
 	};
 
-	class DLLWGUI WIScrollBar : public WIBase {
+	class DLLWGUI WIScrollBar : public wgui::WIBase {
 	  protected:
 		bool m_bHorizontal;
 		unsigned int m_offset;
 		unsigned int m_numElements;
 		unsigned int m_numListed;
 		unsigned int m_scrollAmount;
-		WIHandle m_buttonUp;
-		WIHandle m_buttonDown;
-		WIHandle m_slider;
+		wgui::WIHandle m_buttonUp;
+		wgui::WIHandle m_buttonDown;
+		wgui::WIHandle m_slider;
 		int GetSliderWidth();
 		int GetSliderHeight();
 		int GetSliderX();

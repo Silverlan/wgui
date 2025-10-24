@@ -13,9 +13,9 @@ import :types.base;
 import :types.text;
 import pragma.string.unicode;
 
-export class DLLWGUI WITooltip : public WIBase {
+export class DLLWGUI WITooltip : public wgui::WIBase {
   protected:
-	WIHandle m_hText;
+	wgui::WIHandle m_hText;
   public:
 	WITooltip();
 	virtual void Initialize() override;
@@ -29,7 +29,7 @@ void WITooltip::Initialize()
 {
 	WIBase::Initialize();
 
-	auto *pText = WGUI::GetInstance().Create<WIText>(this);
+	auto *pText = wgui::WGUI::GetInstance().Create<wgui::WIText>(this);
 	//pText->SetAutoBreakMode(WIText::AutoBreak::WHITESPACE);
 	m_hText = pText->GetHandle();
 }
@@ -40,7 +40,7 @@ void WITooltip::SetText(const std::string &text)
 		return;
 	//auto *parent = GetParent();
 	//auto maxWidth = parent->GetWidth() -GetX();
-	auto *pText = static_cast<WIText *>(m_hText.get());
+	auto *pText = static_cast<wgui::WIText *>(m_hText.get());
 	//pText->SetWidth(maxWidth);
 	pText->SetText(text);
 	pText->SizeToContents();
@@ -51,5 +51,5 @@ const pragma::string::Utf8String &WITooltip::GetText() const
 		static pragma::string::Utf8String r;
 		return r;
 	}
-	return static_cast<const WIText *>(m_hText.get())->GetText();
+	return static_cast<const wgui::WIText *>(m_hText.get())->GetText();
 }

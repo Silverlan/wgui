@@ -33,9 +33,9 @@ void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipeline
 
 void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) { InitializeGfxPipeline(pipelineInfo, pipelineIdx, true); }
 
-size_t Shader::GetBaseTypeHashCode() const { return typeid(Shader).hash_code(); }
+size_t Shader::GetBaseTypeHashCode() const { return typeid(wgui::Shader).hash_code(); }
 
-void Shader::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx) { wgui::get_render_pass(WGUI::GetInstance(), GetContext(), outRenderPass, IsMsaaPipeline(pipelineIdx)); }
+void Shader::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx) { wgui::get_render_pass(wgui::WGUI::GetInstance(), GetContext(), outRenderPass, IsMsaaPipeline(pipelineIdx)); }
 
 wgui::StencilPipeline Shader::ToStencilPipelineIndex(uint32_t pipelineIdx, bool *optOutMsaa)
 {
@@ -72,7 +72,7 @@ bool Shader::RecordSetStencilReference(prosper::ShaderBindState &bindState, uint
 
 prosper::IRenderPass &wgui::get_render_pass(prosper::IPrContext &context) { return context.GetWindow().GetStagingRenderPass(); }
 
-void wgui::get_render_pass(WGUI &gui, prosper::IPrContext &context, std::shared_ptr<prosper::IRenderPass> &outRenderPass, bool msaa)
+void wgui::get_render_pass(wgui::WGUI &gui, prosper::IPrContext &context, std::shared_ptr<prosper::IRenderPass> &outRenderPass, bool msaa)
 {
 	if(msaa)
 		outRenderPass = gui.GetMsaaRenderPass().shared_from_this();

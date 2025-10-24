@@ -12,14 +12,14 @@ module;
 
 export module pragma.gui:types.base;
 
-import :anchor;
-import :attachment;
-import :core;
+export import :anchor;
+export import :attachment;
+export import :core;
 import :draw_info;
 import :draw_state;
-import :enums;
-import :handle;
-import pragma.platform;
+export import :enums;
+export import :handle;
+export import pragma.platform;
 export import pragma.prosper;
 export import pragma.util;
 

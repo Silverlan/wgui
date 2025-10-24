@@ -42,13 +42,13 @@ export {
 		virtual void Initialize() override;
 	};
 
-	class DLLWGUI WITexturedRect : public WITexturedShape {
+	class DLLWGUI WITexturedRect : public wgui::WITexturedShape {
 	public:
 		WITexturedRect();
 		virtual ~WITexturedRect() override = default;
 	};
 
-	class DLLWGUI WIRoundedTexturedRect : public WITexturedShape, public WIRoundedBase {
+	class DLLWGUI WIRoundedTexturedRect : public wgui::WITexturedShape, public WIRoundedBase {
 	public:
 		WIRoundedTexturedRect();
 		virtual ~WIRoundedTexturedRect() override = default;
