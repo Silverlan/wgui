@@ -3,11 +3,6 @@
 
 module;
 
-#include <sharedutils/util_shared_handle.hpp>
-#include <util_formatted_text.hpp>
-#include <util_formatted_text_tag.hpp>
-#include "mathutil/uvec.h"
-
 module pragma.gui;
 
 import :text_tags;

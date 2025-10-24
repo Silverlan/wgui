@@ -3,17 +3,11 @@
 
 module;
 
-#include <prosper_context.hpp>
-#include <prosper_util.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include <buffers/prosper_uniform_resizable_buffer.hpp>
-#include "sharedutils/util.h"
-
-#undef DrawState
-
 module pragma.gui;
 
 import :types.line;
+
+#undef DrawState
 
 unsigned int WILineBase::GetLineWidth() { return m_lineWidth; }
 void WILineBase::SetLineWidth(unsigned int width) { m_lineWidth = width; }
@@ -53,7 +47,7 @@ WILine::WILine() : WIBufferBase(), WILineBase(), m_posStart {util::Vector2iPrope
 	m_bufColor = context.CreateBuffer(bufCreateInfo, colors.data());
 	m_bufColor->SetDebugName("gui_line_color_buf");
 
-	auto col = Color::White.ToVector4();
+	auto col = colors::White.ToVector4();
 	SetColor(col.x, col.y, col.z, col.w);
 }
 

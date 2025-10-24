@@ -4,24 +4,14 @@
 module;
 
 #include <algorithm>
-#include <prosper_context.hpp>
-#include <prosper_util.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include <prosper_descriptor_set_group.hpp>
-#include <prosper_command_buffer.hpp>
-#include <prosper_window.hpp>
-#include <prosper_render_pass.hpp>
-#include <shader/prosper_pipeline_loader.hpp>
-#include "sharedutils/util_string.h"
-#include <buffers/prosper_uniform_resizable_buffer.hpp>
-
-#undef DrawState
-#undef FindWindow
 
 module pragma.gui;
 
 import :core;
 import pragma.string.unicode;
+
+#undef DrawState
+#undef FindWindow
 
 static std::unique_ptr<WGUI> s_wgui = nullptr;
 prosper::SampleCountFlags WGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;

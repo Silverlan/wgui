@@ -13,11 +13,11 @@ import :types.base;
 export {
 	class WIText;
 	class WIRect;
-	class DLLWGUI WITextEntry : public WIBase {
+	class DLLWGUI WITextEntry : public wgui::WIBase {
 	protected:
-		WIHandle m_hBase;
-		WIHandle m_hOutline;
-		WIHandle m_hBg;
+		wgui::WIHandle m_hBase;
+		wgui::WIHandle m_hOutline;
+		wgui::WIHandle m_hBg;
 
 		virtual void OnTextEntered();
 		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
@@ -64,8 +64,8 @@ export {
 	class DLLWGUI WINumericEntry : public WITextEntry {
 	private:
 		struct Numeric {
-			WIHandle hUpArrow;
-			WIHandle hDownArrow;
+			wgui::WIHandle hUpArrow;
+			wgui::WIHandle hDownArrow;
 			std::unique_ptr<int32_t> min;
 			std::unique_ptr<int32_t> max;
 		} m_numeric;

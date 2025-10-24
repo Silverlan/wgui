@@ -3,9 +3,6 @@
 
 module;
 
-#include <util_formatted_text.hpp>
-#include "mathutil/umath.h"
-
 module pragma.gui;
 
 import :text_iterator;

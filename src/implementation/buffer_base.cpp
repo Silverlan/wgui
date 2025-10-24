@@ -3,18 +3,13 @@
 
 module;
 
-#include <prosper_context.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include <prosper_command_buffer.hpp>
-#include <buffers/prosper_uniform_resizable_buffer.hpp>
-
-#undef DrawState
-
 module pragma.gui;
 
 import :buffer_base;
 import :draw_info;
 import :draw_state;
+
+#undef DrawState
 
 WIBufferBase::WIBufferBase() : WIBase()
 {

@@ -4,17 +4,14 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <material_manager2.hpp>
-#include <sharedutils/alpha_mode.hpp>
-#include <texturemanager/texture.h>
 
 #undef DrawState
 
 export module pragma.gui:types.shape;
 
-import :buffer_base;
-import :draw_info;
-import :draw_state;
+export import :buffer_base;
+export import :draw_info;
+export import :draw_state;
 import :shaders.textured;
 import :types.line;
 
@@ -49,73 +46,79 @@ export {
 		virtual ~WIOutlinedShape() override = default;
 	};
 
-	class DLLWGUI WITexturedShape : public WIShape {
-	public:
-		enum class StateFlags : uint8_t { None = 0, AlphaOnly = 1u, ShaderOverride = AlphaOnly << 1u, ExpensiveShaderRequired = ShaderOverride << 1u };
-		static std::shared_ptr<prosper::IBuffer> CreateUvBuffer(const std::vector<Vector2> &uvs);
-		WITexturedShape();
-		virtual ~WITexturedShape() override;
-		virtual unsigned int AddVertex(Vector2 vert) override;
-		virtual std::ostream &Print(std::ostream &stream) const override;
-		unsigned int AddVertex(Vector2 vert, Vector2 uv);
-		void SetVertexUVCoord(unsigned int vertID, Vector2 uv);
-		void InvertVertexUVCoordinates(bool x = true, bool y = true);
-		virtual void ClearVertices() override;
-		prosper::IBuffer &GetUVBuffer() const;
-		void SetUVBuffer(prosper::IBuffer &buffer);
-		void SetAlphaOnly(bool b);
-		bool GetAlphaOnly() const;
-		float GetLOD() const;
-		void SetLOD(float lod);
-		void SetMaterial(Material *material);
-		void SetMaterial(const std::string &material);
-		Material *GetMaterial();
-		void SetTexture(prosper::Texture &tex, std::optional<uint32_t> layerIndex = {});
-		void ClearTexture();
-		const std::shared_ptr<prosper::Texture> &GetTexture() const;
-		virtual void Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
-		virtual void BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState);
-		void SizeToTexture();
-		Vector2i GetTextureSize() const;
-		void SetShader(wgui::ShaderTextured &shader);
+	namespace wgui {
+		class DLLWGUI WITexturedShape : public WIShape {
+		public:
+			enum class StateFlags : uint8_t { None = 0, AlphaOnly = 1u, ShaderOverride = AlphaOnly << 1u, ExpensiveShaderRequired = ShaderOverride << 1u };
+			static std::shared_ptr<prosper::IBuffer> CreateUvBuffer(const std::vector<Vector2> &uvs);
+			WITexturedShape();
+			virtual ~WITexturedShape() override;
+			virtual unsigned int AddVertex(Vector2 vert) override;
+			virtual std::ostream &Print(std::ostream &stream) const override;
+			unsigned int AddVertex(Vector2 vert, Vector2 uv);
+			void SetVertexUVCoord(unsigned int vertID, Vector2 uv);
+			void InvertVertexUVCoordinates(bool x = true, bool y = true);
+			virtual void ClearVertices() override;
+			prosper::IBuffer &GetUVBuffer() const;
+			void SetUVBuffer(prosper::IBuffer &buffer);
+			void SetAlphaOnly(bool b);
+			bool GetAlphaOnly() const;
+			float GetLOD() const;
+			void SetLOD(float lod);
+			void SetMaterial(Material *material);
+			void SetMaterial(const std::string &material);
+			Material *GetMaterial();
+			void SetTexture(prosper::Texture &tex, std::optional<uint32_t> layerIndex = {});
+			void ClearTexture();
+			const std::shared_ptr<prosper::Texture> &GetTexture() const;
+			virtual void Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
+			virtual void BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState);
+			void SizeToTexture();
+			Vector2i GetTextureSize() const;
+			void SetShader(wgui::ShaderTextured &shader);
 
-		void SetAlphaMode(AlphaMode alphaMode);
-		void SetAlphaCutoff(float alphaCutoff);
-		AlphaMode GetAlphaMode() const;
-		float GetAlphaCutoff() const;
+			void SetAlphaMode(AlphaMode alphaMode);
+			void SetAlphaCutoff(float alphaCutoff);
+			AlphaMode GetAlphaMode() const;
+			float GetAlphaCutoff() const;
 
-		void SetChannelSwizzle(wgui::ShaderTextured::Channel dst, wgui::ShaderTextured::Channel src);
-		wgui::ShaderTextured::Channel GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const;
+			void SetChannelSwizzle(wgui::ShaderTextured::Channel dst, wgui::ShaderTextured::Channel src);
+			wgui::ShaderTextured::Channel GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const;
 
-		virtual void ClearBuffer() override;
-	protected:
-		virtual void UpdateTransparencyState() override;
-		void UpdateShaderState();
-		virtual void DoUpdate() override;
-		bool PrepareRender(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, Vector4 &outColor);
-		msys::MaterialHandle m_hMaterial;
-		std::shared_ptr<prosper::Texture> m_texture = nullptr;
-		std::shared_ptr<bool> m_texLoadCallback;
-		std::shared_ptr<prosper::IBuffer> m_uvBuffer = nullptr;
-		std::vector<Vector2> m_uvs;
-		AlphaMode m_alphaMode = AlphaMode::Blend;
-		float m_alphaCutoff = 1.f;
-		Vector4 m_materialColor {1.f, 1.f, 1.f, 1.f};
-		std::array<wgui::ShaderTextured::Channel, 4> m_channels = {wgui::ShaderTextured::Channel::Red, wgui::ShaderTextured::Channel::Green, wgui::ShaderTextured::Channel::Blue, wgui::ShaderTextured::Channel::Alpha};
-		float m_lod = -1.f;
+			virtual void ClearBuffer() override;
+		protected:
+			virtual void UpdateTransparencyState() override;
+			void UpdateShaderState();
+			virtual void DoUpdate() override;
+			bool PrepareRender(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, Vector4 &outColor);
+			msys::MaterialHandle m_hMaterial;
+			std::shared_ptr<prosper::Texture> m_texture = nullptr;
+			std::shared_ptr<bool> m_texLoadCallback;
+			std::shared_ptr<prosper::IBuffer> m_uvBuffer = nullptr;
+			std::vector<Vector2> m_uvs;
+			AlphaMode m_alphaMode = AlphaMode::Blend;
+			float m_alphaCutoff = 1.f;
+			Vector4 m_materialColor {1.f, 1.f, 1.f, 1.f};
+			std::array<wgui::ShaderTextured::Channel, 4> m_channels = {wgui::ShaderTextured::Channel::Red, wgui::ShaderTextured::Channel::Green, wgui::ShaderTextured::Channel::Blue, wgui::ShaderTextured::Channel::Alpha};
+			float m_lod = -1.f;
 
-		void ReloadDescriptorSet();
-		virtual void SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap = nullptr) override;
-	protected:
-		util::WeakHandle<prosper::Shader> m_shader = {};
-		std::shared_ptr<prosper::IDescriptorSetGroup> m_descSetTextureGroup = nullptr;
-	private:
-		StateFlags m_stateFlags = StateFlags::None;
-		uint32_t m_matUpdateCountRef = std::numeric_limits<uint32_t>::max();
-		uint32_t m_texUpdateCountRef = std::numeric_limits<uint32_t>::max();
-		void UpdateMaterialDescriptorSetTexture();
-		void ClearTextureLoadCallback();
-		void InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture);
-	};
-	REGISTER_BASIC_BITWISE_OPERATORS(WITexturedShape::StateFlags)
+			void ReloadDescriptorSet();
+			virtual void SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap = nullptr) override;
+		protected:
+			util::WeakHandle<prosper::Shader> m_shader = {};
+			std::shared_ptr<prosper::IDescriptorSetGroup> m_descSetTextureGroup = nullptr;
+		private:
+			StateFlags m_stateFlags = StateFlags::None;
+			uint32_t m_matUpdateCountRef = std::numeric_limits<uint32_t>::max();
+			uint32_t m_texUpdateCountRef = std::numeric_limits<uint32_t>::max();
+			void UpdateMaterialDescriptorSetTexture();
+			void ClearTextureLoadCallback();
+			void InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture);
+		};
+		using namespace umath::scoped_enum::bitwise;
+	}
+	namespace umath::scoped_enum::bitwise {
+		template<>
+		struct enable_bitwise_operators<wgui::WITexturedShape::StateFlags> : std::true_type {};
+	}
 };

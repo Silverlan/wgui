@@ -4,13 +4,12 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "sharedutils/alpha_mode.hpp"
 #include <string>
 
 export module pragma.gui:shaders.textured;
 
-import :element_data;
-import :shaders.shader;
+export import :element_data;
+export import :shaders.shader;
 
 export namespace wgui {
 	class DLLWGUI ShaderTextured : public Shader {

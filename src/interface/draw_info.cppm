@@ -4,17 +4,19 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "prosper_command_buffer.hpp"
-#include "mathutil/uvec.h"
 #include <array>
 #include <cinttypes>
+#include <memory>
+#include <optional>
 
 #undef DrawState
 
 export module pragma.gui:draw_info;
 
-export class WIBase;
+export import pragma.prosper;
+
 export namespace wgui {
+	class WIBase;
 	struct DrawState;
 	struct DLLWGUI DrawInfo {
 		enum class Flags : uint8_t {

@@ -4,8 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "buffers/prosper_buffer.hpp"
-#include "mathutil/uvec.h"
 
 #undef DrawState
 

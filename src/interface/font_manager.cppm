@@ -9,11 +9,13 @@ module;
 #include <unordered_map>
 #include <string>
 #include <vector>
-#include <image/prosper_texture.hpp>
+#include <array>
+#include <memory>
 
 export module pragma.gui:font_manager;
 
-import pragma.string.unicode;
+export import pragma.prosper;
+export import pragma.string.unicode;
 
 class DynamicFontMap;
 export {

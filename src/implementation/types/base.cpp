@@ -5,17 +5,8 @@ module;
 
 #include <unordered_map>
 #include <algorithm>
-#include <prosper_context.hpp>
-#include <prosper_util.hpp>
-#include <sharedutils/scope_guard.h>
 #include <atomic>
 #include <unordered_set>
-#include <prosper_window.hpp>
-#include "sharedutils/util_string.h"
-#include "sharedutils/util_clock.hpp"
-#include "sharedutils/functioncallback.h"
-#include <mathutil/umath_geometry.hpp>
-#include "sharedutils/util_shared_handle.hpp"
 
 #undef DrawState
 #undef FindWindow
@@ -27,7 +18,7 @@ import :types.base;
 bool is_valid(const WIHandle &hEl) { return hEl.IsValid() && !hEl->IsRemovalScheduled(); }
 
 WIBase::WIBase()
-    : CallbackHandler(), m_cursor(pragma::platform::Cursor::Shape::Default), m_color(util::ColorProperty::Create(Color::White)), m_pos(util::Vector2iProperty::Create()), m_size(util::Vector2iProperty::Create()), m_bVisible(util::BoolProperty::Create(true)),
+    : CallbackHandler(), m_cursor(pragma::platform::Cursor::Shape::Default), m_color(util::ColorProperty::Create(colors::White)), m_pos(util::Vector2iProperty::Create()), m_size(util::Vector2iProperty::Create()), m_bVisible(util::BoolProperty::Create(true)),
       m_bHasFocus(util::BoolProperty::Create(false)), m_bMouseInBounds(util::BoolProperty::Create(false)), m_scale {util::Vector2Property::Create(Vector2 {1.f, 1.f})}
 {
 	RegisterCallback<void>("OnFocusGained");

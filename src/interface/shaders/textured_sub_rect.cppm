@@ -4,11 +4,11 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "mathutil/uvec.h"
+#include <string>
 
 export module pragma.gui:shaders.textured_sub_rect;
 
-import :shaders.textured;
+export import :shaders.textured;
 
 export namespace wgui {
 	class DLLWGUI ShaderTexturedSubRect : public ShaderTextured {

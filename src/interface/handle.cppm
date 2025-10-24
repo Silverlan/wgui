@@ -3,9 +3,11 @@
 
 module;
 
-#include <sharedutils/util_shared_handle.hpp>
-
 export module pragma.gui:handle;
 
-export class WIBase;
-export using WIHandle = util::TWeakSharedHandle<WIBase>;
+export import pragma.util;
+
+export namespace wgui {
+    class WIBase;
+    using WIHandle = util::TWeakSharedHandle<WIBase>;
+}

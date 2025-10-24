@@ -3,8 +3,6 @@
 
 module;
 
-#include <util_formatted_text.hpp>
-#include "mathutil/umath.h"
 #include <unordered_map>
 
 module pragma.gui;

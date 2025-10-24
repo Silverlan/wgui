@@ -3,22 +3,11 @@
 
 module;
 
-#include "texturemanager/texturemanager.h"
-#include "cmaterialmanager.h"
-#include "textureinfo.h"
-#include <sharedutils/scope_guard.h>
-#include "sharedutils/util_string.h"
-#include <prosper_context.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include <prosper_util.hpp>
-#include <prosper_descriptor_set_group.hpp>
-#include <buffers/prosper_uniform_resizable_buffer.hpp>
-
-#undef DrawState
-
 module pragma.gui;
 
 import :types.shape;
+
+#undef DrawState
 
 class CachedBuffers {
   public:

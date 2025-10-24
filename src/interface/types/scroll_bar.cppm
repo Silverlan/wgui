@@ -4,7 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "mathutil/uvec.h"
 
 export module pragma.gui:types.scroll_bar;
 

@@ -3,13 +3,6 @@
 
 module;
 
-#include <util_formatted_text.hpp>
-#include <util_formatted_text_tag.hpp>
-#include <prosper_context.hpp>
-#include <prosper_util.hpp>
-#include <buffers/prosper_uniform_resizable_buffer.hpp>
-#include <prosper_command_buffer.hpp>
-
 module pragma.gui;
 
 import :text_tags;

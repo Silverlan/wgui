@@ -8,7 +8,7 @@ module;
 
 export module pragma.gui:shaders.colored_line;
 
-import :shaders.colored;
+export import :shaders.colored;
 
 export namespace wgui {
 	class DLLWGUI ShaderColoredLine : public ShaderColored {

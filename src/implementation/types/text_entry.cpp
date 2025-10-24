@@ -3,10 +3,6 @@
 
 module;
 
-#include "mathutil/uvec.h"
-#include "sharedutils/functioncallback.h"
-#include "sharedutils/util_string.h"
-
 module pragma.gui;
 
 import :types.text_entry;

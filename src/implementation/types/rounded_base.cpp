@@ -3,10 +3,6 @@
 
 module;
 
-#include "mathutil/umath.h"
-#include "mathutil/uvec.h"
-#include <math.h>
-
 module pragma.gui;
 
 import :types.rounded_base;

@@ -3,9 +3,12 @@
 
 module;
 
-#include <mathutil/uvec.h>
+#include <cinttypes>
+#include <array>
 
 export module pragma.gui:element_data;
+
+export import pragma.math;
 
 export namespace wgui {
 #pragma pack(push, 1)

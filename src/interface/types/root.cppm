@@ -4,8 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "mathutil/uvec.h"
-#include <sharedutils/util_clock.hpp>
 
 export module pragma.gui:types.root;
 
@@ -13,7 +11,7 @@ import :handle;
 import :types.base;
 
 export {
-	class DLLWGUI WIRoot : public WIBase {
+	class DLLWGUI WIRoot : public wgui::WIBase {
 	public:
 		WIRoot();
 		virtual ~WIRoot() override;
@@ -50,7 +48,7 @@ export {
 		void SetFocusedElement(WIBase *el);
 		uint32_t GetFocusCount() const;
 		void SetFocusCount(uint32_t focusCount);
-		std::deque<WIHandle> &GetFocusTrapStack();
+		std::deque<wgui::WIHandle> &GetFocusTrapStack();
 
 		bool IsMainFileHovering() const;
 		void SetMainFileHovering(bool hovering);
@@ -59,20 +57,20 @@ export {
 
 		void RestoreTrappedFocus(WIBase *elRef = nullptr);
 	private:
-		WIHandle m_hTooltip;
-		WIHandle m_hTooltipTarget;
-		WIHandle m_hImeTarget;
+		wgui::WIHandle m_hTooltip;
+		wgui::WIHandle m_hTooltipTarget;
+		wgui::WIHandle m_hImeTarget;
 		util::Clock::time_point m_tCursorOver;
 		std::weak_ptr<const prosper::Window> m_window {};
 		std::optional<Vector2> m_cursorPosOverride = {};
 
-		WIHandle m_elFocused = {};
+		wgui::WIHandle m_elFocused = {};
 		uint32_t m_focusCount = 0; // Used to detect changes
-		std::deque<WIHandle> m_focusTrapStack;
+		std::deque<wgui::WIHandle> m_focusTrapStack;
 		bool m_focusEnabled = true;
 
 		bool m_fileDragHover = false;
-		std::vector<WIHandle> m_fileHoverElements;
+		std::vector<wgui::WIHandle> m_fileHoverElements;
 
 		pragma::platform::Cursor::Shape m_mainCursor = pragma::platform::Cursor::Shape::Arrow;
 		pragma::platform::CursorHandle m_mainCustomCursor = {};

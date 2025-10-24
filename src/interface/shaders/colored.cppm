@@ -8,8 +8,8 @@ module;
 
 export module pragma.gui:shaders.colored;
 
-import :element_data;
-import :shaders.shader;
+export import :element_data;
+export import :shaders.shader;
 
 export namespace wgui {
 	class DLLWGUI ShaderColored : public Shader {

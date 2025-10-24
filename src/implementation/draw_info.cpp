@@ -3,15 +3,13 @@
 
 module;
 
-#include "mathutil/color.h"
-
-#undef DrawState
-
 module pragma.gui;
 
 import :draw_info;
 import :draw_state;
 import :types.base;
+
+#undef DrawState
 
 Vector4 wgui::DrawInfo::GetColor(WIBase &el, const wgui::DrawState &drawState) const
 {

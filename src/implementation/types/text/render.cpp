@@ -3,22 +3,11 @@
 
 module;
 
-#include <prosper_context.hpp>
-#include <image/prosper_sampler.hpp>
-#include <prosper_util.hpp>
-#include <shader/prosper_shader_blur.hpp>
-#include <prosper_command_buffer.hpp>
-#include <prosper_descriptor_set_group.hpp>
-#include <prosper_window.hpp>
-#include <buffers/prosper_uniform_resizable_buffer.hpp>
-#include <sharedutils/scope_guard.h>
-#include <util_formatted_text.hpp>
-
-#undef DrawState
-
 module pragma.gui;
 
 import :types.text;
+
+#undef DrawState
 
 WIText::LineInfo::~LineInfo() { ClearBuffers(); }
 const std::vector<WITextBase::SubBufferInfo> &WIText::LineInfo::GetBuffers() const { return buffers; }

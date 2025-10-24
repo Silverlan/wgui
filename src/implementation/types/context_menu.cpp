@@ -5,7 +5,6 @@ module;
 
 #include <string>
 #include <optional>
-#include "sharedutils/functioncallback.h"
 
 module pragma.gui;
 

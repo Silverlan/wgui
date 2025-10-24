@@ -3,8 +3,6 @@
 
 module;
 
-#include <shader/prosper_shader_t.hpp>
-
 module pragma.gui;
 
 import :shaders.textured_sub_rect;

@@ -3,12 +3,6 @@
 
 module;
 
-#include <shader/prosper_pipeline_create_info.hpp>
-#include <shader/prosper_shader_t.hpp>
-#include <prosper_context.hpp>
-#include <prosper_command_buffer.hpp>
-#include <buffers/prosper_buffer.hpp>
-
 module pragma.gui;
 
 import :shaders.textured;

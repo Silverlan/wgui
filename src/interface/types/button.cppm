@@ -12,9 +12,9 @@ import :types.base;
 
 import pragma.string.unicode;
 
-export class DLLWGUI WIButton : public WIBase {
+export class DLLWGUI WIButton : public wgui::WIBase {
   protected:
-	WIHandle m_text;
+	wgui::WIHandle m_text;
 	bool m_bPressed;
   public:
 	WIButton();

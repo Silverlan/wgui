@@ -3,11 +3,6 @@
 
 module;
 
-#include <prosper_context.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include <prosper_command_buffer.hpp>
-#include <prosper_util.hpp>
-
 module pragma.gui;
 
 import :element_buffer_data;

@@ -4,8 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "mathutil/umath.h"
-#include <util_formatted_text_types.hpp>
 
 export module pragma.gui:types.text_entry_base;
 

@@ -4,7 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "mathutil/uvec.h"
 #include <unordered_map>
 #include <string>
 

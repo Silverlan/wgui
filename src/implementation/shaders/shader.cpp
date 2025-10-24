@@ -3,19 +3,11 @@
 
 module;
 
-#include <shader/prosper_pipeline_create_info.hpp>
-#include <shader/prosper_shader_t.hpp>
-#include <prosper_context.hpp>
-#include <prosper_util.hpp>
-#include <prosper_window.hpp>
-#include <prosper_render_pass.hpp>
-#include <prosper_command_buffer.hpp>
-
-#undef DrawState
-
 module pragma.gui;
 
 import :shaders.shader;
+
+#undef DrawState
 
 using namespace wgui;
 

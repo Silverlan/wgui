@@ -3,10 +3,6 @@
 
 module;
 
-#include <prosper_util.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include <prosper_context.hpp>
-
 module pragma.gui;
 
 import :types.arrow;

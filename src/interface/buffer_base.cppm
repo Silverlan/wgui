@@ -4,8 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "mathutil/uvec.h"
-#include <sharedutils/util_weak_handle.hpp>
 
 #undef DrawState
 
@@ -17,9 +15,9 @@ import :enums;
 import :element_buffer_data;
 import :types.base;
 
-export class DLLWGUI WIBufferBase : public WIBase {
+export class DLLWGUI WIBufferBase : public wgui::WIBase {
   public:
-	virtual ~WIBufferBase() override;
+	~WIBufferBase() override;
 	virtual unsigned int GetVertexCount();
 	virtual void Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale = {1.f, 1.f}, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
 

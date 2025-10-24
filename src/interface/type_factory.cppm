@@ -10,8 +10,8 @@ module;
 
 export module pragma.gui:type_factory;
 
-export class WIBase;
 export namespace wgui {
+    class WIBase;
     class DLLWGUI TypeFactory {
       public:
         using Factory = WIBase *(*)(void);

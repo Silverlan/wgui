@@ -5,6 +5,7 @@ module;
 
 #include "wgui/wguidefinitions.h"
 #include <cinttypes>
+#include <string>
 
 export module pragma.gui:types.content_wrapper;
 
@@ -18,7 +19,7 @@ export {
 		int32_t bottom = 0;
 	};
 
-	class DLLWGUI WIContentWrapper : public WIBase {
+	class DLLWGUI WIContentWrapper : public wgui::WIBase {
 	public:
 		WIContentWrapper();
 

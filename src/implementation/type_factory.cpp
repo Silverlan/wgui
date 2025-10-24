@@ -3,17 +3,11 @@
 
 module;
 
-#include <prosper_context.hpp>
-#include <buffers/prosper_buffer.hpp>
-#include "sharedutils/util_string.h"
-#include <prosper_command_buffer.hpp>
-#include <prosper_util.hpp>
-
-#undef GetClassName
-
 module pragma.gui;
 
 import :type_factory;
+
+#undef GetClassName
 
 void wgui::TypeFactory::AddClass(std::string name, const std::type_info &info, Factory fc)
 {

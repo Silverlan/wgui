@@ -3,12 +3,6 @@
 
 module;
 
-#include <util_formatted_text.hpp>
-#include <util_formatted_text_line.hpp>
-#include "sharedutils/functioncallback.h"
-#include "sharedutils/util_string.h"
-#include <prosper_context.hpp>
-#include <prosper_window.hpp>
 #include <exprtk.hpp>
 #include <codecvt>
 

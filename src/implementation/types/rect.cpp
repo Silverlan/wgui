@@ -3,9 +3,6 @@
 
 module;
 
-#include "cmaterialmanager.h"
-#include <prosper_context.hpp>
-
 module pragma.gui;
 
 import :types.rect;

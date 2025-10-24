@@ -3,9 +3,6 @@
 
 module;
 
-#include "sharedutils/functioncallback.h"
-#include "mathutil/uvec.h"
-
 module pragma.gui;
 
 import :types.dropdown_menu;

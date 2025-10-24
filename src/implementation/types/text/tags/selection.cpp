@@ -3,11 +3,6 @@
 
 module;
 
-#include <util_formatted_text_anchor_point.hpp>
-#include <util_formatted_text.hpp>
-#include <util_formatted_text_line.hpp>
-#include "mathutil/uvec.h"
-
 module pragma.gui;
 
 import :text_tags;

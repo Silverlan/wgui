@@ -3,9 +3,6 @@
 
 module;
 
-#include <prosper_window.hpp>
-#include "sharedutils/functioncallback.h"
-
 module pragma.gui;
 
 import :types.button;

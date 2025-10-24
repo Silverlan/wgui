@@ -3,13 +3,11 @@
 
 module;
 
-#include <prosper_descriptor_set_group.hpp>
-
-#undef DrawState
-
 module pragma.gui;
 
 import :types.nine_slice_rect;
+
+#undef DrawState
 
 wgui::WI9SliceRectSegment::WI9SliceRectSegment() : WITexturedRect {} {}
 

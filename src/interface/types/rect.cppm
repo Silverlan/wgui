@@ -8,10 +8,10 @@ module;
 
 export module pragma.gui:types.rect;
 
-import :handle;
-import :types.base;
-import :types.rounded_base;
-import :types.shape;
+export import :handle;
+export import :types.base;
+export import :types.rounded_base;
+export import :types.shape;
 
 export {
 	class DLLWGUI WIRect : public WIShape {
@@ -20,9 +20,9 @@ export {
 		~WIRect() override;
 	};
 
-	class DLLWGUI WIOutlinedRect : public WIBase {
+	class DLLWGUI WIOutlinedRect : public wgui::WIBase {
 	private:
-		std::array<WIHandle, 4> m_lines;
+		std::array<wgui::WIHandle, 4> m_lines;
 		unsigned int m_lineWidth;
 		void UpdateLines();
 	public:

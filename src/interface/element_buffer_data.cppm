@@ -4,9 +4,11 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "buffers/prosper_buffer.hpp"
+#include <memory>
 
 export module pragma.gui:element_buffer_data;
+
+export import pragma.prosper;
 
 export struct DLLWGUI WIElementVertexBufferData {
   public:

@@ -3,10 +3,6 @@
 
 module;
 
-#include <image/prosper_render_target.hpp>
-#include <prosper_window.hpp>
-#include "sharedutils/util_clock.hpp"
-
 module pragma.gui;
 
 import :types.root;

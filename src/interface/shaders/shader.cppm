@@ -4,14 +4,16 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <shader/prosper_shader_rect.hpp>
-
-#undef DrawState
+#include <memory>
+#include <string>
 
 export module pragma.gui:shaders.shader;
 
 import :draw_state;
 import :enums;
+export import pragma.prosper;
+
+#undef DrawState
 
 export class WGUI;
 export namespace wgui {

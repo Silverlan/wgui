@@ -3,8 +3,6 @@
 
 module;
 
-#include <util_formatted_text_tag.hpp>
-
 module pragma.gui;
 
 import :text_tags;

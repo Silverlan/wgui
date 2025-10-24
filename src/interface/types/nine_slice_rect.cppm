@@ -4,15 +4,13 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include "mathutil/uvec.h"
-#include "material.h"
 
 #undef DrawState
 
 export module pragma.gui:types.nine_slice_rect;
 
-import :shaders.textured;
-import :types.rect;
+export import :shaders.textured;
+export import :types.rect;
 
 export namespace wgui {
 	class DLLWGUI WI9SliceRectSegment : public WITexturedRect {
@@ -55,8 +53,8 @@ export namespace wgui {
 		WI9SliceRect();
 		virtual void Initialize() override;
 		void SetMaterial(const std::string &matPath);
-		void SetMaterial(Material &mat);
-		Material *GetMaterial();
+		void SetMaterial(msys::Material &mat);
+		msys::Material *GetMaterial();
 	  private:
 		std::pair<int32_t, int32_t> GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		std::pair<int32_t, int32_t> GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;

@@ -3,11 +3,6 @@
 
 module;
 
-#include <util_formatted_text.hpp>
-#include <util_formatted_text_tag.hpp>
-#include <prosper_context.hpp>
-#include <sharedutils/util.h>
-
 module pragma.gui;
 
 import :types.text;

@@ -3,8 +3,6 @@
 
 module;
 
-#include "sharedutils/functioncallback.h"
-
 module pragma.gui;
 
 import :types.content_wrapper;
