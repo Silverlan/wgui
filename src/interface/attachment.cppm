@@ -12,14 +12,14 @@ export import pragma.util;
 
 export class DLLWGUI WIAttachment {
   public:
-	WIAttachment(wgui::WIBase &owner, const Vector2 &pos = {});
+	WIAttachment(WIBase &owner, const Vector2 &pos = {});
 	void SetRelativePosition(const Vector2 &pos);
 	const Vector2 &GetRelativePosition() const;
 
 	void UpdateAbsolutePosition();
 	const util::PVector2iProperty &GetAbsPosProperty() const;
   private:
-	wgui::WIHandle m_hOwner = {};
+	WIHandle m_hOwner = {};
 	Vector2 m_relativePosition = {};
 	util::PVector2iProperty m_absPosProperty = nullptr;
 };

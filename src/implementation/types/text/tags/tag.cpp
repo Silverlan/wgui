@@ -3,6 +3,9 @@
 
 module;
 
+#include <vector>
+#include <cinttypes>
+
 module pragma.gui;
 
 import :text_tags;

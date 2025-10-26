@@ -3,6 +3,15 @@
 
 module;
 
+#include <cstring>
+
+#include <optional>
+
+#include <memory>
+#include <functional>
+#include <cinttypes>
+#include <stdexcept>
+
 module pragma.gui;
 
 import :types.shape;
@@ -121,7 +130,7 @@ void WIShape::SetShape(BasicShape shape)
 			lpos -= Vector2 {el.GetHalfWidth(), el.GetHalfHeight()};
 			lpos.y *= ratio;
 
-			auto d = glm::length2(lpos);
+			auto d = glm::gtx::length2(lpos);
 			auto r = el.GetHalfWidth();
 			return d < (r * r);
 		});
@@ -256,12 +265,12 @@ void WITexturedShape::InvertVertexUVCoordinates(bool x, bool y)
 	m_vertexBufferUpdateRequired |= 2;
 	Update();
 }
-void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<Texture> &texture)
+void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<msys::Texture> &texture)
 {
 	auto hThis = GetHandle();
 	m_texLoadCallback = std::make_shared<bool>(true);
 	auto bLoadCallback = m_texLoadCallback;
-	texture->CallOnLoaded([hThis, bLoadCallback](std::shared_ptr<Texture> texture) mutable {
+	texture->CallOnLoaded([hThis, bLoadCallback](std::shared_ptr<msys::Texture> texture) mutable {
 		if(!hThis.IsValid() || static_cast<WITexturedShape *>(hThis.get())->m_descSetTextureGroup == nullptr)
 			return;
 
@@ -294,7 +303,7 @@ void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 	auto *diffuseMap = m_hMaterial->GetDiffuseMap();
 	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
 		return;
-	auto diffuseTexture = std::static_pointer_cast<Texture>(diffuseMap->texture);
+	auto diffuseTexture = std::static_pointer_cast<msys::Texture>(diffuseMap->texture);
 	if(diffuseTexture == nullptr)
 		return;
 	sgDummy.dismiss();
@@ -306,7 +315,7 @@ void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 	m_texUpdateCountRef = diffuseTexture->GetUpdateCount();
 	m_matUpdateCountRef = m_hMaterial->GetUpdateIndex();
 }
-void WITexturedShape::SetMaterial(Material *material)
+void WITexturedShape::SetMaterial(msys::Material *material)
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to change GUI element material during rendering, this is not allowed!"};
@@ -322,7 +331,7 @@ void WITexturedShape::SetMaterial(Material *material)
 	auto *diffuseMap = m_hMaterial->GetDiffuseMap();
 	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
 		return;
-	auto diffuseTexture = std::static_pointer_cast<Texture>(diffuseMap->texture);
+	auto diffuseTexture = std::static_pointer_cast<msys::Texture>(diffuseMap->texture);
 	if(diffuseTexture == nullptr)
 		return;
 	InitializeTextureLoadCallback(diffuseTexture);
@@ -335,7 +344,7 @@ void WITexturedShape::SetMaterial(const std::string &material)
 	else
 		SetMaterial(mat);
 }
-Material *WITexturedShape::GetMaterial()
+msys::Material *WITexturedShape::GetMaterial()
 {
 	if(!m_hMaterial)
 		return nullptr;
@@ -375,7 +384,7 @@ const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
 	auto *diffuseMap = m_hMaterial.get()->GetDiffuseMap();
 	if(diffuseMap == nullptr || diffuseMap->texture == nullptr)
 		return m_texture;
-	auto diffuseTexture = std::static_pointer_cast<Texture>(diffuseMap->texture);
+	auto diffuseTexture = std::static_pointer_cast<msys::Texture>(diffuseMap->texture);
 	if(diffuseTexture == nullptr)
 		return m_texture;
 	return diffuseTexture->GetVkTexture();
@@ -408,7 +417,7 @@ std::ostream &WITexturedShape::Print(std::ostream &stream) const
 	WIShape::Print(stream);
 	stream << "[Mat:";
 	if(m_hMaterial)
-		stream << m_hMaterial.get()->GetName();
+		stream << const_cast<msys::Material*>(m_hMaterial.get())->GetName();
 	else
 		stream << "NULL";
 	stream << "]";
@@ -522,7 +531,7 @@ bool WITexturedShape::PrepareRender(const wgui::DrawInfo &drawInfo, wgui::DrawSt
 		if(m_hMaterial->GetUpdateIndex() != m_matUpdateCountRef)
 			UpdateMaterialDescriptorSetTexture();
 		else {
-			auto *tex = static_cast<Texture *>(map->texture.get());
+			auto *tex = static_cast<msys::Texture *>(map->texture.get());
 			if(tex->GetUpdateCount() != m_texUpdateCountRef)
 				UpdateMaterialDescriptorSetTexture();
 		}

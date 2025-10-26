@@ -9,6 +9,10 @@ module;
 #include <string>
 #include <optional>
 
+#include <array>
+#include <cinttypes>
+#include <memory>
+
 export module pragma.gui:types.context_menu;
 
 import :handle;
@@ -37,14 +41,14 @@ export class DLLWGUI WIContextMenu : public WIRect {
 
 	uint32_t GetItemCount() const;
 	uint32_t GetSubMenuCount() const;
-	const std::vector<wgui::WIHandle> &GetItems() const;
-	const std::vector<wgui::WIHandle> &GetSubMenues() const;
+	const std::vector<WIHandle> &GetItems() const;
+	const std::vector<WIHandle> &GetSubMenues() const;
 	WIMenuItem *SelectItem(uint32_t idx);
 	std::optional<uint32_t> GetSelectedItemIndex() const;
   private:
 	virtual void DoUpdate() override;
-	std::vector<wgui::WIHandle> m_items = {};
-	std::vector<wgui::WIHandle> m_subMenues = {};
-	wgui::WIHandle m_hBg = {};
-	wgui::WIHandle m_hBgOutline = {};
+	std::vector<WIHandle> m_items = {};
+	std::vector<WIHandle> m_subMenues = {};
+	WIHandle m_hBg = {};
+	WIHandle m_hBgOutline = {};
 };

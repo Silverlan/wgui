@@ -3,6 +3,9 @@
 
 module;
 
+#include <cinttypes>
+#include <stdexcept>
+
 module pragma.gui;
 
 import :text_iterator;

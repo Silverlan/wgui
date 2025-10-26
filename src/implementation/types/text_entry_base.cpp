@@ -3,6 +3,9 @@
 
 module;
 
+#include <cinttypes>
+#include <memory>
+
 #include <exprtk.hpp>
 #include <codecvt>
 
@@ -628,7 +631,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(pragma::platform::Key key, in
 			{
 				int pos = GetCaretPos();
 				SetCaretPos(pos + ((key == pragma::platform::Key::Right) ? 1 : -1));
-				if((mods & pragma::platform::Modifier::Shift) == pragma::platform::Modifier::Shift) {
+				if((umath::to_integral(mods) & umath::to_integral(pragma::platform::Modifier::Shift)) == umath::to_integral(pragma::platform::Modifier::Shift)) {
 					int posNew = GetCaretPos();
 					if(pos != posNew) {
 						if(m_selectStart == -1)
@@ -687,7 +690,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(pragma::platform::Key key, in
 								}
 
 								SetCaretPos(newPos);
-								if((mods & pragma::platform::Modifier::Shift) == pragma::platform::Modifier::Shift) {
+								if((umath::to_integral(mods) & umath::to_integral(pragma::platform::Modifier::Shift)) == umath::to_integral(pragma::platform::Modifier::Shift)) {
 									if(pos != newPos) {
 										if(m_selectStart == -1)
 											SetSelectionStart(pos);
@@ -718,7 +721,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(pragma::platform::Key key, in
 			{
 				if(IsEditable() == false)
 					break;
-				if((mods & pragma::platform::Modifier::Control) == pragma::platform::Modifier::Control) {
+				if((umath::to_integral(mods) & umath::to_integral(pragma::platform::Modifier::Control)) == umath::to_integral(pragma::platform::Modifier::Control)) {
 					RemoveSelectedText();
 					auto &context = WGUI::GetInstance().GetContext();
 					auto *window = GetRootWindow();
@@ -730,7 +733,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(pragma::platform::Key key, in
 		case pragma::platform::Key::C:
 		case pragma::platform::Key::X:
 			{
-				if((mods & pragma::platform::Modifier::Control) == pragma::platform::Modifier::Control) {
+				if((umath::to_integral(mods) & umath::to_integral(pragma::platform::Modifier::Control)) == umath::to_integral(pragma::platform::Modifier::Control)) {
 					if(m_selectStart != -1 && m_selectEnd != -1) {
 						auto &context = WGUI::GetInstance().GetContext();
 						auto *window = GetRootWindow();
@@ -756,7 +759,7 @@ util::EventReply WITextEntryBase::KeyboardCallback(pragma::platform::Key key, in
 			}
 		case pragma::platform::Key::A:
 			{
-				if((mods & pragma::platform::Modifier::Control) == pragma::platform::Modifier::Control) {
+				if((umath::to_integral(mods) & umath::to_integral(pragma::platform::Modifier::Control)) == umath::to_integral(pragma::platform::Modifier::Control)) {
 					auto *pText = GetTextElement();
 					if(pText) {
 						auto &formattedTextObject = pText->GetFormattedTextObject();

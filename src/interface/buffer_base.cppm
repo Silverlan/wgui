@@ -7,6 +7,12 @@ module;
 
 #undef DrawState
 
+#include <cinttypes>
+#include <vector>
+#include <memory>
+#include <string>
+#include <functional>
+
 export module pragma.gui:buffer_base;
 
 import :draw_info;
@@ -15,7 +21,7 @@ import :enums;
 import :element_buffer_data;
 import :types.base;
 
-export class DLLWGUI WIBufferBase : public wgui::WIBase {
+export class DLLWGUI WIBufferBase : public WIBase {
   public:
 	~WIBufferBase() override;
 	virtual unsigned int GetVertexCount();

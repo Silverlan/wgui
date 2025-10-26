@@ -3,6 +3,15 @@
 
 module;
 
+#include <cmath>
+
+#include <array>
+#include <cinttypes>
+#include <functional>
+#include <memory>
+#include <algorithm>
+#include <cstring>
+
 #include <string>
 #include <optional>
 
@@ -51,13 +60,13 @@ void WIContextMenu::Initialize()
 	auto &wgui = WGUI::GetInstance();
 	auto *pBg = wgui.Create<WIRect>(this);
 	pBg->SetAutoAlignToParent(true);
-	pBg->SetColor(Color::Beige);
+	pBg->SetColor(colors::Beige);
 	SetKeyboardInputEnabled(true);
 	m_hBg = pBg->GetHandle();
 
 	auto *pBgOutline = wgui.Create<WIOutlinedRect>(this);
 	pBgOutline->SetAutoAlignToParent(true);
-	pBgOutline->SetColor(Color::Gray);
+	pBgOutline->SetColor(colors::Gray);
 	m_hBgOutline = pBgOutline->GetHandle();
 }
 void WIContextMenu::OnRemove() { WIRect::OnRemove(); }

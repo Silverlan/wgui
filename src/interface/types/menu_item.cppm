@@ -6,6 +6,11 @@ module;
 #include "wgui/wguidefinitions.h"
 #include <string>
 
+#include <cinttypes>
+#include <vector>
+#include <memory>
+#include <functional>
+
 export module pragma.gui:types.menu_item;
 
 import :handle;
@@ -13,7 +18,7 @@ import :types.base;
 
 export {
 	class WIText;
-	class DLLWGUI WIMenuItem : public wgui::WIBase {
+	class DLLWGUI WIMenuItem : public WIBase {
 	public:
 		WIMenuItem();
 		virtual void Initialize() override;
@@ -37,10 +42,10 @@ export {
 		void UpdateRightText();
 		std::function<void(void)> m_fOnAction = nullptr;
 		std::vector<WIBase *> m_items = {};
-		wgui::WIHandle m_hBg = {};
-		wgui::WIHandle m_hBgOutline = {};
-		wgui::WIHandle m_hText = {};
-		wgui::WIHandle m_hRightText = {};
+		WIHandle m_hBg = {};
+		WIHandle m_hBgOutline = {};
+		WIHandle m_hText = {};
+		WIHandle m_hRightText = {};
 		std::string m_keyBindCommand = {};
 		bool m_bSelected = false;
 	};

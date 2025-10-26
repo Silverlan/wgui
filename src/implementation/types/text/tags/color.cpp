@@ -3,6 +3,12 @@
 
 module;
 
+#include <array>
+#include <cinttypes>
+#include <optional>
+#include <string>
+#include <memory>
+
 module pragma.gui;
 
 import :text_tags;

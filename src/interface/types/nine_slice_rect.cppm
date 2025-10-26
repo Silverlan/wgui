@@ -7,6 +7,11 @@ module;
 
 #undef DrawState
 
+#include <array>
+#include <cinttypes>
+#include <string>
+#include <memory>
+
 export module pragma.gui:types.nine_slice_rect;
 
 export import :shaders.textured;

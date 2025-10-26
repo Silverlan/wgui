@@ -3,6 +3,15 @@
 
 module;
 
+#include <memory>
+#include <algorithm>
+#include <stdexcept>
+
+#include <cinttypes>
+
+#include <vector>
+#include <string>
+
 module pragma.gui;
 
 import :types.text;

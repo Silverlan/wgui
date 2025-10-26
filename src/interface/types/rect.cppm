@@ -20,9 +20,9 @@ export {
 		~WIRect() override;
 	};
 
-	class DLLWGUI WIOutlinedRect : public wgui::WIBase {
+	class DLLWGUI WIOutlinedRect : public WIBase {
 	private:
-		std::array<wgui::WIHandle, 4> m_lines;
+		std::array<WIHandle, 4> m_lines;
 		unsigned int m_lineWidth;
 		void UpdateLines();
 	public:
@@ -42,13 +42,13 @@ export {
 		virtual void Initialize() override;
 	};
 
-	class DLLWGUI WITexturedRect : public wgui::WITexturedShape {
+	class DLLWGUI WITexturedRect : public WITexturedShape {
 	public:
 		WITexturedRect();
 		virtual ~WITexturedRect() override = default;
 	};
 
-	class DLLWGUI WIRoundedTexturedRect : public wgui::WITexturedShape, public WIRoundedBase {
+	class DLLWGUI WIRoundedTexturedRect : public WITexturedShape, public WIRoundedBase {
 	public:
 		WIRoundedTexturedRect();
 		virtual ~WIRoundedTexturedRect() override = default;

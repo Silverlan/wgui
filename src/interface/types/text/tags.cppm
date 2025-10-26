@@ -8,6 +8,10 @@ module;
 #include <optional>
 #include <string>
 
+#include <cinttypes>
+#include <vector>
+#include <memory>
+
 export module pragma.gui:text_tags;
 
 import :handle;
@@ -21,9 +25,7 @@ export {
 		std::shared_ptr<void> value;
 	};
 
-	namespace wgui {
-		class WIText;
-	}
+	class WIText;
 	class DLLWGUI WITextDecorator {
 	public:
 		WITextDecorator(WIText &text);
@@ -51,11 +53,11 @@ export {
 		int32_t GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset minOffsetInLine, util::text::CharOffset maxOffsetInLine, util::text::CharOffset &outTagStartOffsetInLine, util::text::CharOffset &outTagEndOffsetInLine) const;
 	protected:
 		void CreateOverlayElements();
-		void CreateOverlayElement(util::text::LineIndex lineIndex, util::text::TextOffset startOffset, util::text::TextOffset endOffset, std::vector<wgui::WIHandle> &cachedOverlays);
+		void CreateOverlayElement(util::text::LineIndex lineIndex, util::text::TextOffset startOffset, util::text::TextOffset endOffset, std::vector<WIHandle> &cachedOverlays);
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize);
-		virtual void InitializeOverlay(wgui::WIBase &overlay);
+		virtual void InitializeOverlay(WIBase &overlay);
 
-		std::vector<wgui::WIHandle> m_overlays = {};
+		std::vector<WIHandle> m_overlays = {};
 		bool m_bDirty = false;
 		WIText &m_text;
 	};
@@ -84,7 +86,7 @@ export {
 		using WITextTag::WITextTag;
 		virtual void Apply() override;
 	protected:
-		virtual void InitializeOverlay(wgui::WIBase &overlay) override;
+		virtual void InitializeOverlay(WIBase &overlay) override;
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) override;
 		Color m_underlineColor;
 	};
@@ -106,7 +108,7 @@ export {
 		using WITextTag::WITextTag;
 		virtual void Apply() override;
 	protected:
-		virtual void InitializeOverlay(wgui::WIBase &overlay) override;
+		virtual void InitializeOverlay(WIBase &overlay) override;
 	};
 
 	class DLLWGUI WITextTagLink : public WITextTagUnderline {
@@ -117,7 +119,7 @@ export {
 		virtual void Initialize() override;
 		virtual void Apply() override;
 	protected:
-		virtual void InitializeOverlay(wgui::WIBase &overlay) override;
+		virtual void InitializeOverlay(WIBase &overlay) override;
 		CallbackHandle m_cbFunction = {};
 		std::vector<std::string> m_strArgs = {};
 	private:
@@ -135,7 +137,7 @@ export {
 		void SetStartOffset(util::text::TextOffset offset);
 		void SetEndOffset(util::text::TextOffset offset);
 	protected:
-		virtual void InitializeOverlay(wgui::WIBase &overlay) override;
+		virtual void InitializeOverlay(WIBase &overlay) override;
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) override;
 		std::optional<std::pair<util::text::LineIndex, util::text::CharOffset>> GetAbsOffset(util::text::TextOffset offset) const;
 		util::TSharedHandle<util::text::AnchorPoint> m_startAnchorPoint = nullptr;

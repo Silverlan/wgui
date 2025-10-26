@@ -14,9 +14,7 @@ export import pragma.string.formatted_text;
 export import pragma.string.unicode;
 
 export {
-	namespace wgui {
-		class WIText;
-	}
+	class WIText;
 	class DLLWGUI TextLineIteratorBase {
 	public:
 		struct DLLWGUI Info {
@@ -44,7 +42,7 @@ export {
 		static const auto INVALID_LINE = std::numeric_limits<util::text::LineIndex>::max();
 		static const Info INVALID_LINE_INFO;
 
-		TextLineIteratorBase(wgui::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
+		TextLineIteratorBase(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase(const TextLineIteratorBase &other) = default;
 		TextLineIteratorBase &operator=(const TextLineIteratorBase &other) = default;
 
@@ -57,20 +55,20 @@ export {
 		bool operator==(const TextLineIteratorBase &other) const;
 		bool operator!=(const TextLineIteratorBase &other) const;
 	private:
-		wgui::WIText &GetText() const;
+		WIText &GetText() const;
 		void UpdateLine();
-		wgui::WIText *m_text = nullptr;
+		WIText *m_text = nullptr;
 		Info m_info = {};
 		bool m_bIterateSubLines = true;
 	};
 
 	class DLLWGUI TextLineIterator {
 	public:
-		TextLineIterator(wgui::WIText &text, util::text::LineIndex startLineIndex = 0, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
+		TextLineIterator(WIText &text, util::text::LineIndex startLineIndex = 0, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase begin() const;
 		TextLineIteratorBase end() const;
 	private:
-		wgui::WIText &m_text;
+		WIText &m_text;
 		bool m_bIterateSubLines = true;
 		util::text::LineIndex m_startLineIndex = 0;
 		util::text::LineIndex m_startSubLineIndex = 0;
@@ -78,63 +76,60 @@ export {
 
 	//////////////////////
 
-	namespace wgui {
-		class DLLWGUI CharIteratorBase {
-		public:
-			struct DLLWGUI Info {
-				util::text::LineIndex lineIndex = 0;
-				util::text::LineIndex subLineIndex = 0;
-				util::text::CharOffset charOffsetRelToSubLine = 0;
-				util::text::CharOffset charOffsetRelToLine = 0;
-				util::text::CharOffset charOffsetRelToText = 0;
+	class DLLWGUI CharIteratorBase {
+	public:
+		struct DLLWGUI Info {
+			util::text::LineIndex lineIndex = 0;
+			util::text::LineIndex subLineIndex = 0;
+			util::text::CharOffset charOffsetRelToSubLine = 0;
+			util::text::CharOffset charOffsetRelToLine = 0;
+			util::text::CharOffset charOffsetRelToText = 0;
 
-				uint32_t pxOffset = 0;
-				uint32_t pxWidth = 0;
-			};
-			enum class Flags : uint32_t { None = 0, BreakAtEndOfSubLine = 1, UpdatePixelWidth = BreakAtEndOfSubLine << 1 };
-
-			using iterator_category = std::forward_iterator_tag;
-			using value_type = Info;
-			using difference_type = value_type;
-			using pointer = value_type *;
-			using reference = value_type &;
-
-			static const Info INVALID_INFO;
-
-			CharIteratorBase(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset, Flags flags);
-
-			const value_type &operator++();
-			const value_type &operator++(int);
-			const value_type &operator*() const;
-
-			bool operator==(const CharIteratorBase &other) const;
-			bool operator!=(const CharIteratorBase &other) const;
-		private:
-			void UpdatePixelWidth();
-			WIText &GetText() const;
-			WIText *m_text = nullptr;
-			Info m_info = {};
-			Flags m_flags = Flags::BreakAtEndOfSubLine;
+			uint32_t pxOffset = 0;
+			uint32_t pxWidth = 0;
 		};
-		using namespace umath::scoped_enum::bitwise;
-	}
+		enum class Flags : uint32_t { None = 0, BreakAtEndOfSubLine = 1, UpdatePixelWidth = BreakAtEndOfSubLine << 1 };
+
+		using iterator_category = std::forward_iterator_tag;
+		using value_type = Info;
+		using difference_type = value_type;
+		using pointer = value_type *;
+		using reference = value_type &;
+
+		static const Info INVALID_INFO;
+
+		CharIteratorBase(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset, Flags flags);
+
+		const value_type &operator++();
+		const value_type &operator++(int);
+		const value_type &operator*() const;
+
+		bool operator==(const CharIteratorBase &other) const;
+		bool operator!=(const CharIteratorBase &other) const;
+	private:
+		void UpdatePixelWidth();
+		WIText &GetText() const;
+		WIText *m_text = nullptr;
+		Info m_info = {};
+		Flags m_flags = Flags::BreakAtEndOfSubLine;
+	};
 	namespace umath::scoped_enum::bitwise {
 		template<>
-		struct enable_bitwise_operators<wgui::CharIteratorBase::Flags> : std::true_type {};
+		struct enable_bitwise_operators<CharIteratorBase::Flags> : std::true_type {};
 	}
 
 	class DLLWGUI CharIterator {
 	public:
-		CharIterator(wgui::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
-		CharIterator(wgui::WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
-		wgui::CharIteratorBase begin() const;
-		wgui::CharIteratorBase end() const;
+		CharIterator(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
+		CharIterator(WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
+		CharIteratorBase begin() const;
+		CharIteratorBase end() const;
 	private:
-		wgui::WIText &m_text;
+		WIText &m_text;
 		util::text::LineIndex m_lineIndex = 0;
 		util::text::LineIndex m_subLineIndex = 0;
 		util::text::TextOffset m_absLineStartOffset = 0;
 		util::text::CharOffset m_charOffset = 0;
-		wgui::CharIteratorBase::Flags m_flags = wgui::CharIteratorBase::Flags::BreakAtEndOfSubLine;
+		CharIteratorBase::Flags m_flags = CharIteratorBase::Flags::BreakAtEndOfSubLine;
 	};
 };

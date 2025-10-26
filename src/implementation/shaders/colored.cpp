@@ -3,6 +3,17 @@
 
 module;
 
+#include <array>
+#include <cinttypes>
+#include <vector>
+#include <memory>
+#include <string>
+#include <functional>
+#include <typeinfo>
+#include <unordered_map>
+#include <cstring>
+#include <stdexcept>
+
 module pragma.gui;
 
 import :shaders.colored;

@@ -5,6 +5,11 @@ module;
 
 #include "wgui/wguidefinitions.h"
 
+#include <array>
+#include <cinttypes>
+#include <string>
+#include <memory>
+
 export module pragma.gui:types.scroll_bar;
 
 import :types.rect;
@@ -47,16 +52,16 @@ export
 		void SetLimits(int min, int max);
 	};
 
-	class DLLWGUI WIScrollBar : public wgui::WIBase {
+	class DLLWGUI WIScrollBar : public WIBase {
 	  protected:
 		bool m_bHorizontal;
 		unsigned int m_offset;
 		unsigned int m_numElements;
 		unsigned int m_numListed;
 		unsigned int m_scrollAmount;
-		wgui::WIHandle m_buttonUp;
-		wgui::WIHandle m_buttonDown;
-		wgui::WIHandle m_slider;
+		WIHandle m_buttonUp;
+		WIHandle m_buttonDown;
+		WIHandle m_slider;
 		int GetSliderWidth();
 		int GetSliderHeight();
 		int GetSliderX();

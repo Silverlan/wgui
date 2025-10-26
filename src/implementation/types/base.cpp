@@ -3,6 +3,21 @@
 
 module;
 
+#include <chrono>
+#include <cassert>
+
+#include <cmath>
+
+#include <array>
+#include <optional>
+#include <string>
+#include <functional>
+#include <memory>
+#include <cstring>
+
+#include <cinttypes>
+#include <queue>
+
 #include <unordered_map>
 #include <algorithm>
 #include <atomic>
@@ -861,8 +876,8 @@ Mat4 WIBase::GetRelativePose(float x, float y) const
 {
 	Vector4 pos {x * 2.f, y * 2.f, 0.f, 1.f};
 	if(m_rotationMatrix)
-		return (*m_rotationMatrix * glm::translate(Vector3 {pos.x, pos.y, pos.z}));
-	return glm::translate(Vector3 {pos.x, pos.y, pos.z});
+		return (*m_rotationMatrix * glm::gtc::translate(Vector3 {pos.x, pos.y, pos.z}));
+	return glm::gtc::translate(Vector3 {pos.x, pos.y, pos.z});
 }
 Mat4 WIBase::GetAbsolutePose(float x, float y) const
 {
@@ -882,7 +897,7 @@ Vector2 WIBase::GetAbsolutePos(const Vector2 &localPos, bool includeRotation) co
 {
 	if(!includeRotation)
 		return GetAbsolutePos(includeRotation) + localPos;
-	auto pose = GetAbsolutePose() * glm::translate(Vector3 {localPos * 2.f, 0.f});
+	auto pose = GetAbsolutePose() * glm::gtc::translate(Vector3 {localPos * 2.f, 0.f});
 	return Vector2 {pose[3][0], pose[3][1]} / 2.f;
 }
 Vector2 WIBase::GetAbsolutePos(bool includeRotation) const
@@ -1025,10 +1040,10 @@ Mat4 WIBase::GetTransformPose(const Vector2i &origin, int w, int h, const Mat4 &
 	Vector3 normScale {(*m_size)->x * scale.x, (*m_size)->y * scale.y, 0};
 
 	if(!m_rotationMatrix)
-		return poseParent * glm::scale(glm::translate(normOrigin), normScale);
+		return poseParent * glm::gtc::scale(glm::gtc::translate(normOrigin), normScale);
 
-	auto t = glm::translate(normOrigin);
-	auto s = glm::scale(normScale);
+	auto t = glm::gtc::translate(normOrigin);
+	auto s = glm::gtc::scale(normScale);
 	auto &r = *m_rotationMatrix;
 	auto m = t * r * s;
 	return poseParent * m;
@@ -1050,7 +1065,7 @@ Mat4 WIBase::GetTranslationPose(int w, int h) const { return GetTranslationPose(
 Mat4 WIBase::GetScaledMatrix(int w, int h, const Mat4 &poseParent) const
 {
 	Vector3 scale((*m_size)->x, (*m_size)->y, 0);
-	return glm::scale(poseParent, scale);
+	return glm::gtc::scale(poseParent, scale);
 }
 Mat4 WIBase::GetScaledMatrix(int w, int h) const
 {
@@ -1229,9 +1244,9 @@ void WIBase::CalcBounds(const Mat4 &mat, int32_t w, int32_t h, Vector2i &outPos,
 void WIBase::ResetRotation() { m_rotationMatrix = nullptr; }
 void WIBase::SetRotation(umath::Degree angle, const Vector2 &pivot)
 {
-	Mat4 r = glm::translate(Vector3 {pivot * 2.f, 0.f});
+	Mat4 r = glm::gtc::translate(Vector3 {pivot * 2.f, 0.f});
 	r = r * umat::create(uquat::create(EulerAngles {0.f, 0.f, angle}));
-	r = r * glm::translate(Vector3 {-pivot * 2.f, 0.f});
+	r = r * glm::gtc::translate(Vector3 {-pivot * 2.f, 0.f});
 	SetRotation(r);
 }
 void WIBase::SetRotation(const Mat4 &rotationMatrix) { m_rotationMatrix = std::make_unique<Mat4>(rotationMatrix); }

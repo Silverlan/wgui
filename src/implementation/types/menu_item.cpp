@@ -3,6 +3,16 @@
 
 module;
 
+#include <cmath>
+
+#include <array>
+#include <cinttypes>
+#include <optional>
+#include <functional>
+#include <memory>
+#include <algorithm>
+#include <cstring>
+
 #include <string>
 
 module pragma.gui;
@@ -21,16 +31,16 @@ void WIMenuItem::Initialize()
 	auto &wgui = WGUI::GetInstance();
 	auto *pBg = wgui.Create<WIRect>(this);
 	pBg->SetAutoAlignToParent(true);
-	pBg->SetColor(Color::SkyBlue);
+	pBg->SetColor(colors::SkyBlue);
 	m_hBg = pBg->GetHandle();
 
 	auto *pBgOutline = wgui.Create<WIOutlinedRect>(this);
 	pBgOutline->SetAutoAlignToParent(true);
-	pBgOutline->SetColor(Color::RoyalBlue);
+	pBgOutline->SetColor(colors::RoyalBlue);
 	m_hBgOutline = pBgOutline->GetHandle();
 
 	auto *pText = wgui.Create<WIText>(this);
-	pText->SetColor(Color::Black);
+	pText->SetColor(colors::Black);
 	m_hText = pText->GetHandle();
 
 	SetSelected(false);
@@ -45,7 +55,7 @@ void WIMenuItem::SetRightText(const std::string &rightText)
 	}
 	if(m_hRightText.IsValid() == false) {
 		auto *pText = WGUI::GetInstance().Create<WIText>(this);
-		pText->SetColor(Color::Black);
+		pText->SetColor(colors::Black);
 		m_hRightText = pText->GetHandle();
 	}
 	auto *pText = static_cast<WIText *>(m_hRightText.get());

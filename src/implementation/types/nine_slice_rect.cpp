@@ -3,6 +3,17 @@
 
 module;
 
+#include <cmath>
+
+#include <array>
+#include <cinttypes>
+#include <optional>
+#include <string>
+#include <functional>
+#include <memory>
+#include <algorithm>
+#include <cstring>
+
 module pragma.gui;
 
 import :types.nine_slice_rect;
@@ -154,7 +165,7 @@ void wgui::WI9SliceRect::UpdateSegments()
 	auto *albedoMap = m_material->GetAlbedoMap();
 	if(!albedoMap || !albedoMap->texture)
 		return;
-	auto &tex = *static_cast<Texture *>(albedoMap->texture.get());
+	auto &tex = *static_cast<msys::Texture *>(albedoMap->texture.get());
 	uint32_t imgWidth = tex.GetWidth();
 	uint32_t imgHeight = tex.GetHeight();
 	Vector2 offset {0.f, 0.f};
@@ -255,16 +266,16 @@ void wgui::WI9SliceRect::UpdateSegments()
 	SetSize(origWidth, origHeight);
 }
 
-Material *wgui::WI9SliceRect::GetMaterial() { return m_material.get(); }
+msys::Material *wgui::WI9SliceRect::GetMaterial() { return m_material.get(); }
 
-void wgui::WI9SliceRect::SetMaterial(Material &mat)
+void wgui::WI9SliceRect::SetMaterial(msys::Material &mat)
 {
 	if(&mat == m_material.get())
 		return;
 	auto *albedoMap = mat.GetAlbedoMap();
 	if(!albedoMap || !albedoMap->texture)
 		return;
-	auto &tex = *static_cast<Texture *>(albedoMap->texture.get());
+	auto &tex = *static_cast<msys::Texture *>(albedoMap->texture.get());
 	m_nineSlice = {};
 	auto &slice = m_nineSlice;
 	auto texWidth = tex.GetWidth();

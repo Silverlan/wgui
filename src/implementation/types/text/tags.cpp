@@ -3,6 +3,15 @@
 
 module;
 
+#include <memory>
+#include <unordered_map>
+#include <algorithm>
+
+#include <vector>
+
+#include <cinttypes>
+#include <string>
+
 module pragma.gui;
 
 import :text_tags;

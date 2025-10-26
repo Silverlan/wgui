@@ -3,6 +3,10 @@
 
 module;
 
+#include <memory>
+#include <functional>
+#include <cmath>
+
 module pragma.gui;
 
 import :types.button;
@@ -351,7 +355,7 @@ util::EventReply WIScrollBarSlider::ScrollCallback(Vector2 offset, bool offsetAs
 	if(WIRect::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled)
 		return util::EventReply::Handled;
 	WIBase *parent = GetParent();
-	if(parent == NULL)
+	if(parent == nullptr)
 		return util::EventReply::Handled;
 	return parent->ScrollCallback(offset, offsetAsPixels);
 }

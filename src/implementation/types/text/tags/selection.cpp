@@ -3,6 +3,8 @@
 
 module;
 
+#include <tuple>
+
 module pragma.gui;
 
 import :text_tags;

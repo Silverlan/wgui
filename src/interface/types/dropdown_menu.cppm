@@ -7,6 +7,11 @@ module;
 #include <unordered_map>
 #include <string>
 
+#include <cinttypes>
+#include <optional>
+#include <vector>
+#include <memory>
+
 export module pragma.gui:types.dropdown_menu;
 
 export import :handle;
@@ -17,16 +22,16 @@ export import pragma.string.unicode;
 export {
 	class WIText;
 	class WIDropDownMenu;
-	class DLLWGUI WIDropDownMenuOption : public wgui::WIBase {
+	class DLLWGUI WIDropDownMenuOption : public WIBase {
 	public:
 		friend WIDropDownMenu;
 	protected:
 		int m_index;
 
 		bool m_selected = false;
-		wgui::WIHandle m_hBackground;
-		wgui::WIHandle m_hText;
-		wgui::WIHandle m_dropDownMenu;
+		WIHandle m_hBackground;
+		WIHandle m_hText;
+		WIHandle m_dropDownMenu;
 		std::string m_value;
 
 		void UpdateTextPos();
@@ -56,12 +61,12 @@ export {
 		unsigned int m_listOffset;
 		int m_selected;
 
-		wgui::WIHandle m_hOutline;
-		wgui::WIHandle m_hArrow;
-		wgui::WIHandle m_hList;
+		WIHandle m_hOutline;
+		WIHandle m_hArrow;
+		WIHandle m_hList;
 		CallbackHandle m_cbListWindowUpdate;
-		wgui::WIHandle m_hScrollBar;
-		std::vector<wgui::WIHandle> m_options;
+		WIHandle m_hScrollBar;
+		std::vector<WIHandle> m_options;
 
 		void UpdateTextPos();
 		void UpdateText();

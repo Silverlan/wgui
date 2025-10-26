@@ -3,6 +3,24 @@
 
 module;
 
+#include <cmath>
+
+#include <optional>
+
+#include <queue>
+#include <unordered_set>
+
+#include <array>
+#include <cinttypes>
+#include <vector>
+#include <memory>
+#include <string>
+#include <functional>
+#include <typeinfo>
+#include <unordered_map>
+#include <cstring>
+#include <stdexcept>
+
 #include <algorithm>
 
 module pragma.gui;
@@ -68,7 +86,7 @@ WGUI &WGUI::GetInstance() { return *s_wgui; }
 WGUI::WGUI(prosper::IPrContext &context, const std::weak_ptr<msys::MaterialManager> &wpMatManager) : prosper::ContextObject(context), m_matManager(wpMatManager)
 {
 	m_typeFactory = std::make_unique<wgui::TypeFactory>();
-	SetMaterialLoadHandler([this](const std::string &path) -> Material * { return m_matManager.lock()->LoadAsset(path).get(); });
+	SetMaterialLoadHandler([this](const std::string &path) -> msys::Material * { return m_matManager.lock()->LoadAsset(path).get(); });
 
 	RegisterTypes();
 }
@@ -120,8 +138,8 @@ void WGUI::RegisterElement(WIBase &el, const std::string &className, WIBase *par
 		m_createCallback(el);
 }
 
-void WGUI::SetMaterialLoadHandler(const std::function<Material *(const std::string &)> &handler) { m_materialLoadHandler = handler; }
-const std::function<Material *(const std::string &)> &WGUI::GetMaterialLoadHandler() const { return m_materialLoadHandler; }
+void WGUI::SetMaterialLoadHandler(const std::function<msys::Material *(const std::string &)> &handler) { m_materialLoadHandler = handler; }
+const std::function<msys::Material *(const std::string &)> &WGUI::GetMaterialLoadHandler() const { return m_materialLoadHandler; }
 
 double WGUI::GetDeltaTime() const { return m_tDelta; }
 
@@ -438,7 +456,7 @@ void WGUI::Draw(const prosper::Window &window, prosper::ICommandBuffer &drawCmd)
 
 WIBase *WGUI::Create(std::string classname, WIBase *parent)
 {
-	StringToLower(classname);
+	ustring::to_lower(classname);
 	auto &map = GetTypeFactory();
 	WIBase *(*factory)(void) = map.FindFactory(classname);
 	if(factory != NULL) {

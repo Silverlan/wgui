@@ -3,6 +3,16 @@
 
 module;
 
+#include <functional>
+#include <cassert>
+#include <algorithm>
+#include <iostream>
+
+#include <memory>
+
+#include <vector>
+#include <cstring>
+
 module pragma.gui;
 
 import :types.text;
@@ -257,7 +267,7 @@ void WIText::UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandB
 void WIText::RenderText()
 {
 	Mat4 mat(1.f);
-	mat = glm::translate(mat, Vector3(-1.f, 0.f, 0.f));
+	mat = glm::gtc::translate(mat, Vector3(-1.f, 0.f, 0.f));
 	RenderText(mat);
 }
 std::shared_ptr<prosper::Texture> WIText::GetTexture() const { return (m_renderTarget != nullptr) ? m_renderTarget->GetTexture().shared_from_this() : nullptr; }
@@ -653,7 +663,7 @@ void WIText::ClearTextBuffer()
 	s_textBuffer = nullptr;
 	WITextTagColor::ClearColorBuffer();
 }
-void WITextBase::SetTextElement(WIText &elText) { m_hText = elText.GetHandle(); }
+void WITextBase::SetTextElement(WIText&elText) { m_hText = elText.GetHandle(); }
 void WITextBase::InitializeTexture(prosper::Texture &tex, int32_t w, int32_t h)
 {
 	if(m_hTexture.IsValid()) {
@@ -673,7 +683,7 @@ void WITextBase::InitializeTexture(prosper::Texture &tex, int32_t w, int32_t h)
 bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, wgui::ShaderTextRect &shader, const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
   wgui::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, wgui::StencilPipeline stencilPipeline) const
 {
-	auto &textEl = static_cast<const WIText &>(*m_hText.get());
+	auto &textEl = static_cast<const WIText&>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawCmd};
 	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, wgui::DrawInfo::Flags::Msaa)) == false)
@@ -772,7 +782,7 @@ void WITextBase::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawSta
 	// WIBase::Render(drawInfo,matDraw);
 	if(m_hText.IsValid() == false)
 		return;
-	auto &textEl = static_cast<WIText &>(*m_hText.get());
+	auto &textEl = static_cast<WIText&>(*m_hText.get());
 	if(textEl.m_renderTarget != nullptr && textEl.IsCacheEnabled() == true)
 		return;
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();

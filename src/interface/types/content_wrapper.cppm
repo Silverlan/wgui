@@ -19,7 +19,7 @@ export {
 		int32_t bottom = 0;
 	};
 
-	class DLLWGUI WIContentWrapper : public wgui::WIBase {
+	class DLLWGUI WIContentWrapper : public WIBase {
 	public:
 		WIContentWrapper();
 

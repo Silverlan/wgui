@@ -3,9 +3,21 @@
 
 module;
 
+#include <cmath>
+
+#include <array>
+#include <cinttypes>
+#include <optional>
+#include <string>
+#include <functional>
+#include <memory>
+#include <algorithm>
+#include <cstring>
+
 module pragma.gui;
 
 import :types.dropdown_menu;
+import :types.text;
 
 import pragma.string.unicode;
 

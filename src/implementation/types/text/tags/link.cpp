@@ -3,6 +3,10 @@
 
 module;
 
+#include <vector>
+#include <string>
+#include <functional>
+
 module pragma.gui;
 
 import :text_tags;

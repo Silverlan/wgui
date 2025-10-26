@@ -5,6 +5,12 @@ module;
 
 #include "wgui/wguidefinitions.h"
 
+#include <cinttypes>
+#include <vector>
+#include <memory>
+#include <string>
+#include <functional>
+
 export module pragma.gui:types.text_entry;
 
 import :handle;
@@ -13,11 +19,11 @@ import :types.base;
 export {
 	class WIText;
 	class WIRect;
-	class DLLWGUI WITextEntry : public wgui::WIBase {
+	class DLLWGUI WITextEntry : public WIBase {
 	protected:
-		wgui::WIHandle m_hBase;
-		wgui::WIHandle m_hOutline;
-		wgui::WIHandle m_hBg;
+		WIHandle m_hBase;
+		WIHandle m_hOutline;
+		WIHandle m_hBg;
 
 		virtual void OnTextEntered();
 		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
@@ -64,8 +70,8 @@ export {
 	class DLLWGUI WINumericEntry : public WITextEntry {
 	private:
 		struct Numeric {
-			wgui::WIHandle hUpArrow;
-			wgui::WIHandle hDownArrow;
+			WIHandle hUpArrow;
+			WIHandle hDownArrow;
 			std::unique_ptr<int32_t> min;
 			std::unique_ptr<int32_t> max;
 		} m_numeric;
