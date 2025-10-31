@@ -3,7 +3,6 @@
 
 module;
 
-#include <cmath>
 
 module pragma.gui;
 

@@ -4,19 +4,8 @@
 module;
 
 
-#include <cmath>
 
-#include <array>
-#include <optional>
-#include <string>
-#include <functional>
-#include <memory>
-#include <algorithm>
-#include <cstring>
 
-#include <cinttypes>
-#include <queue>
-#include <unordered_set>
 
 module pragma.gui;
 

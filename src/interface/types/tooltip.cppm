@@ -4,7 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <string>
 
 export module pragma.gui:types.tooltip;
 

@@ -3,9 +3,6 @@
 
 module;
 
-#include <memory>
-#include <functional>
-#include <cmath>
 
 module pragma.gui;
 

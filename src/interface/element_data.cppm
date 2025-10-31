@@ -3,8 +3,6 @@
 
 module;
 
-#include <cinttypes>
-#include <array>
 
 export module pragma.gui:element_data;
 

@@ -3,9 +3,10 @@
 
 module;
 
-#include <cinttypes>
 
 export module pragma.gui:enums;
+
+export import std.compat;
 
 export namespace wgui {
 	enum class StencilPipeline : uint8_t {

@@ -3,11 +3,8 @@
 
 module;
 
-#include <cinttypes>
-#include <memory>
 
 #include <exprtk.hpp>
-#include <codecvt>
 
 module pragma.gui;
 

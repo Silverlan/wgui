@@ -4,14 +4,7 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <vector>
-#include <algorithm>
-#include <chrono>
-#include <deque>
-#include <functional>
 
-#include <cinttypes>
-#include <memory>
 
 export module pragma.gui:types.base;
 
@@ -432,7 +425,7 @@ export {
 		std::vector<WIHandle> m_children;
 		mutable WIHandle m_parent = {};
 		virtual void Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale = {1.f, 1.f}, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test);
-		void UpdateChildOrder(WIBase *child = NULL);
+		void UpdateChildOrder(WIBase *child = nullptr);
 		template<class TElement>
 		WIHandle CreateChild()
 		{

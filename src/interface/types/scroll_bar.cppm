@@ -5,10 +5,6 @@ module;
 
 #include "wgui/wguidefinitions.h"
 
-#include <array>
-#include <cinttypes>
-#include <string>
-#include <memory>
 
 export module pragma.gui:types.scroll_bar;
 

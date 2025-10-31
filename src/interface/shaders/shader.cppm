@@ -4,8 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <memory>
-#include <string>
 
 export module pragma.gui:shaders.shader;
 

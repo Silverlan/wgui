@@ -4,12 +4,7 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <string>
 
-#include <cinttypes>
-#include <vector>
-#include <memory>
-#include <functional>
 
 export module pragma.gui:types.menu_item;
 

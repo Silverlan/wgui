@@ -3,10 +3,6 @@
 
 module;
 
-#include <chrono>
-#include <memory>
-#include <deque>
-#include <functional>
 
 module pragma.gui;
 

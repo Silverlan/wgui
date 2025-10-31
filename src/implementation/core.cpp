@@ -3,25 +3,10 @@
 
 module;
 
-#include <cmath>
 
-#include <optional>
 
-#include <queue>
-#include <unordered_set>
 
-#include <array>
-#include <cinttypes>
-#include <vector>
-#include <memory>
-#include <string>
-#include <functional>
-#include <typeinfo>
-#include <unordered_map>
-#include <cstring>
-#include <stdexcept>
 
-#include <algorithm>
 
 module pragma.gui;
 
@@ -459,14 +444,14 @@ WIBase *WGUI::Create(std::string classname, WIBase *parent)
 	ustring::to_lower(classname);
 	auto &map = GetTypeFactory();
 	WIBase *(*factory)(void) = map.FindFactory(classname);
-	if(factory != NULL) {
+	if(factory != nullptr) {
 		WIBase *p = factory();
 		p->m_class = classname;
-		if(parent != NULL)
+		if(parent != nullptr)
 			p->SetParent(parent);
 		return p;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void WGUI::SetupElement(WIBase &el, const std::string className)
@@ -601,17 +586,17 @@ bool WGUI::SetFocusedElement(WIBase *gui, WIRoot *optElRoot)
 	auto *window = elRoot->GetWindow();
 	auto *pPrevFocused = elRoot->GetFocusedElement();
 	auto &context = GetContext();
-	if(gui != NULL && pPrevFocused != nullptr) {
+	if(gui != nullptr && pPrevFocused != nullptr) {
 		WIBase *root = elRoot;
 		WIBase *parent = pPrevFocused;
-		while(parent != NULL && parent != root && parent != elRoot->GetFocusedElement()) {
+		while(parent != nullptr && parent != root && parent != elRoot->GetFocusedElement()) {
 			if(parent->IsFocusTrapped())
 				return false;
 			parent = parent->GetParent();
 		}
 		elRoot->GetFocusedElement()->KillFocus(true);
 	}
-	if(gui == NULL) {
+	if(gui == nullptr) {
 		if(window)
 			(*window)->SetCursorInputMode(pragma::platform::CursorMode::Hidden);
 		elRoot->SetFocusedElement(nullptr);
@@ -708,7 +693,7 @@ void WGUI::Remove(WIBase &gui)
 		return;
 	}
 	auto hEl = gui.GetHandle();
-	if(m_removeCallback != NULL)
+	if(m_removeCallback != nullptr)
 		m_removeCallback(gui);
 	if(!hEl.IsValid())
 		return;
@@ -810,12 +795,12 @@ WISkin *WGUI::GetSkin(std::string name)
 {
 	auto it = m_skins.find(name);
 	if(it == m_skins.end())
-		return NULL;
+		return nullptr;
 	return it->second.get();
 }
 std::string WGUI::GetSkinName()
 {
-	if(m_skin == NULL)
+	if(m_skin == nullptr)
 		return "";
 	return m_skin->m_identifier;
 }

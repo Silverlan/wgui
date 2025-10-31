@@ -3,8 +3,6 @@
 
 module;
 
-#include <vector>
-#include <cinttypes>
 
 module pragma.gui;
 

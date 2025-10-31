@@ -4,8 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <cinttypes>
-#include <string>
 
 export module pragma.gui:types.content_wrapper;
 

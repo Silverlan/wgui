@@ -4,7 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <array>
 
 export module pragma.gui:types.rect;
 

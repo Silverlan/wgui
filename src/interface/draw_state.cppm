@@ -4,10 +4,10 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <array>
-#include <cinttypes>
 
 export module pragma.gui:draw_state;
+
+export import std.compat;
 
 export namespace wgui {
 	struct DLLWGUI DrawState {

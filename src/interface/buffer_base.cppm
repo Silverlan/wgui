@@ -7,11 +7,6 @@ module;
 
 #undef DrawState
 
-#include <cinttypes>
-#include <vector>
-#include <memory>
-#include <string>
-#include <functional>
 
 export module pragma.gui:buffer_base;
 

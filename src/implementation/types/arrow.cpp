@@ -3,24 +3,9 @@
 
 module;
 
-#include <cmath>
 
-#include <optional>
-#include <algorithm>
 
-#include <queue>
-#include <unordered_set>
 
-#include <array>
-#include <cinttypes>
-#include <vector>
-#include <memory>
-#include <string>
-#include <functional>
-#include <typeinfo>
-#include <unordered_map>
-#include <cstring>
-#include <stdexcept>
 
 module pragma.gui;
 

@@ -3,9 +3,6 @@
 
 module;
 
-#include <cinttypes>
-#include <queue>
-#include <unordered_set>
 
 module pragma.gui;
 

@@ -3,25 +3,11 @@
 
 module;
 
-#include <chrono>
 #include <cassert>
 
-#include <cmath>
 
-#include <array>
-#include <optional>
-#include <string>
-#include <functional>
-#include <memory>
-#include <cstring>
 
-#include <cinttypes>
-#include <queue>
 
-#include <unordered_map>
-#include <algorithm>
-#include <atomic>
-#include <unordered_set>
 
 #undef DrawState
 #undef FindWindow
@@ -374,7 +360,7 @@ void WIBase::SetZPos(int zpos)
 {
 	m_zpos = zpos;
 	WIBase *parent = GetParent();
-	if(parent == NULL)
+	if(parent == nullptr)
 		return;
 	parent->UpdateChildOrder(this);
 }
@@ -402,7 +388,7 @@ static void InsertGUIElement(std::vector<WIHandle> &elements, const WIHandle &hE
 }
 void WIBase::UpdateChildOrder(WIBase *child)
 {
-	if(child != NULL) {
+	if(child != nullptr) {
 		for(unsigned int i = 0; i < m_children.size(); i++) {
 			WIHandle &hElement = m_children[i];
 			if(hElement.IsValid()) {
@@ -646,14 +632,14 @@ void WIBase::KillFocus(bool bForceKill)
 	*m_bHasFocus = false;
 	auto *elRoot = GetBaseRootElement();
 	if(elRoot)
-		WGUI::GetInstance().SetFocusedElement(NULL, elRoot);
+		WGUI::GetInstance().SetFocusedElement(nullptr, elRoot);
 	if(bForceKill == false) {
 		if(elRoot)
 			elRoot->RestoreTrappedFocus(this);
 		/*
 		WIBase *parent = GetParent();
 		WIBase *root = WGUI::GetBaseElement();
-		while(parent != NULL && parent != root)
+		while(parent != nullptr && parent != root)
 		{
 			if(parent->IsFocusTrapped() && parent->IsVisible())
 			{
@@ -686,7 +672,7 @@ bool WIBase::IsAncestor(WIBase *el)
 {
 	WIBase *parent = GetParent();
 	WIBase *root = el->GetRootElement();
-	while(parent != NULL && parent != root) {
+	while(parent != nullptr && parent != root) {
 		if(parent == el)
 			return true;
 		parent = parent->GetParent();
@@ -805,7 +791,7 @@ void WIBase::SetVisible(bool b)
 	if(b == false) {
 		UpdateMouseInBounds();
 		WIBase *el = WGUI::GetInstance().GetFocusedElement(GetRootWindow());
-		if(el != NULL && (el == this || el->IsDescendantOf(this))) {
+		if(el != nullptr && (el == this || el->IsDescendantOf(this))) {
 			bool bTrapped = el->IsFocusTrapped();
 			el->TrapFocus(false); // Temporarily disable trapping so we can kill the focus without having to force it. This will make sure the right parent element will regain its focus.
 			el->KillFocus();
@@ -935,7 +921,7 @@ WIBase *WIBase::GetFirstChild(const std::string &className)
 		if(hChild.IsValid() && ustring::compare(hChild->GetClass(), className, false))
 			return hChild.get();
 	}
-	return NULL;
+	return nullptr;
 }
 WIBase *WIBase::GetChild(unsigned int idx)
 {
@@ -945,7 +931,7 @@ WIBase *WIBase::GetChild(unsigned int idx)
 		if(hChild.IsValid() && j++ == idx)
 			return hChild.get();
 	}
-	return NULL;
+	return nullptr;
 }
 WIBase *WIBase::GetChild(const std::string &className, unsigned int idx)
 {
@@ -955,7 +941,7 @@ WIBase *WIBase::GetChild(const std::string &className, unsigned int idx)
 		if(hChild.IsValid() && ustring::compare(hChild->GetClass(), className, false) && j++ == idx)
 			return hChild.get();
 	}
-	return NULL;
+	return nullptr;
 }
 WIBase *WIBase::FindChildByName(const std::string &name)
 {
@@ -1210,7 +1196,7 @@ void WIBase::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCm
 		GetMousePos(&x, &y);
 		UpdateCursorMove(x, y);
 	}
-	if(m_fade != NULL) {
+	if(m_fade != nullptr) {
 		float a = GetAlpha();
 		float aTarget = m_fade->alphaTarget;
 		float tDelta = static_cast<float>(WGUI::GetInstance().GetDeltaTime());
@@ -1311,7 +1297,7 @@ void WIBase::Draw(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, co
 
 	for(unsigned int i = 0; i < m_children.size(); i++) {
 		WIBase *child = m_children[i].get();
-		if(child != NULL && child->IsSelfVisible()) {
+		if(child != nullptr && child->IsSelfVisible()) {
 			auto useScissorChild = (useScissor && child->GetShouldScissor()) ? true : false;
 			Vector2i posScissor(scissorOffset.x, scissorOffset.y);
 			Vector2i szScissor(scissorSize.x, scissorSize.y);
@@ -1698,7 +1684,7 @@ void WIBase::SetParent(WIBase *base, std::optional<uint32_t> childIndex)
 	if(base != nullptr && base->GetParent() == this)
 		base->ClearParent();
 	ClearParent();
-	if(base == NULL) {
+	if(base == nullptr) {
 		m_parent = WIHandle();
 		if(GetAutoAlignToParent() == true)
 			SetAutoAlignToParent(true, true);
@@ -1738,7 +1724,7 @@ void WIBase::ClearParent()
 		return;
 	WIBase *p = m_parent.get();
 	m_parent = WIHandle();
-	if(p == NULL)
+	if(p == nullptr)
 		return;
 	p->RemoveChild(this);
 	p->UpdateAutoSizeToContents();
@@ -2303,7 +2289,7 @@ void WIBase::FadeOut(float tFade, bool removeOnFaded)
 	m_fade->removeOnFaded = removeOnFaded;
 	UpdateThink();
 }
-bool WIBase::IsFading() const { return (m_fade != NULL) ? true : false; }
+bool WIBase::IsFading() const { return (m_fade != nullptr) ? true : false; }
 bool WIBase::IsFadingIn() const
 {
 	if(!IsFading())

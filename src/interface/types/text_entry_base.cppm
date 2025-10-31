@@ -5,13 +5,6 @@ module;
 
 #include "wgui/wguidefinitions.h"
 
-#include <cinttypes>
-#include <optional>
-#include <vector>
-#include <functional>
-#include <memory>
-#include <unordered_map>
-#include <algorithm>
 
 export module pragma.gui:types.text_entry_base;
 

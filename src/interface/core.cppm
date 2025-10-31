@@ -4,13 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <string>
-#include <unordered_map>
-#include <algorithm>
-#include <queue>
-#include <memory>
-#include <optional>
-#include <functional>
 
 export module pragma.gui:core;
 

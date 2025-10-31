@@ -3,16 +3,7 @@
 
 module;
 
-#include <cmath>
 
-#include <array>
-#include <cinttypes>
-#include <optional>
-#include <string>
-#include <functional>
-#include <memory>
-#include <algorithm>
-#include <cstring>
 
 module pragma.gui;
 
@@ -563,7 +554,7 @@ bool WIDropDownMenuOption::IsSelected() const { return m_selected; }
 WIDropDownMenu *WIDropDownMenuOption::GetDropDownMenu()
 {
 	if(!m_dropDownMenu.IsValid())
-		return NULL;
+		return nullptr;
 	return static_cast<WIDropDownMenu *>(m_dropDownMenu.get());
 }
 

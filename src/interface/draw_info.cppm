@@ -4,10 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <array>
-#include <cinttypes>
-#include <memory>
-#include <optional>
 
 #undef DrawState
 

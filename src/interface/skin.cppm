@@ -4,9 +4,10 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <string>
 
 export module pragma.gui:skin;
+
+export import std.compat;
 
 export {
 	class WIBase;

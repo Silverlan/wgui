@@ -3,7 +3,6 @@
 
 module;
 
-#include <cmath>
 
 module pragma.gui;
 
@@ -28,8 +27,8 @@ void WIRoundedBase::DoUpdate()
 	float sinNeg = sinf(radNeg);
 	float cosNeg = cosf(radNeg);
 	for(float f = 0.f; f <= (90.f - step); f += step) {
-		float radPosNext = ((f + step) / 180.f) * float(M_PI);
-		float radNegNext = ((-f - step) / 180.f) * float(M_PI);
+		float radPosNext = ((f + step) / 180.f) * float(umath::pi);
+		float radNegNext = ((-f - step) / 180.f) * float(umath::pi);
 		float sinPosNext = sinf(radPosNext);
 		float cosPosNext = cosf(radPosNext);
 		float sinNegNext = sinf(radNegNext);

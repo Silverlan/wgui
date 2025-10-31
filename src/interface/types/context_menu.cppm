@@ -4,14 +4,7 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <functional>
-#include <vector>
-#include <string>
-#include <optional>
 
-#include <array>
-#include <cinttypes>
-#include <memory>
 
 export module pragma.gui:types.context_menu;
 

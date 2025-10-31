@@ -3,15 +3,9 @@
 
 module;
 
-#include <functional>
 #include <cassert>
-#include <algorithm>
-#include <iostream>
 
-#include <memory>
 
-#include <vector>
-#include <cstring>
 
 module pragma.gui;
 
@@ -132,7 +126,7 @@ void WIText::SetShadowOffset(int x, int y)
 	if(!m_baseTextShadow.IsValid())
 		return;
 	WITexturedRect *rect = static_cast<WITexturedRect *>(m_baseTextShadow.get());
-	if(rect == NULL)
+	if(rect == nullptr)
 		return;
 	rect->SetPos(m_shadow.offset);
 }
@@ -240,7 +234,7 @@ void WIText::UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandB
 	}
 	if(m_baseTextShadow.IsValid()) {
 		WITexturedRect *text = static_cast<WITexturedRect *>(m_baseTextShadow.get());
-		if(text != NULL) {
+		if(text != nullptr) {
 			text->SetSize(w, h);
 			text->SetTexture(m_shadowRenderTarget->GetTexture());
 		}

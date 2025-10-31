@@ -3,17 +3,8 @@
 
 module;
 
-#include <cmath>
 
-#include <array>
-#include <cinttypes>
-#include <functional>
-#include <memory>
-#include <algorithm>
-#include <cstring>
 
-#include <string>
-#include <optional>
 
 module pragma.gui;
 

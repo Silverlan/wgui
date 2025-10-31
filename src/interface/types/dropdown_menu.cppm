@@ -4,13 +4,7 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <unordered_map>
-#include <string>
 
-#include <cinttypes>
-#include <optional>
-#include <vector>
-#include <memory>
 
 export module pragma.gui:types.dropdown_menu;
 

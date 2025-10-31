@@ -4,10 +4,7 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <string>
 
-#include <cinttypes>
-#include <memory>
 
 export module pragma.gui:shaders.colored_line;
 

@@ -3,13 +3,9 @@
 
 module;
 
-#include <vector>
 
-#include <optional>
 
-#include <cinttypes>
 
-#include <unordered_map>
 
 module pragma.gui;
 

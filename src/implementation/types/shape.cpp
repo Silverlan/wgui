@@ -3,14 +3,8 @@
 
 module;
 
-#include <cstring>
 
-#include <optional>
 
-#include <memory>
-#include <functional>
-#include <cinttypes>
-#include <stdexcept>
 
 module pragma.gui;
 

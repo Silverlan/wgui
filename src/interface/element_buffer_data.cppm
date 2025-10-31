@@ -4,7 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <memory>
 
 export module pragma.gui:element_buffer_data;
 

@@ -6,11 +6,6 @@ module;
 #include "wgui/wguidefinitions.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <unordered_map>
-#include <string>
-#include <vector>
-#include <array>
-#include <memory>
 
 export module pragma.gui:font_manager;
 

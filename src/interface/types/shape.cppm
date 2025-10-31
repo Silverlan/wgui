@@ -7,17 +7,8 @@ module;
 
 #undef DrawState
 
-#include <cinttypes>
-#include <vector>
-#include <string>
-#include <functional>
-#include <memory>
 
-#include <optional>
-#include <unordered_map>
-#include <algorithm>
 
-#include <queue>
 
 export module pragma.gui:types.shape;
 

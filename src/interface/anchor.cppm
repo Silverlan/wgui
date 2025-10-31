@@ -4,9 +4,10 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <cinttypes>
 
 export module pragma.gui:anchor;
+
+export import std.compat;
 
 export struct DLLWGUI WIAnchor {
 	float left = 0.f;

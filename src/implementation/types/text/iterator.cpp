@@ -3,8 +3,6 @@
 
 module;
 
-#include <cinttypes>
-#include <stdexcept>
 
 module pragma.gui;
 

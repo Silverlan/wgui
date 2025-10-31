@@ -4,20 +4,10 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <string_view>
-#include <memory>
-#include <string>
 
 #undef DrawState
 
-#include <cinttypes>
-#include <optional>
-#include <vector>
-#include <functional>
-#include <unordered_map>
-#include <algorithm>
 
-#include <queue>
 
 export module pragma.gui:types.text;
 

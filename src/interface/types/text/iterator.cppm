@@ -4,9 +4,6 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <limits>
-#include <cinttypes>
-#include <iterator>
 
 export module pragma.gui:text_iterator;
 

@@ -5,18 +5,9 @@ module;
 
 #include "wgui/wguidefinitions.h"
 
-#include <cinttypes>
-#include <vector>
-#include <memory>
-#include <string>
-#include <functional>
 
-#include <optional>
 
-#include <unordered_map>
-#include <algorithm>
 
-#include <queue>
 
 export module pragma.gui:types.root;
 

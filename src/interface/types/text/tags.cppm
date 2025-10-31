@@ -4,13 +4,7 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <functional>
-#include <optional>
-#include <string>
 
-#include <cinttypes>
-#include <vector>
-#include <memory>
 
 export module pragma.gui:text_tags;
 

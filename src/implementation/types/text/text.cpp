@@ -3,14 +3,8 @@
 
 module;
 
-#include <memory>
-#include <algorithm>
-#include <stdexcept>
 
-#include <cinttypes>
 
-#include <vector>
-#include <string>
 
 module pragma.gui;
 
@@ -189,7 +183,7 @@ void WIText::Initialize()
 	WIBase::Initialize();
 	m_baseEl = CreateChild<WITextBase>();
 	auto *el = static_cast<WITextBase *>(m_baseEl.get());
-	if(el != NULL) {
+	if(el != nullptr) {
 		el->SetZPos(10);
 		el->SetTextElement(*this);
 		el->SetAutoAlignToParent(true);

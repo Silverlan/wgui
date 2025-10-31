@@ -4,11 +4,10 @@
 module;
 
 #include "wgui/wguidefinitions.h"
-#include <string>
-#include <unordered_map>
-#include <typeinfo>
 
 export module pragma.gui:type_factory;
+
+export import std.compat;
 
 export {
 	class WIBase;
