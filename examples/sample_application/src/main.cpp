@@ -234,10 +234,10 @@ int main()
 	/*auto *pTextShadow = wgui.Create<WIText>(p);
 	pTextShadow->SetText("Text with shadow");
 	pTextShadow->SetPos(512,64);
-	pTextShadow->SetColor(Color::LimeGreen);
+	pTextShadow->SetColor(colors::LimeGreen);
 	pTextShadow->EnableShadow(true);
 	pTextShadow->SetShadowOffset(1,1);
-	pTextShadow->SetShadowColor(Color::Black);
+	pTextShadow->SetShadowColor(colors::Black);
 	pTextShadow->SizeToContents();*/
 
 	auto *pTextEntry = wgui.Create<WITextEntry>(p);
