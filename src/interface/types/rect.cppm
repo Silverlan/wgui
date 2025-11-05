@@ -14,17 +14,17 @@ export import :types.shape;
 
 export {
 	class DLLWGUI WIRect : public WIShape {
-	public:
+	  public:
 		WIRect();
 		~WIRect() override;
 	};
 
 	class DLLWGUI WIOutlinedRect : public WIBase {
-	private:
+	  private:
 		std::array<WIHandle, 4> m_lines;
 		unsigned int m_lineWidth;
 		void UpdateLines();
-	public:
+	  public:
 		WIOutlinedRect();
 		virtual void Initialize() override;
 		unsigned int GetOutlineWidth();
@@ -34,7 +34,7 @@ export {
 	};
 
 	class DLLWGUI WIRoundedRect : public WIShape, public WIRoundedBase {
-	public:
+	  public:
 		WIRoundedRect();
 		virtual ~WIRoundedRect() override = default;
 		virtual void DoUpdate() override;
@@ -42,13 +42,13 @@ export {
 	};
 
 	class DLLWGUI WITexturedRect : public WITexturedShape {
-	public:
+	  public:
 		WITexturedRect();
 		virtual ~WITexturedRect() override = default;
 	};
 
 	class DLLWGUI WIRoundedTexturedRect : public WITexturedShape, public WIRoundedBase {
-	public:
+	  public:
 		WIRoundedTexturedRect();
 		virtual ~WIRoundedTexturedRect() override = default;
 		virtual void DoUpdate() override;

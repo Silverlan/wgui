@@ -3,9 +3,6 @@
 
 module;
 
-
-
-
 module pragma.gui;
 
 import :text_tags;

@@ -3,7 +3,6 @@
 
 module;
 
-
 module pragma.gui;
 
 import :types.content_wrapper;

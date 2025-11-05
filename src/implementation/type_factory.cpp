@@ -3,7 +3,6 @@
 
 module;
 
-
 module pragma.gui;
 
 import :type_factory;

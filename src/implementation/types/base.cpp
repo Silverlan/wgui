@@ -5,10 +5,6 @@ module;
 
 #include <cassert>
 
-
-
-
-
 #undef DrawState
 #undef FindWindow
 

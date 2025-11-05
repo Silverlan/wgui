@@ -7,9 +7,6 @@ module;
 #include FT_FREETYPE_H
 #include "freetype/ftglyph.h"
 
-
-
-
 module pragma.gui;
 
 import :font_manager;

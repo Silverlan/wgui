@@ -7,8 +7,6 @@ module;
 
 #undef DrawState
 
-
-
 export module pragma.gui:types.text;
 
 import :draw_info;
@@ -23,7 +21,7 @@ export import pragma.string.unicode;
 
 export {
 	class DLLWGUI WITextBase : public WIBase {
-	public:
+	  public:
 		struct SubBufferInfo {
 			std::shared_ptr<prosper::IBuffer> buffer;
 			std::shared_ptr<prosper::IBuffer> colorBuffer;
@@ -40,17 +38,17 @@ export {
 		virtual void Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale = {1.f, 1.f}, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
 		void InitializeTexture(prosper::Texture &tex, int32_t w, int32_t h);
 		void SetTextElement(WIText &elText);
-	private:
+	  private:
 		bool RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, wgui::ShaderTextRect &shader, const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
-		wgui::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, wgui::StencilPipeline stencilPipeline) const;
-		void RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize, wgui::ShaderTextRect::PushConstants &inOutPushConstants,
-		uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline) const;
+		  wgui::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, wgui::StencilPipeline stencilPipeline) const;
+		void RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
+		  wgui::ShaderTextRect::PushConstants &inOutPushConstants, uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline) const;
 		WIHandle m_hTexture = {};
 		WIHandle m_hText = {};
 	};
 
 	class DLLWGUI WIText : public WIBase {
-	public:
+	  public:
 		struct DLLWGUI RangeInfo {
 			int32_t offset = 0;
 			int32_t length = 0;
@@ -58,7 +56,7 @@ export {
 			void SetEndOffset(int32_t endOffset) { length = endOffset - offset + 1; }
 		};
 		friend WITextBase;
-	public:
+	  public:
 		enum class AutoBreak : int { NONE, ANY, WHITESPACE };
 		enum class Flags : uint8_t {
 			None = 0u,
@@ -87,7 +85,7 @@ export {
 			bool bufferUpdateRequired = true;
 			util::text::LineIndex subLineIndexOffset = 0;
 			std::vector<util::text::TextLength> subLines = {};
-		private:
+		  private:
 			std::vector<WITextBase::SubBufferInfo> buffers = {};
 		};
 		static constexpr auto MAX_CHARS_PER_BUFFER = 32u;
@@ -201,7 +199,7 @@ export {
 
 		static void InitializeTextBuffer(prosper::IPrContext &context);
 		static void ClearTextBuffer();
-	private:
+	  private:
 		struct WITextShadowInfo {
 			WITextShadowInfo() : enabled(false), blurSize(0.f) {}
 			Vector2i offset;
@@ -209,7 +207,7 @@ export {
 			Vector4 color;
 			float blurSize;
 		};
-	private:
+	  private:
 		static std::shared_ptr<prosper::IUniformResizableBuffer> s_textBuffer;
 		util::WeakHandle<prosper::Shader> m_shader = {};
 		std::shared_ptr<util::text::FormattedText> m_text = nullptr;

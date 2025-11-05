@@ -3,7 +3,6 @@
 
 module;
 
-
 #include <exprtk.hpp>
 
 module pragma.gui;

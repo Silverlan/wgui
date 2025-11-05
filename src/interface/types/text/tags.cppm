@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:text_tags;
 
 import :handle;
@@ -21,7 +20,7 @@ export {
 
 	class WIText;
 	class DLLWGUI WITextDecorator {
-	public:
+	  public:
 		WITextDecorator(WIText &text);
 		virtual ~WITextDecorator();
 		virtual void Clear();
@@ -45,7 +44,7 @@ export {
 		void GetTagRange(util::text::LineIndex &startLine, util::text::LineIndex &endLine, util::text::TextOffset &startOffset, util::text::TextOffset &endOffset) const;
 		int32_t GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset &startOffset, util::text::CharOffset &endOffset) const;
 		int32_t GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset minOffsetInLine, util::text::CharOffset maxOffsetInLine, util::text::CharOffset &outTagStartOffsetInLine, util::text::CharOffset &outTagEndOffsetInLine) const;
-	protected:
+	  protected:
 		void CreateOverlayElements();
 		void CreateOverlayElement(util::text::LineIndex lineIndex, util::text::TextOffset startOffset, util::text::TextOffset endOffset, std::vector<WIHandle> &cachedOverlays);
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize);
@@ -57,7 +56,7 @@ export {
 	};
 
 	class DLLWGUI WITextTag : public WITextDecorator {
-	public:
+	  public:
 		WITextTag(WIText &text, util::text::TextTag &tag);
 		virtual bool IsTag() const override;
 		virtual bool IsValid() const override;
@@ -70,58 +69,58 @@ export {
 		util::text::TextTag &GetTag();
 		const std::vector<WITextTagArgument> &GetArguments() const;
 		std::vector<WITextTagArgument> &GetArguments();
-	protected:
+	  protected:
 		std::vector<WITextTagArgument> m_args = {};
 		util::text::TextTag &m_tag;
 	};
 
 	class DLLWGUI WITextTagUnderline : public WITextTag {
-	public:
+	  public:
 		using WITextTag::WITextTag;
 		virtual void Apply() override;
-	protected:
+	  protected:
 		virtual void InitializeOverlay(WIBase &overlay) override;
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) override;
 		Color m_underlineColor;
 	};
 
 	class DLLWGUI WITextTagColor : public WITextTag {
-	public:
+	  public:
 		static void ClearColorBuffer();
 
 		using WITextTag::WITextTag;
 		virtual void Apply() override;
 
 		std::optional<Vector4> GetColor() const;
-	private:
+	  private:
 		static std::shared_ptr<prosper::IUniformResizableBuffer> s_colorBuffer;
 	};
 
 	class DLLWGUI WITextTagTooltip : public WITextTag {
-	public:
+	  public:
 		using WITextTag::WITextTag;
 		virtual void Apply() override;
-	protected:
+	  protected:
 		virtual void InitializeOverlay(WIBase &overlay) override;
 	};
 
 	class DLLWGUI WITextTagLink : public WITextTagUnderline {
-	public:
+	  public:
 		static void set_link_handler(const std::function<void(const std::string &)> &linkHandler);
 
 		using WITextTagUnderline::WITextTagUnderline;
 		virtual void Initialize() override;
 		virtual void Apply() override;
-	protected:
+	  protected:
 		virtual void InitializeOverlay(WIBase &overlay) override;
 		CallbackHandle m_cbFunction = {};
 		std::vector<std::string> m_strArgs = {};
-	private:
+	  private:
 		static std::function<void(const std::string &)> s_linkHandler;
 	};
 
 	class DLLWGUI WITextTagSelection : public WITextDecorator {
-	public:
+	  public:
 		WITextTagSelection(WIText &text, util::text::TextOffset startOffset, util::text::TextOffset endOffset);
 		virtual void Apply() override;
 		virtual bool IsValid() const override;
@@ -130,7 +129,7 @@ export {
 
 		void SetStartOffset(util::text::TextOffset offset);
 		void SetEndOffset(util::text::TextOffset offset);
-	protected:
+	  protected:
 		virtual void InitializeOverlay(WIBase &overlay) override;
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) override;
 		std::optional<std::pair<util::text::LineIndex, util::text::CharOffset>> GetAbsOffset(util::text::TextOffset offset) const;

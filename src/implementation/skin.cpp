@@ -3,11 +3,6 @@
 
 module;
 
-
-
-
-
-
 module pragma.gui;
 
 import :skin;

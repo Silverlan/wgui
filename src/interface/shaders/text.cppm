@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:shaders.text;
 
 export import :element_data;

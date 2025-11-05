@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:types.dropdown_menu;
 
 export import :handle;
@@ -17,9 +16,9 @@ export {
 	class WIText;
 	class WIDropDownMenu;
 	class DLLWGUI WIDropDownMenuOption : public WIBase {
-	public:
+	  public:
 		friend WIDropDownMenu;
-	protected:
+	  protected:
 		int m_index;
 
 		bool m_selected = false;
@@ -30,7 +29,7 @@ export {
 
 		void UpdateTextPos();
 		void SetDropDownMenu(WIDropDownMenu *menu);
-	public:
+	  public:
 		WIDropDownMenuOption();
 		virtual ~WIDropDownMenuOption() override;
 		virtual void Initialize() override;
@@ -50,7 +49,7 @@ export {
 	};
 
 	class DLLWGUI WIDropDownMenu : public WITextEntry {
-	protected:
+	  protected:
 		unsigned int m_numListItems;
 		unsigned int m_listOffset;
 		int m_selected;
@@ -67,7 +66,7 @@ export {
 		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser) override;
 		void UpdateListWindow();
 		void UpdateOptionItems(std::optional<uint32_t> oldOffset);
-	public:
+	  public:
 		WIDropDownMenu();
 		virtual ~WIDropDownMenu() override;
 		virtual void Initialize() override;

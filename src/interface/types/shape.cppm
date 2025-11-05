@@ -7,9 +7,6 @@ module;
 
 #undef DrawState
 
-
-
-
 export module pragma.gui:types.shape;
 
 export import :buffer_base;
@@ -21,7 +18,7 @@ export import pragma.cmaterialsystem;
 
 export {
 	class DLLWGUI WIShape : public WIBufferBase {
-	public:
+	  public:
 		enum class BasicShape : uint32_t { Rectangle = 0, Circle };
 		static std::shared_ptr<prosper::IBuffer> CreateBuffer(const std::vector<Vector2> &verts);
 		WIShape();
@@ -35,7 +32,7 @@ export {
 		void SetShape(BasicShape shape);
 		void SetBoundsCheckFunction(const std::function<bool(const WIShape &, const Vector2i &)> &func);
 		virtual void ClearBuffer() override;
-	protected:
+	  protected:
 		virtual void DoUpdate() override;
 		virtual bool DoPosInBounds(const Vector2i &pos) const override;
 		std::function<bool(const WIShape &, const Vector2i &)> m_checkInBounds = nullptr;
@@ -45,13 +42,13 @@ export {
 	};
 
 	class DLLWGUI WIOutlinedShape : public WIShape, WILineBase {
-	public:
+	  public:
 		WIOutlinedShape();
 		virtual ~WIOutlinedShape() override = default;
 	};
 
 	class DLLWGUI WITexturedShape : public WIShape {
-	public:
+	  public:
 		enum class StateFlags : uint8_t { None = 0, AlphaOnly = 1u, ShaderOverride = AlphaOnly << 1u, ExpensiveShaderRequired = ShaderOverride << 1u };
 		static std::shared_ptr<prosper::IBuffer> CreateUvBuffer(const std::vector<Vector2> &uvs);
 		WITexturedShape();
@@ -89,7 +86,7 @@ export {
 		wgui::ShaderTextured::Channel GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const;
 
 		virtual void ClearBuffer() override;
-	protected:
+	  protected:
 		virtual void UpdateTransparencyState() override;
 		void UpdateShaderState();
 		virtual void DoUpdate() override;
@@ -107,10 +104,10 @@ export {
 
 		void ReloadDescriptorSet();
 		virtual void SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap = nullptr) override;
-	protected:
+	  protected:
 		util::WeakHandle<prosper::Shader> m_shader = {};
 		std::shared_ptr<prosper::IDescriptorSetGroup> m_descSetTextureGroup = nullptr;
-	private:
+	  private:
 		StateFlags m_stateFlags = StateFlags::None;
 		uint32_t m_matUpdateCountRef = std::numeric_limits<uint32_t>::max();
 		uint32_t m_texUpdateCountRef = std::numeric_limits<uint32_t>::max();

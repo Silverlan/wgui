@@ -3,11 +3,6 @@
 
 module;
 
-
-
-
-
-
 module pragma.gui;
 
 import :core;
@@ -454,10 +449,7 @@ WIBase *WGUI::Create(std::string classname, WIBase *parent)
 	return nullptr;
 }
 
-void WGUI::SetupElement(WIBase &el, const std::string className)
-{
-	el.m_class = className;
-}
+void WGUI::SetupElement(WIBase &el, const std::string className) { el.m_class = className; }
 
 WIRoot *WGUI::GetBaseElement(const prosper::Window *window)
 {

@@ -3,9 +3,6 @@
 
 module;
 
-
-
-
 module pragma.gui;
 
 import :types.shape;
@@ -411,7 +408,7 @@ std::ostream &WITexturedShape::Print(std::ostream &stream) const
 	WIShape::Print(stream);
 	stream << "[Mat:";
 	if(m_hMaterial)
-		stream << const_cast<msys::Material*>(m_hMaterial.get())->GetName();
+		stream << const_cast<msys::Material *>(m_hMaterial.get())->GetName();
 	else
 		stream << "NULL";
 	stream << "]";

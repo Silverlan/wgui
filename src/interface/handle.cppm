@@ -8,6 +8,6 @@ export module pragma.gui:handle;
 export import pragma.util;
 
 export {
-    class WIBase;
-    using WIHandle = util::TWeakSharedHandle<WIBase>;
+	class WIBase;
+	using WIHandle = util::TWeakSharedHandle<WIBase>;
 }

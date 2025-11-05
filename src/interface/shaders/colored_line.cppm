@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:shaders.colored_line;
 
 export import :shaders.colored;

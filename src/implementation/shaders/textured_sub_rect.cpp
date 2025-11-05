@@ -3,7 +3,6 @@
 
 module;
 
-
 module pragma.gui;
 
 import :shaders.textured_sub_rect;

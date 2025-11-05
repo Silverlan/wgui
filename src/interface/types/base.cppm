@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:types.base;
 
 export import :anchor;
@@ -36,9 +35,9 @@ export {
 	class WISkin;
 	class WGUI;
 	class DLLWGUI WIBase : public util::CallbackHandler {
-	public:
+	  public:
 		friend WGUI;
-	public:
+	  public:
 		enum class StateFlags : uint64_t {
 			None = 0u,
 			AcceptMouseInputBit = 1u,
@@ -372,7 +371,7 @@ export {
 
 		// Handles
 		WIHandle GetHandle() const;
-	protected:
+	  protected:
 		virtual bool DoPosInBounds(const Vector2i &pos) const;
 		Mat4 GetAbsolutePose(float x, float y) const;
 		Mat4 GetRelativePose(float x, float y) const;
@@ -446,7 +445,7 @@ export {
 		virtual void OnRemove();
 
 		bool ShouldThink() const;
-	private:
+	  private:
 		void UpdateThink();
 		void UpdateMouseInBounds(const Vector2 &relPos, bool forceFalse);
 		WIBase *FindDeepestChild(const std::function<bool(const WIBase &)> &predInspect, const std::function<bool(const WIBase &)> &predValidCandidate);
@@ -457,7 +456,7 @@ export {
 		util::PBoolProperty m_bVisible = nullptr;
 		util::PBoolProperty m_bHasFocus = nullptr;
 		util::PVector2Property m_scale = nullptr;
-	private:
+	  private:
 		std::vector<std::string> m_styleClasses;
 		WISkin *m_skin = nullptr;
 		ChronoTimePoint m_clickStart;

@@ -7,7 +7,6 @@ module;
 
 #undef DrawState
 
-
 export module pragma.gui:buffer_base;
 
 import :draw_info;

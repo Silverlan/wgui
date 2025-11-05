@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:types.text_entry_base;
 
 import :handle;
@@ -17,7 +16,7 @@ export {
 	class WIRect;
 	class WIText;
 	class DLLWGUI WITextEntryBase : public WIBase {
-	public:
+	  public:
 		enum class StateFlags : uint32_t { None = 0u, Numeric = 1u, MultiLine = Numeric << 1u, Editable = MultiLine << 1u, Selectable = Editable << 1u };
 
 		WITextEntryBase();
@@ -63,7 +62,7 @@ export {
 		void SetMaxLength(int length);
 		int GetMaxLength() const;
 		void SetEntryFieldElement(WIBase *el);
-	protected:
+	  protected:
 		virtual void OnTextContentsChanged();
 		std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;
 		WIHandle m_hText;
@@ -87,7 +86,7 @@ export {
 		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
 		void OnTextChanged(bool changedByUser);
 	};
-	
+
 	namespace umath::scoped_enum::bitwise {
 		template<>
 		struct enable_bitwise_operators<WITextEntryBase::StateFlags> : std::true_type {};

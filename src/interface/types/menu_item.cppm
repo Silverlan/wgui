@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:types.menu_item;
 
 import :handle;
@@ -14,7 +13,7 @@ import :types.base;
 export {
 	class WIText;
 	class DLLWGUI WIMenuItem : public WIBase {
-	public:
+	  public:
 		WIMenuItem();
 		virtual void Initialize() override;
 
@@ -33,7 +32,7 @@ export {
 		void SetTitle(const std::string &title);
 
 		WIText *GetTextElement();
-	private:
+	  private:
 		void UpdateRightText();
 		std::function<void(void)> m_fOnAction = nullptr;
 		std::vector<WIBase *> m_items = {};

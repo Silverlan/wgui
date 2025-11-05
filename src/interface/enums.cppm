@@ -3,7 +3,6 @@
 
 module;
 
-
 export module pragma.gui:enums;
 
 export import std.compat;

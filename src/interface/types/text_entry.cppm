@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:types.text_entry;
 
 import :handle;
@@ -15,7 +14,7 @@ export {
 	class WIText;
 	class WIRect;
 	class DLLWGUI WITextEntry : public WIBase {
-	protected:
+	  protected:
 		WIHandle m_hBase;
 		WIHandle m_hOutline;
 		WIHandle m_hBg;
@@ -23,7 +22,7 @@ export {
 		virtual void OnTextEntered();
 		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
 		virtual void OnContentsChanged();
-	public:
+	  public:
 		WITextEntry();
 		virtual ~WITextEntry() override;
 		virtual void Initialize() override;
@@ -63,7 +62,7 @@ export {
 	};
 
 	class DLLWGUI WINumericEntry : public WITextEntry {
-	private:
+	  private:
 		struct Numeric {
 			WIHandle hUpArrow;
 			WIHandle hDownArrow;
@@ -71,7 +70,7 @@ export {
 			std::unique_ptr<int32_t> max;
 		} m_numeric;
 		void UpdateArrowPositions();
-	public:
+	  public:
 		virtual void Initialize() override;
 		virtual void SetSize(int x, int y) override;
 		void SetMinValue(int32_t min);

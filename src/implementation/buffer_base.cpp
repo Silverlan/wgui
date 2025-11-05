@@ -3,10 +3,6 @@
 
 module;
 
-
-
-
-
 module pragma.gui;
 
 import :buffer_base;

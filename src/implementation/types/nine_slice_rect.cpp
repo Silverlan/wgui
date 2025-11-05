@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.gui;
 
 import :types.nine_slice_rect;

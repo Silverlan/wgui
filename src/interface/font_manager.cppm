@@ -17,7 +17,7 @@ export {
 	class FontInfo;
 	class FontManager;
 	class DLLWGUI GlyphInfo {
-	private:
+	  private:
 		bool m_bInitialized = false;
 		int32_t m_left = 0;
 		int32_t m_top = 0;
@@ -26,7 +26,7 @@ export {
 		int32_t m_advanceX = 0;
 		int32_t m_advanceY = 0;
 		std::array<int32_t, 4> m_bbox;
-	public:
+	  public:
 		GlyphInfo();
 		void Initialize(FT_GlyphSlot glyph);
 		void GetAdvance(int32_t &advanceX, int32_t &advanceY) const;
@@ -44,16 +44,16 @@ export {
 		uint32_t fontSize;
 	};
 	struct DLLWGUI FontFace {
-	private:
+	  private:
 		FT_Face m_ftFace = nullptr;
-	public:
+	  public:
 		FontFace() = default;
 		~FontFace();
 		const FT_Face &GetFtFace() const;
 	};
 
 	class DLLWGUI FontInfo : public std::enable_shared_from_this<FontInfo> {
-	public:
+	  public:
 		~FontInfo();
 		void Clear();
 		bool Initialize(const std::string &cpath, const std::string &name, const FontSettings &fontSettings);
@@ -76,10 +76,10 @@ export {
 		prosper::IDescriptorSet *GetGlyphBoundsDescriptorSet() const;
 		void AddFallbackFont(FontInfo &font);
 		const std::vector<std::shared_ptr<FontInfo>> &GetFallbackFonts() const { return m_fallbackFonts; }
-	protected:
+	  protected:
 		FontInfo();
 		friend FontManager;
-	private:
+	  private:
 		std::vector<std::shared_ptr<FontInfo>> m_fallbackFonts;
 		std::unordered_map<uint32_t, uint32_t> m_glyphIndexMap;
 		bool m_bInitialized = false;
@@ -91,7 +91,7 @@ export {
 	};
 
 	class DLLWGUI FontManager {
-	public:
+	  public:
 		static const auto TAB_WIDTH_SPACE_COUNT = 4u;
 		static bool Initialize();
 		static std::shared_ptr<const FontInfo> GetDefaultFont();
@@ -111,11 +111,11 @@ export {
 		static uint32_t GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);
 		static uint32_t GetTextSize(int32_t c, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height = nullptr);
 		static uint32_t GetTextSize(int32_t c, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height = nullptr);
-	private:
+	  private:
 		struct Library {
-		private:
+		  private:
 			FT_Library m_ftLibrary = nullptr;
-		public:
+		  public:
 			Library() = default;
 			~Library();
 			const FT_Library &GetFtLibrary() const;

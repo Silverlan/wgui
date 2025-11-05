@@ -3,7 +3,6 @@
 
 module;
 
-
 module pragma.gui;
 
 import :shaders.colored_line;

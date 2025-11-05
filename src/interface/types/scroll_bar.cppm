@@ -5,13 +5,11 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.gui:types.scroll_bar;
 
 import :types.rect;
 
-export
-{
+export {
 	class DLLWGUI WIScrollBar;
 	class DLLWGUI WIScrollBarSlider : public WIRect {
 	  public:

@@ -47,7 +47,7 @@ export {
 		class ShaderStencil;
 	};
 	class DLLWGUI WGUI : public prosper::ContextObject {
-	public:
+	  public:
 		friend WIBase;
 		static prosper::SampleCountFlags MSAA_SAMPLE_COUNT;
 		enum class ElementBuffer : uint32_t {
@@ -138,10 +138,10 @@ export {
 		WIRoot *FindWindowRootElement(const prosper::Window &window);
 		WIRoot *FindWindowRootElementUnderCursor();
 
-		void SetUiMouseButtonCallback(const std::function<void(WIBase&, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> &onMouseButton);
-		void SetUiKeyboardCallback(const std::function<void(WIBase&, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> &onKeyEvent);
-		void SetUiCharCallback(const std::function<void(WIBase&, unsigned int)> &onCharEvent);
-		void SetUiScrollCallback(const std::function<void(WIBase&, Vector2)> &onScrollCallback);
+		void SetUiMouseButtonCallback(const std::function<void(WIBase &, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> &onMouseButton);
+		void SetUiKeyboardCallback(const std::function<void(WIBase &, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> &onKeyEvent);
+		void SetUiCharCallback(const std::function<void(WIBase &, unsigned int)> &onCharEvent);
+		void SetUiScrollCallback(const std::function<void(WIBase &, Vector2)> &onScrollCallback);
 
 		void GetMousePos(int &x, int &y, const prosper::Window *optWindow = nullptr);
 		prosper::Window *FindFocusedWindow();
@@ -198,13 +198,12 @@ export {
 		wgui::ShaderStencil *GetStencilShader();
 
 		template<class T>
-			void RegisterType(const std::string &name) {
-			m_typeFactory->AddClass(name, typeid(T), []() -> WIBase* {
-				return WGUI::GetInstance().Create<T>();
-			});
+		void RegisterType(const std::string &name)
+		{
+			m_typeFactory->AddClass(name, typeid(T), []() -> WIBase * { return WGUI::GetInstance().Create<T>(); });
 		}
 		const wgui::TypeFactory &GetTypeFactory() const { return *m_typeFactory; }
-	private:
+	  private:
 		void ScheduleElementForUpdate(WIBase &el, bool force = false);
 		void RegisterTypes();
 		void SetupElement(WIBase &el, const std::string className);
@@ -242,10 +241,10 @@ export {
 		std::function<void(WIBase &)> m_removeCallback = nullptr;
 		std::function<void(WIBase *, WIBase *)> m_onFocusChangedCallback = nullptr;
 
-		std::function<void(WIBase&, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> m_mouseButtonCallback = nullptr;
-		std::function<void(WIBase&, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> m_keyboardCallback;
-		std::function<void(WIBase&, unsigned int)> m_charCallback;
-		std::function<void(WIBase&, Vector2)> m_scrollCallback;
+		std::function<void(WIBase &, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> m_mouseButtonCallback = nullptr;
+		std::function<void(WIBase &, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> m_keyboardCallback;
+		std::function<void(WIBase &, unsigned int)> m_charCallback;
+		std::function<void(WIBase &, Vector2)> m_scrollCallback;
 
 		ChronoTime m_time = {};
 		double m_tLastThink = 0;

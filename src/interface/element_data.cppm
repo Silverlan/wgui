@@ -3,7 +3,6 @@
 
 module;
 
-
 export module pragma.gui:element_data;
 
 export import pragma.math;

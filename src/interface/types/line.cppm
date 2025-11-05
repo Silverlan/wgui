@@ -7,7 +7,6 @@ module;
 
 #undef DrawState
 
-
 export module pragma.gui:types.line;
 
 import :buffer_base;
@@ -17,17 +16,17 @@ export import pragma.util;
 
 export {
 	class DLLWGUI WILineBase {
-	private:
+	  private:
 		unsigned int m_lineWidth;
-	protected:
+	  protected:
 		WILineBase();
-	public:
+	  public:
 		unsigned int GetLineWidth();
 		void SetLineWidth(unsigned int width);
 	};
 
 	class DLLWGUI WILine : public WIBufferBase, WILineBase {
-	private:
+	  private:
 		util::PVector2iProperty m_posStart = nullptr;
 		util::PVector2iProperty m_posEnd = nullptr;
 		Color m_colStart;
@@ -35,7 +34,7 @@ export {
 		float m_dot;
 		std::shared_ptr<prosper::IBuffer> m_bufColor = nullptr;
 		void UpdateColorBuffer();
-	public:
+	  public:
 		WILine();
 		virtual ~WILine() override;
 		virtual void SetColor(float r, float g, float b, float a = 1.f) override;

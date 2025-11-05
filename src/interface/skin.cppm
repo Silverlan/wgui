@@ -13,14 +13,14 @@ export {
 	class WIBase;
 	class WGUI;
 	class DLLWGUI WISkin {
-	protected:
+	  protected:
 		WISkin(std::string id);
 		WISkin();
 		std::string m_identifier;
 		void ReleaseElement(WIBase *el);
-	public:
+	  public:
 		friend WGUI;
-	public:
+	  public:
 		virtual ~WISkin();
 		void SetIdentifier(const std::string &identifier) { m_identifier = identifier; }
 		const std::string &GetIdentifier() const { return m_identifier; }

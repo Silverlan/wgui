@@ -5,10 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
-
-
-
 export module pragma.gui:types.root;
 
 import :handle;
@@ -17,7 +13,7 @@ import :types.base;
 export {
 	class WGUI;
 	class DLLWGUI WIRoot : public WIBase {
-	public:
+	  public:
 		WIRoot();
 		virtual ~WIRoot() override;
 		virtual void Initialize() override;
@@ -36,7 +32,7 @@ export {
 
 		const WIBase *GetFocusedElement() const { return const_cast<WIRoot *>(this)->GetFocusedElement(); }
 		WIBase *GetFocusedElement();
-	protected:
+	  protected:
 		friend WGUI;
 		friend WIBase;
 
@@ -61,7 +57,7 @@ export {
 		void DropFiles(const std::vector<std::string> &files);
 
 		void RestoreTrappedFocus(WIBase *elRef = nullptr);
-	private:
+	  private:
 		WIHandle m_hTooltip;
 		WIHandle m_hTooltipTarget;
 		WIHandle m_hImeTarget;

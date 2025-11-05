@@ -13,7 +13,7 @@ export import pragma.string.unicode;
 export {
 	class WIText;
 	class DLLWGUI TextLineIteratorBase {
-	public:
+	  public:
 		struct DLLWGUI Info {
 			util::text::FormattedTextLine *line = nullptr;
 			util::text::LineIndex lineIndex = 0;
@@ -51,7 +51,7 @@ export {
 
 		bool operator==(const TextLineIteratorBase &other) const;
 		bool operator!=(const TextLineIteratorBase &other) const;
-	private:
+	  private:
 		WIText &GetText() const;
 		void UpdateLine();
 		WIText *m_text = nullptr;
@@ -60,11 +60,11 @@ export {
 	};
 
 	class DLLWGUI TextLineIterator {
-	public:
+	  public:
 		TextLineIterator(WIText &text, util::text::LineIndex startLineIndex = 0, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase begin() const;
 		TextLineIteratorBase end() const;
-	private:
+	  private:
 		WIText &m_text;
 		bool m_bIterateSubLines = true;
 		util::text::LineIndex m_startLineIndex = 0;
@@ -74,7 +74,7 @@ export {
 	//////////////////////
 
 	class DLLWGUI CharIteratorBase {
-	public:
+	  public:
 		struct DLLWGUI Info {
 			util::text::LineIndex lineIndex = 0;
 			util::text::LineIndex subLineIndex = 0;
@@ -103,7 +103,7 @@ export {
 
 		bool operator==(const CharIteratorBase &other) const;
 		bool operator!=(const CharIteratorBase &other) const;
-	private:
+	  private:
 		void UpdatePixelWidth();
 		WIText &GetText() const;
 		WIText *m_text = nullptr;
@@ -116,12 +116,12 @@ export {
 	}
 
 	class DLLWGUI CharIterator {
-	public:
+	  public:
 		CharIterator(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
 		CharIterator(WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
 		CharIteratorBase begin() const;
 		CharIteratorBase end() const;
-	private:
+	  private:
 		WIText &m_text;
 		util::text::LineIndex m_lineIndex = 0;
 		util::text::LineIndex m_subLineIndex = 0;

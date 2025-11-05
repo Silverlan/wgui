@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.gui;
 
 import :types.line;
