@@ -133,9 +133,7 @@ if(WGUI_INCLUDE_DEPENDENCIES)
 	add_dependencies(sample_application wgui)
 endif()
 
-pr_add_headers(${PROJ_NAME} "include/")
-pr_add_sources(${PROJ_NAME} "src/")
-pr_add_modules(${PROJ_NAME} "src/")
+pr_init_module(${PROJ_NAME})
 
 pr_add_compile_definitions(
 	${PROJ_NAME}

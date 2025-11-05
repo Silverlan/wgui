@@ -3,7 +3,7 @@
 
 module;
 
-#include "wgui/wguidefinitions.h"
+#include "definitions.hpp"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 

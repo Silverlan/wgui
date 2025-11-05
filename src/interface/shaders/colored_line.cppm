@@ -3,7 +3,7 @@
 
 module;
 
-#include "wgui/wguidefinitions.h"
+#include "definitions.hpp"
 
 
 export module pragma.gui:shaders.colored_line;
