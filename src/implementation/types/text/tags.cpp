@@ -26,7 +26,7 @@ void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex,
 				continue;
 			auto &tagArgs = tag->GetArguments();
 			if(argumentIndex >= tagArgs.size())
-				tagArgs.resize(argumentIndex + 1, WITextTagArgument {WITextTagArgument::Type::String, std::make_shared<std::string>("")});
+				tagArgs.resize(argumentIndex + 1, WITextTagArgument {WITextTagArgument::Type::String, util::make_shared<std::string>("")});
 			tagArgs.at(argumentIndex) = arg;
 
 			tag->SetDirty();
@@ -34,7 +34,7 @@ void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex,
 	}
 	m_flags |= Flags::ApplySubTextTags;
 }
-void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const std::string &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::String, std::make_shared<std::string>(arg)}); }
+void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const std::string &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::String, util::make_shared<std::string>(arg)}); }
 void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const Vector4 &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Vector4, std::make_shared<Vector4>(arg)}); }
 void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const CallbackHandle &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Function, std::make_shared<CallbackHandle>(arg)}); }
 void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const Color &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Color, std::make_shared<Color>(arg)}); }
@@ -78,12 +78,12 @@ void WIText::InitializeTagArguments(const WITextTag &tag, std::vector<WITextTagA
 		auto &strArg = strArgs.at(i);
 		auto &arg = args.at(i);
 		if(arg.value == nullptr)
-			arg = WITextTagArgument {WITextTagArgument::Type::String, std::make_shared<std::string>(strArg)};
+			arg = WITextTagArgument {WITextTagArgument::Type::String, util::make_shared<std::string>(strArg)};
 	}
 	for(auto i = strArgs.size(); i < args.size(); ++i) {
 		auto &arg = args.at(i);
 		if(arg.value == nullptr)
-			arg = WITextTagArgument {WITextTagArgument::Type::String, std::make_shared<std::string>("")};
+			arg = WITextTagArgument {WITextTagArgument::Type::String, util::make_shared<std::string>("")};
 	}
 }
 
