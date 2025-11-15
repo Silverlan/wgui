@@ -28,7 +28,7 @@ void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipeline
 	if(enableStencilTest)
 		wgui::initialize_stencil_properties(pipelineInfo, pipelineIdx);
 	if(IsMsaaPipeline(pipelineIdx))
-		pipelineInfo.SetMultisamplingProperties(WGUI::MSAA_SAMPLE_COUNT, 0.f, ~0u);
+		pipelineInfo.SetMultisamplingProperties(wGUI::MSAA_SAMPLE_COUNT, 0.f, ~0u);
 }
 
 void Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) { InitializeGfxPipeline(pipelineInfo, pipelineIdx, true); }

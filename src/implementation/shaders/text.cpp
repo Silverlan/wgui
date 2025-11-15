@@ -31,7 +31,7 @@ ShaderText::ShaderText(prosper::IPrContext &context, const std::string &identifi
 
 void ShaderText::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx)
 {
-	CreateCachedRenderPass<ShaderText>({{{prosper::Format::R8_UNorm, prosper::ImageLayout::ColorAttachmentOptimal, prosper::AttachmentLoadOp::DontCare, prosper::AttachmentStoreOp::Store, IsMsaaPipeline(pipelineIdx) ? WGUI::MSAA_SAMPLE_COUNT : prosper::SampleCountFlags::e1Bit,
+	CreateCachedRenderPass<ShaderText>({{{prosper::Format::R8_UNorm, prosper::ImageLayout::ColorAttachmentOptimal, prosper::AttachmentLoadOp::DontCare, prosper::AttachmentStoreOp::Store, IsMsaaPipeline(pipelineIdx) ? wGUI::MSAA_SAMPLE_COUNT : prosper::SampleCountFlags::e1Bit,
 	                                     prosper::ImageLayout::ShaderReadOnlyOptimal}}},
 	  outRenderPass, pipelineIdx);
 }

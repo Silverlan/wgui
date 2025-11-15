@@ -12,7 +12,7 @@ import pragma.string.unicode;
 #undef FindWindow
 
 static std::unique_ptr<WGUI> s_wgui = nullptr;
-prosper::SampleCountFlags WGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
+prosper::SampleCountFlags wGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
 WGUI &WGUI::Open(prosper::IPrContext &context, const std::weak_ptr<msys::MaterialManager> &wpMatManager)
 {
 	s_wgui = nullptr;
@@ -165,16 +165,16 @@ WGUI::ResultCode WGUI::Initialize(std::optional<Vector2i> resolution, std::optio
 	prosper::ImageFormatPropertiesQuery query {prosper::ImageCreateFlags::None, prosper::Format::R8G8B8A8_UNorm, prosper::ImageType::e2D, prosper::ImageTiling::Optimal, prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit};
 	auto limits = context.GetPhysicalDeviceImageFormatProperties(query);
 	if(limits.has_value()) {
-		MSAA_SAMPLE_COUNT = limits->sampleCount;
-		if(MSAA_SAMPLE_COUNT > prosper::SampleCountFlags::e8Bit)
-			MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e8Bit;
+		wGUI::MSAA_SAMPLE_COUNT = limits->sampleCount;
+		if(wGUI::MSAA_SAMPLE_COUNT > prosper::SampleCountFlags::e8Bit)
+			wGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e8Bit;
 	}
 	else
-		MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
+		wGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
 
 	auto rpCreateInfo = context.GetWindow().GetStagingRenderPass().GetCreateInfo();
 	for(auto &att : rpCreateInfo.attachments)
-		att.sampleCount = MSAA_SAMPLE_COUNT;
+		att.sampleCount = wGUI::MSAA_SAMPLE_COUNT;
 	m_msaaRenderPass = context.CreateRenderPass(rpCreateInfo);
 
 	auto &shaderManager = context.GetShaderManager();

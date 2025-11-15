@@ -46,10 +46,12 @@ export {
 		class ShaderTexturedRectExpensive;
 		class ShaderStencil;
 	};
+	namespace wGUI {
+		CLASS_ENUM_COMPAT prosper::SampleCountFlags MSAA_SAMPLE_COUNT;
+	}
 	class DLLWGUI WGUI : public prosper::ContextObject {
 	  public:
 		friend WIBase;
-		static prosper::SampleCountFlags MSAA_SAMPLE_COUNT;
 		enum class ElementBuffer : uint32_t {
 			SizeColor = sizeof(Vector4),
 			SizeMVP = sizeof(Mat4),
