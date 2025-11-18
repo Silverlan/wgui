@@ -15,8 +15,8 @@ pr_add_dependency(${PROJ_NAME} util_formatted_text TARGET PUBLIC)
 
 # pr_add_dependency(${PROJ_NAME} squish TARGET)
 pr_add_dependency(${PROJ_NAME} bz2 TARGET)
+pr_add_dependency(${PROJ_NAME} gli TARGET)
 pr_add_third_party_dependency(${PROJ_NAME} exprtk)
-pr_add_third_party_dependency(${PROJ_NAME} gli)
 pr_add_third_party_dependency(${PROJ_NAME} libpng)
 pr_add_third_party_dependency(${PROJ_NAME} zlib)
 
@@ -133,8 +133,7 @@ if(WGUI_INCLUDE_DEPENDENCIES)
 	add_dependencies(sample_application wgui)
 endif()
 
-pr_add_headers(${PROJ_NAME} "include/")
-pr_add_sources(${PROJ_NAME} "src/")
+pr_init_module(${PROJ_NAME})
 
 pr_add_compile_definitions(
 	${PROJ_NAME}

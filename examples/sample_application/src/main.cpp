@@ -7,11 +7,6 @@
 #include <Windows.h>
 #undef MemoryBarrier
 #endif
-#include <wgui/wgui.h>
-#include <wgui/types/wirect.h>
-#include <wgui/types/witext.h>
-#include <wgui/types/wibutton.h>
-#include <wgui/types/witextentry.h>
 #include <cmaterialmanager.h>
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
@@ -26,6 +21,9 @@
 #pragma optimize("",off)
 
 #include <shader/prosper_pipeline_create_info.hpp>
+
+import pragma.gui;
+
 class ShaderTest
 	: public prosper::ShaderBaseImageProcessing
 {
@@ -236,10 +234,10 @@ int main()
 	/*auto *pTextShadow = wgui.Create<WIText>(p);
 	pTextShadow->SetText("Text with shadow");
 	pTextShadow->SetPos(512,64);
-	pTextShadow->SetColor(Color::LimeGreen);
+	pTextShadow->SetColor(colors::LimeGreen);
 	pTextShadow->EnableShadow(true);
 	pTextShadow->SetShadowOffset(1,1);
-	pTextShadow->SetShadowColor(Color::Black);
+	pTextShadow->SetShadowColor(colors::Black);
 	pTextShadow->SizeToContents();*/
 
 	auto *pTextEntry = wgui.Create<WITextEntry>(p);
@@ -413,7 +411,7 @@ private:
 		auto elText = gui.Create<WIText>();
 		elText->SetText("HellooOOoo");
 		elText->SetPos(200,200);
-		elText->SetColor(Color::White);
+		elText->SetColor(colors::White);
 		elText->SizeToContents();
 
 		el2->SetSize(elText->GetSize());
@@ -456,7 +454,7 @@ private:
 			bufCreateInfo.size = sizeof(Vector4);
 			bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::CPUToGPU;//prosper::MemoryFeatureFlags::GPUBulk;
 			bufCreateInfo.usageFlags = prosper::BufferUsageFlags::UniformBufferBit | prosper::BufferUsageFlags::TransferSrcBit;
-			Vector4 color = Color::Red.ToVector4();
+			Vector4 color = colors::Red.ToVector4();
 			buffer = m_context->CreateBuffer(bufCreateInfo,&color);
 			color = {5,6,7,8};
 			buffer->Read(0,sizeof(color),&color);
