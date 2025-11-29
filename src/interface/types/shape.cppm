@@ -4,6 +4,7 @@
 module;
 
 #include "definitions.hpp"
+#include "util_enum_flags.hpp"
 
 #undef DrawState
 
@@ -115,8 +116,5 @@ export {
 		void ClearTextureLoadCallback();
 		void InitializeTextureLoadCallback(const std::shared_ptr<msys::Texture> &texture);
 	};
-	namespace umath::scoped_enum::bitwise {
-		template<>
-		struct enable_bitwise_operators<WITexturedShape::StateFlags> : std::true_type {};
-	}
+	REGISTER_ENUM_FLAGS(WITexturedShape::StateFlags)
 };

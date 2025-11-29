@@ -4,6 +4,7 @@
 module;
 
 #include "definitions.hpp"
+#include "util_enum_flags.hpp"
 
 export module pragma.gui:core;
 
@@ -269,8 +270,5 @@ export {
 		void ClearSkin();
 	};
 
-	namespace umath::scoped_enum::bitwise {
-		template<>
-		struct enable_bitwise_operators<WGUI::ElementBuffer> : std::true_type {};
-	}
+	REGISTER_ENUM_FLAGS(WGUI::ElementBuffer)
 };

@@ -4,6 +4,7 @@
 module;
 
 #include "definitions.hpp"
+#include "util_enum_flags.hpp"
 
 export module pragma.gui:types.text_entry_base;
 
@@ -87,8 +88,5 @@ export {
 		void OnTextChanged(bool changedByUser);
 	};
 
-	namespace umath::scoped_enum::bitwise {
-		template<>
-		struct enable_bitwise_operators<WITextEntryBase::StateFlags> : std::true_type {};
-	}
+	REGISTER_ENUM_FLAGS(WITextEntryBase::StateFlags)
 };

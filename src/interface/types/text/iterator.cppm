@@ -4,6 +4,7 @@
 module;
 
 #include "definitions.hpp"
+#include "util_enum_flags.hpp"
 
 export module pragma.gui:text_iterator;
 
@@ -110,10 +111,7 @@ export {
 		Info m_info = {};
 		Flags m_flags = Flags::BreakAtEndOfSubLine;
 	};
-	namespace umath::scoped_enum::bitwise {
-		template<>
-		struct enable_bitwise_operators<CharIteratorBase::Flags> : std::true_type {};
-	}
+	REGISTER_ENUM_FLAGS(CharIteratorBase::Flags)
 
 	class DLLWGUI CharIterator {
 	  public:

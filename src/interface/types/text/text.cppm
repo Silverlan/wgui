@@ -4,6 +4,7 @@
 module;
 
 #include "definitions.hpp"
+#include "util_enum_flags.hpp"
 
 #undef DrawState
 
@@ -261,8 +262,5 @@ export {
 		void DestroyBlur();
 		void ScheduleRenderUpdate(bool bFull = false);
 	};
-	namespace umath::scoped_enum::bitwise {
-		template<>
-		struct enable_bitwise_operators<WIText::Flags> : std::true_type {};
-	}
+	REGISTER_ENUM_FLAGS(WIText::Flags)
 };
