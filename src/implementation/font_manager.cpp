@@ -13,99 +13,101 @@ import :font_manager;
 
 import pragma.string.unicode;
 
-class DynamicFontMap {
-  public:
-	static std::unique_ptr<DynamicFontMap> Create(const std::string &cpath, const FontSettings &fontSettings);
-	static constexpr auto INVALID_GLYPH_INDEX = std::numeric_limits<uint32_t>::max();
+namespace pragma::gui {
+	class DynamicFontMap {
+	public:
+		static std::unique_ptr<DynamicFontMap> Create(const std::string &cpath, const pragma::gui::FontSettings &fontSettings);
+		static constexpr auto INVALID_GLYPH_INDEX = std::numeric_limits<uint32_t>::max();
 #pragma pack(push, 1)
-	struct GlyphBounds {
-		int32_t left;
-		int32_t top;
-		int32_t width;
-		int32_t height;
-		int32_t advanceX;
-		int32_t advanceY;
-	};
+		struct GlyphBounds {
+			int32_t left;
+			int32_t top;
+			int32_t width;
+			int32_t height;
+			int32_t advanceX;
+			int32_t advanceY;
+		};
 #pragma pack(pop)
 
-	struct GlyphExtent {
-		uint32_t width;
-		uint32_t height;
+		struct GlyphExtent {
+			uint32_t width;
+			uint32_t height;
+		};
+		void AddCharacter(int32_t c);
+		bool GenerateImageMap();
+		void ClearMap();
+
+		uint32_t GetMaxGlyphBitmapWidth() const { return m_maxBitmapWidth; }
+		uint32_t GetMaxGlyphBitmapHeight() const { return m_maxBitmapHeight; }
+		std::shared_ptr<prosper::Texture> GetGlyphMap() const { return m_glyphMap; }
+		prosper::IDescriptorSet *GetGlyphMapDescriptorSet() const { return m_glyphMapDescSetGroup->GetDescriptorSet(); }
+		std::shared_ptr<prosper::IBuffer> GetGlyphBoundsBuffer() const { return m_glyphBoundsBuffer; }
+		prosper::IDescriptorSet *GetGlyphBoundsDescriptorSet() const { return m_glyphBoundsDsg ? m_glyphBoundsDsg->GetDescriptorSet() : nullptr; }
+		int32_t GetMaxGlyphTop() const { return m_glyphTopMax; }
+		uint32_t GetGlyphCountPerRow() const { return m_numGlyphsPerRow; }
+		const FT_Face GetFace() const { return m_face.GetFtFace(); }
+		const std::vector<std::shared_ptr<pragma::gui::GlyphInfo>> &GetGlyphs() const { return m_glyphs; }
+		const pragma::gui::GlyphInfo *GetGlyphInfo(int32_t c) const
+		{
+			auto idx = CharToGlyphMapIndex(c);
+			if(idx < 0 || idx >= m_glyphs.size())
+				return nullptr;
+			return m_glyphs[idx].get();
+		}
+		uint32_t CharToGlyphMapIndex(int32_t c) const
+		{
+			auto it = m_glyphIndexMap.find(c);
+			if(it == m_glyphIndexMap.end())
+				return INVALID_GLYPH_INDEX;
+			return it->second;
+		}
+	private:
+		DynamicFontMap();
+		uint32_t m_curGlyphIndex = 0;
+		std::vector<GlyphExtent> m_glyphExtents;
+		std::vector<GlyphBounds> m_glyphCharacterBounds;
+		std::vector<std::shared_ptr<pragma::gui::GlyphInfo>> m_glyphs;
+		std::unordered_map<uint32_t, uint32_t> m_glyphIndexMap;
+		std::vector<uint8_t> m_glyphImageBufData;
+		uint32_t m_maxBitmapWidth = 0;
+		uint32_t m_maxBitmapHeight = 0;
+		uint32_t m_maxGlyphHeight = 0;
+		uint32_t m_maxGlyphSize = 0;
+
+		pragma::gui::FontFace m_face;
+		std::vector<uint8_t> m_fontData;
+		int32_t m_glyphTopMax = 0;
+		uint32_t m_fontSize = 0;
+		uint32_t m_numGlyphsPerRow = 0;
+
+		bool m_dirtyGlyphMap = true;
+		std::shared_ptr<prosper::Texture> m_glyphMap = nullptr;
+		std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphMapDescSetGroup = nullptr;
+		std::shared_ptr<prosper::IBuffer> m_glyphBoundsBuffer = nullptr;
+		std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphBoundsDsg = nullptr;
 	};
-	void AddCharacter(int32_t c);
-	bool GenerateImageMap();
-	void ClearMap();
+}
 
-	uint32_t GetMaxGlyphBitmapWidth() const { return m_maxBitmapWidth; }
-	uint32_t GetMaxGlyphBitmapHeight() const { return m_maxBitmapHeight; }
-	std::shared_ptr<prosper::Texture> GetGlyphMap() const { return m_glyphMap; }
-	prosper::IDescriptorSet *GetGlyphMapDescriptorSet() const { return m_glyphMapDescSetGroup->GetDescriptorSet(); }
-	std::shared_ptr<prosper::IBuffer> GetGlyphBoundsBuffer() const { return m_glyphBoundsBuffer; }
-	prosper::IDescriptorSet *GetGlyphBoundsDescriptorSet() const { return m_glyphBoundsDsg ? m_glyphBoundsDsg->GetDescriptorSet() : nullptr; }
-	int32_t GetMaxGlyphTop() const { return m_glyphTopMax; }
-	uint32_t GetGlyphCountPerRow() const { return m_numGlyphsPerRow; }
-	const FT_Face GetFace() const { return m_face.GetFtFace(); }
-	const std::vector<std::shared_ptr<GlyphInfo>> &GetGlyphs() const { return m_glyphs; }
-	const GlyphInfo *GetGlyphInfo(int32_t c) const
-	{
-		auto idx = CharToGlyphMapIndex(c);
-		if(idx < 0 || idx >= m_glyphs.size())
-			return nullptr;
-		return m_glyphs[idx].get();
-	}
-	uint32_t CharToGlyphMapIndex(int32_t c) const
-	{
-		auto it = m_glyphIndexMap.find(c);
-		if(it == m_glyphIndexMap.end())
-			return INVALID_GLYPH_INDEX;
-		return it->second;
-	}
-  private:
-	DynamicFontMap();
-	uint32_t m_curGlyphIndex = 0;
-	std::vector<GlyphExtent> m_glyphExtents;
-	std::vector<GlyphBounds> m_glyphCharacterBounds;
-	std::vector<std::shared_ptr<GlyphInfo>> m_glyphs;
-	std::unordered_map<uint32_t, uint32_t> m_glyphIndexMap;
-	std::vector<uint8_t> m_glyphImageBufData;
-	uint32_t m_maxBitmapWidth = 0;
-	uint32_t m_maxBitmapHeight = 0;
-	uint32_t m_maxGlyphHeight = 0;
-	uint32_t m_maxGlyphSize = 0;
-
-	FontFace m_face;
-	std::vector<uint8_t> m_fontData;
-	int32_t m_glyphTopMax = 0;
-	uint32_t m_fontSize = 0;
-	uint32_t m_numGlyphsPerRow = 0;
-
-	bool m_dirtyGlyphMap = true;
-	std::shared_ptr<prosper::Texture> m_glyphMap = nullptr;
-	std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphMapDescSetGroup = nullptr;
-	std::shared_ptr<prosper::IBuffer> m_glyphBoundsBuffer = nullptr;
-	std::shared_ptr<prosper::IDescriptorSetGroup> m_glyphBoundsDsg = nullptr;
-};
-
-FontFace::~FontFace()
+pragma::gui::FontFace::~FontFace()
 {
 	if(m_ftFace != nullptr)
 		FT_Done_Face(m_ftFace);
 }
-const FT_Face &FontFace::GetFtFace() const { return m_ftFace; }
+const FT_Face &pragma::gui::FontFace::GetFtFace() const { return m_ftFace; }
 
-GlyphInfo::GlyphInfo()
+pragma::gui::GlyphInfo::GlyphInfo()
 {
 	for(unsigned int i = 0; i < 4; i++)
 		m_bbox[i] = 0;
 }
 
-void GlyphInfo::GetAdvance(int32_t &advanceX, int32_t &advanceY) const
+void pragma::gui::GlyphInfo::GetAdvance(int32_t &advanceX, int32_t &advanceY) const
 {
 	advanceX = m_advanceX;
 	advanceY = m_advanceY;
 }
 
-void GlyphInfo::Initialize(FT_GlyphSlot glyph)
+void pragma::gui::GlyphInfo::Initialize(FT_GlyphSlot glyph)
 {
 	if(m_bInitialized)
 		return;
@@ -130,7 +132,7 @@ void GlyphInfo::Initialize(FT_GlyphSlot glyph)
 	FT_Done_Glyph(g);
 }
 
-void GlyphInfo::GetBounds(int32_t *xMin, int32_t *yMin, int32_t *xMax, int32_t *yMax) const
+void pragma::gui::GlyphInfo::GetBounds(int32_t *xMin, int32_t *yMin, int32_t *xMax, int32_t *yMax) const
 {
 	if(xMin != nullptr)
 		*xMin = m_bbox[0];
@@ -142,33 +144,33 @@ void GlyphInfo::GetBounds(int32_t *xMin, int32_t *yMin, int32_t *xMax, int32_t *
 		*yMax = m_bbox[3];
 }
 
-void GlyphInfo::GetDimensions(int32_t &left, int32_t &top, int32_t &width, int32_t &height) const
+void pragma::gui::GlyphInfo::GetDimensions(int32_t &left, int32_t &top, int32_t &width, int32_t &height) const
 {
 	left = m_left;
 	top = m_top;
 	width = m_width;
 	height = m_height;
 }
-int32_t GlyphInfo::GetTop() const { return m_top; }
-int32_t GlyphInfo::GetLeft() const { return m_left; }
-int32_t GlyphInfo::GetWidth() const { return m_width; }
-int32_t GlyphInfo::GetHeight() const { return m_height; }
+int32_t pragma::gui::GlyphInfo::GetTop() const { return m_top; }
+int32_t pragma::gui::GlyphInfo::GetLeft() const { return m_left; }
+int32_t pragma::gui::GlyphInfo::GetWidth() const { return m_width; }
+int32_t pragma::gui::GlyphInfo::GetHeight() const { return m_height; }
 
 /////////////////////
 
-FontSettings::FontSettings() {}
-FontSettings::~FontSettings() {}
-FontInfo::~FontInfo() { Clear(); }
-const GlyphInfo *FontInfo::InitializeGlyph(int32_t c) const
+pragma::gui::FontSettings::FontSettings() {}
+pragma::gui::FontSettings::~FontSettings() {}
+pragma::gui::FontInfo::~FontInfo() { Clear(); }
+const pragma::gui::GlyphInfo *pragma::gui::FontInfo::InitializeGlyph(int32_t c) const
 {
 	m_dynamicFontMap->AddCharacter(c);
 	return GetGlyphInfo(c);
 }
-const GlyphInfo *FontInfo::GetGlyphInfo(int32_t c) const { return m_dynamicFontMap->GetGlyphInfo(c); }
-const std::vector<std::shared_ptr<GlyphInfo>> &FontInfo::GetGlyphs() const { return m_dynamicFontMap->GetGlyphs(); }
-uint32_t FontInfo::GetSize() const { return m_size; }
+const pragma::gui::GlyphInfo *pragma::gui::FontInfo::GetGlyphInfo(int32_t c) const { return m_dynamicFontMap->GetGlyphInfo(c); }
+const std::vector<std::shared_ptr<pragma::gui::GlyphInfo>> &pragma::gui::FontInfo::GetGlyphs() const { return m_dynamicFontMap->GetGlyphs(); }
+uint32_t pragma::gui::FontInfo::GetSize() const { return m_size; }
 
-std::unique_ptr<DynamicFontMap> DynamicFontMap::Create(const std::string &cpath, const FontSettings &fontSettings)
+std::unique_ptr<pragma::gui::DynamicFontMap> pragma::gui::DynamicFontMap::Create(const std::string &cpath, const pragma::gui::FontSettings &fontSettings)
 {
 	auto fontMap = std::unique_ptr<DynamicFontMap> {new DynamicFontMap {}};
 	auto f = FileManager::OpenFile(cpath.c_str(), "rb");
@@ -178,7 +180,7 @@ std::unique_ptr<DynamicFontMap> DynamicFontMap::Create(const std::string &cpath,
 	fontMap->m_fontData.resize(size);
 	f->Read(fontMap->m_fontData.data(), size);
 
-	auto lib = FontManager::GetFontLibrary();
+	auto lib = pragma::gui::FontManager::GetFontLibrary();
 	auto &face = fontMap->m_face.GetFtFace();
 	auto &ncFace = const_cast<FT_Face &>(face);
 	if(FT_New_Memory_Face(lib, &fontMap->m_fontData[0], static_cast<FT_Long>(size), 0, &ncFace) != 0 || FT_Set_Pixel_Sizes(face, 0, fontSettings.fontSize) != 0) {
@@ -188,8 +190,8 @@ std::unique_ptr<DynamicFontMap> DynamicFontMap::Create(const std::string &cpath,
 	fontMap->m_fontSize = fontSettings.fontSize;
 	return fontMap;
 }
-DynamicFontMap::DynamicFontMap() { FontManager::SetFontsDirty(); }
-void DynamicFontMap::AddCharacter(int32_t c)
+pragma::gui::DynamicFontMap::DynamicFontMap() { pragma::gui::FontManager::SetFontsDirty(); }
+void pragma::gui::DynamicFontMap::AddCharacter(int32_t c)
 {
 	if(m_glyphIndexMap.find(c) != m_glyphIndexMap.end())
 		return;
@@ -260,11 +262,11 @@ void DynamicFontMap::AddCharacter(int32_t c)
 	m_glyphIndexMap[c] = m_curGlyphIndex;
 	++m_curGlyphIndex;
 }
-void DynamicFontMap::ClearMap()
+void pragma::gui::DynamicFontMap::ClearMap()
 {
 	if(m_dirtyGlyphMap)
 		return;
-	FontManager::SetFontsDirty();
+	pragma::gui::FontManager::SetFontsDirty();
 	m_dirtyGlyphMap = true;
 	auto &context = WGUI::GetInstance().GetContext();
 	context.WaitIdle();
@@ -274,7 +276,7 @@ void DynamicFontMap::ClearMap()
 	m_glyphBoundsBuffer = nullptr;
 	m_glyphBoundsDsg = nullptr;
 }
-bool DynamicFontMap::GenerateImageMap()
+bool pragma::gui::DynamicFontMap::GenerateImageMap()
 {
 	if(!m_dirtyGlyphMap)
 		return (m_glyphMapDescSetGroup != nullptr);
@@ -376,24 +378,24 @@ bool DynamicFontMap::GenerateImageMap()
 	bufCreateInfo.usageFlags = prosper::BufferUsageFlags::StorageBufferBit;
 	m_glyphBoundsBuffer = context.CreateBuffer(bufCreateInfo, m_glyphCharacterBounds.data());
 	m_glyphBoundsBuffer->SetDebugName("font_glyph_bounds_buffer");
-	m_glyphBoundsDsg = context.CreateDescriptorSetGroup(wgui::ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
+	m_glyphBoundsDsg = context.CreateDescriptorSetGroup(shaders::ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
 	m_glyphBoundsDsg->GetDescriptorSet()->SetBindingStorageBuffer(*m_glyphBoundsBuffer, 0u);
 	context.FlushSetupCommandBuffer();
 
 	auto wpShader = context.GetShader("wguitext");
 	if(wpShader.expired() == false) {
-		m_glyphMapDescSetGroup = context.CreateDescriptorSetGroup(wgui::ShaderText::DESCRIPTOR_SET_TEXTURE);
+		m_glyphMapDescSetGroup = context.CreateDescriptorSetGroup(shaders::ShaderText::DESCRIPTOR_SET_TEXTURE);
 		m_glyphMapDescSetGroup->GetDescriptorSet()->SetBindingTexture(*m_glyphMap, 0u);
 	}
 	return true;
 }
-FontInfo::FontInfo() {}
-bool FontInfo::Initialize(const std::string &cpath, const std::string &name, const FontSettings &fontSettings)
+pragma::gui::FontInfo::FontInfo() {}
+bool pragma::gui::FontInfo::Initialize(const std::string &cpath, const std::string &name, const FontSettings &fontSettings)
 {
 	m_name = name;
-	if(m_bInitialized || wgui::ShaderText::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
+	if(m_bInitialized || shaders::ShaderText::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
 		return true;
-	auto fontMap = DynamicFontMap::Create(cpath, fontSettings);
+	auto fontMap = pragma::gui::DynamicFontMap::Create(cpath, fontSettings);
 	if(!fontMap)
 		return false;
 	m_size = fontSettings.fontSize;
@@ -402,25 +404,25 @@ bool FontInfo::Initialize(const std::string &cpath, const std::string &name, con
 	return true;
 }
 
-uint32_t FontInfo::GetMaxGlyphBitmapWidth() const { return m_dynamicFontMap->GetMaxGlyphBitmapWidth(); }
-uint32_t FontInfo::GetMaxGlyphBitmapHeight() const { return m_dynamicFontMap->GetMaxGlyphBitmapHeight(); }
-uint32_t FontInfo::CharToGlyphMapIndex(int32_t c) const { return m_dynamicFontMap->CharToGlyphMapIndex(c); }
+uint32_t pragma::gui::FontInfo::GetMaxGlyphBitmapWidth() const { return m_dynamicFontMap->GetMaxGlyphBitmapWidth(); }
+uint32_t pragma::gui::FontInfo::GetMaxGlyphBitmapHeight() const { return m_dynamicFontMap->GetMaxGlyphBitmapHeight(); }
+uint32_t pragma::gui::FontInfo::CharToGlyphMapIndex(int32_t c) const { return m_dynamicFontMap->CharToGlyphMapIndex(c); }
 
-std::shared_ptr<prosper::Texture> FontInfo::GetGlyphMap() const { return m_dynamicFontMap->GetGlyphMap(); }
-std::shared_ptr<prosper::IBuffer> FontInfo::GetGlyphBoundsBuffer() const { return m_dynamicFontMap->GetGlyphBoundsBuffer(); }
-prosper::IDescriptorSet *FontInfo::GetGlyphBoundsDescriptorSet() const { return m_dynamicFontMap->GetGlyphBoundsDescriptorSet(); }
-prosper::IDescriptorSet *FontInfo::GetGlyphMapDescriptorSet() const { return m_dynamicFontMap->GetGlyphMapDescriptorSet(); }
-void FontInfo::AddFallbackFont(FontInfo &font) { m_fallbackFonts.push_back(font.shared_from_this()); }
+std::shared_ptr<prosper::Texture> pragma::gui::FontInfo::GetGlyphMap() const { return m_dynamicFontMap->GetGlyphMap(); }
+std::shared_ptr<prosper::IBuffer> pragma::gui::FontInfo::GetGlyphBoundsBuffer() const { return m_dynamicFontMap->GetGlyphBoundsBuffer(); }
+prosper::IDescriptorSet *pragma::gui::FontInfo::GetGlyphBoundsDescriptorSet() const { return m_dynamicFontMap->GetGlyphBoundsDescriptorSet(); }
+prosper::IDescriptorSet *pragma::gui::FontInfo::GetGlyphMapDescriptorSet() const { return m_dynamicFontMap->GetGlyphMapDescriptorSet(); }
+void pragma::gui::FontInfo::AddFallbackFont(FontInfo &font) { m_fallbackFonts.push_back(font.shared_from_this()); }
 
-const FT_Face FontInfo::GetFace() const { return m_dynamicFontMap->GetFace(); }
+const FT_Face pragma::gui::FontInfo::GetFace() const { return m_dynamicFontMap->GetFace(); }
 
-int32_t FontInfo::GetMaxGlyphTop() const { return m_dynamicFontMap->GetMaxGlyphTop(); }
-uint32_t FontInfo::GetGlyphCountPerRow() const { return m_dynamicFontMap->GetGlyphCountPerRow(); }
+int32_t pragma::gui::FontInfo::GetMaxGlyphTop() const { return m_dynamicFontMap->GetMaxGlyphTop(); }
+uint32_t pragma::gui::FontInfo::GetGlyphCountPerRow() const { return m_dynamicFontMap->GetGlyphCountPerRow(); }
 
-uint32_t FontInfo::GetMaxGlyphSize() const { return m_maxGlyphSize; }
-uint32_t FontInfo::GetMaxGlyphHeight() const { return m_maxGlyphHeight; }
+uint32_t pragma::gui::FontInfo::GetMaxGlyphSize() const { return m_maxGlyphSize; }
+uint32_t pragma::gui::FontInfo::GetMaxGlyphHeight() const { return m_maxGlyphHeight; }
 
-void FontInfo::Clear()
+void pragma::gui::FontInfo::Clear()
 {
 	m_dynamicFontMap = {};
 	m_maxGlyphSize = 0;
@@ -431,19 +433,19 @@ void FontInfo::Clear()
 
 /////////////////////
 
-decltype(FontManager::m_fontDefault) FontManager::m_fontDefault = nullptr;
-decltype(FontManager::m_fallbackFonts) FontManager::m_fallbackFonts = {};
-decltype(FontManager::m_lib) FontManager::m_lib = {};
-decltype(FontManager::m_fonts) FontManager::m_fonts;
+decltype(pragma::gui::FontManager::m_fontDefault) pragma::gui::FontManager::m_fontDefault = nullptr;
+decltype(pragma::gui::FontManager::m_fallbackFonts) pragma::gui::FontManager::m_fallbackFonts = {};
+decltype(pragma::gui::FontManager::m_lib) pragma::gui::FontManager::m_lib = {};
+decltype(pragma::gui::FontManager::m_fonts) pragma::gui::FontManager::m_fonts;
 
-FontManager::Library::~Library()
+pragma::gui::FontManager::Library::~Library()
 {
 	if(m_ftLibrary != nullptr)
 		FT_Done_FreeType(m_ftLibrary);
 }
-const FT_Library &FontManager::Library::GetFtLibrary() const { return m_ftLibrary; }
+const FT_Library &pragma::gui::FontManager::Library::GetFtLibrary() const { return m_ftLibrary; }
 
-std::shared_ptr<const FontInfo> FontManager::GetFont(const std::string &cfontName)
+std::shared_ptr<const pragma::gui::FontInfo> pragma::gui::FontManager::GetFont(const std::string &cfontName)
 {
 	auto fontName = cfontName;
 	ustring::to_lower(fontName);
@@ -465,7 +467,7 @@ static std::string get_font_file_path(const std::string &cpath)
 
 	return "fonts/" + file;
 }
-std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidentifier, const std::string &cpath, const FontSettings &fontSettings, bool bForceReload)
+std::shared_ptr<const pragma::gui::FontInfo> pragma::gui::FontManager::LoadFont(const std::string &cidentifier, const std::string &cpath, const FontSettings &fontSettings, bool bForceReload)
 {
 	auto &lib = m_lib.GetFtLibrary();
 	if(lib == nullptr)
@@ -491,7 +493,7 @@ std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidenti
 		font = std::shared_ptr<FontInfo>(new FontInfo());
 	if(!font->Initialize(path, identifier, fontSettings))
 		return nullptr;
-	for(auto &fallbackFont : FontManager::GetFallbackFonts()) {
+	for(auto &fallbackFont : pragma::gui::FontManager::GetFallbackFonts()) {
 		auto path = get_font_file_path(fallbackFont);
 		auto fontFallback = std::shared_ptr<FontInfo>(new FontInfo());
 		if(!fontFallback->Initialize(path, identifier, fontSettings))
@@ -502,11 +504,11 @@ std::shared_ptr<const FontInfo> FontManager::LoadFont(const std::string &cidenti
 	return font;
 }
 
-const std::unordered_map<std::string, std::shared_ptr<FontInfo>> &FontManager::GetFonts() { return m_fonts; }
-std::shared_ptr<const FontInfo> FontManager::GetDefaultFont() { return m_fontDefault; }
-void FontManager::SetDefaultFont(const FontInfo &font) { m_fontDefault = font.shared_from_this(); }
+const std::unordered_map<std::string, std::shared_ptr<pragma::gui::FontInfo>> &pragma::gui::FontManager::GetFonts() { return m_fonts; }
+std::shared_ptr<const pragma::gui::FontInfo> pragma::gui::FontManager::GetDefaultFont() { return m_fontDefault; }
+void pragma::gui::FontManager::SetDefaultFont(const FontInfo &font) { m_fontDefault = font.shared_from_this(); }
 
-bool FontManager::Initialize()
+bool pragma::gui::FontManager::Initialize()
 {
 	auto &lib = m_lib.GetFtLibrary();
 	if(lib != nullptr)
@@ -519,11 +521,11 @@ bool FontManager::Initialize()
 	return true;
 }
 
-const FT_Library FontManager::GetFontLibrary() { return m_lib.GetFtLibrary(); }
+const FT_Library pragma::gui::FontManager::GetFontLibrary() { return m_lib.GetFtLibrary(); }
 
 static bool g_fontsDirty = false;
-void FontManager::SetFontsDirty() { g_fontsDirty = true; }
-void FontManager::UpdateDirtyFonts()
+void pragma::gui::FontManager::SetFontsDirty() { g_fontsDirty = true; }
+void pragma::gui::FontManager::UpdateDirtyFonts()
 {
 	if(!g_fontsDirty)
 		return;
@@ -534,13 +536,13 @@ void FontManager::UpdateDirtyFonts()
 			fallbackFont->m_dynamicFontMap->GenerateImageMap();
 	}
 }
-void FontManager::Close()
+void pragma::gui::FontManager::Close()
 {
 	m_fontDefault = nullptr;
 	m_fonts.clear();
 	m_lib = {};
 }
-void FontManager::InitializeFontGlyphs(const pragma::string::Utf8StringArg &text, const FontInfo &font)
+void pragma::gui::FontManager::InitializeFontGlyphs(const pragma::string::Utf8StringArg &text, const FontInfo &font)
 {
 	for(auto c : *text) {
 		auto *glyph = font.InitializeGlyph(c);
@@ -553,9 +555,9 @@ void FontManager::InitializeFontGlyphs(const pragma::string::Utf8StringArg &text
 		}
 	}
 }
-void FontManager::AddFallbackFont(const std::string &fallbackFont) { m_fallbackFonts.push_back(fallbackFont); }
-const std::vector<std::string> &FontManager::GetFallbackFonts() { return m_fallbackFonts; }
-uint32_t FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
+void pragma::gui::FontManager::AddFallbackFont(const std::string &fallbackFont) { m_fallbackFonts.push_back(fallbackFont); }
+const std::vector<std::string> &pragma::gui::FontManager::GetFallbackFonts() { return m_fallbackFonts; }
+uint32_t pragma::gui::FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
 	if(font == nullptr) {
 		if(width != nullptr)
@@ -619,13 +621,13 @@ uint32_t FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uin
 	return offset - charOffset;
 }
 
-uint32_t FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height) { return GetTextSize(text, charOffset, GetFont(font).get(), width, height); }
-uint32_t FontManager::GetTextSize(int32_t c, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
+uint32_t pragma::gui::FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height) { return GetTextSize(text, charOffset, GetFont(font).get(), width, height); }
+uint32_t pragma::gui::FontManager::GetTextSize(int32_t c, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
 	pragma::string::Utf8String str {static_cast<char16_t>(c)};
 	return GetTextSize(str, charOffset, font, width, height);
 }
-uint32_t FontManager::GetTextSize(int32_t c, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height)
+uint32_t pragma::gui::FontManager::GetTextSize(int32_t c, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height)
 {
 	pragma::string::Utf8String str {static_cast<char16_t>(c)};
 	return GetTextSize(str, charOffset, font, width, height);

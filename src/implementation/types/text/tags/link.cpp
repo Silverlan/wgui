@@ -7,9 +7,9 @@ module pragma.gui;
 
 import :text_tags;
 
-decltype(WITextTagLink::s_linkHandler) WITextTagLink::s_linkHandler = nullptr;
-void WITextTagLink::set_link_handler(const std::function<void(const std::string &)> &linkHandler) { s_linkHandler = linkHandler; }
-void WITextTagLink::InitializeOverlay(WIBase &overlay)
+decltype(pragma::gui::WITextTagLink::s_linkHandler) pragma::gui::WITextTagLink::s_linkHandler = nullptr;
+void pragma::gui::WITextTagLink::set_link_handler(const std::function<void(const std::string &)> &linkHandler) { s_linkHandler = linkHandler; }
+void pragma::gui::WITextTagLink::InitializeOverlay(types::WIBase &overlay)
 {
 	WITextTagUnderline::InitializeOverlay(overlay);
 	overlay.AddCallback("OnMousePressed", FunctionCallback<util::EventReply>::CreateWithOptionalReturn([this](util::EventReply *reply) mutable -> CallbackReturnType {
@@ -29,7 +29,7 @@ void WITextTagLink::InitializeOverlay(WIBase &overlay)
 	overlay.SetMouseMovementCheckEnabled(true);
 	overlay.SetCursor(pragma::platform::Cursor::Shape::Hand);
 }
-void WITextTagLink::Initialize()
+void pragma::gui::WITextTagLink::Initialize()
 {
 	auto type = m_args.front().type;
 	switch(type) {
@@ -65,7 +65,7 @@ void WITextTagLink::Initialize()
 		}
 	}
 }
-void WITextTagLink::Apply()
+void pragma::gui::WITextTagLink::Apply()
 {
 	CreateOverlayElements();
 	WITextTagUnderline::Apply();

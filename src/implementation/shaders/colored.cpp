@@ -7,28 +7,26 @@ module pragma.gui;
 
 import :shaders.colored;
 
-using namespace wgui;
+pragma::gui::shaders::ShaderColored::ShaderColored(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored", "programs/gui/colored") {}
 
-ShaderColored::ShaderColored(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored", "programs/gui/colored") {}
+pragma::gui::shaders::ShaderColored::ShaderColored(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
 
-ShaderColored::ShaderColored(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
-
-bool ShaderColored::RecordDraw(prosper::ShaderBindState &bindState, prosper::IBuffer &vertBuffer, uint32_t vertCount, const wgui::ElementData &pushConstants, uint32_t testStencilLevel) const
+bool pragma::gui::shaders::ShaderColored::RecordDraw(prosper::ShaderBindState &bindState, prosper::IBuffer &vertBuffer, uint32_t vertCount, const ElementData &pushConstants, uint32_t testStencilLevel) const
 {
 	if(RecordBindVertexBuffer(bindState, vertBuffer) == false || RecordPushConstants(bindState, pushConstants) == false || RecordSetStencilReference(bindState, testStencilLevel) == false || ShaderGraphics::RecordDraw(bindState, vertCount) == false)
 		return false;
 	return true;
 }
 
-void ShaderColored::InitializeShaderResources()
+void pragma::gui::shaders::ShaderColored::InitializeShaderResources()
 {
 	Shader::InitializeShaderResources();
 
 	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
-	AttachPushConstantRange(0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
+	AttachPushConstantRange(0u, sizeof(ElementData), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
-void ShaderColored::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
+void pragma::gui::shaders::ShaderColored::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
@@ -36,11 +34,11 @@ void ShaderColored::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 
 ///////////////////////
 
-ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored_cheap", "programs/gui/colored_cheap") {}
+pragma::gui::shaders::ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored_cheap", "programs/gui/colored_cheap") {}
 
-ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
+pragma::gui::shaders::ShaderColoredRect::ShaderColoredRect(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
 
-bool ShaderColoredRect::RecordDraw(prosper::ShaderBindState &bindState, const wgui::ElementData &pushConstants, uint32_t testStencilLevel) const
+bool pragma::gui::shaders::ShaderColoredRect::RecordDraw(prosper::ShaderBindState &bindState, const ElementData &pushConstants, uint32_t testStencilLevel) const
 {
 	if(RecordPushConstants(bindState, pushConstants) == false || RecordBindVertexBuffer(bindState, *WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false || RecordSetStencilReference(bindState, testStencilLevel) == false
 	  || ShaderGraphics::RecordDraw(bindState, prosper::CommonBufferCache::GetSquareVertexCount()) == false)
@@ -48,14 +46,14 @@ bool ShaderColoredRect::RecordDraw(prosper::ShaderBindState &bindState, const wg
 	return true;
 }
 
-void ShaderColoredRect::InitializeShaderResources()
+void pragma::gui::shaders::ShaderColoredRect::InitializeShaderResources()
 {
 	Shader::InitializeShaderResources();
 
 	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
-	AttachPushConstantRange(0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
+	AttachPushConstantRange(0u, sizeof(ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
 }
-void ShaderColoredRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
+void pragma::gui::shaders::ShaderColoredRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 	Shader::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
@@ -63,9 +61,9 @@ void ShaderColoredRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInf
 
 ///////////////////////
 
-ShaderStencil::ShaderStencil(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored_cheap", "programs/gui/stencil") {}
+pragma::gui::shaders::ShaderStencil::ShaderStencil(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored_cheap", "programs/gui/stencil") {}
 
-bool ShaderStencil::RecordDraw(prosper::ShaderBindState &bindState, const wgui::ElementData &pushConstants, uint32_t testStencilLevel) const
+bool pragma::gui::shaders::ShaderStencil::RecordDraw(prosper::ShaderBindState &bindState, const ElementData &pushConstants, uint32_t testStencilLevel) const
 {
 	if(RecordPushConstants(bindState, pushConstants) == false || RecordBindVertexBuffer(bindState, *WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexBuffer()) == false || RecordSetStencilReference(bindState, testStencilLevel) == false
 	  || ShaderGraphics::RecordDraw(bindState, prosper::CommonBufferCache::GetSquareVertexCount()) == false)
@@ -73,7 +71,7 @@ bool ShaderStencil::RecordDraw(prosper::ShaderBindState &bindState, const wgui::
 	return true;
 }
 
-void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
+void pragma::gui::shaders::ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	pipelineInfo.ToggleStencilTest(true);
 	pipelineInfo.ToggleDynamicState(true, prosper::DynamicState::StencilReference);
@@ -82,14 +80,14 @@ void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 	pipelineInfo.SetColorBlendAttachmentProperties(0, false, prosper::BlendOp::Add, prosper::BlendOp::Add, prosper::BlendFactor::Zero, prosper::BlendFactor::Zero, prosper::BlendFactor::Zero, prosper::BlendFactor::Zero, prosper::ColorComponentFlags::None);
 
 	switch(Shader::ToStencilPipelineIndex(pipelineIdx)) {
-	case wgui::StencilPipeline::Test:
-	case wgui::StencilPipeline::Increment:
+	case StencilPipeline::Test:
+	case StencilPipeline::Increment:
 		pipelineInfo.SetStencilTestProperties(true, prosper::StencilOp::Keep, /* fail */
 		  prosper::StencilOp::IncrementAndClamp,                              /* pass */
 		  prosper::StencilOp::Keep,                                           /* depth fail */
 		  prosper::CompareOp::Equal, ~0, ~0, 0);
 		break;
-	case wgui::StencilPipeline::Decrement:
+	case StencilPipeline::Decrement:
 		pipelineInfo.SetStencilTestProperties(true, prosper::StencilOp::Keep, /* fail */
 		  prosper::StencilOp::DecrementAndClamp,                              /* pass */
 		  prosper::StencilOp::Keep,                                           /* depth fail */
@@ -98,8 +96,8 @@ void ShaderStencil::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &p
 	}
 }
 
-void ShaderStencil::InitializeShaderResources()
+void pragma::gui::shaders::ShaderStencil::InitializeShaderResources()
 {
 	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
-	AttachPushConstantRange(0u, sizeof(wgui::ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
+	AttachPushConstantRange(0u, sizeof(ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
 }

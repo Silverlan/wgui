@@ -7,7 +7,7 @@ module pragma.gui;
 
 import :types.rect;
 
-WIRect::WIRect() : WIShape()
+pragma::gui::types::WIRect::WIRect() : WIShape()
 {
 	auto &context = WGUI::GetInstance().GetContext();
 	//auto buf = prosper::util::get_square_vertex_buffer(context.GetDevice());
@@ -16,17 +16,17 @@ WIRect::WIRect() : WIShape()
 	//Update(); // No update required, updating would generate new buffers
 }
 
-WIRect::~WIRect() {}
+pragma::gui::types::WIRect::~WIRect() {}
 
 ///////////////////
 
-WIOutlinedRect::WIOutlinedRect() : WIBase(), m_lineWidth(1)
+pragma::gui::types::WIOutlinedRect::WIOutlinedRect() : WIBase(), m_lineWidth(1)
 {
 	for(auto &hLine : m_lines)
 		hLine = WIHandle {};
 }
 
-void WIOutlinedRect::Initialize()
+void pragma::gui::types::WIOutlinedRect::Initialize()
 {
 	WIBase::Initialize();
 	for(unsigned int i = 0; i < 4; i++) {
@@ -35,15 +35,15 @@ void WIOutlinedRect::Initialize()
 		m_lines[i] = pLine->GetHandle();
 	}
 }
-unsigned int WIOutlinedRect::GetOutlineWidth() { return m_lineWidth; }
+unsigned int pragma::gui::types::WIOutlinedRect::GetOutlineWidth() { return m_lineWidth; }
 
-void WIOutlinedRect::SetOutlineWidth(unsigned int width)
+void pragma::gui::types::WIOutlinedRect::SetOutlineWidth(unsigned int width)
 {
 	m_lineWidth = width;
 	UpdateLines();
 }
 
-void WIOutlinedRect::UpdateLines()
+void pragma::gui::types::WIOutlinedRect::UpdateLines()
 {
 	int w, h;
 	GetSize(&w, &h);
@@ -74,7 +74,7 @@ void WIOutlinedRect::UpdateLines()
 	}
 }
 
-void WIOutlinedRect::SetSize(int x, int y)
+void pragma::gui::types::WIOutlinedRect::SetSize(int x, int y)
 {
 	WIBase::SetSize(x, y);
 	UpdateLines();
@@ -82,14 +82,14 @@ void WIOutlinedRect::SetSize(int x, int y)
 
 ///////////////////
 
-WIRoundedRect::WIRoundedRect() : WIShape(), WIRoundedBase() {}
+pragma::gui::types::WIRoundedRect::WIRoundedRect() : WIShape(), WIRoundedBase() {}
 
-void WIRoundedRect::DoUpdate()
+void pragma::gui::types::WIRoundedRect::DoUpdate()
 {
 	WIRoundedBase::DoUpdate();
 	WIShape::DoUpdate();
 }
-void WIRoundedRect::Initialize()
+void pragma::gui::types::WIRoundedRect::Initialize()
 {
 	WIRoundedBase::Initialize();
 	WIShape::Initialize();
@@ -97,7 +97,7 @@ void WIRoundedRect::Initialize()
 
 ///////////////////
 
-WITexturedRect::WITexturedRect() : WITexturedShape()
+pragma::gui::types::WITexturedRect::WITexturedRect() : WITexturedShape()
 {
 	auto &context = WGUI::GetInstance().GetContext();
 	//auto vertexBuffer = prosper::util::get_square_vertex_buffer(dev);
@@ -111,14 +111,14 @@ WITexturedRect::WITexturedRect() : WITexturedShape()
 
 ///////////////////
 
-WIRoundedTexturedRect::WIRoundedTexturedRect() : WITexturedShape(), WIRoundedBase() {}
+pragma::gui::types::WIRoundedTexturedRect::WIRoundedTexturedRect() : WITexturedShape(), WIRoundedBase() {}
 
-void WIRoundedTexturedRect::DoUpdate()
+void pragma::gui::types::WIRoundedTexturedRect::DoUpdate()
 {
 	WIRoundedBase::DoUpdate();
 	WITexturedShape::DoUpdate();
 }
-void WIRoundedTexturedRect::Initialize()
+void pragma::gui::types::WIRoundedTexturedRect::Initialize()
 {
 	WITexturedShape::Initialize();
 	WIRoundedBase::Initialize();

@@ -9,16 +9,16 @@ import :type_factory;
 
 #undef GetClassName
 
-void wgui::TypeFactory::AddClass(std::string name, const std::type_info &info, Factory fc)
+void pragma::gui::TypeFactory::AddClass(std::string name, const std::type_info &info, Factory fc)
 {
 	ustring::to_lower(name);
-	m_factories.insert(std::unordered_map<std::string, WIBase *(*)(void)>::value_type(name, fc));
+	m_factories.insert(std::unordered_map<std::string, types::WIBase *(*)(void)>::value_type(name, fc));
 	m_classNames.insert(std::unordered_map<size_t, std::string>::value_type(info.hash_code(), name));
 }
 
-void wgui::TypeFactory::GetFactories(std::unordered_map<std::string, Factory> **factories) { *factories = &m_factories; }
+void pragma::gui::TypeFactory::GetFactories(std::unordered_map<std::string, Factory> **factories) { *factories = &m_factories; }
 
-bool wgui::TypeFactory::GetClassName(const std::type_info &info, std::string *classname) const
+bool pragma::gui::TypeFactory::GetClassName(const std::type_info &info, std::string *classname) const
 {
 	auto i = m_classNames.find(info.hash_code());
 	if(i == m_classNames.end())
@@ -27,7 +27,7 @@ bool wgui::TypeFactory::GetClassName(const std::type_info &info, std::string *cl
 	return true;
 }
 
-wgui::TypeFactory::Factory wgui::TypeFactory::FindFactory(std::string classname) const
+pragma::gui::TypeFactory::Factory pragma::gui::TypeFactory::FindFactory(std::string classname) const
 {
 	ustring::to_lower(classname);
 	auto i = m_factories.find(classname);

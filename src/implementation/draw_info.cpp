@@ -11,7 +11,7 @@ import :types.base;
 
 #undef DrawState
 
-Vector4 wgui::DrawInfo::GetColor(WIBase &el, const wgui::DrawState &drawState) const
+Vector4 pragma::gui::DrawInfo::GetColor(types::WIBase &el, const DrawState &drawState) const
 {
 	Vector4 color;
 	if(this->color.has_value())

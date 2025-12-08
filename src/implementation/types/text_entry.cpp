@@ -9,58 +9,58 @@ import :types.text_entry;
 
 import pragma.string.unicode;
 
-WITextEntry::WITextEntry() : WIBase()
+pragma::gui::types::WITextEntry::WITextEntry() : WIBase()
 {
 	RegisterCallback<void>("OnTextEntered");
 	RegisterCallback<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged");
 	RegisterCallback<void>("OnContentsChanged");
 }
 
-WITextEntry::~WITextEntry() {}
+pragma::gui::types::WITextEntry::~WITextEntry() {}
 
-void WITextEntry::SetInputHidden(bool b)
+void pragma::gui::types::WITextEntry::SetInputHidden(bool b)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetInputHidden(b);
 }
 
-WIText *WITextEntry::GetTextElement()
+pragma::gui::types::WIText *pragma::gui::types::WITextEntry::GetTextElement()
 {
 	if(m_hBase.IsValid() == false)
 		return nullptr;
 	return static_cast<WITextEntryBase *>(m_hBase.get())->GetTextElement();
 }
 
-void WITextEntry::RequestFocus()
+void pragma::gui::types::WITextEntry::RequestFocus()
 {
 	if(!m_hBase.IsValid())
 		return;
 	m_hBase->RequestFocus();
 }
 
-bool WITextEntry::HasFocus()
+bool pragma::gui::types::WITextEntry::HasFocus()
 {
 	if(!m_hBase.IsValid())
 		return false;
 	return m_hBase->HasFocus();
 }
 
-void WITextEntry::SetMouseInputEnabled(bool b)
+void pragma::gui::types::WITextEntry::SetMouseInputEnabled(bool b)
 {
 	WIBase::SetMouseInputEnabled(b);
 	if(!m_hBase.IsValid())
 		return;
 	m_hBase->SetMouseInputEnabled(b);
 }
-void WITextEntry::SetKeyboardInputEnabled(bool b)
+void pragma::gui::types::WITextEntry::SetKeyboardInputEnabled(bool b)
 {
 	WIBase::SetKeyboardInputEnabled(b);
 	if(!m_hBase.IsValid())
 		return;
 	m_hBase->SetKeyboardInputEnabled(b);
 }
-void WITextEntry::SizeToContents(bool x, bool y)
+void pragma::gui::types::WITextEntry::SizeToContents(bool x, bool y)
 {
 	if(m_hBase.IsValid()) {
 		m_hBase->SizeToContents(x, y);
@@ -69,12 +69,12 @@ void WITextEntry::SizeToContents(bool x, bool y)
 	else
 		WIBase::SizeToContents(x, y);
 }
-void WITextEntry::SetColor(float r, float g, float b, float a)
+void pragma::gui::types::WITextEntry::SetColor(float r, float g, float b, float a)
 {
 	WIBase::SetColor(r, g, b, a);
 	m_hBase->SetColor(r, g, b, a);
 }
-void WITextEntry::Initialize()
+void pragma::gui::types::WITextEntry::Initialize()
 {
 	WIBase::Initialize();
 
@@ -150,11 +150,11 @@ void WITextEntry::Initialize()
 	pORect->SetColor(0, 0, 0, 1);
 }
 
-void WITextEntry::OnTextEntered() { CallCallbacks<void>("OnTextEntered"); }
+void pragma::gui::types::WITextEntry::OnTextEntered() { CallCallbacks<void>("OnTextEntered"); }
 
-void WITextEntry::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser) { CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged", text, changedByUser); }
+void pragma::gui::types::WITextEntry::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser) { CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged", text, changedByUser); }
 
-void WITextEntry::OnContentsChanged()
+void pragma::gui::types::WITextEntry::OnContentsChanged()
 {
 	if(m_hBase.IsValid()) {
 		auto *pBase = static_cast<WITextEntryBase *>(m_hBase.get());
@@ -168,7 +168,7 @@ void WITextEntry::OnContentsChanged()
 	CallCallbacks<void>("OnContentsChanged");
 }
 
-void WITextEntry::SetSize(int x, int y)
+void pragma::gui::types::WITextEntry::SetSize(int x, int y)
 {
 	WIBase::SetSize(x, y);
 	if(m_hBase.IsValid()) {
@@ -199,94 +199,94 @@ void WITextEntry::SetSize(int x, int y)
 	}
 }
 
-void WITextEntry::SetMaxLength(int length)
+void pragma::gui::types::WITextEntry::SetMaxLength(int length)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetMaxLength(length);
 }
-int WITextEntry::GetMaxLength() const
+int pragma::gui::types::WITextEntry::GetMaxLength() const
 {
 	if(!m_hBase.IsValid())
 		return -1;
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->GetMaxLength();
 }
 
-pragma::string::Utf8StringView WITextEntry::GetText() const
+pragma::string::Utf8StringView pragma::gui::types::WITextEntry::GetText() const
 {
 	if(!m_hBase.IsValid())
 		return {};
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->GetText();
 }
-void WITextEntry::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WITextEntry::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetText(*text);
 }
-void WITextEntry::InsertText(pragma::string::Utf8StringView instext, int pos)
+void pragma::gui::types::WITextEntry::InsertText(pragma::string::Utf8StringView instext, int pos)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->InsertText(instext, pos);
 }
-void WITextEntry::InsertText(pragma::string::Utf8StringView text)
+void pragma::gui::types::WITextEntry::InsertText(pragma::string::Utf8StringView text)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->InsertText(text);
 }
-int WITextEntry::GetCaretPos() const
+int pragma::gui::types::WITextEntry::GetCaretPos() const
 {
 	if(!m_hBase.IsValid())
 		return 0;
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->GetCaretPos();
 }
-void WITextEntry::SetCaretPos(int pos)
+void pragma::gui::types::WITextEntry::SetCaretPos(int pos)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetCaretPos(pos);
 }
-WIRect *WITextEntry::GetCaretElement() { return m_hBase.IsValid() ? static_cast<WITextEntryBase *>(m_hBase.get())->GetCaretElement() : nullptr; }
-bool WITextEntry::IsNumeric() const { return false; }
-bool WITextEntry::IsMultiLine() const
+pragma::gui::types::WIRect *pragma::gui::types::WITextEntry::GetCaretElement() { return m_hBase.IsValid() ? static_cast<WITextEntryBase *>(m_hBase.get())->GetCaretElement() : nullptr; }
+bool pragma::gui::types::WITextEntry::IsNumeric() const { return false; }
+bool pragma::gui::types::WITextEntry::IsMultiLine() const
 {
 	if(!m_hBase.IsValid())
 		return false;
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->IsMultiLine();
 }
-void WITextEntry::SetMultiLine(bool bMultiLine)
+void pragma::gui::types::WITextEntry::SetMultiLine(bool bMultiLine)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetMultiLine(bMultiLine);
 }
-bool WITextEntry::IsEditable() const
+bool pragma::gui::types::WITextEntry::IsEditable() const
 {
 	if(!m_hBase.IsValid())
 		return false;
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->IsEditable();
 }
-void WITextEntry::SetEditable(bool bEditable)
+void pragma::gui::types::WITextEntry::SetEditable(bool bEditable)
 {
 	if(!m_hBase.IsValid())
 		return;
 	return static_cast<WITextEntryBase *>(m_hBase.get())->SetEditable(bEditable);
 }
-bool WITextEntry::IsSelectable() const
+bool pragma::gui::types::WITextEntry::IsSelectable() const
 {
 	if(!m_hBase.IsValid())
 		return false;
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->IsSelectable();
 }
-void WITextEntry::SetSelectable(bool bSelectable)
+void pragma::gui::types::WITextEntry::SetSelectable(bool bSelectable)
 {
 	if(!m_hBase.IsValid())
 		return;
 	return static_cast<WITextEntryBase *>(m_hBase.get())->SetSelectable(bSelectable);
 }
-void WITextEntry::GetSelectionBounds(int *start, int *end) const
+void pragma::gui::types::WITextEntry::GetSelectionBounds(int *start, int *end) const
 {
 	if(!m_hBase.IsValid()) {
 		*start = 0;
@@ -295,19 +295,19 @@ void WITextEntry::GetSelectionBounds(int *start, int *end) const
 	}
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->GetSelectionBounds(start, end);
 }
-void WITextEntry::SetSelectionBounds(int start, int end)
+void pragma::gui::types::WITextEntry::SetSelectionBounds(int start, int end)
 {
 	if(!m_hBase.IsValid())
 		return;
 	return static_cast<WITextEntryBase *>(m_hBase.get())->SetSelectionBounds(start, end);
 }
-void WITextEntry::ClearSelection()
+void pragma::gui::types::WITextEntry::ClearSelection()
 {
 	if(!m_hBase.IsValid())
 		return;
 	return static_cast<WITextEntryBase *>(m_hBase.get())->ClearSelection();
 }
-void WITextEntry::RemoveSelection()
+void pragma::gui::types::WITextEntry::RemoveSelection()
 {
 	if(!m_hBase.IsValid())
 		return;
@@ -316,9 +316,9 @@ void WITextEntry::RemoveSelection()
 
 ///////////////////////////////////
 
-void WINumericEntry::Initialize()
+void pragma::gui::types::WINumericEntry::Initialize()
 {
-	WITextEntry::Initialize();
+	pragma::gui::types::WITextEntry::Initialize();
 
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetNumeric(true);
 	m_numeric.min = nullptr;
@@ -360,23 +360,23 @@ void WINumericEntry::Initialize()
 	UpdateArrowPositions();
 }
 
-bool WINumericEntry::IsNumeric() const { return true; }
+bool pragma::gui::types::WINumericEntry::IsNumeric() const { return true; }
 
-const int32_t *WINumericEntry::GetMinValue() const { return m_numeric.min.get(); }
-const int32_t *WINumericEntry::GetMaxValue() const { return m_numeric.max.get(); }
+const int32_t *pragma::gui::types::WINumericEntry::GetMinValue() const { return m_numeric.min.get(); }
+const int32_t *pragma::gui::types::WINumericEntry::GetMaxValue() const { return m_numeric.max.get(); }
 
-void WINumericEntry::SetRange(int32_t min, int32_t max)
+void pragma::gui::types::WINumericEntry::SetRange(int32_t min, int32_t max)
 {
 	SetMinValue(min);
 	SetMaxValue(max);
 }
 
-void WINumericEntry::SetMinValue(int32_t min) { m_numeric.min = std::make_unique<int32_t>(min); }
-void WINumericEntry::SetMinValue() { m_numeric.min = nullptr; }
-void WINumericEntry::SetMaxValue(int32_t max) { m_numeric.max = std::make_unique<int32_t>(max); }
-void WINumericEntry::SetMaxValue() { m_numeric.max = nullptr; }
+void pragma::gui::types::WINumericEntry::SetMinValue(int32_t min) { m_numeric.min = std::make_unique<int32_t>(min); }
+void pragma::gui::types::WINumericEntry::SetMinValue() { m_numeric.min = nullptr; }
+void pragma::gui::types::WINumericEntry::SetMaxValue(int32_t max) { m_numeric.max = std::make_unique<int32_t>(max); }
+void pragma::gui::types::WINumericEntry::SetMaxValue() { m_numeric.max = nullptr; }
 
-void WINumericEntry::UpdateArrowPositions()
+void pragma::gui::types::WINumericEntry::UpdateArrowPositions()
 {
 	if(m_numeric.hDownArrow.IsValid() == false || m_numeric.hUpArrow.IsValid() == false)
 		return;
@@ -385,8 +385,8 @@ void WINumericEntry::UpdateArrowPositions()
 	m_numeric.hDownArrow->SetPos(w - m_numeric.hDownArrow->GetWidth() - 4, GetHeight() - m_numeric.hDownArrow->GetHeight() - 2);
 }
 
-void WINumericEntry::SetSize(int x, int y)
+void pragma::gui::types::WINumericEntry::SetSize(int x, int y)
 {
-	WITextEntry::SetSize(x, y);
+	pragma::gui::types::WITextEntry::SetSize(x, y);
 	UpdateArrowPositions();
 }

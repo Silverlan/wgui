@@ -7,51 +7,51 @@ module pragma.gui;
 
 import :types.content_wrapper;
 
-WIContentWrapper::WIContentWrapper() : WIBase() {}
+pragma::gui::types::WIContentWrapper::WIContentWrapper() : WIBase() {}
 
-void WIContentWrapper::SetPadding(const WIPadding &border)
+void pragma::gui::types::WIContentWrapper::SetPadding(const WIPadding &border)
 {
 	m_padding = border;
 	UpdateChildElement();
 }
-void WIContentWrapper::ClearPadding() { m_padding = {}; }
-const WIPadding &WIContentWrapper::GetPadding() const { return m_padding; }
-void WIContentWrapper::SetPadding(int32_t left, int32_t right, int32_t top, int32_t bottom) { SetPadding(WIPadding {left, right, top, bottom}); }
-void WIContentWrapper::SetPadding(int32_t border) { SetPadding(border, border, border, border); }
-void WIContentWrapper::SetPaddingLeft(int32_t border)
+void pragma::gui::types::WIContentWrapper::ClearPadding() { m_padding = {}; }
+const pragma::gui::WIPadding &pragma::gui::types::WIContentWrapper::GetPadding() const { return m_padding; }
+void pragma::gui::types::WIContentWrapper::SetPadding(int32_t left, int32_t right, int32_t top, int32_t bottom) { SetPadding(WIPadding {left, right, top, bottom}); }
+void pragma::gui::types::WIContentWrapper::SetPadding(int32_t border) { SetPadding(border, border, border, border); }
+void pragma::gui::types::WIContentWrapper::SetPaddingLeft(int32_t border)
 {
 	m_padding.left = border;
 	UpdateChildElement();
 }
-void WIContentWrapper::SetPaddingRight(int32_t border)
+void pragma::gui::types::WIContentWrapper::SetPaddingRight(int32_t border)
 {
 	m_padding.right = border;
 	UpdateChildElement();
 }
-void WIContentWrapper::SetPaddingTop(int32_t border)
+void pragma::gui::types::WIContentWrapper::SetPaddingTop(int32_t border)
 {
 	m_padding.top = border;
 	UpdateChildElement();
 }
-void WIContentWrapper::SetPaddingBottom(int32_t border)
+void pragma::gui::types::WIContentWrapper::SetPaddingBottom(int32_t border)
 {
 	m_padding.bottom = border;
 	UpdateChildElement();
 }
-void WIContentWrapper::SetPaddingLeftRight(int32_t border)
+void pragma::gui::types::WIContentWrapper::SetPaddingLeftRight(int32_t border)
 {
 	m_padding.left = border;
 	m_padding.right = border;
 	UpdateChildElement();
 }
-void WIContentWrapper::SetPaddingTopBottom(int32_t border)
+void pragma::gui::types::WIContentWrapper::SetPaddingTopBottom(int32_t border)
 {
 	m_padding.top = border;
 	m_padding.bottom = border;
 	UpdateChildElement();
 }
 
-void WIContentWrapper::SetSize(int x, int y)
+void pragma::gui::types::WIContentWrapper::SetSize(int x, int y)
 {
 	WIBase::SetSize(x, y);
 	if(m_skipChildResize)
@@ -59,7 +59,7 @@ void WIContentWrapper::SetSize(int x, int y)
 	UpdateChildElement();
 }
 
-void WIContentWrapper::UpdateChildElement()
+void pragma::gui::types::WIContentWrapper::UpdateChildElement()
 {
 	if(m_children.empty())
 		return;

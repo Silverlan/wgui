@@ -7,11 +7,11 @@ module pragma.gui;
 
 import :element_buffer_data;
 
-WIElementVertexBufferData::~WIElementVertexBufferData()
+pragma::gui::WIElementVertexBufferData::~WIElementVertexBufferData()
 {
 	if(m_buffer != nullptr)
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_buffer);
 }
-void WIElementVertexBufferData::SetBuffer(const std::shared_ptr<prosper::IBuffer> &buffer) { m_buffer = buffer; }
-void WIElementVertexBufferData::ClearBuffer() { m_buffer = nullptr; }
-std::shared_ptr<prosper::IBuffer> WIElementVertexBufferData::GetBuffer() const { return m_buffer; }
+void pragma::gui::WIElementVertexBufferData::SetBuffer(const std::shared_ptr<prosper::IBuffer> &buffer) { m_buffer = buffer; }
+void pragma::gui::WIElementVertexBufferData::ClearBuffer() { m_buffer = nullptr; }
+std::shared_ptr<prosper::IBuffer> pragma::gui::WIElementVertexBufferData::GetBuffer() const { return m_buffer; }

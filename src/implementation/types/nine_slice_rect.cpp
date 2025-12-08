@@ -9,11 +9,11 @@ import :types.nine_slice_rect;
 
 #undef DrawState
 
-wgui::WI9SliceRectSegment::WI9SliceRectSegment() : WITexturedRect {} {}
+pragma::gui::types::WI9SliceRectSegment::WI9SliceRectSegment() : WITexturedRect {} {}
 
-void wgui::WI9SliceRectSegment::BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState) { static_cast<wgui::ShaderTexturedSubRect &>(shader).RecordSetImageOffset(bindState, GetRenderImageOffset(), GetRenderImageScale()); }
+void pragma::gui::types::WI9SliceRectSegment::BindShader(shaders::ShaderTextured &shader, prosper::ShaderBindState &bindState, DrawState &drawState) { static_cast<shaders::ShaderTexturedSubRect &>(shader).RecordSetImageOffset(bindState, GetRenderImageOffset(), GetRenderImageScale()); }
 
-void wgui::WI9SliceRectSegment::Initialize()
+void pragma::gui::types::WI9SliceRectSegment::Initialize()
 {
 	WITexturedRect::Initialize();
 
@@ -22,9 +22,9 @@ void wgui::WI9SliceRectSegment::Initialize()
 
 //////////////
 
-wgui::WI9SliceRect::WI9SliceRect() : WIBase {} {}
+pragma::gui::types::WI9SliceRect::WI9SliceRect() : WIBase {} {}
 
-void wgui::WI9SliceRect::Initialize()
+void pragma::gui::types::WI9SliceRect::Initialize()
 {
 	WIBase::Initialize();
 
@@ -38,7 +38,7 @@ void wgui::WI9SliceRect::Initialize()
 	UpdateSegments();
 }
 
-std::tuple<float, float, float, float> wgui::WI9SliceRect::GetSegmentAnchor(Segment segment) const
+std::tuple<float, float, float, float> pragma::gui::types::WI9SliceRect::GetSegmentAnchor(Segment segment) const
 {
 	switch(segment) {
 	case Segment::TopLeftCorner:
@@ -63,7 +63,7 @@ std::tuple<float, float, float, float> wgui::WI9SliceRect::GetSegmentAnchor(Segm
 	return {0.f, 0.f, 0.f, 0.f};
 }
 
-std::pair<int32_t, int32_t> wgui::WI9SliceRect::GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const
+std::pair<int32_t, int32_t> pragma::gui::types::WI9SliceRect::GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const
 {
 	uint32_t x = 0;
 	switch(segment) {
@@ -105,7 +105,7 @@ std::pair<int32_t, int32_t> wgui::WI9SliceRect::GetSegmentOffset(Segment segment
 	return {x, y};
 }
 
-std::pair<int32_t, int32_t> wgui::WI9SliceRect::GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const
+std::pair<int32_t, int32_t> pragma::gui::types::WI9SliceRect::GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const
 {
 	uint32_t w = 0;
 	switch(segment) {
@@ -147,7 +147,7 @@ std::pair<int32_t, int32_t> wgui::WI9SliceRect::GetSegmentSize(Segment segment, 
 	return {w, h};
 }
 
-void wgui::WI9SliceRect::UpdateSegments()
+void pragma::gui::types::WI9SliceRect::UpdateSegments()
 {
 	if(!m_material)
 		return;
@@ -255,9 +255,9 @@ void wgui::WI9SliceRect::UpdateSegments()
 	SetSize(origWidth, origHeight);
 }
 
-msys::Material *wgui::WI9SliceRect::GetMaterial() { return m_material.get(); }
+msys::Material *pragma::gui::types::WI9SliceRect::GetMaterial() { return m_material.get(); }
 
-void wgui::WI9SliceRect::SetMaterial(msys::Material &mat)
+void pragma::gui::types::WI9SliceRect::SetMaterial(msys::Material &mat)
 {
 	if(&mat == m_material.get())
 		return;
@@ -289,7 +289,7 @@ void wgui::WI9SliceRect::SetMaterial(msys::Material &mat)
 	UpdateSegments();
 }
 
-void wgui::WI9SliceRect::SetMaterial(const std::string &matPath)
+void pragma::gui::types::WI9SliceRect::SetMaterial(const std::string &matPath)
 {
 	auto &matLoadHandler = WGUI::GetInstance().GetMaterialLoadHandler();
 	if(!matLoadHandler)

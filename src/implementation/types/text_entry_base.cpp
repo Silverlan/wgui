@@ -11,14 +11,14 @@ import :types.text_entry_base;
 
 import pragma.string.unicode;
 
-WITextEntryBase::WITextEntryBase() : WIBase(), m_posCaret(0), m_tBlink(0), m_selectStart(-1), m_selectEnd(-1), m_maxLength(-1)
+pragma::gui::types::WITextEntryBase::WITextEntryBase() : WIBase(), m_posCaret(0), m_tBlink(0), m_selectStart(-1), m_selectEnd(-1), m_maxLength(-1)
 {
 	RegisterCallback<void>("OnTextEntered");
 	RegisterCallback<void>("OnContentsChanged");
 	RegisterCallback<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged");
 }
 
-void WITextEntryBase::OnTextContentsChanged()
+void pragma::gui::types::WITextEntryBase::OnTextContentsChanged()
 {
 	ClearSelection();
 
@@ -38,17 +38,17 @@ void WITextEntryBase::OnTextContentsChanged()
 	CallCallbacks<void>("OnContentsChanged");
 }
 
-void WITextEntryBase::SetInputHidden(bool b)
+void pragma::gui::types::WITextEntryBase::SetInputHidden(bool b)
 {
 	if(m_hText.IsValid() == false)
 		return;
 	static_cast<WIText *>(m_hText.get())->HideText(b);
 }
-bool WITextEntryBase::IsInputHidden() const { return m_hText.IsValid() ? static_cast<const WIText *>(m_hText.get())->IsTextHidden() : false; }
+bool pragma::gui::types::WITextEntryBase::IsInputHidden() const { return m_hText.IsValid() ? static_cast<const WIText *>(m_hText.get())->IsTextHidden() : false; }
 
-WIText *WITextEntryBase::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }
+pragma::gui::types::WIText *pragma::gui::types::WITextEntryBase::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }
 
-void WITextEntryBase::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser)
+void pragma::gui::types::WITextEntryBase::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
@@ -58,7 +58,7 @@ void WITextEntryBase::OnTextChanged(const pragma::string::Utf8String &text, bool
 	CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged", text, changedByUser);
 }
 
-void WITextEntryBase::OnTextChanged(bool changedByUser)
+void pragma::gui::types::WITextEntryBase::OnTextChanged(bool changedByUser)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
@@ -66,7 +66,7 @@ void WITextEntryBase::OnTextChanged(bool changedByUser)
 	OnTextChanged(pText->GetText(), changedByUser);
 }
 
-void WITextEntryBase::UpdateTextPosition()
+void pragma::gui::types::WITextEntryBase::UpdateTextPosition()
 {
 	/*if(!m_hText.IsValid())
 		return;
@@ -77,7 +77,7 @@ void WITextEntryBase::UpdateTextPosition()
 	pText->SetY(static_cast<int>(static_cast<float>(GetHeight()) *0.5f -static_cast<float>(font->GetSize()) *0.5f));*/
 }
 
-void WITextEntryBase::Initialize()
+void pragma::gui::types::WITextEntryBase::Initialize()
 {
 	m_hText = CreateChild<WIText>();
 	WIText *pText = static_cast<WIText *>(m_hText.get());
@@ -117,7 +117,7 @@ void WITextEntryBase::Initialize()
 	SetMouseInputEnabled(true);
 }
 
-void WITextEntryBase::SetMaxLength(int length)
+void pragma::gui::types::WITextEntryBase::SetMaxLength(int length)
 {
 	auto *pText = GetTextElement();
 	m_maxLength = length;
@@ -129,13 +129,13 @@ void WITextEntryBase::SetMaxLength(int length)
 	pText->GetFormattedTextObject().RemoveText(length, util::text::END_OF_TEXT);
 	OnTextChanged(false);
 }
-int WITextEntryBase::GetMaxLength() const { return m_maxLength; }
+int pragma::gui::types::WITextEntryBase::GetMaxLength() const { return m_maxLength; }
 
-void WITextEntryBase::SetEntryFieldElement(WIBase *el) { m_hEntryFieldElement = el ? el->GetHandle() : WIHandle {}; }
+void pragma::gui::types::WITextEntryBase::SetEntryFieldElement(WIBase *el) { m_hEntryFieldElement = el ? el->GetHandle() : WIHandle {}; }
 
-WITextEntryBase::~WITextEntryBase() { KillFocus(); }
+pragma::gui::types::WITextEntryBase::~WITextEntryBase() { KillFocus(); }
 
-void WITextEntryBase::OnEnter()
+void pragma::gui::types::WITextEntryBase::OnEnter()
 {
 	if(IsNumeric()) {
 		using T = float;
@@ -160,7 +160,7 @@ void WITextEntryBase::OnEnter()
 	CallCallbacks<void>("OnTextEntered");
 }
 
-void WITextEntryBase::SetSize(int x, int y)
+void pragma::gui::types::WITextEntryBase::SetSize(int x, int y)
 {
 	WIBase::SetSize(x, y);
 	if(m_hText.IsValid()) {
@@ -179,14 +179,14 @@ void WITextEntryBase::SetSize(int x, int y)
 	}
 }
 
-void WITextEntryBase::RequestFocus()
+void pragma::gui::types::WITextEntryBase::RequestFocus()
 {
 	if(!IsSelectable())
 		return;
 	WIBase::RequestFocus();
 }
 
-void WITextEntryBase::OnFocusGained()
+void pragma::gui::types::WITextEntryBase::OnFocusGained()
 {
 	WIBase::OnFocusGained();
 	if(m_hCaret.IsValid()) {
@@ -199,7 +199,7 @@ void WITextEntryBase::OnFocusGained()
 	elIme->SetIMETarget();
 }
 
-void WITextEntryBase::OnFocusKilled()
+void pragma::gui::types::WITextEntryBase::OnFocusKilled()
 {
 	WIBase::OnFocusKilled();
 	if(m_hCaret.IsValid()) {
@@ -210,14 +210,14 @@ void WITextEntryBase::OnFocusKilled()
 	ClearIMETarget();
 }
 
-pragma::string::Utf8StringView WITextEntryBase::GetText() const
+pragma::string::Utf8StringView pragma::gui::types::WITextEntryBase::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};
 	return static_cast<const WIText *>(m_hText.get())->GetText();
 }
 
-void WITextEntryBase::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WITextEntryBase::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(!m_hText.IsValid())
 		return;
@@ -230,15 +230,15 @@ void WITextEntryBase::SetText(const pragma::string::Utf8StringArg &text)
 	SetCaretPos(GetCaretPos());
 }
 
-bool WITextEntryBase::IsSelectable() const { return umath::is_flag_set(m_stateFlags, StateFlags::Selectable); }
-void WITextEntryBase::SetSelectable(bool bSelectable) { umath::set_flag(m_stateFlags, StateFlags::Selectable, bSelectable); }
+bool pragma::gui::types::WITextEntryBase::IsSelectable() const { return umath::is_flag_set(m_stateFlags, StateFlags::Selectable); }
+void pragma::gui::types::WITextEntryBase::SetSelectable(bool bSelectable) { umath::set_flag(m_stateFlags, StateFlags::Selectable, bSelectable); }
 
-bool WITextEntryBase::IsMultiLine() const { return umath::is_flag_set(m_stateFlags, StateFlags::MultiLine); }
+bool pragma::gui::types::WITextEntryBase::IsMultiLine() const { return umath::is_flag_set(m_stateFlags, StateFlags::MultiLine); }
 
-void WITextEntryBase::SetMultiLine(bool bMultiLine) { umath::set_flag(m_stateFlags, StateFlags::MultiLine, bMultiLine); }
+void pragma::gui::types::WITextEntryBase::SetMultiLine(bool bMultiLine) { umath::set_flag(m_stateFlags, StateFlags::MultiLine, bMultiLine); }
 
-int WITextEntryBase::GetCaretPos() const { return m_posCaret; }
-void WITextEntryBase::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
+int pragma::gui::types::WITextEntryBase::GetCaretPos() const { return m_posCaret; }
+void pragma::gui::types::WITextEntryBase::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	WIBase::Think(drawCmd);
 	if(HasFocus()) {
@@ -265,15 +265,15 @@ void WITextEntryBase::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer
 	}
 }
 
-void WITextEntryBase::SetColor(float r, float g, float b, float a)
+void pragma::gui::types::WITextEntryBase::SetColor(float r, float g, float b, float a)
 {
 	WIBase::SetColor(r, g, b, a);
 	m_hText->SetColor(r, g, b, a);
 }
 
-WIRect *WITextEntryBase::GetCaretElement() { return static_cast<WIRect *>(m_hCaret.get()); }
+pragma::gui::types::WIRect *pragma::gui::types::WITextEntryBase::GetCaretElement() { return static_cast<WIRect *>(m_hCaret.get()); }
 
-void WITextEntryBase::SetCaretPos(int pos)
+void pragma::gui::types::WITextEntryBase::SetCaretPos(int pos)
 {
 	m_tBlink = pragma::platform::get_time();
 	auto *pText = GetTextElement();
@@ -342,7 +342,7 @@ void WITextEntryBase::SetCaretPos(int pos)
 	}
 }
 
-int WITextEntryBase::GetCharPos(int x, int y) const
+int pragma::gui::types::WITextEntryBase::GetCharPos(int x, int y) const
 {
 	if(m_hText.IsValid()) {
 		const WIText *pText = static_cast<const WIText *>(m_hText.get());
@@ -414,7 +414,7 @@ int WITextEntryBase::GetCharPos(int x, int y) const
 	return -1;
 }
 
-int WITextEntryBase::GetCharPos() const
+int pragma::gui::types::WITextEntryBase::GetCharPos() const
 {
 	int x, y;
 	GetMousePos(&x, &y);
@@ -422,7 +422,7 @@ int WITextEntryBase::GetCharPos() const
 }
 
 //#include <iostream>
-util::EventReply WITextEntryBase::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WITextEntryBase::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	m_bWasDoubleClick = false;
 	auto shiftClick = state == pragma::platform::KeyState::Press && umath::is_flag_set(mods, pragma::platform::Modifier::Shift);
@@ -452,7 +452,7 @@ util::EventReply WITextEntryBase::MouseCallback(pragma::platform::MouseButton bu
 	return util::EventReply::Handled;
 }
 
-int WITextEntryBase::GetLineFromPos(int pos)
+int pragma::gui::types::WITextEntryBase::GetLineFromPos(int pos)
 {
 	if(!m_hText.IsValid())
 		return 0;
@@ -472,7 +472,7 @@ int WITextEntryBase::GetLineFromPos(int pos)
 	return numLines;
 }
 
-void WITextEntryBase::SetSelectionStart(int pos)
+void pragma::gui::types::WITextEntryBase::SetSelectionStart(int pos)
 {
 	int start = m_selectStart;
 	m_selectStart = pos;
@@ -480,7 +480,7 @@ void WITextEntryBase::SetSelectionStart(int pos)
 		UpdateSelection();
 }
 
-void WITextEntryBase::SetSelectionEnd(int pos)
+void pragma::gui::types::WITextEntryBase::SetSelectionEnd(int pos)
 {
 	int end = m_selectEnd;
 	m_selectEnd = pos;
@@ -488,7 +488,7 @@ void WITextEntryBase::SetSelectionEnd(int pos)
 		UpdateSelection();
 }
 
-void WITextEntryBase::UpdateSelection()
+void pragma::gui::types::WITextEntryBase::UpdateSelection()
 {
 	int start = m_selectStart;
 	int end = m_selectEnd;
@@ -514,7 +514,7 @@ void WITextEntryBase::UpdateSelection()
 	GetTextElement()->UpdateTags();
 }
 
-void WITextEntryBase::SetSelectionBounds(int start, int end)
+void pragma::gui::types::WITextEntryBase::SetSelectionBounds(int start, int end)
 {
 	int startLast = m_selectStart;
 	int endLast = m_selectEnd;
@@ -524,7 +524,7 @@ void WITextEntryBase::SetSelectionBounds(int start, int end)
 		UpdateSelection();
 }
 
-void WITextEntryBase::GetSelectionBounds(int *start, int *end) const
+void pragma::gui::types::WITextEntryBase::GetSelectionBounds(int *start, int *end) const
 {
 	*start = m_selectStart;
 	*end = m_selectEnd;
@@ -532,9 +532,9 @@ void WITextEntryBase::GetSelectionBounds(int *start, int *end) const
 		umath::swap(*start, *end);
 }
 
-void WITextEntryBase::ClearSelection() { SetSelectionBounds(-1, -1); }
+void pragma::gui::types::WITextEntryBase::ClearSelection() { SetSelectionBounds(-1, -1); }
 
-std::pair<util::text::LineIndex, util::text::LineIndex> WITextEntryBase::GetLineInfo(int pos, pragma::string::Utf8StringView &outLine, int *lpos) const
+std::pair<util::text::LineIndex, util::text::LineIndex> pragma::gui::types::WITextEntryBase::GetLineInfo(int pos, pragma::string::Utf8StringView &outLine, int *lpos) const
 {
 	if(!m_hText.IsValid())
 		return {util::text::INVALID_LINE_INDEX, util::text::INVALID_LINE_INDEX};
@@ -556,7 +556,7 @@ std::pair<util::text::LineIndex, util::text::LineIndex> WITextEntryBase::GetLine
 	return {util::text::INVALID_LINE_INDEX, util::text::INVALID_LINE_INDEX};
 }
 
-bool WITextEntryBase::RemoveSelectedText()
+bool pragma::gui::types::WITextEntryBase::RemoveSelectedText()
 {
 	if(m_selectStart == -1 || m_selectEnd == -1 || m_selectStart == m_selectEnd)
 		return false;
@@ -582,7 +582,7 @@ bool WITextEntryBase::RemoveSelectedText()
 	return true;
 }
 
-util::EventReply WITextEntryBase::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WITextEntryBase::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	if(WIBase::KeyboardCallback(key, scanCode, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
@@ -784,7 +784,7 @@ static std::string utf8char_to_str(unsigned int c)
 	wstr.push_back(unicodeCharacter);
 	return ustring::wstring_to_string(wstr);
 }
-util::EventReply WITextEntryBase::CharCallback(unsigned int c, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WITextEntryBase::CharCallback(unsigned int c, pragma::platform::Modifier mods)
 {
 	//std::cout<<"CharCallback: "<<c<<std::endl;
 	if(IsEditable() == false)
@@ -803,7 +803,7 @@ util::EventReply WITextEntryBase::CharCallback(unsigned int c, pragma::platform:
 	return util::EventReply::Handled;
 }
 
-util::EventReply WITextEntryBase::OnDoubleClick()
+util::EventReply pragma::gui::types::WITextEntryBase::OnDoubleClick()
 {
 	if(WIBase::OnDoubleClick() == util::EventReply::Handled)
 		return util::EventReply::Handled;
@@ -838,7 +838,7 @@ util::EventReply WITextEntryBase::OnDoubleClick()
 	return util::EventReply::Handled;
 }
 
-void WITextEntryBase::InsertText(const pragma::string::Utf8StringArg &instext, int pos)
+void pragma::gui::types::WITextEntryBase::InsertText(const pragma::string::Utf8StringArg &instext, int pos)
 {
 	auto *pText = GetTextElement();
 	if(pText == nullptr)
@@ -854,14 +854,14 @@ void WITextEntryBase::InsertText(const pragma::string::Utf8StringArg &instext, i
 	SetCaretPos(GetCaretPos() + static_cast<int>(instext->length()));
 }
 
-void WITextEntryBase::InsertText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WITextEntryBase::InsertText(const pragma::string::Utf8StringArg &text)
 {
 	RemoveSelectedText();
 	InsertText(text, GetCaretPos());
 }
 
-bool WITextEntryBase::IsNumeric() const { return umath::is_flag_set(m_stateFlags, StateFlags::Numeric); }
-void WITextEntryBase::SetNumeric(bool bNumeric)
+bool pragma::gui::types::WITextEntryBase::IsNumeric() const { return umath::is_flag_set(m_stateFlags, StateFlags::Numeric); }
+void pragma::gui::types::WITextEntryBase::SetNumeric(bool bNumeric)
 {
 	umath::set_flag(m_stateFlags, StateFlags::Numeric, bNumeric);
 	auto text = GetText();
@@ -873,8 +873,8 @@ void WITextEntryBase::SetNumeric(bool bNumeric)
 	SetText(ntext);
 }
 
-bool WITextEntryBase::IsEditable() const { return umath::is_flag_set(m_stateFlags, StateFlags::Editable); }
-void WITextEntryBase::SetEditable(bool bEditable)
+bool pragma::gui::types::WITextEntryBase::IsEditable() const { return umath::is_flag_set(m_stateFlags, StateFlags::Editable); }
+void pragma::gui::types::WITextEntryBase::SetEditable(bool bEditable)
 {
 	umath::set_flag(m_stateFlags, StateFlags::Editable, bEditable);
 	SetSelectable(bEditable);

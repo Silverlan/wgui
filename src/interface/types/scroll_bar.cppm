@@ -9,8 +9,8 @@ export module pragma.gui:types.scroll_bar;
 
 import :types.rect;
 
-export {
-	class DLLWGUI WIScrollBar;
+export namespace pragma::gui::types {
+	class WIScrollBar;
 	class DLLWGUI WIScrollBarSlider : public WIRect {
 	  public:
 		friend WIScrollBar;
@@ -53,9 +53,9 @@ export {
 		unsigned int m_numElements;
 		unsigned int m_numListed;
 		unsigned int m_scrollAmount;
-		WIHandle m_buttonUp;
-		WIHandle m_buttonDown;
-		WIHandle m_slider;
+		pragma::gui::WIHandle m_buttonUp;
+		pragma::gui::WIHandle m_buttonDown;
+		pragma::gui::WIHandle m_slider;
 		int GetSliderWidth();
 		int GetSliderHeight();
 		int GetSliderX();

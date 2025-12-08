@@ -9,13 +9,15 @@ export module pragma.gui:element_buffer_data;
 
 export import pragma.prosper;
 
-export struct DLLWGUI WIElementVertexBufferData {
-  public:
-	WIElementVertexBufferData() = default;
-	virtual ~WIElementVertexBufferData();
-	std::shared_ptr<prosper::IBuffer> GetBuffer() const;
-	void SetBuffer(const std::shared_ptr<prosper::IBuffer> &buffer);
-	void ClearBuffer();
-  private:
-	std::shared_ptr<prosper::IBuffer> m_buffer = nullptr;
-};
+export namespace pragma::gui {
+	struct DLLWGUI WIElementVertexBufferData {
+	public:
+		WIElementVertexBufferData() = default;
+		virtual ~WIElementVertexBufferData();
+		std::shared_ptr<prosper::IBuffer> GetBuffer() const;
+		void SetBuffer(const std::shared_ptr<prosper::IBuffer> &buffer);
+		void ClearBuffer();
+	private:
+		std::shared_ptr<prosper::IBuffer> m_buffer = nullptr;
+	};
+}

@@ -10,7 +10,7 @@ export module pragma.gui:shaders.textured;
 export import :element_data;
 export import :shaders.shader;
 
-export namespace wgui {
+export namespace pragma::gui::shaders {
 	class DLLWGUI ShaderTextured : public Shader {
 	  public:
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
@@ -25,7 +25,7 @@ export namespace wgui {
 
 #pragma pack(push, 1)
 		struct PushConstants {
-			wgui::ElementData elementData;
+			ElementData elementData;
 			int32_t alphaOnly;
 			float lod;
 			Channel red;
@@ -52,7 +52,7 @@ export namespace wgui {
 	  public:
 #pragma pack(push, 1)
 		struct PushConstants {
-			wgui::ElementData elementData;
+			ElementData elementData;
 			int32_t alphaOnly;
 			float lod;
 			ShaderTextured::Channel red;
@@ -80,7 +80,7 @@ export namespace wgui {
 	  public:
 #pragma pack(push, 1)
 		struct PushConstants {
-			wgui::ElementData elementData;
+			ElementData elementData;
 			int32_t alphaOnly;
 			float lod;
 			ShaderTextured::Channel red;

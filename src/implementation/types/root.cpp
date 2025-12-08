@@ -8,11 +8,11 @@ module pragma.gui;
 import :types.root;
 
 constexpr uint32_t TOOLTIP_HOVER_DELAY_MS = 750;
-WIRoot::WIRoot() : WIBase(), m_hTooltipTarget {}, m_tCursorOver() {}
+pragma::gui::types::WIRoot::WIRoot() : WIBase(), m_hTooltipTarget {}, m_tCursorOver() {}
 
-WIRoot::~WIRoot() {}
+pragma::gui::types::WIRoot::~WIRoot() {}
 
-void WIRoot::Initialize()
+void pragma::gui::types::WIRoot::Initialize()
 {
 	WIBase::Initialize();
 	SetBaseElement(true);
@@ -20,7 +20,7 @@ void WIRoot::Initialize()
 	EnableThinking();
 }
 
-Vector2 WIRoot::GetCursorPos() const
+Vector2 pragma::gui::types::WIRoot::GetCursorPos() const
 {
 	if(m_cursorPosOverride)
 		return *m_cursorPosOverride;
@@ -28,24 +28,24 @@ Vector2 WIRoot::GetCursorPos() const
 	return window ? (*window)->GetCursorPos() : Vector2 {};
 }
 
-void WIRoot::SetCursorPosOverride(const Vector2 &pos) { m_cursorPosOverride = pos; }
-void WIRoot::ClearCursorPosOverride() { m_cursorPosOverride = {}; }
-const std::weak_ptr<const prosper::Window> &WIRoot::GetWindowPtr() const { return m_window; }
-void WIRoot::SetWindow(const std::shared_ptr<const prosper::Window> &window) { m_window = window; }
-pragma::platform::Cursor::Shape WIRoot::GetMainCursor() const { return m_mainCursor; }
-const pragma::platform::CursorHandle &WIRoot::GetMainCustomCursor() const { return m_mainCustomCursor; }
-void WIRoot::SetMainCursor(pragma::platform::Cursor::Shape cursor) { m_mainCursor = cursor; }
-void WIRoot::SetMainCustomCursor(const pragma::platform::CursorHandle &hCursor) { m_mainCustomCursor = hCursor; }
-void WIRoot::SetFocusEnabled(bool enabled) { m_focusEnabled = enabled; }
-bool WIRoot::IsFocusEnabled() const { return m_focusEnabled; }
-WIBase *WIRoot::GetFocusedElement() { return m_elFocused.get(); }
-void WIRoot::SetFocusedElement(WIBase *el) { m_elFocused = el ? el->GetHandle() : WIHandle {}; }
-uint32_t WIRoot::GetFocusCount() const { return m_focusCount; }
-void WIRoot::SetFocusCount(uint32_t focusCount) { m_focusCount = focusCount; }
-std::deque<WIHandle> &WIRoot::GetFocusTrapStack() { return m_focusTrapStack; }
+void pragma::gui::types::WIRoot::SetCursorPosOverride(const Vector2 &pos) { m_cursorPosOverride = pos; }
+void pragma::gui::types::WIRoot::ClearCursorPosOverride() { m_cursorPosOverride = {}; }
+const std::weak_ptr<const prosper::Window> &pragma::gui::types::WIRoot::GetWindowPtr() const { return m_window; }
+void pragma::gui::types::WIRoot::SetWindow(const std::shared_ptr<const prosper::Window> &window) { m_window = window; }
+pragma::platform::Cursor::Shape pragma::gui::types::WIRoot::GetMainCursor() const { return m_mainCursor; }
+const pragma::platform::CursorHandle &pragma::gui::types::WIRoot::GetMainCustomCursor() const { return m_mainCustomCursor; }
+void pragma::gui::types::WIRoot::SetMainCursor(pragma::platform::Cursor::Shape cursor) { m_mainCursor = cursor; }
+void pragma::gui::types::WIRoot::SetMainCustomCursor(const pragma::platform::CursorHandle &hCursor) { m_mainCustomCursor = hCursor; }
+void pragma::gui::types::WIRoot::SetFocusEnabled(bool enabled) { m_focusEnabled = enabled; }
+bool pragma::gui::types::WIRoot::IsFocusEnabled() const { return m_focusEnabled; }
+pragma::gui::types::WIBase *pragma::gui::types::WIRoot::GetFocusedElement() { return m_elFocused.get(); }
+void pragma::gui::types::WIRoot::SetFocusedElement(WIBase *el) { m_elFocused = el ? el->GetHandle() : WIHandle {}; }
+uint32_t pragma::gui::types::WIRoot::GetFocusCount() const { return m_focusCount; }
+void pragma::gui::types::WIRoot::SetFocusCount(uint32_t focusCount) { m_focusCount = focusCount; }
+std::deque<pragma::gui::WIHandle> &pragma::gui::types::WIRoot::GetFocusTrapStack() { return m_focusTrapStack; }
 
-bool is_valid(const WIHandle &hEl);
-void WIRoot::RestoreTrappedFocus(WIBase *elRef)
+bool is_valid(const pragma::gui::WIHandle &hEl);
+void pragma::gui::types::WIRoot::RestoreTrappedFocus(WIBase *elRef)
 {
 	for(auto it = m_focusTrapStack.rbegin(); it != m_focusTrapStack.rend();) {
 		auto &hEl = *it;
@@ -59,15 +59,15 @@ void WIRoot::RestoreTrappedFocus(WIBase *elRef)
 	}
 }
 
-const prosper::Window *WIRoot::GetWindow() const { return const_cast<WIRoot *>(this)->GetWindow(); }
-prosper::Window *WIRoot::GetWindow()
+const prosper::Window *pragma::gui::types::WIRoot::GetWindow() const { return const_cast<WIRoot *>(this)->GetWindow(); }
+prosper::Window *pragma::gui::types::WIRoot::GetWindow()
 {
 	if(m_window.expired())
 		return nullptr;
 	return const_cast<prosper::Window *>(m_window.lock().get());
 }
 
-WIBase &WIRoot::FindTooltipBaseElement(WIBase &el)
+pragma::gui::types::WIBase &pragma::gui::types::WIRoot::FindTooltipBaseElement(WIBase &el)
 {
 	auto *p = &el;
 	while(p) {
@@ -78,7 +78,7 @@ WIBase &WIRoot::FindTooltipBaseElement(WIBase &el)
 	return *this;
 }
 
-void WIRoot::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
+void pragma::gui::types::WIRoot::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	WIBase::Think(drawCmd);
 	if(!m_hTooltip.IsValid()) {
@@ -120,7 +120,7 @@ void WIRoot::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCm
 	}
 }
 
-void WIRoot::OnCursorMoved(int x, int y)
+void pragma::gui::types::WIRoot::OnCursorMoved(int x, int y)
 {
 	WIBase::OnCursorMoved(x, y);
 	if(!m_hTooltip.IsValid())
@@ -149,9 +149,9 @@ void WIRoot::OnCursorMoved(int x, int y)
 		elTgtPrev->CallCallbacks<void, WITooltip *>("OnHideTooltip", pTooltip);
 }
 
-void WIRoot::Setup() {}
+void pragma::gui::types::WIRoot::Setup() {}
 
-void WIRoot::SetIMETarget(WIBase *el)
+void pragma::gui::types::WIRoot::SetIMETarget(WIBase *el)
 {
 	m_hImeTarget = el ? m_hImeTarget->GetHandle() : WIHandle {};
 	if(m_hImeTarget.expired()) {
@@ -163,7 +163,7 @@ void WIRoot::SetIMETarget(WIBase *el)
 	UpdateIMETarget();
 }
 
-void WIRoot::UpdateIMETarget()
+void pragma::gui::types::WIRoot::UpdateIMETarget()
 {
 	auto *window = GetWindow();
 	if(!window || (*window)->IsIMEEnabled() == false || m_hImeTarget.expired())
@@ -173,8 +173,8 @@ void WIRoot::UpdateIMETarget()
 	(*window)->SetPreeditCursorRectangle(pos.x, pos.y, size.x, size.y);
 }
 
-bool WIRoot::IsMainFileHovering() const { return m_fileDragHover; }
-void WIRoot::SetMainFileHovering(bool hovering)
+bool pragma::gui::types::WIRoot::IsMainFileHovering() const { return m_fileDragHover; }
+void pragma::gui::types::WIRoot::SetMainFileHovering(bool hovering)
 {
 	m_fileDragHover = hovering;
 	if(hovering == false) {
@@ -202,7 +202,7 @@ void WIRoot::SetMainFileHovering(bool hovering)
 		updateHoverStates(*this);
 	}
 }
-void WIRoot::SetFileHoverElement(WIBase &el, bool hovering)
+void pragma::gui::types::WIRoot::SetFileHoverElement(WIBase &el, bool hovering)
 {
 	auto it = std::find_if(m_fileHoverElements.begin(), m_fileHoverElements.end(), [&el](const WIHandle &hEl) { return hEl.get() == &el; });
 	if(hovering) {
@@ -216,7 +216,7 @@ void WIRoot::SetFileHoverElement(WIBase &el, bool hovering)
 	m_fileHoverElements.erase(it);
 }
 
-void WIRoot::DropFiles(const std::vector<std::string> &files)
+void pragma::gui::types::WIRoot::DropFiles(const std::vector<std::string> &files)
 {
 	for(auto &hEl : m_fileHoverElements) {
 		if(!hEl.IsValid() || !hEl->IsFileHovering())

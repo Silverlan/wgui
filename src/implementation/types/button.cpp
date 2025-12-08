@@ -9,20 +9,20 @@ import :types.button;
 
 import pragma.string.unicode;
 
-WIButton::WIButton() : WIBase(), m_bPressed(false)
+pragma::gui::types::WIButton::WIButton() : WIBase(), m_bPressed(false)
 {
 	SetMouseInputEnabled(true);
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnPressed");
 }
-WIButton::~WIButton() {}
-void WIButton::Initialize()
+pragma::gui::types::WIButton::~WIButton() {}
+void pragma::gui::types::WIButton::Initialize()
 {
 	WIBase::Initialize();
 	SetSize(64, 28);
 	m_text = CreateChild<WIText>();
 }
-void WIButton::SetSize(int x, int y) { WIBase::SetSize(x, y); }
-void WIButton::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WIButton::SetSize(int x, int y) { WIBase::SetSize(x, y); }
+void pragma::gui::types::WIButton::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(!m_text.IsValid())
 		return;
@@ -30,7 +30,7 @@ void WIButton::SetText(const pragma::string::Utf8StringArg &text)
 	pText->SetText(text);
 	pText->SizeToContents();
 }
-const pragma::string::Utf8String &WIButton::GetText() const
+const pragma::string::Utf8String &pragma::gui::types::WIButton::GetText() const
 {
 	if(!m_text.IsValid()) {
 		static pragma::string::Utf8String emptyString {};
@@ -38,7 +38,7 @@ const pragma::string::Utf8String &WIButton::GetText() const
 	}
 	return static_cast<const WIText *>(m_text.get())->GetText();
 }
-util::EventReply WIButton::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WIButton::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	auto hThis = GetHandle();
 	auto reply = WIBase::MouseCallback(button, state, mods);
@@ -57,7 +57,7 @@ util::EventReply WIButton::MouseCallback(pragma::platform::MouseButton button, p
 	return util::EventReply::Handled;
 }
 
-void WIButton::SizeToContents(bool x, bool y)
+void pragma::gui::types::WIButton::SizeToContents(bool x, bool y)
 {
 	if(!m_text.IsValid())
 		return;

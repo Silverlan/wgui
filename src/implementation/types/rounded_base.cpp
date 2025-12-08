@@ -7,11 +7,11 @@ module pragma.gui;
 
 import :types.rounded_base;
 
-WIRoundedBase::WIRoundedBase() : m_roundness(3), m_cornerSize(0.2f), m_bRoundUpperLeft(true), m_bRoundUpperRight(true), m_bRoundLowerLeft(true), m_bRoundLowerRight(true) {}
+pragma::gui::types::WIRoundedBase::WIRoundedBase() : m_roundness(3), m_cornerSize(0.2f), m_bRoundUpperLeft(true), m_bRoundUpperRight(true), m_bRoundLowerLeft(true), m_bRoundLowerRight(true) {}
 
-void WIRoundedBase::Initialize() { DoUpdate(); }
+void pragma::gui::types::WIRoundedBase::Initialize() { DoUpdate(); }
 
-void WIRoundedBase::DoUpdate()
+void pragma::gui::types::WIRoundedBase::DoUpdate()
 {
 	WIShape *shape = dynamic_cast<WIShape *>(this);
 	shape->ClearVertices();
@@ -89,9 +89,9 @@ void WIRoundedBase::DoUpdate()
 	shape->AddVertex(Vector2(-1.f, (m_bRoundUpperLeft == false) ? -1.f : -offset));
 }
 
-char WIRoundedBase::GetRoundness() { return m_roundness; }
+char pragma::gui::types::WIRoundedBase::GetRoundness() { return m_roundness; }
 
-void WIRoundedBase::SetRoundness(char roundness)
+void pragma::gui::types::WIRoundedBase::SetRoundness(char roundness)
 {
 	if(roundness < 0)
 		roundness = 0;
@@ -100,7 +100,7 @@ void WIRoundedBase::SetRoundness(char roundness)
 	m_roundness = roundness;
 }
 
-void WIRoundedBase::SetCornerSize(float size)
+void pragma::gui::types::WIRoundedBase::SetCornerSize(float size)
 {
 	if(size > 1.f)
 		size = 1.f;
@@ -109,13 +109,13 @@ void WIRoundedBase::SetCornerSize(float size)
 	m_cornerSize = size;
 }
 
-float WIRoundedBase::GetCornerSize() { return m_cornerSize; }
+float pragma::gui::types::WIRoundedBase::GetCornerSize() { return m_cornerSize; }
 
-void WIRoundedBase::SetRoundTopRight(bool b) { m_bRoundUpperRight = b; }
-void WIRoundedBase::SetRoundTopLeft(bool b) { m_bRoundUpperLeft = b; }
-void WIRoundedBase::SetRoundBottomLeft(bool b) { m_bRoundLowerLeft = b; }
-void WIRoundedBase::SetRoundBottomRight(bool b) { m_bRoundLowerRight = b; }
-bool WIRoundedBase::IsTopRightRound() { return m_bRoundUpperRight; }
-bool WIRoundedBase::IsTopLeftRound() { return m_bRoundUpperLeft; }
-bool WIRoundedBase::IsBottomLeftRound() { return m_bRoundLowerLeft; }
-bool WIRoundedBase::IsBottomRightRound() { return m_bRoundLowerRight; }
+void pragma::gui::types::WIRoundedBase::SetRoundTopRight(bool b) { m_bRoundUpperRight = b; }
+void pragma::gui::types::WIRoundedBase::SetRoundTopLeft(bool b) { m_bRoundUpperLeft = b; }
+void pragma::gui::types::WIRoundedBase::SetRoundBottomLeft(bool b) { m_bRoundLowerLeft = b; }
+void pragma::gui::types::WIRoundedBase::SetRoundBottomRight(bool b) { m_bRoundLowerRight = b; }
+bool pragma::gui::types::WIRoundedBase::IsTopRightRound() { return m_bRoundUpperRight; }
+bool pragma::gui::types::WIRoundedBase::IsTopLeftRound() { return m_bRoundUpperLeft; }
+bool pragma::gui::types::WIRoundedBase::IsBottomLeftRound() { return m_bRoundLowerLeft; }
+bool pragma::gui::types::WIRoundedBase::IsBottomRightRound() { return m_bRoundLowerRight; }

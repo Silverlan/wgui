@@ -9,7 +9,7 @@ export module pragma.gui:shaders.colored_line;
 
 export import :shaders.colored;
 
-export namespace wgui {
+export namespace pragma::gui::shaders {
 	class DLLWGUI ShaderColoredLine : public ShaderColored {
 	  public:
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
@@ -17,7 +17,7 @@ export namespace wgui {
 
 		ShaderColoredLine(prosper::IPrContext &context, const std::string &identifier);
 
-		bool RecordDraw(prosper::ShaderBindState &bindState, const std::shared_ptr<prosper::IBuffer> &vertBuffer, const std::shared_ptr<prosper::IBuffer> &colorBuffer, uint32_t vertCount, float lineWidth, const wgui::ElementData &pushConstants, uint32_t testStencilLevel) const;
+		bool RecordDraw(prosper::ShaderBindState &bindState, const std::shared_ptr<prosper::IBuffer> &vertBuffer, const std::shared_ptr<prosper::IBuffer> &colorBuffer, uint32_t vertCount, float lineWidth, const ElementData &pushConstants, uint32_t testStencilLevel) const;
 	  protected:
 		virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) override;
 		virtual void InitializeShaderResources() override;

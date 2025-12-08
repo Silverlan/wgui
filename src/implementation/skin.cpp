@@ -7,21 +7,21 @@ module pragma.gui;
 
 import :skin;
 
-WISkin::WISkin(std::string id) : m_identifier(id) {}
-WISkin::WISkin() {}
+pragma::gui::WISkin::WISkin(std::string id) : m_identifier(id) {}
+pragma::gui::WISkin::WISkin() {}
 
-WISkin::~WISkin() {}
+pragma::gui::WISkin::~WISkin() {}
 
-void WISkin::Initialize(WIBase *) {}
-void WISkin::Release(WIBase *) {}
-void WISkin::ReleaseElement(WIBase *el)
+void pragma::gui::WISkin::Initialize(types::WIBase *) {}
+void pragma::gui::WISkin::Release(types::WIBase *) {}
+void pragma::gui::WISkin::ReleaseElement(types::WIBase *el)
 {
 	std::vector<WIHandle> *children = el->GetChildren();
 	for(unsigned int i = 0; i < children->size(); i++) {
-		WIHandle &hChild = (*children)[i];
+		pragma::gui::WIHandle &hChild = (*children)[i];
 		if(hChild.IsValid())
 			ReleaseElement(hChild.get());
 	}
 	Release(el);
 }
-void WISkin::InitializeClass(WIBase *, std::string &) {}
+void pragma::gui::WISkin::InitializeClass(types::WIBase *, std::string &) {}

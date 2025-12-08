@@ -11,8 +11,10 @@ export module pragma.gui:text_iterator;
 export import pragma.string.formatted_text;
 export import pragma.string.unicode;
 
-export {
-	class WIText;
+export namespace pragma::gui {
+	namespace types {
+		class WIText;
+	}
 	class DLLWGUI TextLineIteratorBase {
 	  public:
 		struct DLLWGUI Info {
@@ -40,7 +42,7 @@ export {
 		static const auto INVALID_LINE = std::numeric_limits<util::text::LineIndex>::max();
 		static const Info INVALID_LINE_INFO;
 
-		TextLineIteratorBase(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
+		TextLineIteratorBase(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase(const TextLineIteratorBase &other) = default;
 		TextLineIteratorBase &operator=(const TextLineIteratorBase &other) = default;
 
@@ -53,20 +55,20 @@ export {
 		bool operator==(const TextLineIteratorBase &other) const;
 		bool operator!=(const TextLineIteratorBase &other) const;
 	  private:
-		WIText &GetText() const;
+		types::WIText &GetText() const;
 		void UpdateLine();
-		WIText *m_text = nullptr;
+		types::WIText *m_text = nullptr;
 		Info m_info = {};
 		bool m_bIterateSubLines = true;
 	};
 
 	class DLLWGUI TextLineIterator {
 	  public:
-		TextLineIterator(WIText &text, util::text::LineIndex startLineIndex = 0, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
+		TextLineIterator(types::WIText &text, util::text::LineIndex startLineIndex = 0, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase begin() const;
 		TextLineIteratorBase end() const;
 	  private:
-		WIText &m_text;
+		types::WIText &m_text;
 		bool m_bIterateSubLines = true;
 		util::text::LineIndex m_startLineIndex = 0;
 		util::text::LineIndex m_startSubLineIndex = 0;
@@ -96,7 +98,7 @@ export {
 
 		static const Info INVALID_INFO;
 
-		CharIteratorBase(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset, Flags flags);
+		CharIteratorBase(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset, Flags flags);
 
 		const value_type &operator++();
 		const value_type &operator++(int);
@@ -106,21 +108,20 @@ export {
 		bool operator!=(const CharIteratorBase &other) const;
 	  private:
 		void UpdatePixelWidth();
-		WIText &GetText() const;
-		WIText *m_text = nullptr;
+		types::WIText &GetText() const;
+		types::WIText *m_text = nullptr;
 		Info m_info = {};
 		Flags m_flags = Flags::BreakAtEndOfSubLine;
 	};
-	REGISTER_ENUM_FLAGS(CharIteratorBase::Flags)
 
 	class DLLWGUI CharIterator {
 	  public:
-		CharIterator(WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
-		CharIterator(WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
+		CharIterator(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
+		CharIterator(types::WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
 		CharIteratorBase begin() const;
 		CharIteratorBase end() const;
 	  private:
-		WIText &m_text;
+		types::WIText &m_text;
 		util::text::LineIndex m_lineIndex = 0;
 		util::text::LineIndex m_subLineIndex = 0;
 		util::text::TextOffset m_absLineStartOffset = 0;
@@ -128,3 +129,5 @@ export {
 		CharIteratorBase::Flags m_flags = CharIteratorBase::Flags::BreakAtEndOfSubLine;
 	};
 };
+
+export {REGISTER_ENUM_FLAGS(pragma::gui::CharIteratorBase::Flags)}

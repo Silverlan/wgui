@@ -12,7 +12,7 @@ export module pragma.gui:types.nine_slice_rect;
 export import :shaders.textured;
 export import :types.rect;
 
-export namespace wgui {
+export namespace pragma::gui::types {
 	class DLLWGUI WI9SliceRectSegment : public WITexturedRect {
 	  public:
 		WI9SliceRectSegment();
@@ -22,7 +22,7 @@ export namespace wgui {
 		const Vector2 &GetRenderImageOffset() const { return m_renderOffset; }
 		const Vector2 &GetRenderImageScale() const { return m_renderScale; }
 
-		virtual void BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState) override;
+		virtual void BindShader(shaders::ShaderTextured &shader, prosper::ShaderBindState &bindState, DrawState &drawState) override;
 	  private:
 		Vector2 m_renderOffset {};
 		Vector2 m_renderScale {1.f, 1.f};

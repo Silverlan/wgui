@@ -7,9 +7,9 @@ module pragma.gui;
 
 import :text_tags;
 
-decltype(WITextTagColor::s_colorBuffer) WITextTagColor::s_colorBuffer = nullptr;
-void WITextTagColor::ClearColorBuffer() { s_colorBuffer = nullptr; }
-std::optional<Vector4> WITextTagColor::GetColor() const
+decltype(pragma::gui::WITextTagColor::s_colorBuffer) pragma::gui::WITextTagColor::s_colorBuffer = nullptr;
+void pragma::gui::WITextTagColor::ClearColorBuffer() { s_colorBuffer = nullptr; }
+std::optional<Vector4> pragma::gui::WITextTagColor::GetColor() const
 {
 	if(m_args.empty())
 		return {};
@@ -30,7 +30,7 @@ std::optional<Vector4> WITextTagColor::GetColor() const
 	}
 	return color;
 }
-void WITextTagColor::Apply()
+void pragma::gui::WITextTagColor::Apply()
 {
 	WITextDecorator::Apply();
 	auto color = GetColor();
@@ -38,7 +38,7 @@ void WITextTagColor::Apply()
 		return;
 	if(s_colorBuffer == nullptr) {
 		const auto maxInstances = 2'048; // 1 MiB total space
-		auto instanceSize = sizeof(Vector4) * WIText::MAX_CHARS_PER_BUFFER;
+		auto instanceSize = sizeof(Vector4) * types::WIText::MAX_CHARS_PER_BUFFER;
 		prosper::util::BufferCreateInfo createInfo {};
 		createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
 		createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
@@ -79,7 +79,7 @@ void WITextTagColor::Apply()
 				continue;
 			if(bufStartOffset > localEndOffset)
 				break;
-			std::array<Vector4, WIText::MAX_CHARS_PER_BUFFER> colors;
+			std::array<Vector4, types::WIText::MAX_CHARS_PER_BUFFER> colors;
 
 			auto fullUpdate = false;
 			if(glyphBufferInfo.colorBuffer == nullptr) {

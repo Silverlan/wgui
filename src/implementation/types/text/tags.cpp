@@ -7,7 +7,7 @@ module pragma.gui;
 
 import :text_tags;
 
-void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const WITextTagArgument &arg)
+void pragma::gui::types::WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const WITextTagArgument &arg)
 {
 	auto it = m_tagArgumentOverrides.find(tagLabel);
 	if(it == m_tagArgumentOverrides.end())
@@ -34,18 +34,18 @@ void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex,
 	}
 	m_flags |= Flags::ApplySubTextTags;
 }
-void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const std::string &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::String, util::make_shared<std::string>(arg)}); }
-void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const Vector4 &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Vector4, std::make_shared<Vector4>(arg)}); }
-void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const CallbackHandle &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Function, std::make_shared<CallbackHandle>(arg)}); }
-void WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const Color &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Color, std::make_shared<Color>(arg)}); }
+void pragma::gui::types::WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const std::string &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::String, util::make_shared<std::string>(arg)}); }
+void pragma::gui::types::WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const Vector4 &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Vector4, std::make_shared<Vector4>(arg)}); }
+void pragma::gui::types::WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const CallbackHandle &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Function, std::make_shared<CallbackHandle>(arg)}); }
+void pragma::gui::types::WIText::SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const Color &arg) { SetTagArgument(tagLabel, argumentIndex, WITextTagArgument {WITextTagArgument::Type::Color, std::make_shared<Color>(arg)}); }
 
-void WIText::SetTagsEnabled(bool bEnabled) { m_text->SetTagsEnabled(bEnabled); }
-bool WIText::AreTagsEnabled() const { return m_text->AreTagsEnabled(); }
+void pragma::gui::types::WIText::SetTagsEnabled(bool bEnabled) { m_text->SetTagsEnabled(bEnabled); }
+bool pragma::gui::types::WIText::AreTagsEnabled() const { return m_text->AreTagsEnabled(); }
 
-bool WIText::IsTextHidden() const { return umath::is_flag_set(m_flags, Flags::HideText); }
-void WIText::HideText(bool hide) { umath::set_flag(m_flags, Flags::HideText, hide); }
+bool pragma::gui::types::WIText::IsTextHidden() const { return umath::is_flag_set(m_flags, Flags::HideText); }
+void pragma::gui::types::WIText::HideText(bool hide) { umath::set_flag(m_flags, Flags::HideText, hide); }
 
-Color WIText::GetCharColor(util::text::TextOffset offset) const
+Color pragma::gui::types::WIText::GetCharColor(util::text::TextOffset offset) const
 {
 	auto itTag = std::find_if(m_tagInfos.begin(), m_tagInfos.end(), [offset](const std::shared_ptr<WITextDecorator> &pTag) {
 		if(pTag->IsValid() == false || pTag->IsTag() == false)
@@ -59,7 +59,7 @@ Color WIText::GetCharColor(util::text::TextOffset offset) const
 	return color.has_value() ? *color : GetColor();
 }
 
-void WIText::InitializeTagArguments(const WITextTag &tag, std::vector<WITextTagArgument> &args) const
+void pragma::gui::types::WIText::InitializeTagArguments(const WITextTag &tag, std::vector<WITextTagArgument> &args) const
 {
 	auto &openingTag = *tag.GetTag().GetOpeningTagComponent();
 	auto &strArgs = openingTag.GetTagAttributes();
@@ -87,9 +87,9 @@ void WIText::InitializeTagArguments(const WITextTag &tag, std::vector<WITextTagA
 	}
 }
 
-void WIText::ApplySubTextTag(WITextDecorator &tag) { tag.Apply(); }
+void pragma::gui::types::WIText::ApplySubTextTag(WITextDecorator &tag) { tag.Apply(); }
 
-void WIText::ApplySubTextTags()
+void pragma::gui::types::WIText::ApplySubTextTags()
 {
 	for(auto &tag : m_tagInfos) {
 		if(tag->IsValid() == false || tag->IsDirty() == false)

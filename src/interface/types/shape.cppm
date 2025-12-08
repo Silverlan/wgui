@@ -17,7 +17,7 @@ import :shaders.textured;
 import :types.line;
 export import pragma.cmaterialsystem;
 
-export {
+export namespace pragma::gui::types {
 	class DLLWGUI WIShape : public WIBufferBase {
 	  public:
 		enum class BasicShape : uint32_t { Rectangle = 0, Circle };
@@ -72,26 +72,26 @@ export {
 		void SetTexture(prosper::Texture &tex, std::optional<uint32_t> layerIndex = {});
 		void ClearTexture();
 		const std::shared_ptr<prosper::Texture> &GetTexture() const;
-		virtual void Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel = 0u, wgui::StencilPipeline stencilPipeline = wgui::StencilPipeline::Test) override;
-		virtual void BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState);
+		virtual void Render(const DrawInfo &drawInfo, DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel = 0u, StencilPipeline stencilPipeline = StencilPipeline::Test) override;
+		virtual void BindShader(shaders::ShaderTextured &shader, prosper::ShaderBindState &bindState, DrawState &drawState);
 		void SizeToTexture();
 		Vector2i GetTextureSize() const;
-		void SetShader(wgui::ShaderTextured &shader);
+		void SetShader(shaders::ShaderTextured &shader);
 
 		void SetAlphaMode(AlphaMode alphaMode);
 		void SetAlphaCutoff(float alphaCutoff);
 		AlphaMode GetAlphaMode() const;
 		float GetAlphaCutoff() const;
 
-		void SetChannelSwizzle(wgui::ShaderTextured::Channel dst, wgui::ShaderTextured::Channel src);
-		wgui::ShaderTextured::Channel GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const;
+		void SetChannelSwizzle(shaders::ShaderTextured::Channel dst, shaders::ShaderTextured::Channel src);
+		shaders::ShaderTextured::Channel GetChannelSwizzle(shaders::ShaderTextured::Channel channel) const;
 
 		virtual void ClearBuffer() override;
 	  protected:
 		virtual void UpdateTransparencyState() override;
 		void UpdateShaderState();
 		virtual void DoUpdate() override;
-		bool PrepareRender(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, Vector4 &outColor);
+		bool PrepareRender(const DrawInfo &drawInfo, DrawState &drawState, Vector4 &outColor);
 		msys::MaterialHandle m_hMaterial;
 		std::shared_ptr<prosper::Texture> m_texture = nullptr;
 		std::shared_ptr<bool> m_texLoadCallback;
@@ -100,7 +100,7 @@ export {
 		AlphaMode m_alphaMode = AlphaMode::Blend;
 		float m_alphaCutoff = 1.f;
 		Vector4 m_materialColor {1.f, 1.f, 1.f, 1.f};
-		std::array<wgui::ShaderTextured::Channel, 4> m_channels = {wgui::ShaderTextured::Channel::Red, wgui::ShaderTextured::Channel::Green, wgui::ShaderTextured::Channel::Blue, wgui::ShaderTextured::Channel::Alpha};
+		std::array<shaders::ShaderTextured::Channel, 4> m_channels = {shaders::ShaderTextured::Channel::Red, shaders::ShaderTextured::Channel::Green, shaders::ShaderTextured::Channel::Blue, shaders::ShaderTextured::Channel::Alpha};
 		float m_lod = -1.f;
 
 		void ReloadDescriptorSet();
@@ -116,5 +116,5 @@ export {
 		void ClearTextureLoadCallback();
 		void InitializeTextureLoadCallback(const std::shared_ptr<msys::Texture> &texture);
 	};
-	REGISTER_ENUM_FLAGS(WITexturedShape::StateFlags)
 };
+export {REGISTER_ENUM_FLAGS(pragma::gui::types::WITexturedShape::StateFlags)}

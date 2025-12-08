@@ -10,7 +10,7 @@ export module pragma.gui:types.menu_item;
 import :handle;
 import :types.base;
 
-export {
+export namespace pragma::gui::types {
 	class WIText;
 	class DLLWGUI WIMenuItem : public WIBase {
 	  public:
@@ -36,10 +36,10 @@ export {
 		void UpdateRightText();
 		std::function<void(void)> m_fOnAction = nullptr;
 		std::vector<WIBase *> m_items = {};
-		WIHandle m_hBg = {};
-		WIHandle m_hBgOutline = {};
-		WIHandle m_hText = {};
-		WIHandle m_hRightText = {};
+		pragma::gui::WIHandle m_hBg = {};
+		pragma::gui::WIHandle m_hBgOutline = {};
+		pragma::gui::WIHandle m_hText = {};
+		pragma::gui::WIHandle m_hRightText = {};
 		std::string m_keyBindCommand = {};
 		bool m_bSelected = false;
 	};

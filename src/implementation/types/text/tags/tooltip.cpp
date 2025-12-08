@@ -7,8 +7,8 @@ module pragma.gui;
 
 import :text_tags;
 
-void WITextTagTooltip::InitializeOverlay(WIBase &overlay) { overlay.SetTooltip(*static_cast<std::string *>(m_args.front().value.get())); }
-void WITextTagTooltip::Apply()
+void pragma::gui::WITextTagTooltip::InitializeOverlay(types::WIBase &overlay) { overlay.SetTooltip(*static_cast<std::string *>(m_args.front().value.get())); }
+void pragma::gui::WITextTagTooltip::Apply()
 {
 	WITextDecorator::Apply();
 	if(m_args.empty() || m_args.front().type != WITextTagArgument::Type::String)

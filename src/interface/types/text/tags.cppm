@@ -11,17 +11,19 @@ import :handle;
 import :types.base;
 export import pragma.string.formatted_text;
 
-export {
+export namespace pragma::gui {
 	struct DLLWGUI WITextTagArgument {
 		enum class Type : uint32_t { String = 0u, Function, Color, Vector4 };
 		Type type;
 		std::shared_ptr<void> value;
 	};
 
-	class WIText;
+	namespace types {
+		class WIText;
+	}
 	class DLLWGUI WITextDecorator {
 	  public:
-		WITextDecorator(WIText &text);
+		WITextDecorator(types::WIText &text);
 		virtual ~WITextDecorator();
 		virtual void Clear();
 		virtual bool IsValid() const;
@@ -48,16 +50,16 @@ export {
 		void CreateOverlayElements();
 		void CreateOverlayElement(util::text::LineIndex lineIndex, util::text::TextOffset startOffset, util::text::TextOffset endOffset, std::vector<WIHandle> &cachedOverlays);
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize);
-		virtual void InitializeOverlay(WIBase &overlay);
+		virtual void InitializeOverlay(types::WIBase &overlay);
 
 		std::vector<WIHandle> m_overlays = {};
 		bool m_bDirty = false;
-		WIText &m_text;
+		types::WIText &m_text;
 	};
 
 	class DLLWGUI WITextTag : public WITextDecorator {
 	  public:
-		WITextTag(WIText &text, util::text::TextTag &tag);
+		WITextTag(types::WIText &text, util::text::TextTag &tag);
 		virtual bool IsTag() const override;
 		virtual bool IsValid() const override;
 		virtual util::text::AnchorPoint *GetStartAnchorPoint() override;
@@ -79,7 +81,7 @@ export {
 		using WITextTag::WITextTag;
 		virtual void Apply() override;
 	  protected:
-		virtual void InitializeOverlay(WIBase &overlay) override;
+		virtual void InitializeOverlay(types::WIBase &overlay) override;
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) override;
 		Color m_underlineColor;
 	};
@@ -101,7 +103,7 @@ export {
 		using WITextTag::WITextTag;
 		virtual void Apply() override;
 	  protected:
-		virtual void InitializeOverlay(WIBase &overlay) override;
+		virtual void InitializeOverlay(types::WIBase &overlay) override;
 	};
 
 	class DLLWGUI WITextTagLink : public WITextTagUnderline {
@@ -112,7 +114,7 @@ export {
 		virtual void Initialize() override;
 		virtual void Apply() override;
 	  protected:
-		virtual void InitializeOverlay(WIBase &overlay) override;
+		virtual void InitializeOverlay(types::WIBase &overlay) override;
 		CallbackHandle m_cbFunction = {};
 		std::vector<std::string> m_strArgs = {};
 	  private:
@@ -121,7 +123,7 @@ export {
 
 	class DLLWGUI WITextTagSelection : public WITextDecorator {
 	  public:
-		WITextTagSelection(WIText &text, util::text::TextOffset startOffset, util::text::TextOffset endOffset);
+		WITextTagSelection(types::WIText &text, util::text::TextOffset startOffset, util::text::TextOffset endOffset);
 		virtual void Apply() override;
 		virtual bool IsValid() const override;
 		virtual util::text::AnchorPoint *GetStartAnchorPoint() override;
@@ -130,7 +132,7 @@ export {
 		void SetStartOffset(util::text::TextOffset offset);
 		void SetEndOffset(util::text::TextOffset offset);
 	  protected:
-		virtual void InitializeOverlay(WIBase &overlay) override;
+		virtual void InitializeOverlay(types::WIBase &overlay) override;
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) override;
 		std::optional<std::pair<util::text::LineIndex, util::text::CharOffset>> GetAbsOffset(util::text::TextOffset offset) const;
 		util::TSharedHandle<util::text::AnchorPoint> m_startAnchorPoint = nullptr;

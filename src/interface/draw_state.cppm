@@ -9,7 +9,7 @@ export module pragma.gui:draw_state;
 
 export import std.compat;
 
-export namespace wgui {
+export namespace pragma::gui {
 	struct DLLWGUI DrawState {
 		std::array<uint32_t, 4> scissor = {0u, 0, 0u, 0u};
 		float renderAlpha = 1.f;

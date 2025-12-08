@@ -9,9 +9,9 @@ import :types.menu_item;
 
 import pragma.string.unicode;
 
-WIMenuItem::WIMenuItem() : WIBase {} { RegisterCallback<void>("OnSelected"); }
+pragma::gui::types::WIMenuItem::WIMenuItem() : WIBase {} { RegisterCallback<void>("OnSelected"); }
 
-void WIMenuItem::Initialize()
+void pragma::gui::types::WIMenuItem::Initialize()
 {
 	WIBase::Initialize();
 	SetMouseInputEnabled(true);
@@ -33,8 +33,8 @@ void WIMenuItem::Initialize()
 
 	SetSelected(false);
 }
-WIText *WIMenuItem::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }
-void WIMenuItem::SetRightText(const std::string &rightText)
+pragma::gui::types::WIText *pragma::gui::types::WIMenuItem::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }
+void pragma::gui::types::WIMenuItem::SetRightText(const std::string &rightText)
 {
 	if(rightText.empty()) {
 		if(m_hRightText.IsValid())
@@ -51,7 +51,7 @@ void WIMenuItem::SetRightText(const std::string &rightText)
 	pText->SizeToContents();
 	UpdateRightText();
 }
-void WIMenuItem::SetSelected(bool bSelected)
+void pragma::gui::types::WIMenuItem::SetSelected(bool bSelected)
 {
 	m_bSelected = bSelected;
 	if(m_hBg.IsValid())
@@ -61,18 +61,18 @@ void WIMenuItem::SetSelected(bool bSelected)
 	if(bSelected)
 		CallCallbacks<void>("OnSelected");
 }
-bool WIMenuItem::IsSelected() const { return m_bSelected; }
-void WIMenuItem::OnCursorEntered()
+bool pragma::gui::types::WIMenuItem::IsSelected() const { return m_bSelected; }
+void pragma::gui::types::WIMenuItem::OnCursorEntered()
 {
 	WIBase::OnCursorEntered();
 	SetSelected(true);
 }
-void WIMenuItem::OnCursorExited()
+void pragma::gui::types::WIMenuItem::OnCursorExited()
 {
 	WIBase::OnCursorExited();
 	SetSelected(false);
 }
-util::EventReply WIMenuItem::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WIMenuItem::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	if(WIBase::MouseCallback(button, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
@@ -81,13 +81,13 @@ util::EventReply WIMenuItem::MouseCallback(pragma::platform::MouseButton button,
 	m_fOnAction();
 	return util::EventReply::Unhandled;
 }
-void WIMenuItem::SetSize(int x, int y)
+void pragma::gui::types::WIMenuItem::SetSize(int x, int y)
 {
 	WIBase::SetSize(x, y);
 	UpdateRightText();
 }
 const auto border = 8u;
-void WIMenuItem::SizeToContents(bool x, bool y)
+void pragma::gui::types::WIMenuItem::SizeToContents(bool x, bool y)
 {
 	if(m_hText.IsValid() == false)
 		return;
@@ -102,10 +102,10 @@ void WIMenuItem::SizeToContents(bool x, bool y)
 	m_hText->SetX(border);
 	m_hText->SetY(GetHeight() * 0.5f - m_hText->GetHeight() * 0.5f);
 }
-void WIMenuItem::SetAction(const std::function<void(void)> &fOnClickAction) { m_fOnAction = fOnClickAction; }
-void WIMenuItem::SetKeybindCommand(const std::string &cmd) { m_keyBindCommand = cmd; }
-const std::string &WIMenuItem::GetKeybindCommand() const { return m_keyBindCommand; }
-void WIMenuItem::SetTitle(const std::string &title)
+void pragma::gui::types::WIMenuItem::SetAction(const std::function<void(void)> &fOnClickAction) { m_fOnAction = fOnClickAction; }
+void pragma::gui::types::WIMenuItem::SetKeybindCommand(const std::string &cmd) { m_keyBindCommand = cmd; }
+const std::string &pragma::gui::types::WIMenuItem::GetKeybindCommand() const { return m_keyBindCommand; }
+void pragma::gui::types::WIMenuItem::SetTitle(const std::string &title)
 {
 	if(m_hText.IsValid() == false)
 		return;
@@ -114,7 +114,7 @@ void WIMenuItem::SetTitle(const std::string &title)
 	pText->SizeToContents();
 }
 
-void WIMenuItem::UpdateRightText()
+void pragma::gui::types::WIMenuItem::UpdateRightText()
 {
 	if(m_hRightText.IsValid() == false)
 		return;

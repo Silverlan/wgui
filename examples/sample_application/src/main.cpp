@@ -638,7 +638,7 @@ private:
 	std::shared_ptr<prosper::IPrContext> m_context = nullptr;
 	std::shared_ptr<CMaterialManager> m_matManager = nullptr;
 	std::shared_ptr<util::Library> m_libRenderAPI = nullptr;
-	WIHandle m_elTest {};
+	pragma::gui::WIHandle m_elTest {};
 };
 
 int main()

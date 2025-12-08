@@ -9,7 +9,7 @@ export module pragma.gui:shaders.textured_sub_rect;
 
 export import :shaders.textured;
 
-export namespace wgui {
+export namespace pragma::gui::shaders {
 	class DLLWGUI ShaderTexturedSubRect : public ShaderTextured {
 	  public:
 		static constexpr auto PUSH_CONSTANT_BASE_SIZE = sizeof(ShaderTextured::PushConstants);

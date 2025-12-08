@@ -10,7 +10,7 @@ export module pragma.gui:shaders.text;
 export import :element_data;
 export import :shaders.shader;
 
-export namespace wgui {
+export namespace pragma::gui::shaders {
 	class DLLWGUI ShaderText : public Shader {
 	  public:
 		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
@@ -55,7 +55,7 @@ export namespace wgui {
 	  public:
 #pragma pack(push, 1)
 		struct PushConstants {
-			wgui::ElementData elementData;
+			ElementData elementData;
 			ShaderText::PushConstants fontInfo;
 		};
 #pragma pack(pop)

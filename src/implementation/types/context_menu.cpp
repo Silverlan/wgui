@@ -7,22 +7,22 @@ module pragma.gui;
 
 import :types.context_menu;
 
-static WIContextMenu *s_contextMenu = nullptr;
+static pragma::gui::types::WIContextMenu *s_contextMenu = nullptr;
 static std::function<std::string(pragma::platform::Key, const std::string &)> s_fBindKey = nullptr;
 static std::function<std::optional<std::string>(const std::string &)> s_fGetBoundKey = nullptr;
-void WIContextMenu::SetKeyBindHandler(const std::function<std::string(pragma::platform::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey)
+void pragma::gui::types::WIContextMenu::SetKeyBindHandler(const std::function<std::string(pragma::platform::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey)
 {
 	s_fBindKey = fBindKey;
 	s_fGetBoundKey = fGetBoundKey;
 }
-void WIContextMenu::CloseContextMenu()
+void pragma::gui::types::WIContextMenu::CloseContextMenu()
 {
 	if(s_contextMenu == nullptr)
 		return;
 	s_contextMenu->RemoveSafely();
 	s_contextMenu = nullptr;
 }
-WIContextMenu *WIContextMenu::OpenContextMenu()
+pragma::gui::types::WIContextMenu *pragma::gui::types::WIContextMenu::OpenContextMenu()
 {
 	CloseContextMenu();
 	auto *pContextMenu = WGUI::GetInstance().Create<WIContextMenu>();
@@ -36,12 +36,12 @@ WIContextMenu *WIContextMenu::OpenContextMenu()
 	s_contextMenu = pContextMenu;
 	return pContextMenu;
 }
-bool WIContextMenu::IsContextMenuOpen() { return s_contextMenu != nullptr; }
-WIContextMenu *WIContextMenu::GetActiveContextMenu() { return s_contextMenu; }
+bool pragma::gui::types::WIContextMenu::IsContextMenuOpen() { return s_contextMenu != nullptr; }
+pragma::gui::types::WIContextMenu *pragma::gui::types::WIContextMenu::GetActiveContextMenu() { return s_contextMenu; }
 
-WIContextMenu::WIContextMenu() : WIRect {} {}
+pragma::gui::types::WIContextMenu::WIContextMenu() : WIRect {} {}
 
-void WIContextMenu::Initialize()
+void pragma::gui::types::WIContextMenu::Initialize()
 {
 	WIRect::Initialize();
 
@@ -57,8 +57,8 @@ void WIContextMenu::Initialize()
 	pBgOutline->SetColor(colors::Gray);
 	m_hBgOutline = pBgOutline->GetHandle();
 }
-void WIContextMenu::OnRemove() { WIRect::OnRemove(); }
-util::EventReply WIContextMenu::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+void pragma::gui::types::WIContextMenu::OnRemove() { WIRect::OnRemove(); }
+util::EventReply pragma::gui::types::WIContextMenu::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	if(WIRect::KeyboardCallback(key, scanCode, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
@@ -71,12 +71,12 @@ util::EventReply WIContextMenu::KeyboardCallback(pragma::platform::Key key, int 
 	pItem->SetRightText(s_fBindKey(key, cmd));
 	return util::EventReply::Handled;
 }
-void WIContextMenu::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
+void pragma::gui::types::WIContextMenu::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	WIRect::Think(drawCmd);
 	UpdateChildrenMouseInBounds();
 }
-void WIContextMenu::DoUpdate()
+void pragma::gui::types::WIContextMenu::DoUpdate()
 {
 	WIRect::DoUpdate();
 	auto yOffset = 0u;
@@ -93,7 +93,7 @@ void WIContextMenu::DoUpdate()
 	SetSize(wItem, yOffset);
 }
 
-bool WIContextMenu::IsCursorInMenuBounds() const
+bool pragma::gui::types::WIContextMenu::IsCursorInMenuBounds() const
 {
 	if(MouseInBounds())
 		return true;
@@ -104,7 +104,7 @@ bool WIContextMenu::IsCursorInMenuBounds() const
 	}
 	return false;
 }
-WIMenuItem *WIContextMenu::GetSelectedItem()
+pragma::gui::types::WIMenuItem *pragma::gui::types::WIContextMenu::GetSelectedItem()
 {
 	auto itItem = std::find_if(m_items.begin(), m_items.end(), [](const WIHandle &hItem) { return hItem.IsValid() && static_cast<const WIMenuItem *>(hItem.get())->IsSelected(); });
 	if(itItem != m_items.end())
@@ -118,7 +118,7 @@ WIMenuItem *WIContextMenu::GetSelectedItem()
 	}
 	return nullptr;
 }
-WIMenuItem *WIContextMenu::AddItem(const std::string &name, const std::function<bool(WIMenuItem &)> &fOnClick, const std::string &keyBind)
+pragma::gui::types::WIMenuItem *pragma::gui::types::WIContextMenu::AddItem(const std::string &name, const std::function<bool(WIMenuItem &)> &fOnClick, const std::string &keyBind)
 {
 	auto *pItem = WGUI::GetInstance().Create<WIMenuItem>(this);
 	if(pItem == nullptr)
@@ -146,7 +146,7 @@ WIMenuItem *WIContextMenu::AddItem(const std::string &name, const std::function<
 	m_items.push_back(pItem->GetHandle());
 	return pItem;
 }
-std::pair<WIContextMenu *, WIMenuItem *> WIContextMenu::AddSubMenu(const std::string &name)
+std::pair<pragma::gui::types::WIContextMenu *, pragma::gui::types::WIMenuItem *> pragma::gui::types::WIContextMenu::AddSubMenu(const std::string &name)
 {
 	auto *pItem = AddItem(name, [](WIMenuItem &) { return false; });
 	if(pItem == nullptr)
@@ -186,7 +186,7 @@ std::pair<WIContextMenu *, WIMenuItem *> WIContextMenu::AddSubMenu(const std::st
 	m_subMenues.push_back(pSubMenu->GetHandle());
 	return {pSubMenu, pItem};
 }
-void WIContextMenu::ClearItems()
+void pragma::gui::types::WIContextMenu::ClearItems()
 {
 	for(auto &hItem : m_items) {
 		if(hItem.IsValid())
@@ -199,11 +199,11 @@ void WIContextMenu::ClearItems()
 	}
 	m_subMenues.clear();
 }
-uint32_t WIContextMenu::GetItemCount() const { return m_items.size(); }
-uint32_t WIContextMenu::GetSubMenuCount() const { return m_subMenues.size(); }
-const std::vector<WIHandle> &WIContextMenu::GetItems() const { return m_items; }
-const std::vector<WIHandle> &WIContextMenu::GetSubMenues() const { return m_subMenues; }
-WIMenuItem *WIContextMenu::SelectItem(uint32_t idx)
+uint32_t pragma::gui::types::WIContextMenu::GetItemCount() const { return m_items.size(); }
+uint32_t pragma::gui::types::WIContextMenu::GetSubMenuCount() const { return m_subMenues.size(); }
+const std::vector<pragma::gui::WIHandle> &pragma::gui::types::WIContextMenu::GetItems() const { return m_items; }
+const std::vector<pragma::gui::WIHandle> &pragma::gui::types::WIContextMenu::GetSubMenues() const { return m_subMenues; }
+pragma::gui::types::WIMenuItem *pragma::gui::types::WIContextMenu::SelectItem(uint32_t idx)
 {
 	auto curIdx = GetSelectedItemIndex();
 	if(curIdx.has_value()) {
@@ -217,7 +217,7 @@ WIMenuItem *WIContextMenu::SelectItem(uint32_t idx)
 	pItem->SetSelected(true);
 	return pItem;
 }
-std::optional<uint32_t> WIContextMenu::GetSelectedItemIndex() const
+std::optional<uint32_t> pragma::gui::types::WIContextMenu::GetSelectedItemIndex() const
 {
 	auto itItem = std::find_if(m_items.begin(), m_items.end(), [](const WIHandle &hItem) { return hItem.IsValid() && static_cast<const WIMenuItem *>(hItem.get())->IsSelected(); });
 	if(itItem == m_items.end())

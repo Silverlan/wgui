@@ -15,7 +15,7 @@ static float MARGIN = 5.f;
 static int MARGIN_LEFT = 4;
 static int OPTION_HEIGHT = 18;
 
-WIDropDownMenu::WIDropDownMenu() : WITextEntry(), m_numListItems(15), m_listOffset(0), m_selected(-1)
+pragma::gui::types::WIDropDownMenu::WIDropDownMenu() : WITextEntry(), m_numListItems(15), m_listOffset(0), m_selected(-1)
 {
 	RegisterCallback<void, unsigned int>("OnOptionSelected");
 	RegisterCallback<void>("OnValueChanged");
@@ -23,22 +23,22 @@ WIDropDownMenu::WIDropDownMenu() : WITextEntry(), m_numListItems(15), m_listOffs
 	RegisterCallback<void>("OnMenuClosed");
 }
 
-WIDropDownMenu::~WIDropDownMenu()
+pragma::gui::types::WIDropDownMenu::~WIDropDownMenu()
 {
 	if(m_hList.IsValid())
 		m_hList->Remove();
 }
 
-void WIDropDownMenu::SetListItemCount(uint32_t n) { m_numListItems = n; }
+void pragma::gui::types::WIDropDownMenu::SetListItemCount(uint32_t n) { m_numListItems = n; }
 
-void WIDropDownMenu::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser)
+void pragma::gui::types::WIDropDownMenu::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser)
 {
 	WITextEntry::OnTextChanged(text, changedByUser);
 	if(changedByUser)
 		ClearSelectedOption();
 }
 
-void WIDropDownMenu::ClearSelectedOption()
+void pragma::gui::types::WIDropDownMenu::ClearSelectedOption()
 {
 	if(m_selected == -1)
 		return;
@@ -46,7 +46,7 @@ void WIDropDownMenu::ClearSelectedOption()
 	CallCallbacks<void, unsigned int>("OnOptionSelected", std::numeric_limits<uint32_t>::max());
 }
 
-void WIDropDownMenu::Initialize()
+void pragma::gui::types::WIDropDownMenu::Initialize()
 {
 	WITextEntry::Initialize();
 	SetEditable(false);
@@ -121,24 +121,24 @@ void WIDropDownMenu::Initialize()
 	UpdateListWindow();
 }
 
-void WIDropDownMenu::OnRemove()
+void pragma::gui::types::WIDropDownMenu::OnRemove()
 {
 	WITextEntry::OnRemove();
 	if(m_cbListWindowUpdate.IsValid())
 		m_cbListWindowUpdate.Remove();
 }
 
-void WIDropDownMenu::DoUpdate()
+void pragma::gui::types::WIDropDownMenu::DoUpdate()
 {
 	WITextEntry::DoUpdate();
 	UpdateOptionItems({});
 }
 
-void WIDropDownMenu::SelectOption(unsigned int idx)
+void pragma::gui::types::WIDropDownMenu::SelectOption(unsigned int idx)
 {
 	if(idx >= m_options.size() || idx == m_selected)
 		return;
-	WIHandle &hOption = m_options[idx];
+	pragma::gui::WIHandle &hOption = m_options[idx];
 	if(!hOption.IsValid())
 		return;
 	WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
@@ -148,8 +148,8 @@ void WIDropDownMenu::SelectOption(unsigned int idx)
 	CallCallbacks<void>("OnValueChanged");
 }
 
-const WIDropDownMenuOption *WIDropDownMenu::FindOptionByValue(const std::string &value) const { return const_cast<WIDropDownMenu *>(this)->FindOptionByValue(value); }
-WIDropDownMenuOption *WIDropDownMenu::FindOptionByValue(const std::string &value)
+const pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::FindOptionByValue(const std::string &value) const { return const_cast<WIDropDownMenu *>(this)->FindOptionByValue(value); }
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::FindOptionByValue(const std::string &value)
 {
 	for(auto it = m_options.begin(); it != m_options.end(); it++) {
 		if(it->IsValid()) {
@@ -160,9 +160,9 @@ WIDropDownMenuOption *WIDropDownMenu::FindOptionByValue(const std::string &value
 	}
 	return nullptr;
 }
-bool WIDropDownMenu::HasOption(const std::string &value) const { return FindOptionByValue(value) != nullptr; }
+bool pragma::gui::types::WIDropDownMenu::HasOption(const std::string &value) const { return FindOptionByValue(value) != nullptr; }
 
-void WIDropDownMenu::SelectOption(const std::string &value)
+void pragma::gui::types::WIDropDownMenu::SelectOption(const std::string &value)
 {
 	auto *option = FindOptionByValue(value);
 	if(option == nullptr)
@@ -170,7 +170,7 @@ void WIDropDownMenu::SelectOption(const std::string &value)
 	SelectOption(option->GetIndex());
 }
 
-void WIDropDownMenu::SelectOptionByText(const pragma::string::Utf8StringArg &name)
+void pragma::gui::types::WIDropDownMenu::SelectOptionByText(const pragma::string::Utf8StringArg &name)
 {
 	auto it = std::find_if(m_options.begin(), m_options.end(), [&name](const WIHandle &hOption) { return (hOption.IsValid() && static_cast<const WIDropDownMenuOption *>(hOption.get())->GetText() == *name) ? true : false; });
 	if(it == m_options.end())
@@ -178,7 +178,7 @@ void WIDropDownMenu::SelectOptionByText(const pragma::string::Utf8StringArg &nam
 	SelectOption(static_cast<WIDropDownMenuOption *>(it->get())->GetIndex());
 }
 
-pragma::string::Utf8StringView WIDropDownMenu::GetOptionText(uint32_t idx)
+pragma::string::Utf8StringView pragma::gui::types::WIDropDownMenu::GetOptionText(uint32_t idx)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return {};
@@ -186,29 +186,29 @@ pragma::string::Utf8StringView WIDropDownMenu::GetOptionText(uint32_t idx)
 	return pOption->GetText();
 }
 
-std::string WIDropDownMenu::GetOptionValue(uint32_t idx)
+std::string pragma::gui::types::WIDropDownMenu::GetOptionValue(uint32_t idx)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return "";
 	WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(m_options[idx].get());
 	return pOption->GetValue();
 }
-void WIDropDownMenu::SetOptionText(uint32_t idx, const std::string &text)
+void pragma::gui::types::WIDropDownMenu::SetOptionText(uint32_t idx, const std::string &text)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return;
 	static_cast<WIDropDownMenuOption *>(m_options[idx].get())->SetText(text);
 }
-void WIDropDownMenu::SetOptionValue(uint32_t idx, const std::string &val)
+void pragma::gui::types::WIDropDownMenu::SetOptionValue(uint32_t idx, const std::string &val)
 {
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
 		return;
 	static_cast<WIDropDownMenuOption *>(m_options[idx].get())->SetValue(val);
 }
 
-pragma::string::Utf8StringView WIDropDownMenu::GetText() const { return WITextEntry::GetText(); }
+pragma::string::Utf8StringView pragma::gui::types::WIDropDownMenu::GetText() const { return WITextEntry::GetText(); }
 
-std::string WIDropDownMenu::GetValue()
+std::string pragma::gui::types::WIDropDownMenu::GetValue()
 {
 	auto idx = m_selected;
 	if(idx >= m_options.size() || !m_options[idx].IsValid())
@@ -217,16 +217,16 @@ std::string WIDropDownMenu::GetValue()
 	return pOption->GetValue();
 }
 
-int32_t WIDropDownMenu::GetSelectedOption() const { return m_selected; }
+int32_t pragma::gui::types::WIDropDownMenu::GetSelectedOption() const { return m_selected; }
 
-void WIDropDownMenu::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WIDropDownMenu::SetText(const pragma::string::Utf8StringArg &text)
 {
 	WITextEntry::SetText(text);
 	//SetText(text);
 	//SizeToContents();
 	UpdateText();
 }
-void WIDropDownMenu::UpdateText()
+void pragma::gui::types::WIDropDownMenu::UpdateText()
 {
 	//SizeToContents();
 	/*(m_hArrow.IsValid())
@@ -238,21 +238,21 @@ void WIDropDownMenu::UpdateText()
 	}
 	UpdateTextPos();*/
 }
-unsigned int WIDropDownMenu::GetOptionCount() { return static_cast<unsigned int>(m_options.size()); }
+unsigned int pragma::gui::types::WIDropDownMenu::GetOptionCount() { return static_cast<unsigned int>(m_options.size()); }
 
-void WIDropDownMenu::UpdateTextPos()
+void pragma::gui::types::WIDropDownMenu::UpdateTextPos()
 {
 	//SetY(static_cast<int>(static_cast<float>(GetHeight()) *0.5f -static_cast<float>(GetHeight()) *0.5f));
 }
 
-void WIDropDownMenu::OnOptionSelected(WIDropDownMenuOption *option) { SelectOption(option->GetIndex()); }
+void pragma::gui::types::WIDropDownMenu::OnOptionSelected(WIDropDownMenuOption *option) { SelectOption(option->GetIndex()); }
 
-WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option, const std::string &value)
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const std::string &option, const std::string &value)
 {
 	if(!m_hList.IsValid())
 		return nullptr;
 	WIDropDownMenuOption *pOption = WGUI::GetInstance().Create<WIDropDownMenuOption>(m_hList.get());
-	WIHandle hOption = pOption->GetHandle();
+	pragma::gui::WIHandle hOption = pOption->GetHandle();
 	pOption->SetDropDownMenu(this);
 	pOption->SetText(option);
 	pOption->SetHeight(OPTION_HEIGHT);
@@ -296,20 +296,20 @@ WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option, const
 	return pOption;
 }
 
-WIDropDownMenuOption *WIDropDownMenu::AddOption(const std::string &option)
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const std::string &option)
 {
 	auto idx = m_options.size();
 	return AddOption(option, std::to_string(idx));
 }
 
-WIDropDownMenuOption *WIDropDownMenu::GetOptionElement(uint32_t idx)
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::GetOptionElement(uint32_t idx)
 {
 	if(idx >= m_options.size())
 		return nullptr;
 	return static_cast<WIDropDownMenuOption *>(m_options.at(idx).get());
 }
 
-WIDropDownMenuOption *WIDropDownMenu::FindOptionSelectedByCursor()
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::FindOptionSelectedByCursor()
 {
 	for(auto &hOpt : m_options) {
 		if(hOpt.IsValid() == false || static_cast<WIDropDownMenuOption *>(hOpt.get())->IsSelected() == false)
@@ -319,7 +319,7 @@ WIDropDownMenuOption *WIDropDownMenu::FindOptionSelectedByCursor()
 	return nullptr;
 }
 
-void WIDropDownMenu::ClearOptions()
+void pragma::gui::types::WIDropDownMenu::ClearOptions()
 {
 	for(auto it = m_options.begin(); it != m_options.end(); it++) {
 		auto &hOption = *it;
@@ -329,7 +329,7 @@ void WIDropDownMenu::ClearOptions()
 	m_options.clear();
 }
 
-void WIDropDownMenu::SetOptions(const std::vector<std::string> &options)
+void pragma::gui::types::WIDropDownMenu::SetOptions(const std::vector<std::string> &options)
 {
 	ClearOptions();
 	for(auto it = options.begin(); it != options.end(); it++) {
@@ -338,14 +338,14 @@ void WIDropDownMenu::SetOptions(const std::vector<std::string> &options)
 	}
 }
 
-void WIDropDownMenu::SetOptions(const std::unordered_map<std::string, std::string> &options)
+void pragma::gui::types::WIDropDownMenu::SetOptions(const std::unordered_map<std::string, std::string> &options)
 {
 	ClearOptions();
 	for(auto it = options.begin(); it != options.end(); ++it)
 		AddOption(it->first, it->second);
 }
 
-void WIDropDownMenu::UpdateOptionItems(std::optional<uint32_t> oldOffset)
+void pragma::gui::types::WIDropDownMenu::UpdateOptionItems(std::optional<uint32_t> oldOffset)
 {
 	int numOptions = static_cast<int>(m_options.size());
 	if(oldOffset.has_value()) {
@@ -354,7 +354,7 @@ void WIDropDownMenu::UpdateOptionItems(std::optional<uint32_t> oldOffset)
 		if(numOptions < numList)
 			numList = numOptions;
 		for(int i = curOffset; i < numList; i++) {
-			WIHandle &hOption = m_options[i];
+			pragma::gui::WIHandle &hOption = m_options[i];
 			if(hOption.IsValid())
 				hOption->SetVisible(false);
 		}
@@ -365,7 +365,7 @@ void WIDropDownMenu::UpdateOptionItems(std::optional<uint32_t> oldOffset)
 	if(numOptions < numList)
 		numList = numOptions;
 	for(int i = m_listOffset; i < numList; i++) {
-		WIHandle &hOption = m_options[i];
+		pragma::gui::WIHandle &hOption = m_options[i];
 		if(hOption.IsValid()) {
 			WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
 			pOption->SetVisible(true);
@@ -376,7 +376,7 @@ void WIDropDownMenu::UpdateOptionItems(std::optional<uint32_t> oldOffset)
 	}
 }
 
-void WIDropDownMenu::SetOptionOffset(unsigned int offset)
+void pragma::gui::types::WIDropDownMenu::SetOptionOffset(unsigned int offset)
 {
 	if(offset >= m_options.size())
 		return;
@@ -385,7 +385,7 @@ void WIDropDownMenu::SetOptionOffset(unsigned int offset)
 	UpdateOptionItems(oldOffset);
 }
 
-void WIDropDownMenu::ScrollToOption(uint32_t offset, bool center)
+void pragma::gui::types::WIDropDownMenu::ScrollToOption(uint32_t offset, bool center)
 {
 	if(offset >= m_options.size())
 		return;
@@ -400,7 +400,7 @@ void WIDropDownMenu::ScrollToOption(uint32_t offset, bool center)
 	}
 }
 
-void WIDropDownMenu::UpdateListWindow()
+void pragma::gui::types::WIDropDownMenu::UpdateListWindow()
 {
 	if(!m_hList.IsValid())
 		return;
@@ -422,7 +422,7 @@ void WIDropDownMenu::UpdateListWindow()
 	m_cbListWindowUpdate = elBase->AddCallback("OnPreRemove", FunctionCallback<void>::Create([this]() { UpdateListWindow(); }));
 }
 
-void WIDropDownMenu::OpenMenu()
+void pragma::gui::types::WIDropDownMenu::OpenMenu()
 {
 	if(IsMenuOpen())
 		return;
@@ -467,7 +467,7 @@ void WIDropDownMenu::OpenMenu()
 	auto text = GetText();
 	int w = GetWidth() - marginRight;
 	for(unsigned int i = 0; i < numOptions; i++) {
-		WIHandle &hOption = m_options[i];
+		pragma::gui::WIHandle &hOption = m_options[i];
 		if(hOption.IsValid()) {
 			WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
 			pOption->SetWidth(w);
@@ -476,7 +476,7 @@ void WIDropDownMenu::OpenMenu()
 	ScrollToOption(m_selected, true);
 	CallCallbacks("OnMenuOpened");
 }
-void WIDropDownMenu::CloseMenu()
+void pragma::gui::types::WIDropDownMenu::CloseMenu()
 {
 	if(!IsMenuOpen())
 		return;
@@ -488,20 +488,20 @@ void WIDropDownMenu::CloseMenu()
 	}
 	CallCallbacks("OnMenuClosed");
 }
-bool WIDropDownMenu::IsMenuOpen()
+bool pragma::gui::types::WIDropDownMenu::IsMenuOpen()
 {
 	if(!m_hList.IsValid())
 		return false;
 	return m_hList->IsVisible();
 }
-void WIDropDownMenu::ToggleMenu()
+void pragma::gui::types::WIDropDownMenu::ToggleMenu()
 {
 	if(IsMenuOpen())
 		CloseMenu();
 	else
 		OpenMenu();
 }
-util::EventReply WIDropDownMenu::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+util::EventReply pragma::gui::types::WIDropDownMenu::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
 {
 	if(WITextEntry::MouseCallback(button, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
@@ -513,14 +513,14 @@ util::EventReply WIDropDownMenu::MouseCallback(pragma::platform::MouseButton but
 	}
 	return util::EventReply::Handled;
 }
-util::EventReply WIDropDownMenu::ScrollCallback(Vector2 offset, bool offsetAsPixels)
+util::EventReply pragma::gui::types::WIDropDownMenu::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
 	if(WITextEntry::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled || !m_hScrollBar.IsValid())
 		return util::EventReply::Handled;
 	static_cast<WIScrollBar *>(m_hScrollBar.get())->ScrollCallback(offset, offsetAsPixels);
 	return util::EventReply::Handled;
 }
-void WIDropDownMenu::SetSize(int x, int y)
+void pragma::gui::types::WIDropDownMenu::SetSize(int x, int y)
 {
 	WITextEntry::SetSize(x, y);
 	if(m_hOutline.IsValid()) {
@@ -537,26 +537,26 @@ void WIDropDownMenu::SetSize(int x, int y)
 
 //////////////////////////////
 
-WIDropDownMenuOption::WIDropDownMenuOption() : WIBase(), m_index(-1) { RegisterCallback<void, bool>("OnSelectionChanged"); }
+pragma::gui::types::WIDropDownMenuOption::WIDropDownMenuOption() : WIBase(), m_index(-1) { RegisterCallback<void, bool>("OnSelectionChanged"); }
 
-void WIDropDownMenuOption::SetValue(const std::string &val) { m_value = val; }
-const std::string &WIDropDownMenuOption::GetValue() { return m_value; }
+void pragma::gui::types::WIDropDownMenuOption::SetValue(const std::string &val) { m_value = val; }
+const std::string &pragma::gui::types::WIDropDownMenuOption::GetValue() { return m_value; }
 
-int WIDropDownMenuOption::GetIndex() { return m_index; }
-void WIDropDownMenuOption::SetIndex(int idx) { m_index = idx; }
+int pragma::gui::types::WIDropDownMenuOption::GetIndex() { return m_index; }
+void pragma::gui::types::WIDropDownMenuOption::SetIndex(int idx) { m_index = idx; }
 
-WIDropDownMenuOption::~WIDropDownMenuOption() {}
+pragma::gui::types::WIDropDownMenuOption::~WIDropDownMenuOption() {}
 
-void WIDropDownMenuOption::SetDropDownMenu(WIDropDownMenu *menu) { m_dropDownMenu = menu->GetHandle(); }
-bool WIDropDownMenuOption::IsSelected() const { return m_selected; }
-WIDropDownMenu *WIDropDownMenuOption::GetDropDownMenu()
+void pragma::gui::types::WIDropDownMenuOption::SetDropDownMenu(WIDropDownMenu *menu) { m_dropDownMenu = menu->GetHandle(); }
+bool pragma::gui::types::WIDropDownMenuOption::IsSelected() const { return m_selected; }
+pragma::gui::types::WIDropDownMenu *pragma::gui::types::WIDropDownMenuOption::GetDropDownMenu()
 {
 	if(!m_dropDownMenu.IsValid())
 		return nullptr;
 	return static_cast<WIDropDownMenu *>(m_dropDownMenu.get());
 }
 
-void WIDropDownMenuOption::Initialize()
+void pragma::gui::types::WIDropDownMenuOption::Initialize()
 {
 	WIBase::Initialize();
 	m_hBackground = CreateChild<WIRect>();
@@ -570,7 +570,7 @@ void WIDropDownMenuOption::Initialize()
 	SetScrollInputEnabled(true);
 }
 
-void WIDropDownMenuOption::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WIDropDownMenuOption::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(!m_hText.IsValid())
 		return;
@@ -581,22 +581,22 @@ void WIDropDownMenuOption::SetText(const pragma::string::Utf8StringArg &text)
 	UpdateTextPos();
 }
 
-WIText *WIDropDownMenuOption::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }
+pragma::gui::types::WIText *pragma::gui::types::WIDropDownMenuOption::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }
 
-pragma::string::Utf8StringView WIDropDownMenuOption::GetText() const
+pragma::string::Utf8StringView pragma::gui::types::WIDropDownMenuOption::GetText() const
 {
 	if(!m_hText.IsValid())
 		return {};
 	return static_cast<const WIText *>(m_hText.get())->GetText();
 }
 
-void WIDropDownMenuOption::UpdateTextPos()
+void pragma::gui::types::WIDropDownMenuOption::UpdateTextPos()
 {
 	if(!m_hText.IsValid())
 		return;
 	m_hText.get()->SetY(static_cast<int>(static_cast<float>(GetHeight()) * 0.5f - static_cast<float>(m_hText.get()->GetHeight()) * 0.5f));
 }
-void WIDropDownMenuOption::SetSize(int x, int y)
+void pragma::gui::types::WIDropDownMenuOption::SetSize(int x, int y)
 {
 	WIBase::SetSize(x, y);
 	if(m_hBackground.IsValid()) {
@@ -605,7 +605,7 @@ void WIDropDownMenuOption::SetSize(int x, int y)
 	}
 	UpdateTextPos();
 }
-void WIDropDownMenuOption::OnCursorEntered()
+void pragma::gui::types::WIDropDownMenuOption::OnCursorEntered()
 {
 	WIBase::OnCursorEntered();
 	if(m_hBackground.IsValid())
@@ -613,7 +613,7 @@ void WIDropDownMenuOption::OnCursorEntered()
 	m_selected = true;
 	CallCallbacks<void, bool>("OnSelectionChanged", true);
 }
-void WIDropDownMenuOption::OnCursorExited()
+void pragma::gui::types::WIDropDownMenuOption::OnCursorExited()
 {
 	WIBase::OnCursorExited();
 	if(m_hBackground.IsValid())
@@ -621,7 +621,7 @@ void WIDropDownMenuOption::OnCursorExited()
 	m_selected = false;
 	CallCallbacks<void, bool>("OnSelectionChanged", false);
 }
-void WIDropDownMenuOption::OnVisibilityChanged(bool bVisible)
+void pragma::gui::types::WIDropDownMenuOption::OnVisibilityChanged(bool bVisible)
 {
 	WIBase::OnVisibilityChanged(bVisible);
 	if(m_selected)

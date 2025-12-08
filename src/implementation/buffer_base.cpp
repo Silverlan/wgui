@@ -11,7 +11,7 @@ import :draw_state;
 
 #undef DrawState
 
-WIBufferBase::WIBufferBase() : WIBase()
+pragma::gui::types::WIBufferBase::WIBufferBase() : WIBase()
 {
 	auto *pShaderColored = WGUI::GetInstance().GetColoredShader();
 	auto *pShaderColoredCheap = WGUI::GetInstance().GetColoredRectShader();
@@ -30,7 +30,7 @@ WIBufferBase::WIBufferBase() : WIBase()
 #endif
 }
 
-WIBufferBase::~WIBufferBase()
+pragma::gui::types::WIBufferBase::~WIBufferBase()
 {
 #if USE_STAGING_BUFFER != 0
 	if(--s_elementCount == 0u)
@@ -38,24 +38,24 @@ WIBufferBase::~WIBufferBase()
 #endif
 }
 
-void WIBufferBase::SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap)
+void pragma::gui::types::WIBufferBase::SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap)
 {
-	if(dynamic_cast<wgui::ShaderColored *>(&shader) != nullptr)
+	if(dynamic_cast<shaders::ShaderColored *>(&shader) != nullptr)
 		m_shader = shader.GetHandle();
 	else
 		m_shader = {};
 
-	if(dynamic_cast<wgui::ShaderColoredRect *>(&shader) != nullptr)
+	if(dynamic_cast<shaders::ShaderColoredRect *>(&shader) != nullptr)
 		m_shaderCheap = shader.GetHandle();
 	else
 		m_shaderCheap = {};
 }
-prosper::Shader *WIBufferBase::GetShader() { return m_shader.get(); }
-prosper::Shader *WIBufferBase::GetCheapShader() { return m_shaderCheap.get(); }
+prosper::Shader *pragma::gui::types::WIBufferBase::GetShader() { return m_shader.get(); }
+prosper::Shader *pragma::gui::types::WIBufferBase::GetCheapShader() { return m_shaderCheap.get(); }
 
-unsigned int WIBufferBase::GetVertexCount() { return 0; }
+unsigned int pragma::gui::types::WIBufferBase::GetVertexCount() { return 0; }
 
-void WIBufferBase::InitializeBufferData(prosper::IBuffer &buffer)
+void pragma::gui::types::WIBufferBase::InitializeBufferData(prosper::IBuffer &buffer)
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to initialize GUI element buffer data during rendering, this is not allowed!"};
@@ -63,8 +63,8 @@ void WIBufferBase::InitializeBufferData(prosper::IBuffer &buffer)
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }
 
-prosper::IBuffer *WIBufferBase::GetBuffer() { return m_vertexBufferData ? m_vertexBufferData->GetBuffer().get() : nullptr; }
-void WIBufferBase::SetBuffer(prosper::IBuffer &buffer)
+prosper::IBuffer *pragma::gui::types::WIBufferBase::GetBuffer() { return m_vertexBufferData ? m_vertexBufferData->GetBuffer().get() : nullptr; }
+void pragma::gui::types::WIBufferBase::SetBuffer(prosper::IBuffer &buffer)
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to change GUI element buffer during rendering, this is not allowed!"};
@@ -73,14 +73,14 @@ void WIBufferBase::SetBuffer(prosper::IBuffer &buffer)
 	m_vertexBufferData->SetBuffer(buffer.shared_from_this());
 }
 
-void WIBufferBase::ClearBuffer()
+void pragma::gui::types::WIBufferBase::ClearBuffer()
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to clear GUI element buffer during rendering, this is not allowed!"};
 	m_vertexBufferData = nullptr;
 }
 
-void WIBufferBase::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline)
+void pragma::gui::types::WIBufferBase::Render(const DrawInfo &drawInfo, DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel, StencilPipeline stencilPipeline)
 {
 	// Try to use cheap shader if no custom vertex buffer was used
 	auto col = drawInfo.GetColor(*this, drawState);
@@ -90,11 +90,11 @@ void WIBufferBase::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawS
 	if(m_vertexBufferData == nullptr || m_shader.expired()) {
 		if(m_shaderCheap.expired())
 			return;
-		auto *pShader = static_cast<wgui::ShaderColoredRect *>(m_shaderCheap.get());
+		auto *pShader = static_cast<shaders::ShaderColoredRect *>(m_shaderCheap.get());
 		auto &context = WGUI::GetInstance().GetContext();
 		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-		if(pShader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, wgui::DrawInfo::Flags::Msaa)) == true) {
-			pShader->RecordDraw(bindState, {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
+		if(pShader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
+			pShader->RecordDraw(bindState, {matDraw, col, ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
 			pShader->RecordEndDraw(bindState);
 		}
 		return;
@@ -104,11 +104,11 @@ void WIBufferBase::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawS
 	auto buf = (m_vertexBufferData != nullptr) ? m_vertexBufferData->GetBuffer() : nullptr;
 	if(buf == nullptr)
 		return;
-	auto &shader = static_cast<wgui::ShaderColored &>(*m_shader.get());
+	auto &shader = static_cast<shaders::ShaderColored &>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, wgui::DrawInfo::Flags::Msaa)) == true) {
-		shader.RecordDraw(bindState, *buf, GetVertexCount(), wgui::ElementData {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
+		shader.RecordDraw(bindState, *buf, GetVertexCount(), ElementData {matDraw, col, ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
 		shader.RecordEndDraw(bindState);
 	}
 }

@@ -10,14 +10,14 @@ export module pragma.gui:types.text_entry;
 import :handle;
 import :types.base;
 
-export {
+export namespace pragma::gui::types {
 	class WIText;
 	class WIRect;
 	class DLLWGUI WITextEntry : public WIBase {
 	  protected:
-		WIHandle m_hBase;
-		WIHandle m_hOutline;
-		WIHandle m_hBg;
+		pragma::gui::WIHandle m_hBase;
+		pragma::gui::WIHandle m_hOutline;
+		pragma::gui::WIHandle m_hBg;
 
 		virtual void OnTextEntered();
 		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
@@ -64,8 +64,8 @@ export {
 	class DLLWGUI WINumericEntry : public WITextEntry {
 	  private:
 		struct Numeric {
-			WIHandle hUpArrow;
-			WIHandle hDownArrow;
+			pragma::gui::WIHandle hUpArrow;
+			pragma::gui::WIHandle hDownArrow;
 			std::unique_ptr<int32_t> min;
 			std::unique_ptr<int32_t> max;
 		} m_numeric;

@@ -7,7 +7,7 @@ module pragma.gui;
 
 import :types.text;
 
-void WIText::UpdateSubLines()
+void pragma::gui::types::WIText::UpdateSubLines()
 {
 	if(m_autoBreak == AutoBreak::NONE)
 		return;
@@ -37,7 +37,7 @@ void WIText::UpdateSubLines()
 	PerformTextPostProcessing();
 	CallCallbacks<void>("OnContentsChanged");
 }
-bool WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineShift)
+bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineShift)
 {
 	auto w = GetWidth();
 	if(m_autoBreak == AutoBreak::NONE || w == 0 || lineIndex >= m_lineInfos.size() || m_lineInfos.at(lineIndex).wpLine.expired())
@@ -116,7 +116,7 @@ bool WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineS
 	return subLinesHaveChanged;
 }
 
-void WIText::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WIText::SetText(const pragma::string::Utf8StringArg &text)
 {
 	if(IsDirty() == false && *m_text == *text)
 		return;
@@ -136,7 +136,7 @@ void WIText::SetText(const pragma::string::Utf8StringArg &text)
 	CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>>("OnTextChanged", std::reference_wrapper<const pragma::string::Utf8String>(newText));
 	CallCallbacks<void>("OnContentsChanged");
 }
-void WIText::PerformTextPostProcessing()
+void pragma::gui::types::WIText::PerformTextPostProcessing()
 {
 	for(auto lineIndex = decltype(m_lineInfos.size()) {0u}; lineIndex < m_lineInfos.size(); ++lineIndex) {
 		auto &lineInfo = m_lineInfos.at(lineIndex);
@@ -149,13 +149,13 @@ void WIText::PerformTextPostProcessing()
 	}
 	AutoSizeToText();
 }
-void WIText::AutoSizeToText()
+void pragma::gui::types::WIText::AutoSizeToText()
 {
 	if(ShouldAutoSizeToText() == false)
 		return;
 	// Calling SizeToContents here would result in infinite recursion
 	int32_t w, h;
-	if(GetAutoBreakMode() == WIText::AutoBreak::NONE)
+	if(GetAutoBreakMode() == pragma::gui::types::WIText::AutoBreak::NONE)
 		GetTextSize(&w, &h);
 	else
 		w = GetWidth();

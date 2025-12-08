@@ -63,8 +63,8 @@ CachedBuffers::BufferInfo &CachedBuffers::GetBuffer(const std::string &identifie
 
 		BufferInfo info {};
 		info.vertexCount = verts.size();
-		info.buffer = WIShape::CreateBuffer(verts);
-		info.uvBuffer = WIShape::CreateBuffer(uvs);
+		info.buffer = pragma::gui::types::WIShape::CreateBuffer(verts);
+		info.uvBuffer = pragma::gui::types::WIShape::CreateBuffer(uvs);
 		return (m_cache[identifier] = info);
 	}
 	throw std::runtime_error {"Invalid buffer type!"};
@@ -72,41 +72,41 @@ CachedBuffers::BufferInfo &CachedBuffers::GetBuffer(const std::string &identifie
 
 static std::unique_ptr<CachedBuffers> g_cache = nullptr;
 static uint32_t g_count = 0;
-WIShape::WIShape() : WIBufferBase(), m_vertexBufferUpdateRequired(false)
+pragma::gui::types::WIShape::WIShape() : WIBufferBase(), m_vertexBufferUpdateRequired(false)
 {
 	if(g_count++ == 0)
 		g_cache = std::make_unique<CachedBuffers>();
 }
-WIShape::~WIShape()
+pragma::gui::types::WIShape::~WIShape()
 {
 	if(--g_count == 0)
 		g_cache = nullptr;
 }
-unsigned int WIShape::AddVertex(Vector2 vert)
+unsigned int pragma::gui::types::WIShape::AddVertex(Vector2 vert)
 {
 	m_vertices.push_back(vert);
 	m_vertexBufferUpdateRequired |= 1;
 	return static_cast<unsigned int>(m_vertices.size());
 }
-void WIShape::SetVertexPos(unsigned int vertID, Vector2 pos)
+void pragma::gui::types::WIShape::SetVertexPos(unsigned int vertID, Vector2 pos)
 {
 	if(m_vertices.size() <= vertID)
 		return;
 	m_vertices[vertID] = pos;
 	m_vertexBufferUpdateRequired |= 1;
 }
-void WIShape::ClearVertices()
+void pragma::gui::types::WIShape::ClearVertices()
 {
 	m_vertices.clear();
 	m_vertexBufferUpdateRequired |= 1;
 }
-bool WIShape::DoPosInBounds(const Vector2i &pos) const
+bool pragma::gui::types::WIShape::DoPosInBounds(const Vector2i &pos) const
 {
 	if(m_checkInBounds)
 		return m_checkInBounds(*this, pos);
 	return WIBufferBase::DoPosInBounds(pos);
 }
-void WIShape::SetShape(BasicShape shape)
+void pragma::gui::types::WIShape::SetShape(BasicShape shape)
 {
 	switch(shape) {
 	case BasicShape::Rectangle:
@@ -135,8 +135,8 @@ void WIShape::SetShape(BasicShape shape)
 		break;
 	}
 }
-void WIShape::SetBoundsCheckFunction(const std::function<bool(const WIShape &, const Vector2i &)> &func) { m_checkInBounds = func; }
-void WIShape::DoUpdate()
+void pragma::gui::types::WIShape::SetBoundsCheckFunction(const std::function<bool(const WIShape &, const Vector2i &)> &func) { m_checkInBounds = func; }
+void pragma::gui::types::WIShape::DoUpdate()
 {
 	WIBase::DoUpdate();
 	if(!(m_vertexBufferUpdateRequired & 1) || m_vertices.size() == 0)
@@ -146,7 +146,7 @@ void WIShape::DoUpdate()
 	auto buf = CreateBuffer(m_vertices);
 	InitializeBufferData(*buf);
 }
-std::shared_ptr<prosper::IBuffer> WIShape::CreateBuffer(const std::vector<Vector2> &verts)
+std::shared_ptr<prosper::IBuffer> pragma::gui::types::WIShape::CreateBuffer(const std::vector<Vector2> &verts)
 {
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::util::BufferCreateInfo createInfo {};
@@ -157,18 +157,18 @@ std::shared_ptr<prosper::IBuffer> WIShape::CreateBuffer(const std::vector<Vector
 	buf->SetDebugName("gui_shape_vertex_buf");
 	return buf;
 }
-void WIShape::SetBuffer(prosper::IBuffer &buffer, uint32_t numVerts)
+void pragma::gui::types::WIShape::SetBuffer(prosper::IBuffer &buffer, uint32_t numVerts)
 {
 	WIBufferBase::SetBuffer(buffer);
 	m_bufferVertexCount = numVerts;
 }
-void WIShape::ClearBuffer()
+void pragma::gui::types::WIShape::ClearBuffer()
 {
 	WIBufferBase::ClearBuffer();
 	m_bufferVertexCount = {};
 }
-unsigned int WIShape::GetVertexCount() { return m_bufferVertexCount.has_value() ? *m_bufferVertexCount : static_cast<unsigned int>(m_vertices.size()); }
-void WIShape::InvertVertexPositions(bool x, bool y)
+unsigned int pragma::gui::types::WIShape::GetVertexCount() { return m_bufferVertexCount.has_value() ? *m_bufferVertexCount : static_cast<unsigned int>(m_vertices.size()); }
+void pragma::gui::types::WIShape::InvertVertexPositions(bool x, bool y)
 {
 	for(auto &v : m_vertices) {
 		if(x == true)
@@ -182,11 +182,11 @@ void WIShape::InvertVertexPositions(bool x, bool y)
 
 ///////////////////
 
-WIOutlinedShape::WIOutlinedShape() : WIShape(), WILineBase() {}
+pragma::gui::types::WIOutlinedShape::WIOutlinedShape() : WIShape(), WILineBase() {}
 
 ///////////////////
 
-WITexturedShape::WITexturedShape() : WIShape(), m_hMaterial(), m_texture(), m_uvBuffer(nullptr), m_shader(), m_descSetTextureGroup(nullptr), m_texLoadCallback(nullptr)
+pragma::gui::types::WITexturedShape::WITexturedShape() : WIShape(), m_hMaterial(), m_texture(), m_uvBuffer(nullptr), m_shader(), m_descSetTextureGroup(nullptr), m_texLoadCallback(nullptr)
 {
 	auto &instance = WGUI::GetInstance();
 	auto *pShader = instance.GetTexturedShader();
@@ -199,53 +199,53 @@ WITexturedShape::WITexturedShape() : WIShape(), m_hMaterial(), m_texture(), m_uv
 	RegisterCallback<void>("OnTextureChanged");
 	RegisterCallback<void>("OnTextureApplied");
 }
-void WITexturedShape::ClearBuffer()
+void pragma::gui::types::WITexturedShape::ClearBuffer()
 {
-	WIShape::ClearBuffer();
+	pragma::gui::types::WIShape::ClearBuffer();
 	m_uvBuffer = nullptr;
 }
-void WITexturedShape::SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap)
+void pragma::gui::types::WITexturedShape::SetShader(prosper::Shader &shader, prosper::Shader *shaderCheap)
 {
-	if(dynamic_cast<wgui::ShaderTextured *>(&shader) != nullptr)
+	if(dynamic_cast<shaders::ShaderTextured *>(&shader) != nullptr)
 		m_shader = shader.GetHandle();
 	else
 		m_shader = {};
 
-	if(dynamic_cast<wgui::ShaderTexturedRect *>(shaderCheap) != nullptr)
+	if(dynamic_cast<shaders::ShaderTexturedRect *>(shaderCheap) != nullptr)
 		m_shaderCheap = shaderCheap->GetHandle();
 	else
 		m_shaderCheap = {};
 }
-void WITexturedShape::ReloadDescriptorSet()
+void pragma::gui::types::WITexturedShape::ReloadDescriptorSet()
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to reload GUI element descriptor set during rendering, this is not allowed!"};
 	if(m_descSetTextureGroup)
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_descSetTextureGroup);
 	m_descSetTextureGroup = nullptr;
-	if(wgui::ShaderTextured::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
+	if(shaders::ShaderTextured::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
 		return;
-	m_descSetTextureGroup = WGUI::GetInstance().GetContext().CreateDescriptorSetGroup(wgui::ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	m_descSetTextureGroup = WGUI::GetInstance().GetContext().CreateDescriptorSetGroup(shaders::ShaderTextured::DESCRIPTOR_SET_TEXTURE);
 	//m_descSetTextureGroup = prosper::util::create_descriptor_set_group(WGUI::GetInstance().GetContext().GetDevice(),m_shader.get()->GetDescriptorSetGroup(),false); // TODO: FIXME
 }
-prosper::IBuffer &WITexturedShape::GetUVBuffer() const { return *m_uvBuffer; }
-void WITexturedShape::SetUVBuffer(prosper::IBuffer &buffer)
+prosper::IBuffer &pragma::gui::types::WITexturedShape::GetUVBuffer() const { return *m_uvBuffer; }
+void pragma::gui::types::WITexturedShape::SetUVBuffer(prosper::IBuffer &buffer)
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to change GUI element UV buffer during rendering, this is not allowed!"};
 	m_uvBuffer = buffer.shared_from_this();
 }
-void WITexturedShape::SetAlphaOnly(bool b) { umath::set_flag(m_stateFlags, StateFlags::AlphaOnly, b); }
-bool WITexturedShape::GetAlphaOnly() const { return umath::is_flag_set(m_stateFlags, StateFlags::AlphaOnly); }
-float WITexturedShape::GetLOD() const { return m_lod; }
-void WITexturedShape::SetLOD(float lod) { m_lod = lod; }
-void WITexturedShape::ClearTextureLoadCallback()
+void pragma::gui::types::WITexturedShape::SetAlphaOnly(bool b) { umath::set_flag(m_stateFlags, StateFlags::AlphaOnly, b); }
+bool pragma::gui::types::WITexturedShape::GetAlphaOnly() const { return umath::is_flag_set(m_stateFlags, StateFlags::AlphaOnly); }
+float pragma::gui::types::WITexturedShape::GetLOD() const { return m_lod; }
+void pragma::gui::types::WITexturedShape::SetLOD(float lod) { m_lod = lod; }
+void pragma::gui::types::WITexturedShape::ClearTextureLoadCallback()
 {
 	if(m_texLoadCallback != nullptr)
 		*m_texLoadCallback = false;
 	m_texLoadCallback = nullptr;
 }
-void WITexturedShape::InvertVertexUVCoordinates(bool x, bool y)
+void pragma::gui::types::WITexturedShape::InvertVertexUVCoordinates(bool x, bool y)
 {
 	for(auto &v : m_uvs) {
 		if(x == true)
@@ -256,7 +256,7 @@ void WITexturedShape::InvertVertexUVCoordinates(bool x, bool y)
 	m_vertexBufferUpdateRequired |= 2;
 	Update();
 }
-void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<msys::Texture> &texture)
+void pragma::gui::types::WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<msys::Texture> &texture)
 {
 	auto hThis = GetHandle();
 	m_texLoadCallback = std::make_shared<bool>(true);
@@ -277,7 +277,7 @@ void WITexturedShape::InitializeTextureLoadCallback(const std::shared_ptr<msys::
 		static_cast<WITexturedShape *>(hThis.get())->CallCallbacks<void>("OnTextureApplied");
 	});
 }
-void WITexturedShape::UpdateMaterialDescriptorSetTexture()
+void pragma::gui::types::WITexturedShape::UpdateMaterialDescriptorSetTexture()
 {
 	// if(WGUI::GetInstance().IsLockedForDrawing())
 	// 	throw std::runtime_error{"Attempted to update material descriptor set texture during rendering, this is not allowed!"};
@@ -306,7 +306,7 @@ void WITexturedShape::UpdateMaterialDescriptorSetTexture()
 	m_texUpdateCountRef = diffuseTexture->GetUpdateCount();
 	m_matUpdateCountRef = m_hMaterial->GetUpdateIndex();
 }
-void WITexturedShape::SetMaterial(msys::Material *material)
+void pragma::gui::types::WITexturedShape::SetMaterial(msys::Material *material)
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to change GUI element material during rendering, this is not allowed!"};
@@ -327,7 +327,7 @@ void WITexturedShape::SetMaterial(msys::Material *material)
 		return;
 	InitializeTextureLoadCallback(diffuseTexture);
 }
-void WITexturedShape::SetMaterial(const std::string &material)
+void pragma::gui::types::WITexturedShape::SetMaterial(const std::string &material)
 {
 	auto *mat = WGUI::GetInstance().GetMaterialLoadHandler()(material);
 	if(mat == nullptr)
@@ -335,13 +335,13 @@ void WITexturedShape::SetMaterial(const std::string &material)
 	else
 		SetMaterial(mat);
 }
-msys::Material *WITexturedShape::GetMaterial()
+msys::Material *pragma::gui::types::WITexturedShape::GetMaterial()
 {
 	if(!m_hMaterial)
 		return nullptr;
 	return m_hMaterial.get();
 }
-void WITexturedShape::ClearTexture()
+void pragma::gui::types::WITexturedShape::ClearTexture()
 {
 	ClearTextureLoadCallback();
 	m_materialColor = {1.f, 1.f, 1.f, 1.f};
@@ -350,7 +350,7 @@ void WITexturedShape::ClearTexture()
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_texture);
 	m_texture = nullptr;
 }
-void WITexturedShape::SetTexture(prosper::Texture &tex, std::optional<uint32_t> layerIndex)
+void pragma::gui::types::WITexturedShape::SetTexture(prosper::Texture &tex, std::optional<uint32_t> layerIndex)
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to change GUI element material during rendering, this is not allowed!"};
@@ -368,7 +368,7 @@ void WITexturedShape::SetTexture(prosper::Texture &tex, std::optional<uint32_t> 
 	CallCallbacks<void>("OnTextureChanged");
 	CallCallbacks<void>("OnTextureApplied");
 }
-const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
+const std::shared_ptr<prosper::Texture> &pragma::gui::types::WITexturedShape::GetTexture() const
 {
 	if(m_texture || !m_hMaterial)
 		return m_texture;
@@ -381,19 +381,19 @@ const std::shared_ptr<prosper::Texture> &WITexturedShape::GetTexture() const
 	return diffuseTexture->GetVkTexture();
 }
 
-void WITexturedShape::SetVertexUVCoord(unsigned int vertID, Vector2 uv)
+void pragma::gui::types::WITexturedShape::SetVertexUVCoord(unsigned int vertID, Vector2 uv)
 {
 	if(m_uvs.size() <= vertID)
 		return;
 	m_uvs[vertID] = uv;
 	m_vertexBufferUpdateRequired |= 2;
 }
-void WITexturedShape::ClearVertices()
+void pragma::gui::types::WITexturedShape::ClearVertices()
 {
-	WIShape::ClearVertices();
+	pragma::gui::types::WIShape::ClearVertices();
 	m_uvs.clear();
 }
-WITexturedShape::~WITexturedShape()
+pragma::gui::types::WITexturedShape::~WITexturedShape()
 {
 	if(m_uvBuffer != nullptr)
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_uvBuffer);
@@ -403,9 +403,9 @@ WITexturedShape::~WITexturedShape()
 		WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_texture);
 	ClearTextureLoadCallback();
 }
-std::ostream &WITexturedShape::Print(std::ostream &stream) const
+std::ostream &pragma::gui::types::WITexturedShape::Print(std::ostream &stream) const
 {
-	WIShape::Print(stream);
+	pragma::gui::types::WIShape::Print(stream);
 	stream << "[Mat:";
 	if(m_hMaterial)
 		stream << const_cast<msys::Material *>(m_hMaterial.get())->GetName();
@@ -421,7 +421,7 @@ std::ostream &WITexturedShape::Print(std::ostream &stream) const
 	stream << "]";
 	return stream;
 }
-unsigned int WITexturedShape::AddVertex(Vector2 vert)
+unsigned int pragma::gui::types::WITexturedShape::AddVertex(Vector2 vert)
 {
 	Vector2 uv(vert.x + 1.f, vert.y + 1.f);
 	if(uv.x != 0.f)
@@ -430,13 +430,13 @@ unsigned int WITexturedShape::AddVertex(Vector2 vert)
 		uv.y /= 2.f;
 	return AddVertex(vert, uv);
 }
-unsigned int WITexturedShape::AddVertex(Vector2 vert, Vector2 uv)
+unsigned int pragma::gui::types::WITexturedShape::AddVertex(Vector2 vert, Vector2 uv)
 {
 	m_uvs.push_back(uv);
 	m_vertexBufferUpdateRequired |= 2;
-	return WIShape::AddVertex(vert);
+	return pragma::gui::types::WIShape::AddVertex(vert);
 }
-std::shared_ptr<prosper::IBuffer> WITexturedShape::CreateUvBuffer(const std::vector<Vector2> &uvs)
+std::shared_ptr<prosper::IBuffer> pragma::gui::types::WITexturedShape::CreateUvBuffer(const std::vector<Vector2> &uvs)
 {
 	if(WGUI::GetInstance().IsLockedForDrawing())
 		throw std::runtime_error {"Attempted to update GUI element UV buffer during rendering, this is not allowed!"};
@@ -447,30 +447,30 @@ std::shared_ptr<prosper::IBuffer> WITexturedShape::CreateUvBuffer(const std::vec
 	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 	return context.CreateBuffer(createInfo, uvs.data());
 }
-void WITexturedShape::DoUpdate()
+void pragma::gui::types::WITexturedShape::DoUpdate()
 {
-	WIShape::DoUpdate();
+	pragma::gui::types::WIShape::DoUpdate();
 	if(!(m_vertexBufferUpdateRequired & 2) || m_uvs.size() == 0)
 		return;
 	m_vertexBufferUpdateRequired &= ~2;
 	m_uvBuffer = CreateUvBuffer(m_uvs);
 }
-void WITexturedShape::SetChannelSwizzle(wgui::ShaderTextured::Channel dst, wgui::ShaderTextured::Channel src) { m_channels.at(umath::to_integral(dst)) = src; }
-wgui::ShaderTextured::Channel WITexturedShape::GetChannelSwizzle(wgui::ShaderTextured::Channel channel) const { return m_channels.at(umath::to_integral(channel)); }
-void WITexturedShape::SetShader(wgui::ShaderTextured &shader)
+void pragma::gui::types::WITexturedShape::SetChannelSwizzle(shaders::ShaderTextured::Channel dst, shaders::ShaderTextured::Channel src) { m_channels.at(umath::to_integral(dst)) = src; }
+pragma::gui::shaders::ShaderTextured::Channel pragma::gui::types::WITexturedShape::GetChannelSwizzle(shaders::ShaderTextured::Channel channel) const { return m_channels.at(umath::to_integral(channel)); }
+void pragma::gui::types::WITexturedShape::SetShader(shaders::ShaderTextured &shader)
 {
 	m_shader = shader.GetHandle();
 	m_stateFlags |= StateFlags::ShaderOverride;
 }
-void WITexturedShape::SetAlphaMode(AlphaMode alphaMode)
+void pragma::gui::types::WITexturedShape::SetAlphaMode(AlphaMode alphaMode)
 {
 	m_alphaMode = alphaMode;
 	UpdateShaderState();
 }
-void WITexturedShape::SetAlphaCutoff(float alphaCutoff) { m_alphaCutoff = alphaCutoff; }
-AlphaMode WITexturedShape::GetAlphaMode() const { return m_alphaMode; }
-float WITexturedShape::GetAlphaCutoff() const { return m_alphaCutoff; }
-void WITexturedShape::UpdateTransparencyState()
+void pragma::gui::types::WITexturedShape::SetAlphaCutoff(float alphaCutoff) { m_alphaCutoff = alphaCutoff; }
+AlphaMode pragma::gui::types::WITexturedShape::GetAlphaMode() const { return m_alphaMode; }
+float pragma::gui::types::WITexturedShape::GetAlphaCutoff() const { return m_alphaCutoff; }
+void pragma::gui::types::WITexturedShape::UpdateTransparencyState()
 {
 	WIBase::UpdateTransparencyState();
 	if(umath::is_flag_set(WIBase::m_stateFlags, WIBase::StateFlags::FullyTransparent))
@@ -482,8 +482,8 @@ void WITexturedShape::UpdateTransparencyState()
 	auto fullyTransparent = ustring::compare(mat->GetName().c_str(), transparent, false, strlen(transparent));
 	umath::set_flag(WIBase::m_stateFlags, WIBase::StateFlags::FullyTransparent, fullyTransparent);
 }
-void WITexturedShape::UpdateShaderState() { umath::set_flag(m_stateFlags, StateFlags::ExpensiveShaderRequired, m_alphaMode != AlphaMode::Blend); }
-Vector2i WITexturedShape::GetTextureSize() const
+void pragma::gui::types::WITexturedShape::UpdateShaderState() { umath::set_flag(m_stateFlags, StateFlags::ExpensiveShaderRequired, m_alphaMode != AlphaMode::Blend); }
+Vector2i pragma::gui::types::WITexturedShape::GetTextureSize() const
 {
 	if(m_texture == nullptr && m_hMaterial == nullptr)
 		return {};
@@ -502,12 +502,12 @@ Vector2i WITexturedShape::GetTextureSize() const
 	}
 	return {width, height};
 }
-void WITexturedShape::SizeToTexture()
+void pragma::gui::types::WITexturedShape::SizeToTexture()
 {
 	auto size = GetTextureSize();
 	SetSize(size.x, size.y);
 }
-bool WITexturedShape::PrepareRender(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, Vector4 &outColor)
+bool pragma::gui::types::WITexturedShape::PrepareRender(const DrawInfo &drawInfo, DrawState &drawState, Vector4 &outColor)
 {
 	if(m_hMaterial == nullptr && m_texture == nullptr)
 		return false;
@@ -531,7 +531,7 @@ bool WITexturedShape::PrepareRender(const wgui::DrawInfo &drawInfo, wgui::DrawSt
 	outColor = col;
 	return true;
 }
-void WITexturedShape::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline)
+void pragma::gui::types::WITexturedShape::Render(const DrawInfo &drawInfo, DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale, uint32_t testStencilLevel, StencilPipeline stencilPipeline)
 {
 	Vector4 col;
 	if(!PrepareRender(drawInfo, drawState, col))
@@ -540,29 +540,29 @@ void WITexturedShape::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &dr
 	// Try to use cheap shader if no custom vertex buffer was used
 	if(umath::is_flag_set(m_stateFlags, StateFlags::ShaderOverride) == false && ((m_vertexBufferData == nullptr && m_uvBuffer == nullptr) || m_shader.expired())) {
 		if(umath::is_flag_set(m_stateFlags, StateFlags::ExpensiveShaderRequired)) {
-			auto *pShaderExpensive = static_cast<wgui::ShaderTexturedRectExpensive *>(WGUI::GetInstance().GetTexturedRectExpensiveShader());
+			auto *pShaderExpensive = static_cast<shaders::ShaderTexturedRectExpensive *>(WGUI::GetInstance().GetTexturedRectExpensiveShader());
 			if(pShaderExpensive == nullptr)
 				return;
 			auto &context = WGUI::GetInstance().GetContext();
 			prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-			if(pShaderExpensive->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, wgui::DrawInfo::Flags::Msaa)) == true) {
+			if(pShaderExpensive->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 				pShaderExpensive->RecordDraw(bindState,
-				  {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size), std::array<uint32_t, 3> {}, umath::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
-				    m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)), m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)), m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha)), GetAlphaMode(), GetAlphaCutoff()},
+				  {matDraw, col, ElementData::ToViewportSize(drawInfo.size), std::array<uint32_t, 3> {}, umath::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Red)),
+				    m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Green)), m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Blue)), m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Alpha)), GetAlphaMode(), GetAlphaCutoff()},
 				  *m_descSetTextureGroup->GetDescriptorSet(0u), testStencilLevel);
 				pShaderExpensive->RecordEndDraw(bindState);
 			}
 			return;
 		}
-		auto *pShaderCheap = static_cast<wgui::ShaderTexturedRect *>(GetCheapShader());
+		auto *pShaderCheap = static_cast<shaders::ShaderTexturedRect *>(GetCheapShader());
 		if(pShaderCheap == nullptr)
 			return;
 		auto &context = WGUI::GetInstance().GetContext();
 		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-		if(pShaderCheap->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, wgui::DrawInfo::Flags::Msaa)) == true) {
+		if(pShaderCheap->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 			pShaderCheap->RecordDraw(bindState,
-			  {matDraw, col, wgui::ElementData::ToViewportSize(drawInfo.size), std::array<uint32_t, 3> {}, umath::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red)),
-			    m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green)), m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue)), m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha))},
+			  {matDraw, col, ElementData::ToViewportSize(drawInfo.size), std::array<uint32_t, 3> {}, umath::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Red)),
+			    m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Green)), m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Blue)), m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Alpha))},
 			  *m_descSetTextureGroup->GetDescriptorSet(0u), testStencilLevel);
 			pShaderCheap->RecordEndDraw(bindState);
 		}
@@ -572,28 +572,28 @@ void WITexturedShape::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &dr
 
 	if(m_shader.expired())
 		return;
-	auto &shader = static_cast<wgui::ShaderTextured &>(*m_shader.get());
+	auto &shader = static_cast<shaders::ShaderTextured &>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	auto vbuf = (m_vertexBufferData != nullptr) ? m_vertexBufferData->GetBuffer() : context.GetCommonBufferCache().GetSquareVertexBuffer();
 	auto uvBuf = (m_uvBuffer != nullptr) ? m_uvBuffer : context.GetCommonBufferCache().GetSquareUvBuffer();
 	if(vbuf == nullptr || uvBuf == nullptr)
 		return;
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, wgui::DrawInfo::Flags::Msaa)) == true) {
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 		BindShader(shader, bindState, drawState);
 
-		wgui::ShaderTextured::PushConstants pushConstants {};
+		shaders::ShaderTextured::PushConstants pushConstants {};
 		pushConstants.elementData.modelMatrix = matDraw;
 		pushConstants.elementData.color = col;
-		pushConstants.elementData.viewportSize = wgui::ElementData::ToViewportSize(drawInfo.size);
+		pushConstants.elementData.viewportSize = ElementData::ToViewportSize(drawInfo.size);
 		pushConstants.lod = m_lod;
-		pushConstants.red = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Red));
-		pushConstants.green = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Green));
-		pushConstants.blue = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Blue));
-		pushConstants.alpha = m_channels.at(umath::to_integral(wgui::ShaderTextured::Channel::Alpha));
+		pushConstants.red = m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Red));
+		pushConstants.green = m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Green));
+		pushConstants.blue = m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Blue));
+		pushConstants.alpha = m_channels.at(umath::to_integral(shaders::ShaderTextured::Channel::Alpha));
 		shader.RecordDraw(bindState, vbuf, uvBuf, GetVertexCount(), *m_descSetTextureGroup->GetDescriptorSet(0u), pushConstants, testStencilLevel);
 		shader.RecordEndDraw(bindState);
 	}
 }
 
-void WITexturedShape::BindShader(wgui::ShaderTextured &shader, prosper::ShaderBindState &bindState, wgui::DrawState &drawState) {}
+void pragma::gui::types::WITexturedShape::BindShader(shaders::ShaderTextured &shader, prosper::ShaderBindState &bindState, DrawState &drawState) {}

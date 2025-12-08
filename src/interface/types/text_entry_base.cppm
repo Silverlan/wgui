@@ -13,7 +13,7 @@ import :text_tags;
 import :types.base;
 import pragma.string.unicode;
 
-export {
+export namespace pragma::gui::types {
 	class WIRect;
 	class WIText;
 	class DLLWGUI WITextEntryBase : public WIBase {
@@ -66,9 +66,9 @@ export {
 	  protected:
 		virtual void OnTextContentsChanged();
 		std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;
-		WIHandle m_hText;
-		WIHandle m_hCaret;
-		WIHandle m_hEntryFieldElement;
+		pragma::gui::WIHandle m_hText;
+		pragma::gui::WIHandle m_hCaret;
+		pragma::gui::WIHandle m_hEntryFieldElement;
 		int m_maxLength;
 		int m_posCaret;
 		StateFlags m_stateFlags = static_cast<StateFlags>(umath::to_integral(StateFlags::Editable) | umath::to_integral(StateFlags::Selectable));
@@ -87,6 +87,5 @@ export {
 		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
 		void OnTextChanged(bool changedByUser);
 	};
-
-	REGISTER_ENUM_FLAGS(WITextEntryBase::StateFlags)
 };
+export {REGISTER_ENUM_FLAGS(pragma::gui::types::WITextEntryBase::StateFlags)}

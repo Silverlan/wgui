@@ -7,7 +7,7 @@ export module pragma.gui:element_data;
 
 export import pragma.math;
 
-export namespace wgui {
+export namespace pragma::gui {
 #pragma pack(push, 1)
 	struct ElementData {
 		static inline uint32_t ToViewportSize(const Vector2i &res) { return (res.x << 16) | res.y; }

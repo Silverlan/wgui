@@ -13,7 +13,7 @@ static std::array<std::array<Vector2, 3>, 4> s_vertices {std::array<Vector2, 3> 
 static std::array<std::shared_ptr<prosper::IBuffer>, 4> s_vertexBuffers {nullptr, nullptr, nullptr, nullptr};
 
 static uint32_t s_arrowCount = 0u;
-WIArrow::WIArrow() : WIShape()
+pragma::gui::types::WIArrow::WIArrow() : WIShape()
 {
 	if(s_arrowCount++ == 0u) {
 		auto &context = WGUI::GetInstance().GetContext();
@@ -33,12 +33,12 @@ WIArrow::WIArrow() : WIShape()
 	SetDirection(Direction::Down);
 	SetMouseInputEnabled(true);
 }
-WIArrow::~WIArrow()
+pragma::gui::types::WIArrow::~WIArrow()
 {
 	if(--s_arrowCount == 0u)
 		s_vertexBuffers = {};
 }
-void WIArrow::SetDirection(Direction dir)
+void pragma::gui::types::WIArrow::SetDirection(Direction dir)
 {
 	InitializeBufferData(*s_vertexBuffers[umath::to_integral(dir)]);
 	auto &verts = s_vertices[umath::to_integral(dir)];
@@ -47,12 +47,12 @@ void WIArrow::SetDirection(Direction dir)
 	for(auto &v : verts)
 		m_vertices.push_back(v);
 }
-void WIArrow::OnCursorEntered()
+void pragma::gui::types::WIArrow::OnCursorEntered()
 {
 	WIBase::OnCursorEntered();
 	SetColor(COLOR_SELECTED);
 }
-void WIArrow::OnCursorExited()
+void pragma::gui::types::WIArrow::OnCursorExited()
 {
 	WIBase::OnCursorExited();
 	SetColor(0.f, 0.f, 0.f, 1.f);

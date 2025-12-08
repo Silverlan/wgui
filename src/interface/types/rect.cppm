@@ -12,7 +12,7 @@ export import :types.base;
 export import :types.rounded_base;
 export import :types.shape;
 
-export {
+export namespace pragma::gui::types {
 	class DLLWGUI WIRect : public WIShape {
 	  public:
 		WIRect();

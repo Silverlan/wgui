@@ -7,8 +7,8 @@ module pragma.gui;
 
 import :anchor;
 
-WIAttachment::WIAttachment(WIBase &owner, const Vector2 &pos) : m_hOwner {owner.GetHandle()}, m_absPosProperty {util::Vector2iProperty::Create(pos)} {}
-void WIAttachment::UpdateAbsolutePosition()
+pragma::gui::WIAttachment::WIAttachment(types::WIBase &owner, const Vector2 &pos) : m_hOwner {owner.GetHandle()}, m_absPosProperty {util::Vector2iProperty::Create(pos)} {}
+void pragma::gui::WIAttachment::UpdateAbsolutePosition()
 {
 	if(m_hOwner.IsValid() == false)
 		return;
@@ -17,10 +17,10 @@ void WIAttachment::UpdateAbsolutePosition()
 	auto &sz = p->GetSize();
 	*m_absPosProperty = origin + Vector2i(sz.x * m_relativePosition.x, sz.y * m_relativePosition.y);
 }
-const Vector2 &WIAttachment::GetRelativePosition() const { return m_relativePosition; }
-void WIAttachment::SetRelativePosition(const Vector2 &pos)
+const Vector2 &pragma::gui::WIAttachment::GetRelativePosition() const { return m_relativePosition; }
+void pragma::gui::WIAttachment::SetRelativePosition(const Vector2 &pos)
 {
 	m_relativePosition = pos;
 	UpdateAbsolutePosition();
 }
-const util::PVector2iProperty &WIAttachment::GetAbsPosProperty() const { return m_absPosProperty; }
+const util::PVector2iProperty &pragma::gui::WIAttachment::GetAbsPosProperty() const { return m_absPosProperty; }

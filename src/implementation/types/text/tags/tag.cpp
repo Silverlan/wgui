@@ -7,20 +7,20 @@ module pragma.gui;
 
 import :text_tags;
 
-WITextDecorator::WITextDecorator(WIText &text) : m_text {text} {}
-WITextDecorator::~WITextDecorator() { Clear(); }
-void WITextDecorator::Initialize() {}
-void WITextDecorator::Apply() { SetDirty(false); }
-const util::text::AnchorPoint *WITextDecorator::GetStartAnchorPoint() const { return const_cast<WITextDecorator *>(this)->GetStartAnchorPoint(); }
-const util::text::AnchorPoint *WITextDecorator::GetEndAnchorPoint() const { return const_cast<WITextDecorator *>(this)->GetEndAnchorPoint(); }
-util::text::TextOffset WITextDecorator::GetStartTextCharOffset() const
+pragma::gui::WITextDecorator::WITextDecorator(types::WIText &text) : m_text {text} {}
+pragma::gui::WITextDecorator::~WITextDecorator() { Clear(); }
+void pragma::gui::WITextDecorator::Initialize() {}
+void pragma::gui::WITextDecorator::Apply() { SetDirty(false); }
+const util::text::AnchorPoint *pragma::gui::WITextDecorator::GetStartAnchorPoint() const { return const_cast<WITextDecorator *>(this)->GetStartAnchorPoint(); }
+const util::text::AnchorPoint *pragma::gui::WITextDecorator::GetEndAnchorPoint() const { return const_cast<WITextDecorator *>(this)->GetEndAnchorPoint(); }
+util::text::TextOffset pragma::gui::WITextDecorator::GetStartTextCharOffset() const
 {
 	auto *pStartAnchorPoint = GetStartAnchorPoint();
 	if(pStartAnchorPoint == nullptr)
 		return util::text::END_OF_TEXT;
 	return pStartAnchorPoint->GetTextCharOffset();
 }
-util::text::TextOffset WITextDecorator::GetEndTextCharOffset() const
+util::text::TextOffset pragma::gui::WITextDecorator::GetEndTextCharOffset() const
 {
 	auto *pEndAnchorPoint = GetEndAnchorPoint();
 	if(pEndAnchorPoint == nullptr)
@@ -28,7 +28,7 @@ util::text::TextOffset WITextDecorator::GetEndTextCharOffset() const
 	return pEndAnchorPoint->GetTextCharOffset();
 }
 
-void WITextDecorator::Clear()
+void pragma::gui::WITextDecorator::Clear()
 {
 	for(auto &hOverlay : m_overlays) {
 		if(hOverlay.IsValid())
@@ -36,24 +36,24 @@ void WITextDecorator::Clear()
 	}
 	m_overlays.clear();
 }
-bool WITextDecorator::IsValid() const { return GetStartAnchorPoint() != nullptr; }
-void WITextDecorator::SetDirty(bool dirty) { m_bDirty = dirty; }
-bool WITextDecorator::IsDirty() const { return m_bDirty; }
-bool WITextDecorator::IsTag() const { return false; }
-void WITextDecorator::InitializeOverlay(WIBase &overlay) {}
+bool pragma::gui::WITextDecorator::IsValid() const { return GetStartAnchorPoint() != nullptr; }
+void pragma::gui::WITextDecorator::SetDirty(bool dirty) { m_bDirty = dirty; }
+bool pragma::gui::WITextDecorator::IsDirty() const { return m_bDirty; }
+bool pragma::gui::WITextDecorator::IsTag() const { return false; }
+void pragma::gui::WITextDecorator::InitializeOverlay(types::WIBase &overlay) {}
 
-void WITextDecorator::CreateOverlayElement(util::text::LineIndex lineIndex, util::text::TextOffset startOffset, util::text::TextOffset endOffset, std::vector<WIHandle> &cachedOverlays)
+void pragma::gui::WITextDecorator::CreateOverlayElement(util::text::LineIndex lineIndex, util::text::TextOffset startOffset, util::text::TextOffset endOffset, std::vector<WIHandle> &cachedOverlays)
 {
 	auto startBounds = m_text.GetCharacterPixelBounds(lineIndex, startOffset);
 	auto endBounds = m_text.GetCharacterPixelBounds(lineIndex, endOffset);
 
-	WIHandle hOverlay = {};
+	pragma::gui::WIHandle hOverlay = {};
 	while(hOverlay.IsValid() == false && cachedOverlays.empty() == false) {
 		hOverlay = cachedOverlays.front();
 		cachedOverlays.erase(cachedOverlays.begin());
 	}
 	if(hOverlay.IsValid() == false) {
-		auto *p = WGUI::GetInstance().Create<WIBase>(&m_text);
+		auto *p = WGUI::GetInstance().Create<types::WIBase>(&m_text);
 		p->SetZPos(3);
 		// auto *pBg = WGUI::GetInstance().Create<WIRect>(p);
 		// pBg->SetColor(Color{255,0,0,128});
@@ -70,9 +70,9 @@ void WITextDecorator::CreateOverlayElement(util::text::LineIndex lineIndex, util
 	m_overlays.push_back(hOverlay);
 }
 
-void WITextDecorator::CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) {}
+void pragma::gui::WITextDecorator::CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) {}
 
-void WITextDecorator::CreateOverlayElements()
+void pragma::gui::WITextDecorator::CreateOverlayElements()
 {
 	util::text::LineIndex startLineIdx, endLineIdx;
 	util::text::TextOffset absStartCharOffset, absEndCharOffset;
@@ -101,7 +101,7 @@ void WITextDecorator::CreateOverlayElements()
 		hOverlay->Remove();
 	}
 }
-int32_t WITextDecorator::GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset minOffsetInLine, util::text::CharOffset maxOffsetInLine, util::text::CharOffset &outTagStartOffsetInLine, util::text::CharOffset &outTagEndOffsetInLine) const
+int32_t pragma::gui::WITextDecorator::GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset minOffsetInLine, util::text::CharOffset maxOffsetInLine, util::text::CharOffset &outTagStartOffsetInLine, util::text::CharOffset &outTagEndOffsetInLine) const
 {
 	util::text::LineIndex tagStartLineIdx, tagEndLineIdx;
 	util::text::TextOffset tagStartOffsetRelToText, tagEndOffsetRelToText;
@@ -138,7 +138,7 @@ int32_t WITextDecorator::GetTagRange(const util::text::FormattedTextLine &line, 
 
 	return numCharactersAffected;
 }
-void WITextDecorator::GetTagRange(util::text::LineIndex &startLine, util::text::LineIndex &endLine, util::text::TextOffset &startOffset, util::text::TextOffset &endOffset) const
+void pragma::gui::WITextDecorator::GetTagRange(util::text::LineIndex &startLine, util::text::LineIndex &endLine, util::text::TextOffset &startOffset, util::text::TextOffset &endOffset) const
 {
 	auto *startAnchorPoint = GetStartAnchorPoint();
 	if(startAnchorPoint == nullptr || startAnchorPoint->IsValid() == false) {
@@ -159,7 +159,7 @@ void WITextDecorator::GetTagRange(util::text::LineIndex &startLine, util::text::
 	}
 }
 
-int32_t WITextDecorator::GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset &startOffset, util::text::CharOffset &endOffset) const
+int32_t pragma::gui::WITextDecorator::GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset &startOffset, util::text::CharOffset &endOffset) const
 {
 	util::text::LineIndex startLineIdx, endLineIdx;
 	util::text::TextOffset absStartCharOffset, absEndCharOffset;
@@ -185,43 +185,43 @@ int32_t WITextDecorator::GetTagRange(const util::text::FormattedTextLine &line, 
 
 /////////////////////
 
-WITextTag::WITextTag(WIText &text, util::text::TextTag &tag) : WITextDecorator {text}, m_tag {tag} {}
-bool WITextTag::IsValid() const
+pragma::gui::WITextTag::WITextTag(types::WIText &text, util::text::TextTag &tag) : WITextDecorator {text}, m_tag {tag} {}
+bool pragma::gui::WITextTag::IsValid() const
 {
 	if(m_tag.IsValid() == false)
 		return false;
 	auto innerRange = m_tag.GetInnerRange();
 	return innerRange.has_value();
 }
-bool WITextTag::IsTag() const { return true; }
-const util::text::TextTag &WITextTag::GetTag() const { return const_cast<WITextTag *>(this)->GetTag(); }
-util::text::TextTag &WITextTag::GetTag() { return m_tag; }
-const std::vector<WITextTagArgument> &WITextTag::GetArguments() const { return const_cast<WITextTag *>(this)->GetArguments(); }
-std::vector<WITextTagArgument> &WITextTag::GetArguments() { return m_args; }
-util::text::AnchorPoint *WITextTag::GetStartAnchorPoint()
+bool pragma::gui::WITextTag::IsTag() const { return true; }
+const util::text::TextTag &pragma::gui::WITextTag::GetTag() const { return const_cast<WITextTag *>(this)->GetTag(); }
+util::text::TextTag &pragma::gui::WITextTag::GetTag() { return m_tag; }
+const std::vector<pragma::gui::WITextTagArgument> &pragma::gui::WITextTag::GetArguments() const { return const_cast<WITextTag *>(this)->GetArguments(); }
+std::vector<pragma::gui::WITextTagArgument> &pragma::gui::WITextTag::GetArguments() { return m_args; }
+util::text::AnchorPoint *pragma::gui::WITextTag::GetStartAnchorPoint()
 {
 	auto *pOpeningComponent = m_tag.GetOpeningTagComponent();
 	if(pOpeningComponent == nullptr || pOpeningComponent->IsValid() == false)
 		return nullptr;
 	return pOpeningComponent->GetEndAnchorPoint();
 }
-util::text::AnchorPoint *WITextTag::GetEndAnchorPoint()
+util::text::AnchorPoint *pragma::gui::WITextTag::GetEndAnchorPoint()
 {
 	auto *pClosingComponent = m_tag.GetClosingTagComponent();
 	if(pClosingComponent == nullptr || pClosingComponent->IsValid() == false)
 		return nullptr;
 	return pClosingComponent->GetStartAnchorPoint();
 }
-util::text::TextOffset WITextTag::GetStartTextCharOffset() const
+util::text::TextOffset pragma::gui::WITextTag::GetStartTextCharOffset() const
 {
-	auto offset = WITextDecorator::GetStartTextCharOffset();
+	auto offset = pragma::gui::WITextDecorator::GetStartTextCharOffset();
 	if(offset == util::text::END_OF_TEXT)
 		return offset;
 	return offset + 1;
 }
-util::text::TextOffset WITextTag::GetEndTextCharOffset() const
+util::text::TextOffset pragma::gui::WITextTag::GetEndTextCharOffset() const
 {
-	auto offset = WITextDecorator::GetEndTextCharOffset();
+	auto offset = pragma::gui::WITextDecorator::GetEndTextCharOffset();
 	if(offset == util::text::END_OF_TEXT)
 		return offset;
 	return offset - 1;

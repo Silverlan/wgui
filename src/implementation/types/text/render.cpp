@@ -11,11 +11,11 @@ import :types.text;
 
 #undef DrawState
 
-WIText::LineInfo::~LineInfo() { ClearBuffers(); }
-const std::vector<WITextBase::SubBufferInfo> &WIText::LineInfo::GetBuffers() const { return buffers; }
-size_t WIText::LineInfo::GetBufferCount() const { return buffers.size(); }
-void WIText::LineInfo::AddBuffer(prosper::IBuffer &buf) { buffers.push_back({buf.shared_from_this()}); }
-void WIText::LineInfo::ResizeBuffers(size_t size)
+pragma::gui::types::WIText::LineInfo::~LineInfo() { ClearBuffers(); }
+const std::vector<pragma::gui::types::WITextBase::SubBufferInfo> &pragma::gui::types::WIText::LineInfo::GetBuffers() const { return buffers; }
+size_t pragma::gui::types::WIText::LineInfo::GetBufferCount() const { return buffers.size(); }
+void pragma::gui::types::WIText::LineInfo::AddBuffer(prosper::IBuffer &buf) { buffers.push_back({buf.shared_from_this()}); }
+void pragma::gui::types::WIText::LineInfo::ResizeBuffers(size_t size)
 {
 	auto &context = WGUI::GetInstance().GetContext();
 	for(size_t i = size; i < buffers.size(); ++i) {
@@ -27,11 +27,11 @@ void WIText::LineInfo::ResizeBuffers(size_t size)
 	}
 	buffers.resize(size);
 }
-WITextBase::SubBufferInfo *WIText::LineInfo::GetBufferInfo(size_t idx) { return (idx < buffers.size()) ? &buffers[idx] : nullptr; }
-const WITextBase::SubBufferInfo *WIText::LineInfo::GetBufferInfo(size_t idx) const { return const_cast<WIText::LineInfo *>(this)->GetBufferInfo(idx); }
-void WIText::LineInfo::ClearBuffers() { ResizeBuffers(0); }
+pragma::gui::types::WITextBase::SubBufferInfo *pragma::gui::types::WIText::LineInfo::GetBufferInfo(size_t idx) { return (idx < buffers.size()) ? &buffers[idx] : nullptr; }
+const pragma::gui::types::WITextBase::SubBufferInfo *pragma::gui::types::WIText::LineInfo::GetBufferInfo(size_t idx) const { return const_cast<pragma::gui::types::WIText::LineInfo *>(this)->GetBufferInfo(idx); }
+void pragma::gui::types::WIText::LineInfo::ClearBuffers() { ResizeBuffers(0); }
 
-void WIText::InitializeBlur(bool bReload)
+void pragma::gui::types::WIText::InitializeBlur(bool bReload)
 {
 	if(bReload == true)
 		DestroyBlur();
@@ -41,9 +41,9 @@ void WIText::InitializeBlur(bool bReload)
 	//
 }
 
-void WIText::DestroyBlur() { m_shadowBlurSet = nullptr; }
+void pragma::gui::types::WIText::DestroyBlur() { m_shadowBlurSet = nullptr; }
 
-void WIText::InitializeShadow(bool bReload)
+void pragma::gui::types::WIText::InitializeShadow(bool bReload)
 {
 	if(bReload == true)
 		DestroyShadow();
@@ -59,7 +59,7 @@ void WIText::InitializeShadow(bool bReload)
 	samplerCreateInfo.addressModeU = samplerCreateInfo.addressModeV = prosper::SamplerAddressMode::ClampToEdge;
 	auto img = context.CreateImage(createInfo);
 	auto tex = context.CreateTexture({}, *img, imgViewCreateInfo, samplerCreateInfo);
-	auto &shader = static_cast<wgui::ShaderText &>(*m_shader.get());
+	auto &shader = static_cast<shaders::ShaderText &>(*m_shader.get());
 	auto &renderPass = shader.GetRenderPass();
 	m_shadowRenderTarget = context.CreateRenderTarget({tex}, renderPass);
 
@@ -82,9 +82,9 @@ void WIText::InitializeShadow(bool bReload)
 	}
 }
 
-void WIText::DestroyShadow() { m_shadowRenderTarget = nullptr; }
+void pragma::gui::types::WIText::DestroyShadow() { m_shadowRenderTarget = nullptr; }
 
-void WIText::ScheduleRenderUpdate(bool bFull)
+void pragma::gui::types::WIText::ScheduleRenderUpdate(bool bFull)
 {
 	if(bFull)
 		m_flags |= Flags::FullUpdateScheduled | Flags::ApplySubTextTags;
@@ -93,7 +93,7 @@ void WIText::ScheduleRenderUpdate(bool bFull)
 	EnableThinking();
 }
 
-void WIText::SetShadowBlurSize(float size)
+void pragma::gui::types::WIText::SetShadowBlurSize(float size)
 {
 	if(size == m_shadow.blurSize)
 		return;
@@ -104,17 +104,17 @@ void WIText::SetShadowBlurSize(float size)
 	ScheduleRenderUpdate();
 	m_shadow.blurSize = size;
 }
-float WIText::GetShadowBlurSize() { return m_shadow.blurSize; }
-void WIText::EnableShadow(bool b)
+float pragma::gui::types::WIText::GetShadowBlurSize() { return m_shadow.blurSize; }
+void pragma::gui::types::WIText::EnableShadow(bool b)
 {
 	if(b == m_shadow.enabled)
 		return;
 	m_shadow.enabled = b;
 	ScheduleRenderUpdate();
 }
-bool WIText::IsShadowEnabled() { return m_shadow.enabled; }
-void WIText::SetShadowOffset(Vector2i offset) { SetShadowOffset(offset.x, offset.y); }
-void WIText::SetShadowOffset(int x, int y)
+bool pragma::gui::types::WIText::IsShadowEnabled() { return m_shadow.enabled; }
+void pragma::gui::types::WIText::SetShadowOffset(Vector2i offset) { SetShadowOffset(offset.x, offset.y); }
+void pragma::gui::types::WIText::SetShadowOffset(int x, int y)
 {
 	if(m_shadow.offset.x == x && m_shadow.offset.y == y)
 		return;
@@ -128,11 +128,11 @@ void WIText::SetShadowOffset(int x, int y)
 		return;
 	rect->SetPos(m_shadow.offset);
 }
-Vector2i *WIText::GetShadowOffset() { return &m_shadow.offset; }
-Vector4 *WIText::GetShadowColor() { return &m_shadow.color; }
-void WIText::SetShadowColor(Vector4 col) { SetShadowColor(col.r, col.g, col.b, col.a); }
-void WIText::SetShadowColor(const Color &col) { SetShadowColor(static_cast<float>(col.r) / 255.f, static_cast<float>(col.g) / 255.f, static_cast<float>(col.b) / 255.f, static_cast<float>(col.a) / 255.f); }
-void WIText::SetShadowColor(float r, float g, float b, float a)
+Vector2i *pragma::gui::types::WIText::GetShadowOffset() { return &m_shadow.offset; }
+Vector4 *pragma::gui::types::WIText::GetShadowColor() { return &m_shadow.color; }
+void pragma::gui::types::WIText::SetShadowColor(Vector4 col) { SetShadowColor(col.r, col.g, col.b, col.a); }
+void pragma::gui::types::WIText::SetShadowColor(const Color &col) { SetShadowColor(static_cast<float>(col.r) / 255.f, static_cast<float>(col.g) / 255.f, static_cast<float>(col.b) / 255.f, static_cast<float>(col.a) / 255.f); }
+void pragma::gui::types::WIText::SetShadowColor(float r, float g, float b, float a)
 {
 	if(m_shadow.color.r == r && m_shadow.color.g == g && m_shadow.color.b == b && m_shadow.color.a == a)
 		return;
@@ -146,21 +146,21 @@ void WIText::SetShadowColor(float r, float g, float b, float a)
 	WITexturedRect *rect = static_cast<WITexturedRect *>(m_baseTextShadow.get());
 	rect->SetColor(r, g, b, a);
 }
-void WIText::SetShadowAlpha(float alpha)
+void pragma::gui::types::WIText::SetShadowAlpha(float alpha)
 {
 	if(m_shadow.color.a == alpha)
 		return;
 	ScheduleRenderUpdate();
 	m_shadow.color.a = alpha;
 }
-float WIText::GetShadowAlpha() { return m_shadow.color.a; }
+float pragma::gui::types::WIText::GetShadowAlpha() { return m_shadow.color.a; }
 
-void WIText::SelectShader()
+void pragma::gui::types::WIText::SelectShader()
 {
 	// Deprecated?
 }
 
-void WIText::UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
+void pragma::gui::types::WIText::UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	if(IsCacheEnabled() == false) {
 		if((m_flags & (Flags::RenderTextScheduled | Flags::FullUpdateScheduled)) != Flags::None) {
@@ -218,7 +218,7 @@ void WIText::UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandB
 	auto imgViewCreateInfo = prosper::util::ImageViewCreateInfo {};
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
 	auto tex = context.CreateTexture({}, *img, imgViewCreateInfo, samplerCreateInfo);
-	auto &shader = static_cast<wgui::ShaderText &>(*m_shader.get());
+	auto &shader = static_cast<shaders::ShaderText &>(*m_shader.get());
 	auto &renderPass = shader.GetRenderPass();
 	m_renderTarget = context.CreateRenderTarget({tex}, renderPass);
 	if(IsShadowEnabled())
@@ -256,13 +256,13 @@ void WIText::UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandB
 	//OpenGL::BindTexture(texture);
 	//OpenGL::BindFrameBuffer(frameBuffer);
 }
-void WIText::RenderText()
+void pragma::gui::types::WIText::RenderText()
 {
 	Mat4 mat(1.f);
 	mat = glm::gtc::translate(mat, Vector3(-1.f, 0.f, 0.f));
 	RenderText(mat);
 }
-std::shared_ptr<prosper::Texture> WIText::GetTexture() const { return (m_renderTarget != nullptr) ? m_renderTarget->GetTexture().shared_from_this() : nullptr; }
+std::shared_ptr<prosper::Texture> pragma::gui::types::WIText::GetTexture() const { return (m_renderTarget != nullptr) ? m_renderTarget->GetTexture().shared_from_this() : nullptr; }
 
 #pragma pack(push, 1)
 struct GlyphBoundsInfo {
@@ -270,7 +270,7 @@ struct GlyphBoundsInfo {
 	Vector4 bounds;
 };
 #pragma pack(pop)
-void WIText::RenderText(Mat4 &)
+void pragma::gui::types::WIText::RenderText(Mat4 &)
 {
 	if(m_font == nullptr || m_renderTarget == nullptr || m_shader.expired() || IsCacheEnabled() == false)
 		return;
@@ -337,7 +337,7 @@ void WIText::RenderText(Mat4 &)
 	context.KeepResourceAliveUntilPresentationComplete(bufBounds);
 
 	auto drawCmd = context.GetWindow().GetDrawCommandBuffer();
-	auto &shader = static_cast<wgui::ShaderText &>(*m_shader.get());
+	auto &shader = static_cast<shaders::ShaderText &>(*m_shader.get());
 	//prosper::util::record_set_viewport(*drawCmd,w,h);
 	//prosper::util::record_set_scissor(*drawCmd,w,h);
 
@@ -348,7 +348,7 @@ void WIText::RenderText(Mat4 &)
 	auto maxGlyphBitmapWidth = m_font->GetMaxGlyphBitmapWidth();
 	auto maxGlyphBitmapHeight = m_font->GetMaxGlyphBitmapHeight();
 
-	wgui::ShaderText::PushConstants pushConstants {sx, sy, glyphMapExtents.width, glyphMapExtents.height, maxGlyphBitmapWidth, maxGlyphBitmapHeight, 0, m_font->GetGlyphCountPerRow()};
+	shaders::ShaderText::PushConstants pushConstants {sx, sy, glyphMapExtents.width, glyphMapExtents.height, maxGlyphBitmapWidth, maxGlyphBitmapHeight, 0, m_font->GetGlyphCountPerRow()};
 	const auto fDraw = [&context, &drawCmd, &shader, &bufBounds, &pushConstants, sx, sy, numChars, w, h, this](prosper::RenderTarget &rt, bool bClear, uint32_t vpWidth, uint32_t vpHeight) {
 		auto &img = rt.GetTexture().GetImage();
 
@@ -358,8 +358,8 @@ void WIText::RenderText(Mat4 &)
 		drawCmd->RecordBeginRenderPass(rt);
 		drawCmd->RecordClearAttachment(img, std::array<float, 4> {0.f, 0.f, 0.f, 0.f});
 		prosper::ShaderBindState bindState {*drawCmd};
-		wgui::DrawState drawState {};
-		if(shader.RecordBeginDraw(bindState, drawState, w, h, wgui::StencilPipeline::Test, false) == true) {
+		DrawState drawState {};
+		if(shader.RecordBeginDraw(bindState, drawState, w, h, StencilPipeline::Test, false) == true) {
 			drawCmd->RecordSetViewport(vpWidth, vpHeight);
 			drawCmd->RecordSetScissor(vpWidth, vpHeight);
 			auto descSet = m_font->GetGlyphMapDescriptorSet();
@@ -394,7 +394,7 @@ void WIText::RenderText(Mat4 &)
 	//prosper::util::record_set_scissor(*drawCmd,windowSize.at(0),windowSize.at(1));
 }
 
-void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
+void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	util::text::LineIndex lineIndex = 0;
 	for(auto &lineInfo : m_lineInfos) {
@@ -407,7 +407,7 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 	}
 }
 
-void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, util::text::LineIndex lineIndex)
+void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, util::text::LineIndex lineIndex)
 {
 	lineInfo.bufferUpdateRequired = false;
 	if(lineInfo.wpLine.expired() == true) {
@@ -454,8 +454,6 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 			if(isHidden)
 				c = '*';
 			auto *font = m_font.get();
-			if(!font)
-				std::cout << "";
 			auto *glyph = m_font->GetGlyphInfo(c);
 			if(glyph == nullptr) {
 				for(auto &fallbackFont : m_font->GetFallbackFonts()) {
@@ -627,7 +625,7 @@ void WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryComman
 	lineInfo.ResizeBuffers(bufferOffset);
 }
 
-void WIText::RemoveDecorator(const WITextDecorator &decorator)
+void pragma::gui::types::WIText::RemoveDecorator(const WITextDecorator &decorator)
 {
 	auto it = std::find_if(m_tagInfos.begin(), m_tagInfos.end(), [&decorator](const std::shared_ptr<WITextDecorator> &decoOther) { return decoOther.get() == &decorator; });
 	if(it == m_tagInfos.end())
@@ -635,7 +633,7 @@ void WIText::RemoveDecorator(const WITextDecorator &decorator)
 	m_tagInfos.erase(it);
 }
 
-void WIText::InitializeTextBuffer(prosper::IPrContext &context)
+void pragma::gui::types::WIText::InitializeTextBuffer(prosper::IPrContext &context)
 {
 	if(s_textBuffer != nullptr)
 		return;
@@ -650,13 +648,13 @@ void WIText::InitializeTextBuffer(prosper::IPrContext &context)
 	s_textBuffer->SetPermanentlyMapped(true, prosper::IBuffer::MapFlags::WriteBit);
 	s_textBuffer->SetDebugName("text_glyph_bounds_info_buf");
 }
-void WIText::ClearTextBuffer()
+void pragma::gui::types::WIText::ClearTextBuffer()
 {
 	s_textBuffer = nullptr;
 	WITextTagColor::ClearColorBuffer();
 }
-void WITextBase::SetTextElement(WIText &elText) { m_hText = elText.GetHandle(); }
-void WITextBase::InitializeTexture(prosper::Texture &tex, int32_t w, int32_t h)
+void pragma::gui::types::WITextBase::SetTextElement(WIText &elText) { m_hText = elText.GetHandle(); }
+void pragma::gui::types::WITextBase::InitializeTexture(prosper::Texture &tex, int32_t w, int32_t h)
 {
 	if(m_hTexture.IsValid()) {
 		static_cast<WITexturedRect *>(m_hTexture.get())->SetTexture(tex);
@@ -672,13 +670,13 @@ void WITextBase::InitializeTexture(prosper::Texture &tex, int32_t w, int32_t h)
 	m_hTexture = pEl->GetHandle();
 }
 
-bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, wgui::ShaderTextRect &shader, const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
-  wgui::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, wgui::StencilPipeline stencilPipeline) const
+bool pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, shaders::ShaderTextRect &shader, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
+  shaders::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, StencilPipeline stencilPipeline) const
 {
 	auto &textEl = static_cast<const WIText &>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawCmd};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, wgui::DrawInfo::Flags::Msaa)) == false)
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == false)
 		return false;
 	uint32_t xScissor, yScissor, wScissor, hScissor;
 	drawState.GetScissor(xScissor, yScissor, wScissor, hScissor);
@@ -721,7 +719,7 @@ bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 			// This will be reset further below.
 			auto poseText = GetTransformPose(drawInfo.offset, drawInfo.size.x, drawInfo.size.y, drawInfo.transform, scale);
 			inOutPushConstants.elementData.modelMatrix = poseText;
-			inOutPushConstants.elementData.viewportSize = wgui::ElementData::ToViewportSize(Vector2i {drawInfo.size.x, drawInfo.size.y});
+			inOutPushConstants.elementData.viewportSize = ElementData::ToViewportSize(Vector2i {drawInfo.size.x, drawInfo.size.y});
 
 			auto &font = *bufInfo.font;
 			auto glyphMap = font.GetGlyphMap();
@@ -746,8 +744,8 @@ bool WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 	return bHasColorBuffers;
 }
 
-void WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
-  wgui::ShaderTextRect::PushConstants &inOutPushConstants, uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline) const
+void pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
+  shaders::ShaderTextRect::PushConstants &inOutPushConstants, uint32_t testStencilLevel, StencilPipeline stencilPipeline) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
 	prosper::ShaderBindState bindState {*drawCmd};
@@ -766,7 +764,7 @@ void WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, 
 	  true, stencilPipeline);
 }
 
-void WITextBase::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawState, const Mat4 &matDrawRoot, const Vector2 &scale, uint32_t testStencilLevel, wgui::StencilPipeline stencilPipeline)
+void pragma::gui::types::WITextBase::Render(const DrawInfo &drawInfo, DrawState &drawState, const Mat4 &matDrawRoot, const Vector2 &scale, uint32_t testStencilLevel, StencilPipeline stencilPipeline)
 {
 	auto matDraw = matDrawRoot;
 	if(m_localRenderTransform)
@@ -800,7 +798,7 @@ void WITextBase::Render(const wgui::DrawInfo &drawInfo, wgui::DrawState &drawSta
 
 		//auto matText = GetTransformedMatrix(origin,width,height,matParent);
 
-		wgui::ShaderTextRect::PushConstants pushConstants {wgui::ElementData {Mat4 {}, col}, 0.f, 0.f, 0, 0, 0, 0, 0, 0};
+		shaders::ShaderTextRect::PushConstants pushConstants {ElementData {Mat4 {}, col}, 0.f, 0.f, 0, 0, 0, 0, 0, 0};
 		Vector2i absPos, absSize;
 		CalcBounds(matDraw, drawInfo.size.x, drawInfo.size.y, absPos, absSize);
 		auto &commandBuffer = drawInfo.commandBuffer;

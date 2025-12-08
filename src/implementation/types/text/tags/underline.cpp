@@ -7,9 +7,9 @@ module pragma.gui;
 
 import :text_tags;
 
-void WITextTagUnderline::InitializeOverlay(WIBase &overlay)
+void pragma::gui::WITextTagUnderline::InitializeOverlay(types::WIBase &overlay)
 {
-	auto *pUnderline = WGUI::GetInstance().Create<WIRect>(&overlay);
+	auto *pUnderline = WGUI::GetInstance().Create<types::WIRect>(&overlay);
 	auto hOverlay = overlay.GetHandle();
 	overlay.AddCallback("SetSize", FunctionCallback<void>::Create([this, pUnderline, hOverlay]() {
 		if(hOverlay.IsValid() == false)
@@ -19,8 +19,8 @@ void WITextTagUnderline::InitializeOverlay(WIBase &overlay)
 		pUnderline->SetColor(m_underlineColor);
 	}));
 }
-void WITextTagUnderline::CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) { inOutSize.y += 2; }
-void WITextTagUnderline::Apply()
+void pragma::gui::WITextTagUnderline::CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) { inOutSize.y += 2; }
+void pragma::gui::WITextTagUnderline::Apply()
 {
 	WITextDecorator::Apply();
 	auto startOffset = m_tag.GetOpeningTagComponent()->GetStartAnchorPoint()->GetTextCharOffset();

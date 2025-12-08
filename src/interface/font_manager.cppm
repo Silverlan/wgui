@@ -12,8 +12,8 @@ export module pragma.gui:font_manager;
 export import pragma.prosper;
 export import pragma.string.unicode;
 
-class DynamicFontMap;
-export {
+export namespace pragma::gui {
+	class DynamicFontMap;
 	class FontInfo;
 	class FontManager;
 	class DLLWGUI GlyphInfo {

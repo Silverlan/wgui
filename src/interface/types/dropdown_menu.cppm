@@ -12,7 +12,7 @@ export import :types.base;
 export import :types.text_entry;
 export import pragma.string.unicode;
 
-export {
+export namespace pragma::gui::types {
 	class WIText;
 	class WIDropDownMenu;
 	class DLLWGUI WIDropDownMenuOption : public WIBase {
@@ -22,9 +22,9 @@ export {
 		int m_index;
 
 		bool m_selected = false;
-		WIHandle m_hBackground;
-		WIHandle m_hText;
-		WIHandle m_dropDownMenu;
+		pragma::gui::WIHandle m_hBackground;
+		pragma::gui::WIHandle m_hText;
+		pragma::gui::WIHandle m_dropDownMenu;
 		std::string m_value;
 
 		void UpdateTextPos();
@@ -54,11 +54,11 @@ export {
 		unsigned int m_listOffset;
 		int m_selected;
 
-		WIHandle m_hOutline;
-		WIHandle m_hArrow;
-		WIHandle m_hList;
+		pragma::gui::WIHandle m_hOutline;
+		pragma::gui::WIHandle m_hArrow;
+		pragma::gui::WIHandle m_hList;
 		CallbackHandle m_cbListWindowUpdate;
-		WIHandle m_hScrollBar;
+		pragma::gui::WIHandle m_hScrollBar;
 		std::vector<WIHandle> m_options;
 
 		void UpdateTextPos();
