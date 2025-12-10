@@ -591,7 +591,7 @@ bool pragma::gui::WGUI::SetFocusedElement(types::WIBase *gui, types::WIRoot *opt
 	}
 	if(gui == nullptr) {
 		if(window)
-			(*window)->SetCursorInputMode(pragma::platform::CursorMode::Hidden);
+			(*window)->SetCursorInputMode(pragma::platform::CursorMode::Disabled);
 		elRoot->SetFocusedElement(nullptr);
 		if(m_onFocusChangedCallback != nullptr)
 			m_onFocusChangedCallback(pPrevFocused, elRoot->GetFocusedElement());
