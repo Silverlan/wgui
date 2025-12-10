@@ -333,7 +333,7 @@ void pragma::gui::types::WINumericEntry::Initialize()
 			if(!hThis.IsValid())
 				return CallbackReturnType::HasReturnValue;
 			auto text = GetText();
-			auto i = atoi(text.cpp_str().data());
+			auto i = ustring::to_int(text.cpp_str());
 			if(m_numeric.max != nullptr)
 				i = umath::min(++i, *m_numeric.max);
 			SetText(ustring::int_to_string(i));
@@ -350,7 +350,7 @@ void pragma::gui::types::WINumericEntry::Initialize()
 			if(!hThis.IsValid())
 				return CallbackReturnType::HasReturnValue;
 			auto text = GetText();
-			auto i = atoi(text.cpp_str().data());
+			auto i = ustring::to_int(text.cpp_str());
 			if(m_numeric.min != nullptr)
 				i = umath::max(--i, *m_numeric.min);
 			SetText(ustring::int_to_string(i));
