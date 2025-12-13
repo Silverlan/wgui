@@ -12,9 +12,9 @@ pragma::gui::types::WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(
 {
 	SetColor(Color(0, 0, 0, 255));
 
-	m_text = util::text::FormattedText::Create();
-	util::text::FormattedText::Callbacks callbacks {};
-	const auto fShiftBufferLines = [this](util::text::LineIndex lineIndex, int32_t shiftOffset) {
+	m_text = string::FormattedText::Create();
+	string::FormattedText::Callbacks callbacks {};
+	const auto fShiftBufferLines = [this](string::LineIndex lineIndex, int32_t shiftOffset) {
 		for(auto i = lineIndex; i < m_lineInfos.size(); ++i) {
 			auto &lineInfo = m_lineInfos.at(i);
 			auto numBuffers = lineInfo.GetBufferCount();
@@ -22,7 +22,7 @@ pragma::gui::types::WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(
 				lineInfo.GetBufferInfo(i)->absLineIndex += shiftOffset;
 		}
 	};
-	callbacks.onLineAdded = [this, fShiftBufferLines](util::text::FormattedTextLine &line) {
+	callbacks.onLineAdded = [this, fShiftBufferLines](string::FormattedTextLine &line) {
 		auto lineIdx = line.GetIndex();
 		auto &lineInfo = *m_lineInfos.insert(m_lineInfos.begin() + lineIdx, LineInfo {});
 		lineInfo.wpLine = line.shared_from_this();
@@ -31,7 +31,7 @@ pragma::gui::types::WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(
 
 		fShiftBufferLines(lineIdx + 1, 1);
 	};
-	callbacks.onLineRemoved = [this, fShiftBufferLines](util::text::FormattedTextLine &line) {
+	callbacks.onLineRemoved = [this, fShiftBufferLines](string::FormattedTextLine &line) {
 		auto lineIdx = line.GetIndex();
 		m_lineInfos.erase(m_lineInfos.begin() + lineIdx);
 		SetFlag(Flags::ApplySubTextTags);
@@ -39,7 +39,7 @@ pragma::gui::types::WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(
 
 		fShiftBufferLines(lineIdx, -1);
 	};
-	callbacks.onLineChanged = [this](util::text::FormattedTextLine &line) {
+	callbacks.onLineChanged = [this](string::FormattedTextLine &line) {
 		m_lineInfos.at(line.GetIndex()).bufferUpdateRequired = true;
 		ScheduleRenderUpdate();
 		PerformTextPostProcessing();
@@ -48,7 +48,7 @@ pragma::gui::types::WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(
 		m_lineInfos.clear();
 		PerformTextPostProcessing();
 	};
-	callbacks.onTagAdded = [this](util::text::TextTag &tag) {
+	callbacks.onTagAdded = [this](string::TextTag &tag) {
 		if(tag.IsValid() == false)
 			return;
 		auto &openingTag = *tag.GetOpeningTagComponent();
@@ -75,7 +75,7 @@ pragma::gui::types::WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(
 			itLabel = m_labelToDecorators.insert(std::make_pair<std::string, std::vector<std::weak_ptr<WITextTag>>>(std::string {label}, {})).first;
 		itLabel->second.push_back(std::static_pointer_cast<WITextTag>(pDecorator));
 	};
-	callbacks.onTagRemoved = [this](util::text::TextTag &tag) {
+	callbacks.onTagRemoved = [this](string::TextTag &tag) {
 		auto it = std::find_if(m_tagInfos.begin(), m_tagInfos.end(), [&tag](const std::shared_ptr<WITextDecorator> &tagOther) { return tagOther->IsTag() && &static_cast<WITextTag &>(*tagOther).GetTag() == &tag; });
 		if(it != m_tagInfos.end())
 			m_tagInfos.erase(it);
@@ -107,7 +107,7 @@ pragma::gui::types::WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(
 	auto &shaderManager = WGUI::GetInstance().GetContext().GetShaderManager();
 	m_shader = shaderManager.GetShader("wguitext");
 
-	RegisterCallback<void, std::reference_wrapper<const pragma::string::Utf8String>>("OnTextChanged");
+	RegisterCallback<void, std::reference_wrapper<const string::Utf8String>>("OnTextChanged");
 	RegisterCallback<void, const FontInfo *>("OnFontChanged");
 	RegisterCallback<void, std::reference_wrapper<const std::shared_ptr<prosper::RenderTarget>>>("OnTextRendered");
 	RegisterCallback<void>("OnContentsChanged");
@@ -131,7 +131,7 @@ void pragma::gui::types::WIText::UpdateTags() { SetFlag(Flags::ApplySubTextTags)
 
 std::string pragma::gui::types::WIText::GetDebugInfo() const { return "Text: " + GetText().cpp_str(); }
 
-std::pair<Vector2i, Vector2i> pragma::gui::types::WIText::GetCharacterPixelBounds(util::text::LineIndex lineIdx, util::text::CharOffset charOffset) const
+std::pair<Vector2i, Vector2i> pragma::gui::types::WIText::GetCharacterPixelBounds(string::LineIndex lineIdx, string::CharOffset charOffset) const
 {
 	if(lineIdx >= m_lineInfos.size())
 		return {{0, 0}, {0, 0}};
@@ -142,7 +142,7 @@ std::pair<Vector2i, Vector2i> pragma::gui::types::WIText::GetCharacterPixelBound
 		return {{0, 0}, {0, 0}};
 	if(charOffset >= strLine.size())
 		charOffset = strLine.size() - 1;
-	auto strViewLine = pragma::string::Utf8StringView {strLine};
+	auto strViewLine = string::Utf8StringView {strLine};
 
 	std::string strHidden;
 	if(IsTextHidden()) {
@@ -151,8 +151,8 @@ std::pair<Vector2i, Vector2i> pragma::gui::types::WIText::GetCharacterPixelBound
 	}
 
 	auto subLineIndex = lineInfo.subLineIndexOffset;
-	util::text::CharOffset offset = 0;
-	util::text::CharOffset lineStartOffset = 0;
+	string::CharOffset offset = 0;
+	string::CharOffset lineStartOffset = 0;
 	for(auto numChars : lineInfo.subLines) {
 		auto endOffset = offset + numChars;
 		if(charOffset >= endOffset) {
@@ -205,7 +205,7 @@ void pragma::gui::types::WIText::SetSize(int x, int y)
 const pragma::gui::FontInfo *pragma::gui::types::WIText::GetFont() const { return m_font.get(); }
 const std::vector<pragma::gui::types::WIText::LineInfo> &pragma::gui::types::WIText::GetLines() const { return const_cast<WIText *>(this)->GetLines(); }
 std::vector<pragma::gui::types::WIText::LineInfo> &pragma::gui::types::WIText::GetLines() { return m_lineInfos; }
-util::text::FormattedTextLine *pragma::gui::types::WIText::GetLine(util::text::LineIndex lineIdx) { return m_text->GetLine(lineIdx); }
+pragma::string::FormattedTextLine *pragma::gui::types::WIText::GetLine(string::LineIndex lineIdx) { return m_text->GetLine(lineIdx); }
 uint32_t pragma::gui::types::WIText::GetLineCount() const { return m_text->GetLineCount(); }
 uint32_t pragma::gui::types::WIText::GetTextWidth() const
 {
@@ -244,8 +244,8 @@ uint32_t pragma::gui::types::WIText::GetTotalLineCount() const
 int pragma::gui::types::WIText::GetLineHeight() const { return m_font->GetSize() + m_breakHeight; }
 int pragma::gui::types::WIText::GetBreakHeight() { return m_breakHeight; }
 void pragma::gui::types::WIText::SetBreakHeight(int breakHeight) { m_breakHeight = breakHeight; }
-const util::text::FormattedText &pragma::gui::types::WIText::GetFormattedTextObject() const { return const_cast<WIText *>(this)->GetFormattedTextObject(); }
-util::text::FormattedText &pragma::gui::types::WIText::GetFormattedTextObject() { return *m_text; }
+const pragma::string::FormattedText &pragma::gui::types::WIText::GetFormattedTextObject() const { return const_cast<WIText *>(this)->GetFormattedTextObject(); }
+pragma::string::FormattedText &pragma::gui::types::WIText::GetFormattedTextObject() { return *m_text; }
 const pragma::string::Utf8String &pragma::gui::types::WIText::GetText() const { return m_text->GetUnformattedText(); }
 const pragma::string::Utf8String &pragma::gui::types::WIText::GetFormattedText() const { return m_text->GetFormattedText(); }
 void pragma::gui::types::WIText::SetTabSpaceCount(uint32_t numberOfSpaces) { m_tabSpaceCount = numberOfSpaces; }
@@ -275,7 +275,7 @@ void pragma::gui::types::WIText::SetCacheEnabled(bool bEnabled)
 	WGUI::GetInstance().GetContext().KeepResourceAliveUntilPresentationComplete(m_renderTarget);
 	m_renderTarget = nullptr;
 }
-bool pragma::gui::types::WIText::IsCacheEnabled() const { return umath::is_flag_set(m_flags, Flags::Cache); }
+bool pragma::gui::types::WIText::IsCacheEnabled() const { return math::is_flag_set(m_flags, Flags::Cache); }
 
 int pragma::gui::types::WIText::GetTextHeight()
 {
@@ -293,7 +293,7 @@ Vector2i pragma::gui::types::WIText::CalcTextSize() const
 	return sz;
 }
 
-void pragma::gui::types::WIText::GetTextSize(int *w, int *h, const pragma::string::Utf8StringView *inText, const FontInfo *pfont)
+void pragma::gui::types::WIText::GetTextSize(int *w, int *h, const string::Utf8StringView *inText, const FontInfo *pfont)
 {
 	auto *font = pfont;
 	if(!font)
@@ -327,8 +327,8 @@ void pragma::gui::types::WIText::GetTextSize(int *w, int *h, const pragma::strin
 
 void pragma::gui::types::WIText::SetFlag(Flags flag, bool enabled)
 {
-	umath::set_flag(m_flags, flag, enabled);
-	if(umath::is_flag_set(m_flags, Flags::ApplySubTextTags | Flags::RenderTextScheduled | Flags::FullUpdateScheduled))
+	math::set_flag(m_flags, flag, enabled);
+	if(math::is_flag_set(m_flags, Flags::ApplySubTextTags | Flags::RenderTextScheduled | Flags::FullUpdateScheduled))
 		EnableThinking();
 }
 
@@ -336,12 +336,12 @@ void pragma::gui::types::WIText::Think(const std::shared_ptr<prosper::IPrimaryCo
 {
 	WIBase::Think(drawCmd);
 	UpdateRenderTexture(drawCmd);
-	if(umath::is_flag_set(m_flags, Flags::ApplySubTextTags | Flags::RenderTextScheduled | Flags::FullUpdateScheduled) == false)
+	if(math::is_flag_set(m_flags, Flags::ApplySubTextTags | Flags::RenderTextScheduled | Flags::FullUpdateScheduled) == false)
 		DisableThinking();
 }
 
 void pragma::gui::types::WIText::SetDirty() { SetFlag(Flags::TextDirty); }
-bool pragma::gui::types::WIText::IsDirty() const { return umath::is_flag_set(m_flags, Flags::TextDirty); }
+bool pragma::gui::types::WIText::IsDirty() const { return math::is_flag_set(m_flags, Flags::TextDirty); }
 
 void pragma::gui::types::WIText::SizeToContents(bool x, bool y)
 {
@@ -349,7 +349,7 @@ void pragma::gui::types::WIText::SizeToContents(bool x, bool y)
 	GetTextSize(&w, &h);
 	if(w == GetWidth() && h == GetHeight())
 		return;
-	if(GetAutoBreakMode() != pragma::gui::types::WIText::AutoBreak::NONE) {
+	if(GetAutoBreakMode() != AutoBreak::NONE) {
 		ScheduleRenderUpdate();
 		//if(IsTextUpdateRequired(GetText()))
 		//	UpdateSubLines();
@@ -379,14 +379,14 @@ void pragma::gui::types::WIText::SetAutoBreakMode(AutoBreak b)
 	SizeToContents();
 }
 
-void pragma::gui::types::WIText::AppendText(const pragma::string::Utf8StringArg &text) { m_text->AppendText(text); }
-bool pragma::gui::types::WIText::InsertText(const pragma::string::Utf8StringArg &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset) { return m_text->InsertText(text, lineIdx, charOffset); }
-void pragma::gui::types::WIText::AppendLine(const pragma::string::Utf8StringArg &line) { m_text->AppendLine(line); }
+void pragma::gui::types::WIText::AppendText(const string::Utf8StringArg &text) { m_text->AppendText(text); }
+bool pragma::gui::types::WIText::InsertText(const string::Utf8StringArg &text, string::LineIndex lineIdx, string::CharOffset charOffset) { return m_text->InsertText(text, lineIdx, charOffset); }
+void pragma::gui::types::WIText::AppendLine(const string::Utf8StringArg &line) { m_text->AppendLine(line); }
 void pragma::gui::types::WIText::PopFrontLine() { m_text->PopFrontLine(); }
 void pragma::gui::types::WIText::PopBackLine() { m_text->PopBackLine(); }
-void pragma::gui::types::WIText::RemoveLine(util::text::LineIndex lineIdx) { m_text->RemoveLine(lineIdx); }
-bool pragma::gui::types::WIText::RemoveText(util::text::LineIndex lineIdx, util::text::CharOffset charOffset, util::text::TextLength len) { return m_text->RemoveText(lineIdx, charOffset, len); }
-bool pragma::gui::types::WIText::RemoveText(util::text::TextOffset offset, util::text::TextLength len) { return m_text->RemoveText(offset, len); }
-bool pragma::gui::types::WIText::MoveText(util::text::LineIndex lineIdx, util::text::CharOffset startOffset, util::text::TextLength len, util::text::LineIndex targetLineIdx, util::text::CharOffset targetCharOffset) { return m_text->MoveText(lineIdx, startOffset, len, targetLineIdx, targetCharOffset); }
-pragma::string::Utf8StringView pragma::gui::types::WIText::Substr(util::text::TextOffset startOffset, util::text::TextLength len) const { return m_text->Substr(startOffset, len); }
+void pragma::gui::types::WIText::RemoveLine(string::LineIndex lineIdx) { m_text->RemoveLine(lineIdx); }
+bool pragma::gui::types::WIText::RemoveText(string::LineIndex lineIdx, string::CharOffset charOffset, string::TextLength len) { return m_text->RemoveText(lineIdx, charOffset, len); }
+bool pragma::gui::types::WIText::RemoveText(string::TextOffset offset, string::TextLength len) { return m_text->RemoveText(offset, len); }
+bool pragma::gui::types::WIText::MoveText(string::LineIndex lineIdx, string::CharOffset startOffset, string::TextLength len, string::LineIndex targetLineIdx, string::CharOffset targetCharOffset) { return m_text->MoveText(lineIdx, startOffset, len, targetLineIdx, targetCharOffset); }
+pragma::string::Utf8StringView pragma::gui::types::WIText::Substr(string::TextOffset startOffset, string::TextLength len) const { return m_text->Substr(startOffset, len); }
 void pragma::gui::types::WIText::Clear() { return m_text->Clear(); }

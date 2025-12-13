@@ -16,7 +16,7 @@ import pragma.string.unicode;
 namespace pragma::gui {
 	class DynamicFontMap {
 	public:
-		static std::unique_ptr<DynamicFontMap> Create(const std::string &cpath, const pragma::gui::FontSettings &fontSettings);
+		static std::unique_ptr<DynamicFontMap> Create(const std::string &cpath, const FontSettings &fontSettings);
 		static constexpr auto INVALID_GLYPH_INDEX = std::numeric_limits<uint32_t>::max();
 #pragma pack(push, 1)
 		struct GlyphBounds {
@@ -46,8 +46,8 @@ namespace pragma::gui {
 		int32_t GetMaxGlyphTop() const { return m_glyphTopMax; }
 		uint32_t GetGlyphCountPerRow() const { return m_numGlyphsPerRow; }
 		const FT_Face GetFace() const { return m_face.GetFtFace(); }
-		const std::vector<std::shared_ptr<pragma::gui::GlyphInfo>> &GetGlyphs() const { return m_glyphs; }
-		const pragma::gui::GlyphInfo *GetGlyphInfo(int32_t c) const
+		const std::vector<std::shared_ptr<GlyphInfo>> &GetGlyphs() const { return m_glyphs; }
+		const GlyphInfo *GetGlyphInfo(int32_t c) const
 		{
 			auto idx = CharToGlyphMapIndex(c);
 			if(idx < 0 || idx >= m_glyphs.size())
@@ -66,7 +66,7 @@ namespace pragma::gui {
 		uint32_t m_curGlyphIndex = 0;
 		std::vector<GlyphExtent> m_glyphExtents;
 		std::vector<GlyphBounds> m_glyphCharacterBounds;
-		std::vector<std::shared_ptr<pragma::gui::GlyphInfo>> m_glyphs;
+		std::vector<std::shared_ptr<GlyphInfo>> m_glyphs;
 		std::unordered_map<uint32_t, uint32_t> m_glyphIndexMap;
 		std::vector<uint8_t> m_glyphImageBufData;
 		uint32_t m_maxBitmapWidth = 0;
@@ -74,7 +74,7 @@ namespace pragma::gui {
 		uint32_t m_maxGlyphHeight = 0;
 		uint32_t m_maxGlyphSize = 0;
 
-		pragma::gui::FontFace m_face;
+		FontFace m_face;
 		std::vector<uint8_t> m_fontData;
 		int32_t m_glyphTopMax = 0;
 		uint32_t m_fontSize = 0;
@@ -170,17 +170,17 @@ const pragma::gui::GlyphInfo *pragma::gui::FontInfo::GetGlyphInfo(int32_t c) con
 const std::vector<std::shared_ptr<pragma::gui::GlyphInfo>> &pragma::gui::FontInfo::GetGlyphs() const { return m_dynamicFontMap->GetGlyphs(); }
 uint32_t pragma::gui::FontInfo::GetSize() const { return m_size; }
 
-std::unique_ptr<pragma::gui::DynamicFontMap> pragma::gui::DynamicFontMap::Create(const std::string &cpath, const pragma::gui::FontSettings &fontSettings)
+std::unique_ptr<pragma::gui::DynamicFontMap> pragma::gui::DynamicFontMap::Create(const std::string &cpath, const FontSettings &fontSettings)
 {
 	auto fontMap = std::unique_ptr<DynamicFontMap> {new DynamicFontMap {}};
-	auto f = FileManager::OpenFile(cpath.c_str(), "rb");
+	auto f = fs::open_file(cpath, fs::FileMode::Read | fs::FileMode::Binary);
 	if(f == nullptr)
 		return {};
 	auto size = f->GetSize();
 	fontMap->m_fontData.resize(size);
 	f->Read(fontMap->m_fontData.data(), size);
 
-	auto lib = pragma::gui::FontManager::GetFontLibrary();
+	auto lib = FontManager::GetFontLibrary();
 	auto &face = fontMap->m_face.GetFtFace();
 	auto &ncFace = const_cast<FT_Face &>(face);
 	if(FT_New_Memory_Face(lib, &fontMap->m_fontData[0], static_cast<FT_Long>(size), 0, &ncFace) != 0 || FT_Set_Pixel_Sizes(face, 0, fontSettings.fontSize) != 0) {
@@ -190,7 +190,7 @@ std::unique_ptr<pragma::gui::DynamicFontMap> pragma::gui::DynamicFontMap::Create
 	fontMap->m_fontSize = fontSettings.fontSize;
 	return fontMap;
 }
-pragma::gui::DynamicFontMap::DynamicFontMap() { pragma::gui::FontManager::SetFontsDirty(); }
+pragma::gui::DynamicFontMap::DynamicFontMap() { FontManager::SetFontsDirty(); }
 void pragma::gui::DynamicFontMap::AddCharacter(int32_t c)
 {
 	if(m_glyphIndexMap.find(c) != m_glyphIndexMap.end())
@@ -223,8 +223,8 @@ void pragma::gui::DynamicFontMap::AddCharacter(int32_t c)
 		auto offset = data.size();
 		data.resize(offset + glyphDataSize);
 		auto *ptr = data.data() + offset;
-		m_maxBitmapWidth = umath::max(m_maxBitmapWidth, gslot->bitmap.width);
-		m_maxBitmapHeight = umath::max(m_maxBitmapHeight, gslot->bitmap.rows);
+		m_maxBitmapWidth = math::max(m_maxBitmapWidth, gslot->bitmap.width);
+		m_maxBitmapHeight = math::max(m_maxBitmapHeight, gslot->bitmap.rows);
 
 		size_t pos = 0;
 		for(auto y = decltype(gslot->bitmap.rows) {0}; y < gslot->bitmap.rows; ++y) {
@@ -266,7 +266,7 @@ void pragma::gui::DynamicFontMap::ClearMap()
 {
 	if(m_dirtyGlyphMap)
 		return;
-	pragma::gui::FontManager::SetFontsDirty();
+	FontManager::SetFontsDirty();
 	m_dirtyGlyphMap = true;
 	auto &context = WGUI::GetInstance().GetContext();
 	context.WaitIdle();
@@ -311,7 +311,7 @@ bool pragma::gui::DynamicFontMap::GenerateImageMap()
 
 	if(imgCreateInfo.width > props->maxExtent.width) {
 		auto levels = (imgCreateInfo.width / props->maxExtent.width) + 1;
-		imgCreateInfo.height = umath::next_power_of_2(imgCreateInfo.height * levels);
+		imgCreateInfo.height = math::next_power_of_2(imgCreateInfo.height * levels);
 		imgCreateInfo.width = props->maxExtent.width;
 		if(imgCreateInfo.height > props->maxExtent.height)
 			return false;
@@ -395,7 +395,7 @@ bool pragma::gui::FontInfo::Initialize(const std::string &cpath, const std::stri
 	m_name = name;
 	if(m_bInitialized || shaders::ShaderText::DESCRIPTOR_SET_TEXTURE.IsValid() == false)
 		return true;
-	auto fontMap = pragma::gui::DynamicFontMap::Create(cpath, fontSettings);
+	auto fontMap = DynamicFontMap::Create(cpath, fontSettings);
 	if(!fontMap)
 		return false;
 	m_size = fontSettings.fontSize;
@@ -448,7 +448,7 @@ const FT_Library &pragma::gui::FontManager::Library::GetFtLibrary() const { retu
 std::shared_ptr<const pragma::gui::FontInfo> pragma::gui::FontManager::GetFont(const std::string &cfontName)
 {
 	auto fontName = cfontName;
-	ustring::to_lower(fontName);
+	string::to_lower(fontName);
 	auto it = m_fonts.find(fontName);
 	if(it == m_fonts.end()) {
 		if(m_fontDefault != nullptr)
@@ -473,7 +473,7 @@ std::shared_ptr<const pragma::gui::FontInfo> pragma::gui::FontManager::LoadFont(
 	if(lib == nullptr)
 		return nullptr;
 	auto identifier = cidentifier;
-	ustring::to_lower(identifier);
+	string::to_lower(identifier);
 	if(bForceReload == false) {
 		auto it = m_fonts.find(identifier);
 		if(it != m_fonts.end())
@@ -493,7 +493,7 @@ std::shared_ptr<const pragma::gui::FontInfo> pragma::gui::FontManager::LoadFont(
 		font = std::shared_ptr<FontInfo>(new FontInfo());
 	if(!font->Initialize(path, identifier, fontSettings))
 		return nullptr;
-	for(auto &fallbackFont : pragma::gui::FontManager::GetFallbackFonts()) {
+	for(auto &fallbackFont : FontManager::GetFallbackFonts()) {
 		auto path = get_font_file_path(fallbackFont);
 		auto fontFallback = std::shared_ptr<FontInfo>(new FontInfo());
 		if(!fontFallback->Initialize(path, identifier, fontSettings))
@@ -542,7 +542,7 @@ void pragma::gui::FontManager::Close()
 	m_fonts.clear();
 	m_lib = {};
 }
-void pragma::gui::FontManager::InitializeFontGlyphs(const pragma::string::Utf8StringArg &text, const FontInfo &font)
+void pragma::gui::FontManager::InitializeFontGlyphs(const string::Utf8StringArg &text, const FontInfo &font)
 {
 	for(auto c : *text) {
 		auto *glyph = font.InitializeGlyph(c);
@@ -557,7 +557,7 @@ void pragma::gui::FontManager::InitializeFontGlyphs(const pragma::string::Utf8St
 }
 void pragma::gui::FontManager::AddFallbackFont(const std::string &fallbackFont) { m_fallbackFonts.push_back(fallbackFont); }
 const std::vector<std::string> &pragma::gui::FontManager::GetFallbackFonts() { return m_fallbackFonts; }
-uint32_t pragma::gui::FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
+uint32_t pragma::gui::FontManager::GetTextSize(const string::Utf8StringArg &text, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
 	if(font == nullptr) {
 		if(width != nullptr)
@@ -621,14 +621,14 @@ uint32_t pragma::gui::FontManager::GetTextSize(const pragma::string::Utf8StringA
 	return offset - charOffset;
 }
 
-uint32_t pragma::gui::FontManager::GetTextSize(const pragma::string::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height) { return GetTextSize(text, charOffset, GetFont(font).get(), width, height); }
+uint32_t pragma::gui::FontManager::GetTextSize(const string::Utf8StringArg &text, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height) { return GetTextSize(text, charOffset, GetFont(font).get(), width, height); }
 uint32_t pragma::gui::FontManager::GetTextSize(int32_t c, uint32_t charOffset, const FontInfo *font, int32_t *width, int32_t *height)
 {
-	pragma::string::Utf8String str {static_cast<char16_t>(c)};
+	string::Utf8String str {static_cast<char16_t>(c)};
 	return GetTextSize(str, charOffset, font, width, height);
 }
 uint32_t pragma::gui::FontManager::GetTextSize(int32_t c, uint32_t charOffset, const std::string &font, int32_t *width, int32_t *height)
 {
-	pragma::string::Utf8String str {static_cast<char16_t>(c)};
+	string::Utf8String str {static_cast<char16_t>(c)};
 	return GetTextSize(str, charOffset, font, width, height);
 }

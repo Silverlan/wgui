@@ -40,8 +40,8 @@ pragma::gui::types::WIArrow::~WIArrow()
 }
 void pragma::gui::types::WIArrow::SetDirection(Direction dir)
 {
-	InitializeBufferData(*s_vertexBuffers[umath::to_integral(dir)]);
-	auto &verts = s_vertices[umath::to_integral(dir)];
+	InitializeBufferData(*s_vertexBuffers[math::to_integral(dir)]);
+	auto &verts = s_vertices[math::to_integral(dir)];
 	m_vertices.clear();
 	m_vertices.reserve(verts.size());
 	for(auto &v : verts)

@@ -86,8 +86,8 @@ export namespace pragma::gui {
 			WIBase(const WIBase &) = delete;
 			WIBase &operator=(const WIBase &) = delete;
 			virtual std::ostream &Print(std::ostream &stream) const;
-			pragma::platform::Cursor::Shape GetCursor() const;
-			void SetCursor(pragma::platform::Cursor::Shape cursor);
+			platform::Cursor::Shape GetCursor() const;
+			void SetCursor(platform::Cursor::Shape cursor);
 			void Resize();
 			void SetSkin(std::string skin);
 			void ResetSkin();
@@ -192,7 +192,7 @@ export namespace pragma::gui {
 			void GetPos(int *x, int *y) const;
 			void SetPos(const Vector2i &pos);
 			virtual void SetPos(int x, int y);
-			umath::intersection::Intersect IsInBounds(int x, int y, int w = 0, int h = 0) const;
+			math::intersection::Intersect IsInBounds(int x, int y, int w = 0, int h = 0) const;
 			const Color &GetColor() const;
 			const std::shared_ptr<util::ColorProperty> &GetColorProperty() const;
 			void SetColor(const Vector4 &col);
@@ -242,11 +242,11 @@ export namespace pragma::gui {
 			virtual util::EventReply OnFilesDropped(const std::vector<std::string> &files);
 			bool IsFileHovering() const;
 			void SetFileHovering(bool hover);
-			virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
+			virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods);
 			virtual util::EventReply OnDoubleClick();
-			virtual util::EventReply JoystickCallback(const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state);
-			virtual util::EventReply KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods);
-			virtual util::EventReply CharCallback(unsigned int c, pragma::platform::Modifier mods = pragma::platform::Modifier::None);
+			virtual util::EventReply JoystickCallback(const platform::Joystick &joystick, uint32_t key, platform::KeyState state);
+			virtual util::EventReply KeyboardCallback(platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods);
+			virtual util::EventReply CharCallback(unsigned int c, platform::Modifier mods = platform::Modifier::None);
 			virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false);
 
 			void ClampToBounds(Vector2i &pos) const;
@@ -269,9 +269,9 @@ export namespace pragma::gui {
 			bool IsBaseElement() const;
 
 			void InjectMouseMoveInput(int32_t x, int32_t y);
-			util::EventReply InjectMouseInput(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
-			util::EventReply InjectKeyboardInput(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods);
-			util::EventReply InjectCharInput(unsigned int c, pragma::platform::Modifier mods = pragma::platform::Modifier::None);
+			util::EventReply InjectMouseInput(platform::MouseButton button, platform::KeyState state, platform::Modifier mods);
+			util::EventReply InjectKeyboardInput(platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods);
+			util::EventReply InjectCharInput(unsigned int c, platform::Modifier mods = platform::Modifier::None);
 			util::EventReply InjectScrollInput(Vector2 offset, bool offsetAsPixels = false);
 
 			void GetMousePos(int *x, int *y) const;
@@ -354,7 +354,7 @@ export namespace pragma::gui {
 			const util::PVector2Property &GetScaleProperty() const;
 
 			void ResetRotation();
-			void SetRotation(umath::Degree angle, const Vector2 &pivot);
+			void SetRotation(math::Degree angle, const Vector2 &pivot);
 			void SetRotation(const Mat4 &rotationMatrix);
 			const Mat4 *GetRotationMatrix() const;
 
@@ -365,14 +365,14 @@ export namespace pragma::gui {
 			prosper::Window *GetRootWindow();
 			const prosper::Window *GetRootWindow() const { return const_cast<WIBase *>(this)->GetRootWindow(); }
 
-			void SetLocalRenderTransform(const umath::ScaledTransform &transform);
+			void SetLocalRenderTransform(const math::ScaledTransform &transform);
 			void ClearLocalRenderTransform();
-			umath::ScaledTransform *GetLocalRenderTransform();
-			const umath::ScaledTransform *GetLocalRenderTransform() const { return const_cast<WIBase *>(this)->GetLocalRenderTransform(); }
+			math::ScaledTransform *GetLocalRenderTransform();
+			const math::ScaledTransform *GetLocalRenderTransform() const { return const_cast<WIBase *>(this)->GetLocalRenderTransform(); }
 			void UpdateAutoSizeToContents(bool updateX = true, bool updateY = true);
 
 			// Handles
-			pragma::gui::WIHandle GetHandle() const;
+			WIHandle GetHandle() const;
 		protected:
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
 			Mat4 GetAbsolutePose(float x, float y) const;
@@ -400,7 +400,7 @@ export namespace pragma::gui {
 			uint32_t m_depth = 0;
 			StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 			std::array<std::shared_ptr<void>, 4> m_userData;
-			std::unique_ptr<umath::ScaledTransform> m_localRenderTransform = nullptr;
+			std::unique_ptr<math::ScaledTransform> m_localRenderTransform = nullptr;
 			util::TSharedHandle<WIBase> m_handle {};
 			std::string m_class = "WIBase";
 			std::string m_name;
@@ -409,7 +409,7 @@ export namespace pragma::gui {
 			std::optional<WIAnchor> m_anchor = {};
 			std::unordered_map<std::string, std::shared_ptr<WIAttachment>> m_attachments = {};
 			std::unique_ptr<WIFadeInfo> m_fade = nullptr;
-			pragma::platform::Cursor::Shape m_cursor = {};
+			platform::Cursor::Shape m_cursor = {};
 			CallbackHandle m_callbackFocusGained = {};
 			CallbackHandle m_callbackFocusKilled = {};
 			Mat4 m_mvpLast = umat::identity();
@@ -428,7 +428,7 @@ export namespace pragma::gui {
 			virtual void Render(const DrawInfo &drawInfo, DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale = {1.f, 1.f}, uint32_t testStencilLevel = 0u, StencilPipeline stencilPipeline = StencilPipeline::Test);
 			void UpdateChildOrder(WIBase *child = nullptr);
 			template<class TElement>
-			pragma::gui::WIHandle CreateChild()
+			WIHandle CreateChild()
 			{
 				TElement *pGUI = WGUI::GetInstance().Create<TElement>(this);
 				return pGUI->GetHandle();
@@ -462,16 +462,16 @@ export namespace pragma::gui {
 			std::vector<std::string> m_styleClasses;
 			WISkin *m_skin = nullptr;
 			ChronoTimePoint m_clickStart;
-			static bool __wiJoystickCallback(prosper::Window &window, const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state);
-			static bool __wiKeyCallback(prosper::Window &window, pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods);
+			static bool __wiJoystickCallback(prosper::Window &window, const platform::Joystick &joystick, uint32_t key, platform::KeyState state);
+			static bool __wiKeyCallback(prosper::Window &window, platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods);
 			static bool __wiCharCallback(prosper::Window &window, unsigned int c);
-			static bool __wiMouseButtonCallback(prosper::Window &window, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
+			static bool __wiMouseButtonCallback(prosper::Window &window, platform::MouseButton button, platform::KeyState state, platform::Modifier mods);
 			static bool __wiScrollCallback(prosper::Window &window, Vector2 offset);
 			static bool __wiFileDragEnterCallback(prosper::Window &window);
 			static bool __wiFileDragExitCallback(prosper::Window &window);
 			static bool __wiFileDropCallback(prosper::Window &window, const std::vector<std::string> &files);
 
-			static util::EventReply InjectMouseButtonCallback(WIBase &el, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods);
+			static util::EventReply InjectMouseButtonCallback(WIBase &el, platform::MouseButton button, platform::KeyState state, platform::Modifier mods);
 		};
 		DLLWGUI std::ostream &operator<<(std::ostream &stream, WIBase &el);
 	}

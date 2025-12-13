@@ -13,11 +13,11 @@ export import :shaders.shader;
 export namespace pragma::gui::shaders {
 	class DLLWGUI ShaderTextured : public Shader {
 	  public:
-		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
-		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_POSITION;
+		static VertexBinding VERTEX_BINDING_VERTEX;
+		static VertexAttribute VERTEX_ATTRIBUTE_POSITION;
 
-		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_UV;
-		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_UV;
+		static VertexBinding VERTEX_BINDING_UV;
+		static VertexAttribute VERTEX_ATTRIBUTE_UV;
 
 		static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
 

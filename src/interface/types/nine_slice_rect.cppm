@@ -53,15 +53,15 @@ export namespace pragma::gui::types {
 		WI9SliceRect();
 		virtual void Initialize() override;
 		void SetMaterial(const std::string &matPath);
-		void SetMaterial(msys::Material &mat);
-		msys::Material *GetMaterial();
+		void SetMaterial(material::Material &mat);
+		material::Material *GetMaterial();
 	  private:
 		std::pair<int32_t, int32_t> GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		std::pair<int32_t, int32_t> GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		std::tuple<float, float, float, float> GetSegmentAnchor(Segment segment) const;
 		void UpdateSegments();
-		std::array<WIHandle, umath::to_integral(Segment::Count)> m_segmentElements;
-		msys::MaterialHandle m_material;
+		std::array<WIHandle, math::to_integral(Segment::Count)> m_segmentElements;
+		material::MaterialHandle m_material;
 		NineSlice m_nineSlice;
 	};
 };

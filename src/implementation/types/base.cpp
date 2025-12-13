@@ -15,7 +15,7 @@ import :types.base;
 bool is_valid(const pragma::gui::WIHandle &hEl) { return hEl.IsValid() && !hEl->IsRemovalScheduled(); }
 
 pragma::gui::types::WIBase::WIBase()
-    : CallbackHandler(), m_cursor(pragma::platform::Cursor::Shape::Default), m_color(util::ColorProperty::Create(colors::White)), m_pos(util::Vector2iProperty::Create()), m_size(util::Vector2iProperty::Create()), m_bVisible(util::BoolProperty::Create(true)),
+    : CallbackHandler(), m_cursor(platform::Cursor::Shape::Default), m_color(util::ColorProperty::Create(colors::White)), m_pos(util::Vector2iProperty::Create()), m_size(util::Vector2iProperty::Create()), m_bVisible(util::BoolProperty::Create(true)),
       m_bHasFocus(util::BoolProperty::Create(false)), m_bMouseInBounds(util::BoolProperty::Create(false)), m_scale {util::Vector2Property::Create(Vector2 {1.f, 1.f})}
 {
 	RegisterCallback<void>("OnFocusGained");
@@ -36,20 +36,20 @@ pragma::gui::types::WIBase::WIBase()
 	RegisterCallback<void>("OnSkinApplied");
 	RegisterCallback<void, WITooltip *>("OnShowTooltip");
 	RegisterCallback<void, WITooltip *>("OnHideTooltip");
-	RegisterCallbackWithOptionalReturn<util::EventReply, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier>("OnMouseEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply, platform::MouseButton, platform::KeyState, platform::Modifier>("OnMouseEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMousePressed");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnMouseReleased");
 	RegisterCallbackWithOptionalReturn<util::EventReply>("OnDoubleClick");
-	RegisterCallbackWithOptionalReturn<util::EventReply, std::reference_wrapper<const pragma::platform::Joystick>, uint32_t, pragma::platform::KeyState>("OnJoystickEvent");
-	RegisterCallbackWithOptionalReturn<util::EventReply, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier>("OnKeyEvent");
-	RegisterCallbackWithOptionalReturn<util::EventReply, int, pragma::platform::Modifier>("OnCharEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply, std::reference_wrapper<const platform::Joystick>, uint32_t, platform::KeyState>("OnJoystickEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply, platform::Key, int, platform::KeyState, platform::Modifier>("OnKeyEvent");
+	RegisterCallbackWithOptionalReturn<util::EventReply, int, platform::Modifier>("OnCharEvent");
 	RegisterCallbackWithOptionalReturn<util::EventReply, Vector2, bool>("OnScroll");
 
 	//auto hThis = GetHandle();
 	m_pos->AddCallback([this](std::reference_wrapper<const Vector2i> oldPos, std::reference_wrapper<const Vector2i> pos) {
 		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
-		if(umath::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false) {
+		if(math::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false) {
 			UpdateAnchorTopLeftPixelOffsets();
 			UpdateAnchorBottomRightPixelOffsets();
 		}
@@ -60,7 +60,7 @@ pragma::gui::types::WIBase::WIBase()
 	m_size->AddCallback([this](std::reference_wrapper<const Vector2i> oldSize, std::reference_wrapper<const Vector2i> size) {
 		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
-		if(umath::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false)
+		if(math::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false)
 			UpdateAnchorBottomRightPixelOffsets();
 		CallCallbacks<void>("SetSize");
 		for(auto &hChild : m_children) {
@@ -75,7 +75,7 @@ pragma::gui::types::WIBase::WIBase()
 		UpdateVisibility();
 		UpdateParentAutoSizeToContents();
 	});
-	umath::set_flag(m_stateFlags, StateFlags::ParentVisible);
+	math::set_flag(m_stateFlags, StateFlags::ParentVisible);
 }
 pragma::gui::types::WIBase::~WIBase()
 {
@@ -96,13 +96,13 @@ pragma::gui::types::WIBase::~WIBase()
 	m_fade = nullptr;
 }
 
-void pragma::gui::types::WIBase::SetLocalRenderTransform(const umath::ScaledTransform &transform) { m_localRenderTransform = std::make_unique<umath::ScaledTransform>(transform); }
+void pragma::gui::types::WIBase::SetLocalRenderTransform(const math::ScaledTransform &transform) { m_localRenderTransform = std::make_unique<math::ScaledTransform>(transform); }
 void pragma::gui::types::WIBase::ClearLocalRenderTransform() { m_localRenderTransform = nullptr; }
-umath::ScaledTransform *pragma::gui::types::WIBase::GetLocalRenderTransform() { return m_localRenderTransform.get(); }
+pragma::math::ScaledTransform *pragma::gui::types::WIBase::GetLocalRenderTransform() { return m_localRenderTransform.get(); }
 
 void pragma::gui::types::WIBase::UpdateParentAutoSizeToContents()
 {
-	if(m_parent.expired() || umath::is_flag_set(m_parent->m_stateFlags, StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY) == false || IsBackgroundElement())
+	if(m_parent.expired() || math::is_flag_set(m_parent->m_stateFlags, StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY) == false || IsBackgroundElement())
 		return;
 	auto updateX = true;
 	auto updateY = true;
@@ -121,14 +121,14 @@ void pragma::gui::types::WIBase::UpdateParentAutoSizeToContents()
 }
 void pragma::gui::types::WIBase::UpdateAutoSizeToContents(bool updateX, bool updateY)
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY)) {
-		SizeToContents(updateX && umath::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsX), updateY && umath::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsY));
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsX | StateFlags::AutoSizeToContentsY)) {
+		SizeToContents(updateX && math::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsX), updateY && math::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsY));
 	}
 }
 void pragma::gui::types::WIBase::UpdateParentThink()
 {
 	auto *parent = GetParent();
-	umath::set_flag(m_stateFlags, StateFlags::ParentUpdateIfInvisibleBit, parent ? parent->ShouldThinkIfInvisible() : false);
+	math::set_flag(m_stateFlags, StateFlags::ParentUpdateIfInvisibleBit, parent ? parent->ShouldThinkIfInvisible() : false);
 
 	for(auto &hChild : *GetChildren()) {
 		if(is_valid(hChild) == false)
@@ -139,7 +139,7 @@ void pragma::gui::types::WIBase::UpdateParentThink()
 void pragma::gui::types::WIBase::UpdateVisibility()
 {
 	auto *parent = GetParent();
-	umath::set_flag(m_stateFlags, StateFlags::ParentVisible, parent ? parent->IsVisible() : true);
+	math::set_flag(m_stateFlags, StateFlags::ParentVisible, parent ? parent->IsVisible() : true);
 
 	for(auto &hChild : *GetChildren()) {
 		if(is_valid(hChild) == false)
@@ -148,14 +148,14 @@ void pragma::gui::types::WIBase::UpdateVisibility()
 	}
 
 	// If we just became visible and we have an update schedule, we need to inform the GUI instance
-	if(IsVisible() && (umath::is_flag_set(m_stateFlags, StateFlags::UpdateScheduledBit) || ShouldThinkIfInvisible()))
+	if(IsVisible() && (math::is_flag_set(m_stateFlags, StateFlags::UpdateScheduledBit) || ShouldThinkIfInvisible()))
 		WGUI::GetInstance().m_bGUIUpdateRequired = true;
 
 	UpdateThink();
 	UpdateVisibilityUpdateState();
 }
-void pragma::gui::types::WIBase::SetShouldScissor(bool b) { umath::set_flag(m_stateFlags, StateFlags::ShouldScissorBit, b); }
-bool pragma::gui::types::WIBase::GetShouldScissor() const { return umath::is_flag_set(m_stateFlags, StateFlags::ShouldScissorBit); }
+void pragma::gui::types::WIBase::SetShouldScissor(bool b) { math::set_flag(m_stateFlags, StateFlags::ShouldScissorBit, b); }
+bool pragma::gui::types::WIBase::GetShouldScissor() const { return math::is_flag_set(m_stateFlags, StateFlags::ShouldScissorBit); }
 std::ostream &pragma::gui::types::WIBase::Print(std::ostream &stream) const
 {
 	auto &t = typeid(*this);
@@ -163,13 +163,13 @@ std::ostream &pragma::gui::types::WIBase::Print(std::ostream &stream) const
 	return stream;
 }
 pragma::platform::Cursor::Shape pragma::gui::types::WIBase::GetCursor() const { return m_cursor; }
-void pragma::gui::types::WIBase::SetCursor(pragma::platform::Cursor::Shape cursor) { m_cursor = cursor; }
+void pragma::gui::types::WIBase::SetCursor(platform::Cursor::Shape cursor) { m_cursor = cursor; }
 void pragma::gui::types::WIBase::RemoveSafely()
 {
 	SetVisible(false);
 	SetParent(nullptr);
 	WGUI::GetInstance().RemoveSafely(*this);
-	umath::set_flag(m_stateFlags, StateFlags::RemoveScheduledBit, true);
+	math::set_flag(m_stateFlags, StateFlags::RemoveScheduledBit, true);
 }
 void pragma::gui::types::WIBase::RemoveOnRemoval(WIBase *other)
 {
@@ -184,36 +184,36 @@ void pragma::gui::types::WIBase::RemoveOnRemoval(WIBase *other)
 }
 void pragma::gui::types::WIBase::UpdateVisibilityUpdateState()
 {
-	if(!umath::is_flag_set(m_stateFlags, StateFlags::ScheduleUpdateOnVisible) || (!IsVisible() && !ShouldThinkIfInvisible()))
+	if(!math::is_flag_set(m_stateFlags, StateFlags::ScheduleUpdateOnVisible) || (!IsVisible() && !ShouldThinkIfInvisible()))
 		return;
-	umath::set_flag(m_stateFlags, StateFlags::ScheduleUpdateOnVisible, false);
+	math::set_flag(m_stateFlags, StateFlags::ScheduleUpdateOnVisible, false);
 	WGUI::GetInstance().ScheduleElementForUpdate(*this);
 }
 void pragma::gui::types::WIBase::ScheduleUpdate()
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::IsBeingUpdated))
+	if(math::is_flag_set(m_stateFlags, StateFlags::IsBeingUpdated))
 		return;
-	//if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit))
+	//if(pragma::math::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit))
 	//	return;
 	//if(m_lastThinkUpdateIndex == WGUI::GetInstance().GetLastThinkIndex())
 	//	return;
 	if(!IsVisible() && !ShouldThinkIfInvisible()) {
-		umath::set_flag(m_stateFlags, StateFlags::ScheduleUpdateOnVisible, true);
+		math::set_flag(m_stateFlags, StateFlags::ScheduleUpdateOnVisible, true);
 		return;
 	}
 	WGUI::GetInstance().ScheduleElementForUpdate(*this);
 }
-bool pragma::gui::types::WIBase::IsUpdateScheduled() const { return umath::is_flag_set(m_stateFlags, StateFlags::UpdateScheduledBit); }
-bool pragma::gui::types::WIBase::IsRemovalScheduled() const { return umath::is_flag_set(m_stateFlags, StateFlags::RemoveScheduledBit); }
+bool pragma::gui::types::WIBase::IsUpdateScheduled() const { return math::is_flag_set(m_stateFlags, StateFlags::UpdateScheduledBit); }
+bool pragma::gui::types::WIBase::IsRemovalScheduled() const { return math::is_flag_set(m_stateFlags, StateFlags::RemoveScheduledBit); }
 void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY, bool bReload)
 {
-	if(bReload == false && bX == umath::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) && bY == umath::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit))
+	if(bReload == false && bX == math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) && bY == math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit))
 		return;
-	umath::set_flag(m_stateFlags, StateFlags::AutoAlignToParentXBit, bX);
-	umath::set_flag(m_stateFlags, StateFlags::AutoAlignToParentYBit, bY);
+	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentXBit, bX);
+	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentYBit, bY);
 	if(m_cbAutoAlign.IsValid())
 		m_cbAutoAlign.Remove();
-	if(umath::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) == false && umath::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit) == false)
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) == false && math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit) == false)
 		return;
 	auto *parent = GetParent();
 	if(parent == nullptr)
@@ -228,11 +228,11 @@ void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY, bool bRe
 			return;
 		auto &pos = p->GetPos();
 		auto size = p->GetSize();
-		if((umath::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentXBit) == true && pos.x != 0) || (umath::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentYBit) == true && pos.y != 0))
+		if((math::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentXBit) == true && pos.x != 0) || (math::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentYBit) == true && pos.y != 0))
 			p->SetPos(0, 0);
-		if(umath::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentXBit) == true)
+		if(math::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentXBit) == true)
 			size.x = parent->GetWidth();
-		if(umath::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentYBit) == true)
+		if(math::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentYBit) == true)
 			size.y = parent->GetHeight();
 		p->SetSize(size);
 	}));
@@ -240,13 +240,13 @@ void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY, bool bRe
 }
 void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b, bool bReload)
 {
-	if(b == umath::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) && (bReload == false || b == false))
+	if(b == math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) && (bReload == false || b == false))
 		return;
 	if(m_cbAutoCenterX.IsValid())
 		m_cbAutoCenterX.Remove();
 	if(m_cbAutoCenterXOwn.IsValid())
 		m_cbAutoCenterXOwn.Remove();
-	umath::set_flag(m_stateFlags, StateFlags::AutoCenterToParentXBit, b);
+	math::set_flag(m_stateFlags, StateFlags::AutoCenterToParentXBit, b);
 	if(b == false)
 		return;
 	WIBase *parent = GetParent();
@@ -265,13 +265,13 @@ void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b, bool bReload)
 }
 void pragma::gui::types::WIBase::SetAutoCenterToParentY(bool b, bool bReload)
 {
-	if(b == umath::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) && (bReload == false || b == false))
+	if(b == math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) && (bReload == false || b == false))
 		return;
 	if(m_cbAutoCenterY.IsValid())
 		m_cbAutoCenterY.Remove();
 	if(m_cbAutoCenterYOwn.IsValid())
 		m_cbAutoCenterYOwn.Remove();
-	umath::set_flag(m_stateFlags, StateFlags::AutoCenterToParentYBit, b);
+	math::set_flag(m_stateFlags, StateFlags::AutoCenterToParentYBit, b);
 	if(b == false)
 		return;
 	WIBase *parent = GetParent();
@@ -297,13 +297,13 @@ void pragma::gui::types::WIBase::SetAutoCenterToParent(bool b)
 	SetAutoCenterToParentX(b);
 	SetAutoCenterToParentY(b);
 }
-bool pragma::gui::types::WIBase::GetAutoAlignToParentX() const { return umath::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit); }
-bool pragma::gui::types::WIBase::GetAutoAlignToParentY() const { return umath::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit); }
+bool pragma::gui::types::WIBase::GetAutoAlignToParentX() const { return math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit); }
+bool pragma::gui::types::WIBase::GetAutoAlignToParentY() const { return math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit); }
 bool pragma::gui::types::WIBase::GetAutoAlignToParent() const { return (GetAutoAlignToParentX() == true || GetAutoAlignToParentY() == true) ? true : false; }
-bool pragma::gui::types::WIBase::GetMouseMovementCheckEnabled() { return umath::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit); }
+bool pragma::gui::types::WIBase::GetMouseMovementCheckEnabled() { return math::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit); }
 void pragma::gui::types::WIBase::SetMouseMovementCheckEnabled(bool b)
 {
-	umath::set_flag(m_stateFlags, StateFlags::MouseCheckEnabledBit, b);
+	math::set_flag(m_stateFlags, StateFlags::MouseCheckEnabledBit, b);
 	UpdateThink();
 }
 void pragma::gui::types::WIBase::Initialize() {}
@@ -319,12 +319,12 @@ void pragma::gui::types::WIBase::SetUserData(const std::shared_ptr<void> &userDa
 void pragma::gui::types::WIBase::SetUserData2(const std::shared_ptr<void> &userData) { m_userData.at(1) = userData; }
 void pragma::gui::types::WIBase::SetUserData3(const std::shared_ptr<void> &userData) { m_userData.at(2) = userData; }
 void pragma::gui::types::WIBase::SetUserData4(const std::shared_ptr<void> &userData) { m_userData.at(3) = userData; }
-pragma::gui::WIHandle pragma::gui::types::WIBase::GetHandle() const { return util::TWeakSharedHandle<WIBase> {m_handle}; }
+pragma::gui::WIHandle pragma::gui::types::WIBase::GetHandle() const { return pragma::util::TWeakSharedHandle<WIBase> {m_handle}; }
 void pragma::gui::types::WIBase::TrapFocus(bool b)
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::TrapFocusBit) == b)
+	if(math::is_flag_set(m_stateFlags, StateFlags::TrapFocusBit) == b)
 		return;
-	umath::set_flag(m_stateFlags, StateFlags::TrapFocusBit, b);
+	math::set_flag(m_stateFlags, StateFlags::TrapFocusBit, b);
 
 	auto *window = GetRootWindow();
 	if(!window)
@@ -349,7 +349,7 @@ void pragma::gui::types::WIBase::TrapFocus(bool b)
 		}
 	}
 }
-bool pragma::gui::types::WIBase::IsFocusTrapped() { return umath::is_flag_set(m_stateFlags, StateFlags::TrapFocusBit); }
+bool pragma::gui::types::WIBase::IsFocusTrapped() { return math::is_flag_set(m_stateFlags, StateFlags::TrapFocusBit); }
 std::string pragma::gui::types::WIBase::GetClass() const { return m_class; }
 void pragma::gui::types::WIBase::CallOnRemove(CallbackHandle callback) { AddCallback("OnRemove", callback); }
 void pragma::gui::types::WIBase::SetZPos(int zpos)
@@ -386,7 +386,7 @@ void pragma::gui::types::WIBase::UpdateChildOrder(WIBase *child)
 {
 	if(child != nullptr) {
 		for(unsigned int i = 0; i < m_children.size(); i++) {
-			pragma::gui::WIHandle &hElement = m_children[i];
+			WIHandle &hElement = m_children[i];
 			if(hElement.IsValid()) {
 				WIBase *pElement = hElement.get();
 				if(pElement == child) {
@@ -401,7 +401,7 @@ void pragma::gui::types::WIBase::UpdateChildOrder(WIBase *child)
 	std::vector<WIHandle> sorted;
 	unsigned int numChildren = static_cast<unsigned int>(m_children.size());
 	for(unsigned int i = 0; i < numChildren; i++) {
-		pragma::gui::WIHandle &hChild = m_children[i];
+		WIHandle &hChild = m_children[i];
 		if(hChild.IsValid())
 			InsertGUIElement(sorted, hChild, {});
 	}
@@ -460,8 +460,8 @@ void pragma::gui::types::WIBase::SetLocalAlpha(float a)
 	m_localAlpha = a;
 	UpdateTransparencyState();
 }
-void pragma::gui::types::WIBase::UpdateTransparencyState() { umath::set_flag(m_stateFlags, StateFlags::FullyTransparent, (GetAlpha() * m_localAlpha) == 0.f); }
-bool pragma::gui::types::WIBase::IsFullyTransparent() const { return umath::is_flag_set(m_stateFlags, StateFlags::FullyTransparent); }
+void pragma::gui::types::WIBase::UpdateTransparencyState() { math::set_flag(m_stateFlags, StateFlags::FullyTransparent, (GetAlpha() * m_localAlpha) == 0.f); }
+bool pragma::gui::types::WIBase::IsFullyTransparent() const { return math::is_flag_set(m_stateFlags, StateFlags::FullyTransparent); }
 void pragma::gui::types::WIBase::SetAlpha(float alpha)
 {
 	auto &col = GetColor();
@@ -487,7 +487,7 @@ void pragma::gui::types::WIBase::SizeToContents(bool x, bool y)
 	int width = 0;
 	int height = 0;
 	for(unsigned int i = 0; i < m_children.size(); i++) {
-		pragma::gui::WIHandle &child = m_children[i];
+		WIHandle &child = m_children[i];
 		if(is_valid(child) == false || child->IsBackgroundElement())
 			continue;
 		WIBase *gui = child.get();
@@ -518,8 +518,8 @@ void pragma::gui::types::WIBase::ClampToBounds(Vector2i &pos, Vector2i &size) co
 	auto endPos = pos + size;
 	ClampToBounds(pos);
 	ClampToBounds(endPos);
-	endPos.x = umath::max(pos.x, endPos.x);
-	endPos.y = umath::max(pos.y, endPos.y);
+	endPos.x = math::max(pos.x, endPos.x);
+	endPos.y = math::max(pos.y, endPos.y);
 	size = endPos - pos;
 }
 void pragma::gui::types::WIBase::GetAbsoluteVisibleBounds(Vector2i &pos, Vector2i &size, Vector2i *optOutParentPos) const
@@ -540,8 +540,8 @@ void pragma::gui::types::WIBase::GetAbsoluteVisibleBounds(Vector2i &pos, Vector2
 		parent = parent->GetParent();
 	}
 
-	endPos.x = umath::max(endPos.x, pos.x);
-	endPos.y = umath::max(endPos.y, pos.y);
+	endPos.x = math::max(endPos.x, pos.x);
+	endPos.y = math::max(endPos.y, pos.y);
 	if(optOutParentPos)
 		*optOutParentPos = absParentPos;
 
@@ -574,8 +574,8 @@ void pragma::gui::types::WIBase::ClampToVisibleBounds(Vector2i &pos, Vector2i &s
 	endPos = glm::clamp(endPos, visPos, visEndPos);
 	size = endPos - pos;
 }
-void pragma::gui::types::WIBase::SetStencilEnabled(bool enabled) { umath::set_flag(m_stateFlags, StateFlags::StencilEnabled, enabled); }
-bool pragma::gui::types::WIBase::IsStencilEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::StencilEnabled); }
+void pragma::gui::types::WIBase::SetStencilEnabled(bool enabled) { math::set_flag(m_stateFlags, StateFlags::StencilEnabled, enabled); }
+bool pragma::gui::types::WIBase::IsStencilEnabled() const { return math::is_flag_set(m_stateFlags, StateFlags::StencilEnabled); }
 void pragma::gui::types::WIBase::SetIMETarget()
 {
 	auto *window = GetRootWindow();
@@ -594,7 +594,7 @@ void pragma::gui::types::WIBase::ClearIMETarget()
 }
 void pragma::gui::types::WIBase::SetBackgroundElement(bool backgroundElement, bool autoAlignToParent)
 {
-	umath::set_flag(m_stateFlags, StateFlags::IsBackgroundElement, backgroundElement);
+	math::set_flag(m_stateFlags, StateFlags::IsBackgroundElement, backgroundElement);
 	if(backgroundElement && autoAlignToParent) {
 		//SetPos(0,0);
 		//SetSize(GetParent()->GetSize());
@@ -604,9 +604,9 @@ void pragma::gui::types::WIBase::SetBackgroundElement(bool backgroundElement, bo
 		SetZPos(-100);
 	}
 }
-bool pragma::gui::types::WIBase::IsBackgroundElement() const { return umath::is_flag_set(m_stateFlags, StateFlags::IsBackgroundElement); }
-void pragma::gui::types::WIBase::SetBaseElement(bool baseElement) { umath::set_flag(m_stateFlags, StateFlags::IsBaseElement, baseElement); }
-bool pragma::gui::types::WIBase::IsBaseElement() const { return umath::is_flag_set(m_stateFlags, StateFlags::IsBaseElement); }
+bool pragma::gui::types::WIBase::IsBackgroundElement() const { return math::is_flag_set(m_stateFlags, StateFlags::IsBackgroundElement); }
+void pragma::gui::types::WIBase::SetBaseElement(bool baseElement) { math::set_flag(m_stateFlags, StateFlags::IsBaseElement, baseElement); }
+bool pragma::gui::types::WIBase::IsBaseElement() const { return math::is_flag_set(m_stateFlags, StateFlags::IsBaseElement); }
 bool pragma::gui::types::WIBase::HasFocus() { return *m_bHasFocus; }
 void pragma::gui::types::WIBase::RequestFocus()
 {
@@ -620,7 +620,7 @@ void pragma::gui::types::WIBase::RequestFocus()
 	*m_bHasFocus = true;
 	OnFocusGained();
 }
-const util::PBoolProperty &pragma::gui::types::WIBase::GetFocusProperty() const { return m_bHasFocus; }
+const pragma::util::PBoolProperty &pragma::gui::types::WIBase::GetFocusProperty() const { return m_bHasFocus; }
 void pragma::gui::types::WIBase::KillFocus(bool bForceKill)
 {
 	if(!HasFocus() || (bForceKill == false && IsFocusTrapped() && IsVisible()))
@@ -654,7 +654,7 @@ bool pragma::gui::types::WIBase::IsDescendant(WIBase *el)
 		return false;
 	std::vector<WIHandle> *children = GetChildren();
 	for(unsigned int i = 0; i < children->size(); i++) {
-		pragma::gui::WIHandle &hChild = (*children)[i];
+		WIHandle &hChild = (*children)[i];
 		if(hChild.IsValid()) {
 			WIBase *child = hChild.get();
 			if(child == el || child->IsDescendant(el))
@@ -698,9 +698,9 @@ void pragma::gui::types::WIBase::OnDescendantFocusKilled(WIBase &el)
 	if(parent)
 		parent->OnDescendantFocusKilled(el);
 }
-const util::PBoolProperty &pragma::gui::types::WIBase::GetVisibilityProperty() const { return m_bVisible; }
-bool pragma::gui::types::WIBase::IsParentVisible() const { return umath::is_flag_set(m_stateFlags, StateFlags::ParentVisible); }
-bool pragma::gui::types::WIBase::IsSelfVisible() const { return *m_bVisible && (m_color->GetValue().a > 0.f || umath::is_flag_set(m_stateFlags, StateFlags::RenderIfZeroAlpha)); }
+const pragma::util::PBoolProperty &pragma::gui::types::WIBase::GetVisibilityProperty() const { return m_bVisible; }
+bool pragma::gui::types::WIBase::IsParentVisible() const { return math::is_flag_set(m_stateFlags, StateFlags::ParentVisible); }
+bool pragma::gui::types::WIBase::IsSelfVisible() const { return *m_bVisible && (m_color->GetValue().a > 0.f || math::is_flag_set(m_stateFlags, StateFlags::RenderIfZeroAlpha)); }
 bool pragma::gui::types::WIBase::IsVisible() const { return (IsSelfVisible() && IsParentVisible()) ? true : false; }
 void pragma::gui::types::WIBase::OnVisibilityChanged(bool) {}
 pragma::gui::types::WIRoot *pragma::gui::types::WIBase::GetBaseRootElement()
@@ -728,7 +728,7 @@ void pragma::gui::types::WIBase::SetParentAndUpdateWindow(WIBase *base, std::opt
 	if(curWindow == window)
 		return SetParent(base, childIndex);
 
-	pragma::gui::WIHandle hFocused {};
+	WIHandle hFocused {};
 	auto trapped = false;
 	WIBase *elFocused = nullptr;
 	std::unordered_set<WIBase *> traversed; // Used to prevent potential infinite loop
@@ -780,7 +780,7 @@ prosper::Window *pragma::gui::types::WIBase::GetRootWindow()
 }
 void pragma::gui::types::WIBase::SetVisible(bool b)
 {
-	if(*m_bVisible == b || umath::is_flag_set(m_stateFlags, StateFlags::RemoveScheduledBit))
+	if(*m_bVisible == b || math::is_flag_set(m_stateFlags, StateFlags::RemoveScheduledBit))
 		return;
 	*m_bVisible = b;
 	OnVisibilityChanged(b);
@@ -802,17 +802,17 @@ void pragma::gui::types::WIBase::SetVisible(bool b)
 }
 void pragma::gui::types::WIBase::Update()
 {
-	umath::set_flag(m_stateFlags, StateFlags::IsBeingUpdated);
+	math::set_flag(m_stateFlags, StateFlags::IsBeingUpdated);
 	DoUpdate();
 	// Flag must be cleared after DoUpdate, in case DoUpdate has set it again!
-	umath::set_flag(m_stateFlags, StateFlags::UpdateScheduledBit, false);
+	math::set_flag(m_stateFlags, StateFlags::UpdateScheduledBit, false);
 
 	CallCallbacks("OnUpdated");
-	umath::set_flag(m_stateFlags, StateFlags::IsBeingUpdated, false);
+	math::set_flag(m_stateFlags, StateFlags::IsBeingUpdated, false);
 }
 void pragma::gui::types::WIBase::OnFirstThink() {}
 void pragma::gui::types::WIBase::DoUpdate() {}
-const util::PVector2iProperty &pragma::gui::types::WIBase::GetPosProperty() const { return m_pos; }
+const pragma::util::PVector2iProperty &pragma::gui::types::WIBase::GetPosProperty() const { return m_pos; }
 const Vector2i &pragma::gui::types::WIBase::GetPos() const { return *m_pos; }
 void pragma::gui::types::WIBase::GetPos(int *x, int *y) const
 {
@@ -905,16 +905,16 @@ std::vector<pragma::gui::WIHandle> *pragma::gui::types::WIBase::GetChildren() { 
 void pragma::gui::types::WIBase::GetChildren(const std::string &className, std::vector<WIHandle> &children)
 {
 	for(unsigned int i = 0; i < m_children.size(); i++) {
-		pragma::gui::WIHandle &hChild = m_children[i];
-		if(hChild.IsValid() && ustring::compare(hChild->GetClass(), className, false))
+		WIHandle &hChild = m_children[i];
+		if(hChild.IsValid() && string::compare(hChild->GetClass(), className, false))
 			children.push_back(hChild);
 	}
 }
 pragma::gui::types::WIBase *pragma::gui::types::WIBase::GetFirstChild(const std::string &className)
 {
 	for(unsigned int i = 0; i < m_children.size(); i++) {
-		pragma::gui::WIHandle &hChild = m_children[i];
-		if(hChild.IsValid() && ustring::compare(hChild->GetClass(), className, false))
+		WIHandle &hChild = m_children[i];
+		if(hChild.IsValid() && string::compare(hChild->GetClass(), className, false))
 			return hChild.get();
 	}
 	return nullptr;
@@ -923,7 +923,7 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::GetChild(unsigned int id
 {
 	unsigned int j = 0;
 	for(unsigned int i = 0; i < m_children.size(); i++) {
-		pragma::gui::WIHandle &hChild = m_children[i];
+		WIHandle &hChild = m_children[i];
 		if(hChild.IsValid() && j++ == idx)
 			return hChild.get();
 	}
@@ -933,8 +933,8 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::GetChild(const std::stri
 {
 	unsigned int j = 0;
 	for(unsigned int i = 0; i < m_children.size(); i++) {
-		pragma::gui::WIHandle &hChild = m_children[i];
-		if(hChild.IsValid() && ustring::compare(hChild->GetClass(), className, false) && j++ == idx)
+		WIHandle &hChild = m_children[i];
+		if(hChild.IsValid() && string::compare(hChild->GetClass(), className, false) && j++ == idx)
 			return hChild.get();
 	}
 	return nullptr;
@@ -943,8 +943,8 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::FindChildByName(const st
 {
 	std::vector<WIHandle>::iterator it;
 	for(it = m_children.begin(); it != m_children.end(); it++) {
-		pragma::gui::WIHandle &hChild = *it;
-		if(hChild.IsValid() && ustring::compare(hChild->GetName(), name, false))
+		WIHandle &hChild = *it;
+		if(hChild.IsValid() && string::compare(hChild->GetName(), name, false))
 			return hChild.get();
 	}
 	return nullptr;
@@ -953,14 +953,14 @@ void pragma::gui::types::WIBase::FindChildrenByName(const std::string &name, std
 {
 	std::vector<WIHandle>::iterator it;
 	for(it = m_children.begin(); it != m_children.end(); it++) {
-		pragma::gui::WIHandle &hChild = *it;
-		if(hChild.IsValid() && ustring::compare(hChild->GetName(), name, false))
+		WIHandle &hChild = *it;
+		if(hChild.IsValid() && string::compare(hChild->GetName(), name, false))
 			children.push_back(hChild);
 	}
 }
 pragma::gui::types::WIBase *pragma::gui::types::WIBase::FindDescendantByName(const std::string &name)
 {
-	if(ustring::compare(GetName(), name, false))
+	if(string::compare(GetName(), name, false))
 		return this;
 	for(auto &hChild : m_children) {
 		if(hChild.IsValid() == false)
@@ -973,7 +973,7 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::FindDescendantByName(con
 }
 void pragma::gui::types::WIBase::FindDescendantsByName(const std::string &name, std::vector<WIHandle> &children)
 {
-	if(ustring::compare(GetName(), name, false))
+	if(string::compare(GetName(), name, false))
 		children.push_back(GetHandle());
 	for(auto &hChild : m_children) {
 		if(hChild.IsValid() == false)
@@ -982,23 +982,23 @@ void pragma::gui::types::WIBase::FindDescendantsByName(const std::string &name, 
 	}
 }
 const Color &pragma::gui::types::WIBase::GetColor() const { return *m_color; }
-const std::shared_ptr<util::ColorProperty> &pragma::gui::types::WIBase::GetColorProperty() const { return m_color; }
+const std::shared_ptr<pragma::util::ColorProperty> &pragma::gui::types::WIBase::GetColorProperty() const { return m_color; }
 void pragma::gui::types::WIBase::SetColor(const Vector4 &col) { SetColor(col.r, col.g, col.b, col.a); }
 void pragma::gui::types::WIBase::SetColor(const Color &col) { SetColor(static_cast<float>(col.r) / 255.f, static_cast<float>(col.g) / 255.f, static_cast<float>(col.b) / 255.f, static_cast<float>(col.a) / 255.f); }
 void pragma::gui::types::WIBase::SetColor(float r, float g, float b, float a) { *m_color = Color(r * 255.f, g * 255.f, b * 255.f, a * 255.f); }
 void pragma::gui::types::WIBase::SetPos(const Vector2i &pos) { SetPos(pos.x, pos.y); }
 void pragma::gui::types::WIBase::SetPos(int x, int y) { *m_pos = Vector2i {x, y}; }
-umath::intersection::Intersect pragma::gui::types::WIBase::IsInBounds(int x, int y, int w, int h) const
+pragma::math::intersection::Intersect pragma::gui::types::WIBase::IsInBounds(int x, int y, int w, int h) const
 {
 	Vector3 minA {x, y, 0.f};
 	Vector3 maxA {x + w, y + h, 0.f};
 	Vector3 minB {0.f, 0.f, 0.f};
 	Vector3 maxB {GetWidth(), GetHeight(), 0.f};
-	return umath::intersection::aabb_aabb(minA, maxA, minB, maxB);
+	return math::intersection::aabb_aabb(minA, maxA, minB, maxB);
 }
 int pragma::gui::types::WIBase::GetWidth() const { return (*m_size)->x; }
 int pragma::gui::types::WIBase::GetHeight() const { return (*m_size)->y; }
-const util::PVector2iProperty &pragma::gui::types::WIBase::GetSizeProperty() const { return m_size; }
+const pragma::util::PVector2iProperty &pragma::gui::types::WIBase::GetSizeProperty() const { return m_size; }
 const Vector2i &pragma::gui::types::WIBase::GetSize() const { return *m_size; }
 void pragma::gui::types::WIBase::GetSize(int *w, int *h)
 {
@@ -1012,8 +1012,8 @@ void pragma::gui::types::WIBase::SetSize(int x, int y)
 	if(x < 0 || y < 0)
 		throw std::logic_error("Negative size not allowed!");
 #endif
-	x = umath::max(x, 0);
-	y = umath::max(y, 0);
+	x = math::max(x, 0);
+	y = math::max(y, 0);
 	*m_size = Vector2i {x, y};
 }
 Mat4 pragma::gui::types::WIBase::GetTransformPose(const Vector2i &origin, int w, int h, const Mat4 &poseParent, const Vector2 &scale) const
@@ -1033,12 +1033,12 @@ Mat4 pragma::gui::types::WIBase::GetTransformPose(const Vector2i &origin, int w,
 void pragma::gui::types::WIBase::SetScale(const Vector2 &scale) { *m_scale = scale; }
 void pragma::gui::types::WIBase::SetScale(float x, float y) { SetScale(Vector2 {x, y}); }
 const Vector2 &pragma::gui::types::WIBase::GetScale() const { return *m_scale; }
-const util::PVector2Property &pragma::gui::types::WIBase::GetScaleProperty() const { return m_scale; }
+const pragma::util::PVector2Property &pragma::gui::types::WIBase::GetScaleProperty() const { return m_scale; }
 Mat4 pragma::gui::types::WIBase::GetTransformPose(int w, int h, const Mat4 &poseParent) const { return GetTransformPose(*m_pos, w, h, poseParent); }
 Mat4 pragma::gui::types::WIBase::GetTransformPose(int w, int h) const { return GetTransformPose(*m_pos, w, h, umat::identity()); }
 Mat4 pragma::gui::types::WIBase::GetTranslationPose(const Vector2i &origin, int w, int h, const Mat4 &poseParent) const
 {
-	umath::ScaledTransform pose {};
+	math::ScaledTransform pose {};
 	pose.SetOrigin(Vector3 {(origin.x) * 2, (origin.y) * 2, 0.f});
 	return poseParent * pose.ToMatrix();
 }
@@ -1064,7 +1064,7 @@ void pragma::gui::types::WIBase::Render(const DrawInfo &drawInfo, DrawState &dra
 	assert(shader != nullptr);
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
+	if(shader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, math::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 		shader->RecordDraw(bindState, {matDraw, Vector4 {}, ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
 		shader->RecordEndDraw(bindState);
 	}
@@ -1088,7 +1088,7 @@ std::optional<std::string> pragma::gui::types::WIBase::GetSkinName() const
 }
 void pragma::gui::types::WIBase::ResetSkin()
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == true) {
+	if(math::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == true) {
 		if(m_skin != nullptr)
 			m_skin->Release(this);
 		else {
@@ -1096,31 +1096,31 @@ void pragma::gui::types::WIBase::ResetSkin()
 			if(skinCurrent != nullptr)
 				skinCurrent->Release(this);
 		}
-		umath::set_flag(m_stateFlags, StateFlags::SkinAppliedBit, false);
+		math::set_flag(m_stateFlags, StateFlags::SkinAppliedBit, false);
 		UpdateThink();
 	}
 	m_skin = nullptr;
 	std::vector<WIHandle> *children = GetChildren();
 	for(unsigned int i = 0; i < children->size(); i++) {
-		pragma::gui::WIHandle &hChild = (*children)[i];
+		WIHandle &hChild = (*children)[i];
 		if(hChild.IsValid())
 			hChild->ResetSkin();
 	}
 }
-void pragma::gui::types::WIBase::SetRemoveOnParentRemoval(bool b) { umath::set_flag(m_stateFlags, StateFlags::DontRemoveOnParentRemoval, !b); }
+void pragma::gui::types::WIBase::SetRemoveOnParentRemoval(bool b) { math::set_flag(m_stateFlags, StateFlags::DontRemoveOnParentRemoval, !b); }
 void pragma::gui::types::WIBase::OnSkinApplied() {}
 void pragma::gui::types::WIBase::RefreshSkin()
 {
 	if(m_skin == nullptr)
 		return;
-	umath::set_flag(m_stateFlags, StateFlags::SkinAppliedBit, false);
+	math::set_flag(m_stateFlags, StateFlags::SkinAppliedBit, false);
 	ApplySkin();
 }
 void pragma::gui::types::WIBase::ApplySkin(WISkin *skin)
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == true)
+	if(math::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == true)
 		return;
-	umath::set_flag(m_stateFlags, StateFlags::SkinAppliedBit, true);
+	math::set_flag(m_stateFlags, StateFlags::SkinAppliedBit, true);
 	UpdateThink();
 	if(m_skin == nullptr)
 		m_skin = skin;
@@ -1135,15 +1135,15 @@ void pragma::gui::types::WIBase::ApplySkin(WISkin *skin)
 		m_skin->Initialize(this);
 	std::vector<WIHandle> *children = GetChildren();
 	for(unsigned int i = 0; i < children->size(); i++) {
-		pragma::gui::WIHandle &hChild = (*children)[i];
+		WIHandle &hChild = (*children)[i];
 		if(hChild.IsValid())
 			hChild->ApplySkin(m_skin);
 	}
 	OnSkinApplied();
-	if(umath::is_flag_set(m_stateFlags, StateFlags::SkinCallbacksEnabled))
+	if(math::is_flag_set(m_stateFlags, StateFlags::SkinCallbacksEnabled))
 		CallCallbacks<void>("OnSkinApplied");
 }
-void pragma::gui::types::WIBase::SetSkinCallbacksEnabled(bool enabled) { umath::set_flag(m_stateFlags, StateFlags::SkinCallbacksEnabled, enabled); }
+void pragma::gui::types::WIBase::SetSkinCallbacksEnabled(bool enabled) { math::set_flag(m_stateFlags, StateFlags::SkinCallbacksEnabled, enabled); }
 pragma::gui::WISkin *pragma::gui::types::WIBase::GetSkin()
 {
 	if(m_skin)
@@ -1153,15 +1153,15 @@ pragma::gui::WISkin *pragma::gui::types::WIBase::GetSkin()
 }
 void pragma::gui::types::WIBase::SetThinkIfInvisible(bool bThinkIfInvisible)
 {
-	umath::set_flag(m_stateFlags, StateFlags::UpdateIfInvisibleBit, bThinkIfInvisible);
+	math::set_flag(m_stateFlags, StateFlags::UpdateIfInvisibleBit, bThinkIfInvisible);
 	UpdateParentThink();
 	UpdateVisibilityUpdateState();
 }
-bool pragma::gui::types::WIBase::ShouldThinkIfInvisible() const { return umath::is_flag_set(m_stateFlags, StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit); }
-void pragma::gui::types::WIBase::SetRenderIfZeroAlpha(bool renderIfZeroAlpha) { umath::set_flag(m_stateFlags, StateFlags::RenderIfZeroAlpha, renderIfZeroAlpha); }
+bool pragma::gui::types::WIBase::ShouldThinkIfInvisible() const { return math::is_flag_set(m_stateFlags, StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit); }
+void pragma::gui::types::WIBase::SetRenderIfZeroAlpha(bool renderIfZeroAlpha) { math::set_flag(m_stateFlags, StateFlags::RenderIfZeroAlpha, renderIfZeroAlpha); }
 void pragma::gui::types::WIBase::UpdateCursorMove(int x, int y)
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit) == false)
+	if(math::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit) == false)
 		return;
 	if(x != m_lastMouseX || y != m_lastMouseY) {
 		OnCursorMoved(x, y);
@@ -1171,9 +1171,9 @@ void pragma::gui::types::WIBase::UpdateCursorMove(int x, int y)
 }
 void pragma::gui::types::WIBase::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::RemoveScheduledBit) == true)
+	if(math::is_flag_set(m_stateFlags, StateFlags::RemoveScheduledBit) == true)
 		return;
-	//if(umath::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit) == true)
+	//if(pragma::math::is_flag_set(m_stateFlags,StateFlags::UpdateScheduledBit) == true)
 	//	Update();
 	ApplySkin();
 	//if(*m_bHasFocus == true)
@@ -1187,7 +1187,7 @@ void pragma::gui::types::WIBase::Think(const std::shared_ptr<prosper::IPrimaryCo
 		}
 	}
 
-	if(umath::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit) && IsVisible()) {
+	if(math::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit) && IsVisible()) {
 		int x, y;
 		GetMousePos(&x, &y);
 		UpdateCursorMove(x, y);
@@ -1213,8 +1213,8 @@ void pragma::gui::types::WIBase::Think(const std::shared_ptr<prosper::IPrimaryCo
 		}
 	}
 	CallCallbacks<void>("Think");
-	if(umath::is_flag_set(m_stateFlags, StateFlags::FirstThink) == false) {
-		umath::set_flag(m_stateFlags, StateFlags::FirstThink);
+	if(math::is_flag_set(m_stateFlags, StateFlags::FirstThink) == false) {
+		math::set_flag(m_stateFlags, StateFlags::FirstThink);
 		OnFirstThink();
 	}
 }
@@ -1224,7 +1224,7 @@ void pragma::gui::types::WIBase::CalcBounds(const Mat4 &mat, int32_t w, int32_t 
 	outPos = Vector2i(mat[3][0] / 2.f, mat[3][1] / 2.f);
 }
 void pragma::gui::types::WIBase::ResetRotation() { m_rotationMatrix = nullptr; }
-void pragma::gui::types::WIBase::SetRotation(umath::Degree angle, const Vector2 &pivot)
+void pragma::gui::types::WIBase::SetRotation(math::Degree angle, const Vector2 &pivot)
 {
 	Mat4 r = glm::gtc::translate(Vector3 {pivot * 2.f, 0.f});
 	r = r * umat::create(uquat::create(EulerAngles {0.f, 0.f, angle}));
@@ -1241,9 +1241,9 @@ void pragma::gui::types::WIBase::Draw(const DrawInfo &drawInfo, DrawState &drawS
 	const auto &origin = drawInfo.offset;
 
 	auto rootPose = drawInfo.transform;
-	auto useScissor = umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseScissor);
-	auto useStencilGlobal = umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseStencil);
-	auto dontSkipIfOutOfBounds = umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::DontSkipIfOutOfBounds);
+	auto useScissor = math::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseScissor);
+	auto useStencilGlobal = math::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseStencil);
+	auto dontSkipIfOutOfBounds = math::is_flag_set(drawInfo.flags, DrawInfo::Flags::DontSkipIfOutOfBounds);
 	if(m_rotationMatrix) {
 		useScissor = false;
 		useStencilGlobal = true;
@@ -1312,7 +1312,7 @@ void pragma::gui::types::WIBase::Draw(const DrawInfo &drawInfo, DrawState &drawS
 			if(useScissor == false)
 				drawState.SetScissor(0u, 0u, drawInfo.size.x, drawInfo.size.y);
 			else if(useScissorChild == false)
-				drawState.SetScissor(umath::max(posScissor[0], 0), umath::max(posScissor[1], 0), umath::max(szScissor[0], 0), umath::max(szScissor[1], 0)); // Use parent scissor values
+				drawState.SetScissor(math::max(posScissor[0], 0), math::max(posScissor[1], 0), math::max(szScissor[0], 0), math::max(szScissor[1], 0)); // Use parent scissor values
 
 			posScissor = posChild;
 			szScissor = posChildEnd - posChild;
@@ -1320,7 +1320,7 @@ void pragma::gui::types::WIBase::Draw(const DrawInfo &drawInfo, DrawState &drawS
 			//auto yScissor = context.GetHeight() -(posScissor[1] +szScissor[1]); // Move origin to top left (OpenGL)
 			//drawCmd->SetScissor(posScissor[0],yScissor,szScissor[0],szScissor[1]);
 			if(useScissor == true && useScissorChild == true)
-				drawState.SetScissor(umath::max(posScissor[0], 0), umath::max(posScissor[1], 0), umath::max(szScissor[0], 0), umath::max(szScissor[1], 0));
+				drawState.SetScissor(math::max(posScissor[0], 0), math::max(posScissor[1], 0), math::max(szScissor[0], 0), math::max(szScissor[1], 0));
 
 			float aOriginal = drawState.renderAlpha;
 			if(child->ShouldIgnoreParentAlpha())
@@ -1336,9 +1336,9 @@ void pragma::gui::types::WIBase::Draw(const DrawInfo &drawInfo, DrawState &drawS
 			auto childDrawInfo = drawInfo;
 			childDrawInfo.offset = *child->m_pos;
 			childDrawInfo.transform = rootPose;
-			umath::set_flag(childDrawInfo.flags, DrawInfo::Flags::UseScissor, useScissorChild);
-			umath::set_flag(childDrawInfo.flags, DrawInfo::Flags::UseStencil, useStencilGlobal);
-			umath::set_flag(childDrawInfo.flags, DrawInfo::Flags::DontSkipIfOutOfBounds, dontSkipIfOutOfBounds);
+			math::set_flag(childDrawInfo.flags, DrawInfo::Flags::UseScissor, useScissorChild);
+			math::set_flag(childDrawInfo.flags, DrawInfo::Flags::UseStencil, useStencilGlobal);
+			math::set_flag(childDrawInfo.flags, DrawInfo::Flags::DontSkipIfOutOfBounds, dontSkipIfOutOfBounds);
 			auto scaleChild = scale * child->GetScale();
 			child->Draw(childDrawInfo, drawState, offsetParentNew, posScissor, szScissor, scaleChild, newStencilLevel);
 			drawState.renderAlpha = aOriginal;
@@ -1355,7 +1355,7 @@ void pragma::gui::types::WIBase::Draw(const DrawInfo &drawInfo, DrawState &drawS
 {
 	auto scissorPos = GetPos();
 	auto scissorSize = drawInfo.size;
-	if(umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseScissor)) {
+	if(math::is_flag_set(drawInfo.flags, DrawInfo::Flags::UseScissor)) {
 		scissorPos = {};
 		scissorSize = GetSize();
 	}
@@ -1368,7 +1368,7 @@ void pragma::gui::types::WIBase::Draw(int w, int h, std::shared_ptr<prosper::ICo
 		return;
 	DrawInfo drawInfo {cmdBuf};
 	drawInfo.offset = GetPos();
-	umath::set_flag(drawInfo.flags, DrawInfo::Flags::UseScissor, GetShouldScissor());
+	math::set_flag(drawInfo.flags, DrawInfo::Flags::UseScissor, GetShouldScissor());
 	drawInfo.size = {w, h};
 	DrawState drawState {};
 	Draw(drawInfo, drawState);
@@ -1380,7 +1380,7 @@ bool pragma::gui::types::WIBase::HasTooltip() const { return !m_toolTip.empty();
 pragma::gui::WIAttachment *pragma::gui::types::WIBase::AddAttachment(const std::string &name, const Vector2 &position)
 {
 	auto lname = name;
-	ustring::to_lower(lname);
+	string::to_lower(lname);
 	auto it = m_attachments.find(lname);
 	if(it == m_attachments.end())
 		it = m_attachments.insert(std::make_pair(lname, std::make_shared<WIAttachment>(*this))).first;
@@ -1391,7 +1391,7 @@ const pragma::gui::WIAttachment *pragma::gui::types::WIBase::GetAttachment(const
 pragma::gui::WIAttachment *pragma::gui::types::WIBase::GetAttachment(const std::string &name)
 {
 	auto lname = name;
-	ustring::to_lower(lname);
+	string::to_lower(lname);
 	auto it = m_attachments.find(lname);
 	if(it == m_attachments.end())
 		return nullptr;
@@ -1418,7 +1418,7 @@ const Vector2i *pragma::gui::types::WIBase::GetAbsoluteAttachmentPos(const std::
 		return nullptr;
 	return &pAttachment->GetAbsPosProperty()->GetValue();
 }
-const util::PVector2iProperty *pragma::gui::types::WIBase::GetAttachmentPosProperty(const std::string &name) const
+const pragma::util::PVector2iProperty *pragma::gui::types::WIBase::GetAttachmentPosProperty(const std::string &name) const
 {
 	auto *pAttachment = GetAttachment(name);
 	if(pAttachment == nullptr)
@@ -1427,14 +1427,14 @@ const util::PVector2iProperty *pragma::gui::types::WIBase::GetAttachmentPosPrope
 }
 void pragma::gui::types::WIBase::SetAutoSizeToContents(bool x, bool y, bool updateImmediately)
 {
-	umath::set_flag(m_stateFlags, StateFlags::AutoSizeToContentsX, x);
-	umath::set_flag(m_stateFlags, StateFlags::AutoSizeToContentsY, y);
+	math::set_flag(m_stateFlags, StateFlags::AutoSizeToContentsX, x);
+	math::set_flag(m_stateFlags, StateFlags::AutoSizeToContentsY, y);
 	if(updateImmediately && (x || y))
 		UpdateAutoSizeToContents();
 }
 void pragma::gui::types::WIBase::SetAutoSizeToContents(bool autoSize) { SetAutoSizeToContents(autoSize, autoSize); }
-bool pragma::gui::types::WIBase::ShouldAutoSizeToContentsX() const { return umath::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsX); }
-bool pragma::gui::types::WIBase::ShouldAutoSizeToContentsY() const { return umath::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsY); }
+bool pragma::gui::types::WIBase::ShouldAutoSizeToContentsX() const { return math::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsX); }
+bool pragma::gui::types::WIBase::ShouldAutoSizeToContentsY() const { return math::is_flag_set(m_stateFlags, StateFlags::AutoSizeToContentsY); }
 bool pragma::gui::types::WIBase::Wrap(WIBase &wrapper)
 {
 	auto *parent = GetParent();
@@ -1589,21 +1589,21 @@ void pragma::gui::types::WIBase::UpdateAnchorTransform()
 	auto elMin = Vector2 {anchorBounds.first.x + m_anchor->pxOffsetLeft, anchorBounds.first.y + m_anchor->pxOffsetTop};
 	auto elMax = Vector2 {anchorBounds.second.x + m_anchor->pxOffsetRight, anchorBounds.second.y + m_anchor->pxOffsetBottom};
 	auto sz = elMax - elMin;
-	umath::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform);
+	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform);
 	SetPos(elMin);
 	SetSize(sz);
-	umath::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform, false);
+	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform, false);
 }
 void pragma::gui::types::WIBase::Remove()
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::IsBeingRemoved))
+	if(math::is_flag_set(m_stateFlags, StateFlags::IsBeingRemoved))
 		return;
-	umath::set_flag(m_stateFlags, StateFlags::IsBeingRemoved);
+	math::set_flag(m_stateFlags, StateFlags::IsBeingRemoved);
 	CallCallbacks<void>("OnPreRemove");
 	for(auto &hChild : *GetChildren()) {
 		if(hChild.IsValid() == false)
 			continue;
-		if(umath::is_flag_set(hChild->m_stateFlags, StateFlags::DontRemoveOnParentRemoval)) {
+		if(math::is_flag_set(hChild->m_stateFlags, StateFlags::DontRemoveOnParentRemoval)) {
 			hChild->ClearParent();
 			continue;
 		}
@@ -1622,7 +1622,7 @@ void pragma::gui::types::WIBase::OnRemove() {}
 void pragma::gui::types::WIBase::UpdateThink()
 {
 	auto &wgui = WGUI::GetInstance();
-	auto it = umath::is_flag_set(m_stateFlags, StateFlags::IsInThinkingList) ? std::find_if(wgui.m_thinkingElements.begin(), wgui.m_thinkingElements.end(), [this](const WIHandle &hEl) { return hEl.get() == this; }) : wgui.m_thinkingElements.end();
+	auto it = math::is_flag_set(m_stateFlags, StateFlags::IsInThinkingList) ? std::find_if(wgui.m_thinkingElements.begin(), wgui.m_thinkingElements.end(), [this](const WIHandle &hEl) { return hEl.get() == this; }) : wgui.m_thinkingElements.end();
 	if(ShouldThink()) {
 		if(it != wgui.m_thinkingElements.end())
 			return;
@@ -1637,18 +1637,18 @@ void pragma::gui::types::WIBase::UpdateThink()
 }
 bool pragma::gui::types::WIBase::ShouldThink() const
 {
-	auto shouldThink = (umath::is_flag_set(m_stateFlags, StateFlags::ThinkingEnabled | StateFlags::MouseCheckEnabledBit) || m_fade != nullptr || umath::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == false);
+	auto shouldThink = (math::is_flag_set(m_stateFlags, StateFlags::ThinkingEnabled | StateFlags::MouseCheckEnabledBit) || m_fade != nullptr || math::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == false);
 	if(shouldThink == false)
 		return false;
 	if(IsSelfVisible() == false)
-		return m_fade != nullptr || umath::is_flag_set(m_stateFlags, StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit | StateFlags::RenderIfZeroAlpha);
-	return IsParentVisible() || umath::is_flag_set(m_stateFlags, StateFlags::ParentUpdateIfInvisibleBit);
+		return m_fade != nullptr || math::is_flag_set(m_stateFlags, StateFlags::UpdateIfInvisibleBit | StateFlags::ParentUpdateIfInvisibleBit | StateFlags::RenderIfZeroAlpha);
+	return IsParentVisible() || math::is_flag_set(m_stateFlags, StateFlags::ParentUpdateIfInvisibleBit);
 }
 void pragma::gui::types::WIBase::EnableThinking() { SetThinkingEnabled(true); }
 void pragma::gui::types::WIBase::DisableThinking() { SetThinkingEnabled(false); }
 void pragma::gui::types::WIBase::SetThinkingEnabled(bool enabled)
 {
-	umath::set_flag(m_stateFlags, StateFlags::ThinkingEnabled, enabled);
+	math::set_flag(m_stateFlags, StateFlags::ThinkingEnabled, enabled);
 	UpdateThink();
 }
 uint64_t pragma::gui::types::WIBase::GetIndex() const { return m_index; }
@@ -1661,7 +1661,7 @@ void pragma::gui::types::WIBase::SetParent(WIBase *base, std::optional<uint32_t>
 		el->m_depth = base ? (base->m_depth + 1) : ((el == WGUI::GetInstance().GetBaseElement()) ? 0 : 1);
 		if(el->m_depth == curDepth)
 			return;
-		if(umath::is_flag_set(el->m_stateFlags, StateFlags::UpdateScheduledBit))
+		if(math::is_flag_set(el->m_stateFlags, StateFlags::UpdateScheduledBit))
 			WGUI::GetInstance().ScheduleElementForUpdate(*el, true);
 		for(auto &hChild : *el->GetChildren()) {
 			if(hChild.expired())
@@ -1684,9 +1684,9 @@ void pragma::gui::types::WIBase::SetParent(WIBase *base, std::optional<uint32_t>
 		m_parent = WIHandle();
 		if(GetAutoAlignToParent() == true)
 			SetAutoAlignToParent(true, true);
-		if(umath::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) == true)
+		if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) == true)
 			SetAutoCenterToParentX(true, true);
-		if(umath::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) == true)
+		if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) == true)
 			SetAutoCenterToParentY(true, true);
 		UpdateVisibility();
 		UpdateParentThink();
@@ -1697,11 +1697,11 @@ void pragma::gui::types::WIBase::SetParent(WIBase *base, std::optional<uint32_t>
 	base->AddChild(this, childIndex);
 
 	if((m_stateFlags & (StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit)) != StateFlags::None)
-		SetAutoAlignToParent(umath::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit), umath::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit), true);
+		SetAutoAlignToParent(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit), math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit), true);
 
-	if(umath::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) == true)
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) == true)
 		SetAutoCenterToParentX(true, true);
-	if(umath::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) == true)
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) == true)
 		SetAutoCenterToParentY(true, true);
 
 	UpdateVisibility();
@@ -1728,7 +1728,7 @@ void pragma::gui::types::WIBase::ClearParent()
 void pragma::gui::types::WIBase::RemoveChild(WIBase *child)
 {
 	for(int i = static_cast<int>(m_children.size()) - 1; i >= 0; i--) {
-		pragma::gui::WIHandle &hnd = m_children[i];
+		WIHandle &hnd = m_children[i];
 		if(hnd.get() == child) {
 			child->ClearParent();
 			m_children.erase(m_children.begin() + i);
@@ -1782,7 +1782,7 @@ bool pragma::gui::types::WIBase::DoPosInBounds(const Vector2i &pos) const
 	return (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) ? false : true;
 }
 void pragma::gui::types::WIBase::Resize() { SetSize(GetSize()); }
-const util::PBoolProperty &pragma::gui::types::WIBase::GetMouseInBoundsProperty() const { return m_bMouseInBounds; }
+const pragma::util::PBoolProperty &pragma::gui::types::WIBase::GetMouseInBoundsProperty() const { return m_bMouseInBounds; }
 bool pragma::gui::types::WIBase::MouseInBounds() const
 {
 	auto &context = WGUI::GetInstance().GetContext();
@@ -1790,10 +1790,10 @@ bool pragma::gui::types::WIBase::MouseInBounds() const
 	auto cursorPos = el ? el->GetCursorPos() : Vector2 {};
 	return PosInBounds(static_cast<int>(cursorPos.x), static_cast<int>(cursorPos.y));
 }
-bool pragma::gui::types::WIBase::GetMouseInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit); }
-bool pragma::gui::types::WIBase::GetKeyboardInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::AcceptKeyboardInputBit); }
-bool pragma::gui::types::WIBase::GetScrollInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::AcceptScrollInputBit); }
-bool pragma::gui::types::WIBase::GetFileDropInputEnabled() const { return umath::is_flag_set(m_stateFlags, StateFlags::FileDropInputEnabled); }
+bool pragma::gui::types::WIBase::GetMouseInputEnabled() const { return math::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit); }
+bool pragma::gui::types::WIBase::GetKeyboardInputEnabled() const { return math::is_flag_set(m_stateFlags, StateFlags::AcceptKeyboardInputBit); }
+bool pragma::gui::types::WIBase::GetScrollInputEnabled() const { return math::is_flag_set(m_stateFlags, StateFlags::AcceptScrollInputBit); }
+bool pragma::gui::types::WIBase::GetFileDropInputEnabled() const { return math::is_flag_set(m_stateFlags, StateFlags::FileDropInputEnabled); }
 void pragma::gui::types::WIBase::AbsolutePosToRelative(Vector2 &pos) const
 {
 	pos = glm::inverse(GetAbsolutePose()) * Vector4 {pos * 2.f, 0.f, 1.f};
@@ -1806,7 +1806,7 @@ void pragma::gui::types::WIBase::UpdateMouseInBounds(const Vector2 &relPos, bool
 		*m_bMouseInBounds = false;
 	else
 		*m_bMouseInBounds = DoPosInBounds(relPos);
-	if(old == *m_bMouseInBounds || !umath::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit))
+	if(old == *m_bMouseInBounds || !math::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit))
 		return;
 	if(*m_bMouseInBounds == true)
 		OnCursorEntered();
@@ -1834,7 +1834,7 @@ void pragma::gui::types::WIBase::DoUpdateChildrenMouseInBounds(const Mat4 &paren
 	if(*m_bMouseInBounds == false)
 		forceFalse = true;
 	for(unsigned int i = 0; i < m_children.size(); i++) {
-		pragma::gui::WIHandle &hChild = m_children[i];
+		WIHandle &hChild = m_children[i];
 		if(is_valid(hChild) && (hChild->IsVisible() || hChild->ShouldThinkIfInvisible()))
 			hChild->DoUpdateChildrenMouseInBounds(parentPose * GetRelativePose(hChild->GetX(), hChild->GetY()), cursorPos, ignoreVisibility, forceFalse);
 	}
@@ -1846,21 +1846,21 @@ void pragma::gui::types::WIBase::UpdateChildrenMouseInBounds(bool ignoreVisibili
 	auto cursorPos = el ? el->GetCursorPos() : Vector2 {};
 	DoUpdateChildrenMouseInBounds(GetAbsolutePose(), cursorPos, ignoreVisibility, forceFalse);
 }
-util::EventReply pragma::gui::types::WIBase::OnFilesDropped(const std::vector<std::string> &files) { return util::EventReply::Unhandled; }
-bool pragma::gui::types::WIBase::IsFileHovering() const { return umath::is_flag_set(m_stateFlags, StateFlags::FileDropHover); }
+pragma::util::EventReply pragma::gui::types::WIBase::OnFilesDropped(const std::vector<std::string> &files) { return util::EventReply::Unhandled; }
+bool pragma::gui::types::WIBase::IsFileHovering() const { return math::is_flag_set(m_stateFlags, StateFlags::FileDropHover); }
 void pragma::gui::types::WIBase::SetFileHovering(bool hover)
 {
 	if(hover) {
-		umath::set_flag(m_stateFlags, StateFlags::FileDropHover);
+		math::set_flag(m_stateFlags, StateFlags::FileDropHover);
 		auto *elRoot = GetBaseRootElement();
 		if(elRoot)
 			elRoot->SetFileHoverElement(*this, true);
 		OnFileDragEntered();
 		return;
 	}
-	if(!umath::is_flag_set(m_stateFlags, StateFlags::FileDropHover))
+	if(!math::is_flag_set(m_stateFlags, StateFlags::FileDropHover))
 		return;
-	umath::set_flag(m_stateFlags, StateFlags::FileDropHover, false);
+	math::set_flag(m_stateFlags, StateFlags::FileDropHover, false);
 	auto *elRoot = GetBaseRootElement();
 	if(elRoot)
 		elRoot->SetFileHoverElement(*this, false);
@@ -1870,7 +1870,7 @@ void pragma::gui::types::WIBase::OnFileDragEntered() { CallCallbacks<void>("OnFi
 void pragma::gui::types::WIBase::OnFileDragExited() { CallCallbacks<void>("OnFileDragExited"); }
 void pragma::gui::types::WIBase::OnCursorEntered()
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::FileDropInputEnabled)) {
+	if(math::is_flag_set(m_stateFlags, StateFlags::FileDropInputEnabled)) {
 		auto *elRoot = GetBaseRootElement();
 		if(elRoot && elRoot->IsMainFileHovering())
 			SetFileHovering(true);
@@ -1879,52 +1879,52 @@ void pragma::gui::types::WIBase::OnCursorEntered()
 }
 void pragma::gui::types::WIBase::OnCursorExited()
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::FileDropHover))
+	if(math::is_flag_set(m_stateFlags, StateFlags::FileDropHover))
 		SetFileHovering(false);
 	CallCallbacks<void>("OnCursorExited");
 }
 void pragma::gui::types::WIBase::SetMouseInputEnabled(bool b)
 {
-	umath::set_flag(m_stateFlags, StateFlags::AcceptMouseInputBit, b);
+	math::set_flag(m_stateFlags, StateFlags::AcceptMouseInputBit, b);
 	if(b == false && *m_bMouseInBounds == true) {
 		OnCursorExited();
 		*m_bMouseInBounds = false;
 	}
 }
-void pragma::gui::types::WIBase::SetKeyboardInputEnabled(bool b) { umath::set_flag(m_stateFlags, StateFlags::AcceptKeyboardInputBit, b); }
-void pragma::gui::types::WIBase::SetScrollInputEnabled(bool b) { umath::set_flag(m_stateFlags, StateFlags::AcceptScrollInputBit, b); }
+void pragma::gui::types::WIBase::SetKeyboardInputEnabled(bool b) { math::set_flag(m_stateFlags, StateFlags::AcceptKeyboardInputBit, b); }
+void pragma::gui::types::WIBase::SetScrollInputEnabled(bool b) { math::set_flag(m_stateFlags, StateFlags::AcceptScrollInputBit, b); }
 void pragma::gui::types::WIBase::SetFileDropInputEnabled(bool b)
 {
-	umath::set_flag(m_stateFlags, StateFlags::FileDropInputEnabled, b);
+	math::set_flag(m_stateFlags, StateFlags::FileDropInputEnabled, b);
 	if(b)
 		SetMouseMovementCheckEnabled(true);
 }
-util::EventReply pragma::gui::types::WIBase::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIBase::MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	auto hThis = GetHandle();
 
-	if(button == pragma::platform::MouseButton::Left && state == pragma::platform::KeyState::Press) {
+	if(button == platform::MouseButton::Left && state == platform::KeyState::Press) {
 		ChronoTimePoint now = util::Clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_clickStart);
 		if(duration.count() <= 300) {
-			umath::set_flag(m_stateFlags, StateFlags::ClickedBit, false);
+			math::set_flag(m_stateFlags, StateFlags::ClickedBit, false);
 			if(OnDoubleClick() == util::EventReply::Handled)
 				return util::EventReply::Handled;
 		}
 		else {
-			umath::set_flag(m_stateFlags, StateFlags::ClickedBit, true);
+			math::set_flag(m_stateFlags, StateFlags::ClickedBit, true);
 			m_clickStart = util::Clock::now();
 		}
 	}
 
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier>("OnMouseEvent", reply, button, state, mods);
+	CallCallbacksWithOptionalReturn<util::EventReply, platform::MouseButton, platform::KeyState, platform::Modifier>("OnMouseEvent", reply, button, state, mods);
 	if(reply == util::EventReply::Handled)
 		return util::EventReply::Handled;
 	if(!hThis.IsValid())
 		return util::EventReply::Unhandled;
-	if(button == pragma::platform::MouseButton::Left) {
-		if(state == pragma::platform::KeyState::Press) {
+	if(button == platform::MouseButton::Left) {
+		if(state == platform::KeyState::Press) {
 			auto reply = util::EventReply::Unhandled;
 			CallCallbacksWithOptionalReturn<util::EventReply>("OnMousePressed", reply);
 			if(!hThis.IsValid())
@@ -1933,7 +1933,7 @@ util::EventReply pragma::gui::types::WIBase::MouseCallback(pragma::platform::Mou
 				return OnMousePressed();
 			return reply;
 		}
-		else if(state == pragma::platform::KeyState::Release) {
+		else if(state == platform::KeyState::Release) {
 			auto reply = util::EventReply::Unhandled;
 			CallCallbacksWithOptionalReturn<util::EventReply>("OnMouseReleased", reply);
 			if(!hThis.IsValid())
@@ -1946,35 +1946,35 @@ util::EventReply pragma::gui::types::WIBase::MouseCallback(pragma::platform::Mou
 	//std::cout<<"MouseCallback: "<<button<<","<<action<<std::endl;
 	return util::EventReply::Unhandled;
 }
-util::EventReply pragma::gui::types::WIBase::OnMousePressed() { return util::EventReply::Unhandled; }
-util::EventReply pragma::gui::types::WIBase::OnMouseReleased() { return util::EventReply::Unhandled; }
-util::EventReply pragma::gui::types::WIBase::OnDoubleClick()
+pragma::util::EventReply pragma::gui::types::WIBase::OnMousePressed() { return util::EventReply::Unhandled; }
+pragma::util::EventReply pragma::gui::types::WIBase::OnMouseReleased() { return util::EventReply::Unhandled; }
+pragma::util::EventReply pragma::gui::types::WIBase::OnDoubleClick()
 {
 	auto reply = util::EventReply::Unhandled;
 	CallCallbacksWithOptionalReturn<util::EventReply>("OnDoubleClick", reply);
 	return reply;
 }
-util::EventReply pragma::gui::types::WIBase::JoystickCallback(const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state)
+pragma::util::EventReply pragma::gui::types::WIBase::JoystickCallback(const platform::Joystick &joystick, uint32_t key, platform::KeyState state)
 {
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, std::reference_wrapper<const pragma::platform::Joystick>, uint32_t, pragma::platform::KeyState>("OnJoystickEvent", reply, std::ref(joystick), key, state);
+	CallCallbacksWithOptionalReturn<util::EventReply, std::reference_wrapper<const platform::Joystick>, uint32_t, platform::KeyState>("OnJoystickEvent", reply, std::ref(joystick), key, state);
 	return reply;
 }
-util::EventReply pragma::gui::types::WIBase::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIBase::KeyboardCallback(platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods)
 {
 	//std::cout<<"KeyboardCallback: "<<key<<","<<action<<std::endl;
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier>("OnKeyEvent", reply, key, scanCode, state, mods);
+	CallCallbacksWithOptionalReturn<util::EventReply, platform::Key, int, platform::KeyState, platform::Modifier>("OnKeyEvent", reply, key, scanCode, state, mods);
 	return reply;
 }
-util::EventReply pragma::gui::types::WIBase::CharCallback(unsigned int c, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIBase::CharCallback(unsigned int c, platform::Modifier mods)
 {
 	//std::cout<<"CharCallback: "<<char(c)<<","<<action<<std::endl;
 	auto reply = util::EventReply::Unhandled;
-	CallCallbacksWithOptionalReturn<util::EventReply, int, pragma::platform::Modifier>("OnCharEvent", reply, c, mods);
+	CallCallbacksWithOptionalReturn<util::EventReply, int, platform::Modifier>("OnCharEvent", reply, c, mods);
 	return reply;
 }
-util::EventReply pragma::gui::types::WIBase::ScrollCallback(Vector2 offset, bool offsetAsPixels)
+pragma::util::EventReply pragma::gui::types::WIBase::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
 	//std::cout<<"ScrollCallback: "<<xoffset<<","<<yoffset<<std::endl;
 	auto reply = util::EventReply::Unhandled;
@@ -2006,16 +2006,16 @@ void pragma::gui::types::WIBase::InjectMouseMoveInput(int32_t x, int32_t y)
 	OnCursorMoved(x, y);
 	UpdateChildrenMouseInBounds(false);
 }
-util::EventReply pragma::gui::types::WIBase::InjectMouseInput(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIBase::InjectMouseInput(platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) { return el.IsSelfVisible() && el.MouseInBounds(); }, [](const WIBase &el) { return el.GetMouseInputEnabled() && el.IsSelfVisible(); });
 	if(el == nullptr)
 		return util::EventReply::Handled;
 	return InjectMouseButtonCallback(*el, button, state, mods);
 }
-util::EventReply pragma::gui::types::WIBase::InjectKeyboardInput(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods) { return KeyboardCallback(key, scanCode, state, mods); }
-util::EventReply pragma::gui::types::WIBase::InjectCharInput(unsigned int c, pragma::platform::Modifier mods) { return CharCallback(c, mods); }
-util::EventReply pragma::gui::types::WIBase::InjectScrollInput(Vector2 offset, bool offsetAsPixels)
+pragma::util::EventReply pragma::gui::types::WIBase::InjectKeyboardInput(platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods) { return KeyboardCallback(key, scanCode, state, mods); }
+pragma::util::EventReply pragma::gui::types::WIBase::InjectCharInput(unsigned int c, platform::Modifier mods) { return CharCallback(c, mods); }
+pragma::util::EventReply pragma::gui::types::WIBase::InjectScrollInput(Vector2 offset, bool offsetAsPixels)
 {
 	auto *el = FindDeepestChild([](const WIBase &el) { return el.IsSelfVisible() && el.MouseInBounds(); }, [](const WIBase &el) { return el.GetScrollInputEnabled() && el.IsSelfVisible(); });
 	if(el != nullptr)
@@ -2027,7 +2027,7 @@ std::vector<std::string> &pragma::gui::types::WIBase::GetStyleClasses() { return
 void pragma::gui::types::WIBase::AddStyleClass(const std::string &className)
 {
 	auto lname = className;
-	ustring::to_lower(lname);
+	string::to_lower(lname);
 	auto it = std::find(m_styleClasses.begin(), m_styleClasses.end(), lname);
 	if(it != m_styleClasses.end())
 		return;
@@ -2036,7 +2036,7 @@ void pragma::gui::types::WIBase::AddStyleClass(const std::string &className)
 void pragma::gui::types::WIBase::RemoveStyleClass(const std::string &className)
 {
 	auto lname = className;
-	ustring::to_lower(lname);
+	string::to_lower(lname);
 	auto it = std::find(m_styleClasses.begin(), m_styleClasses.end(), lname);
 	if(it == m_styleClasses.end())
 		return;
@@ -2047,7 +2047,7 @@ void pragma::gui::types::WIBase::ClearStyleClasses() { m_styleClasses.clear(); }
 /////////////////
 
 static std::unordered_map<pragma::platform::MouseButton, pragma::gui::WIHandle> __lastMouseGUIElements;
-util::EventReply pragma::gui::types::WIBase::InjectMouseButtonCallback(WIBase &el, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIBase::InjectMouseButtonCallback(WIBase &el, platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	auto hEl = el.GetHandle();
 
@@ -2064,8 +2064,8 @@ util::EventReply pragma::gui::types::WIBase::InjectMouseButtonCallback(WIBase &e
 			return result; // Mouse button press was hijacked by another element
 	}
 	// Callback may have invoked mouse button release-event already, so we have to check if our element's still there
-	auto it = std::find_if(__lastMouseGUIElements.begin(), __lastMouseGUIElements.end(), [&el](const std::pair<pragma::platform::MouseButton, WIHandle> &p) { return (p.second.get() == &el) ? true : false; });
-	if(it != __lastMouseGUIElements.end() && (!is_valid(it->second) || state == pragma::platform::KeyState::Release))
+	auto it = std::find_if(__lastMouseGUIElements.begin(), __lastMouseGUIElements.end(), [&el](const std::pair<platform::MouseButton, WIHandle> &p) { return (p.second.get() == &el) ? true : false; });
+	if(it != __lastMouseGUIElements.end() && (!is_valid(it->second) || state == platform::KeyState::Release))
 		__lastMouseGUIElements.erase(it);
 
 	if(wgui.GetFocusCount() != c)
@@ -2079,7 +2079,7 @@ util::EventReply pragma::gui::types::WIBase::InjectMouseButtonCallback(WIBase &e
 	}
 	return result;
 }
-bool pragma::gui::types::WIBase::__wiMouseButtonCallback(prosper::Window &window, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+bool pragma::gui::types::WIBase::__wiMouseButtonCallback(prosper::Window &window, platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	if(!WGUI::IsOpen())
 		return false;
@@ -2088,13 +2088,13 @@ bool pragma::gui::types::WIBase::__wiMouseButtonCallback(prosper::Window &window
 		auto hEl = i->second;
 		__lastMouseGUIElements.erase(i);
 		if(is_valid(hEl) && hEl->IsVisible() && hEl->GetMouseInputEnabled()) {
-			hEl->MouseCallback(button, pragma::platform::KeyState::Release, mods);
+			hEl->MouseCallback(button, platform::KeyState::Release, mods);
 
 			if(WGUI::GetInstance().m_mouseButtonCallback && hEl.IsValid())
-				WGUI::GetInstance().m_mouseButtonCallback(*hEl.get(), button, pragma::platform::KeyState::Release, mods);
+				WGUI::GetInstance().m_mouseButtonCallback(*hEl.get(), button, platform::KeyState::Release, mods);
 		}
 	}
-	if(state == pragma::platform::KeyState::Press) {
+	if(state == platform::KeyState::Press) {
 		auto *pContextMenu = WIContextMenu::GetActiveContextMenu();
 		if(pContextMenu && pContextMenu->IsCursorInMenuBounds() == false)
 			WIContextMenu::CloseContextMenu();
@@ -2128,37 +2128,37 @@ bool pragma::gui::types::WIBase::__wiMouseButtonCallback(prosper::Window &window
 }
 
 static std::unordered_map<pragma::platform::Key, pragma::gui::WIHandle> __lastKeyboardGUIElements;
-bool pragma::gui::types::WIBase::__wiJoystickCallback(prosper::Window &window, const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state)
+bool pragma::gui::types::WIBase::__wiJoystickCallback(prosper::Window &window, const platform::Joystick &joystick, uint32_t key, platform::KeyState state)
 {
 	if(!WGUI::IsOpen())
 		return false;
 	// TODO
 	return false;
 }
-bool pragma::gui::types::WIBase::__wiKeyCallback(prosper::Window &window, pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+bool pragma::gui::types::WIBase::__wiKeyCallback(prosper::Window &window, platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods)
 {
 	if(!WGUI::IsOpen())
 		return false;
 	auto it = __lastKeyboardGUIElements.find(key);
 	if(it != __lastKeyboardGUIElements.end()) {
 		if(is_valid(it->second) && it->second->GetKeyboardInputEnabled())
-			it->second->KeyboardCallback(key, scanCode, pragma::platform::KeyState::Release, mods);
+			it->second->KeyboardCallback(key, scanCode, platform::KeyState::Release, mods);
 		__lastKeyboardGUIElements.erase(it);
 	}
-	if(state == pragma::platform::KeyState::Press || state == pragma::platform::KeyState::Repeat) {
+	if(state == platform::KeyState::Press || state == platform::KeyState::Repeat) {
 		for(auto &hEl : WGUI::GetInstance().GetBaseElements()) {
 			if(hEl.expired())
 				continue;
 			auto *elRoot = const_cast<WIRoot *>(static_cast<const WIRoot *>(hEl.get()));
 			auto *gui = elRoot->GetFocusedElement();
 			while(gui) {
-				if(key == pragma::platform::Key::Escape && !gui->IsFocusTrapped()) {
+				if(key == platform::Key::Escape && !gui->IsFocusTrapped()) {
 					gui->KillFocus();
 					break;
 				}
 				else if(gui->GetKeyboardInputEnabled()) {
-					auto itCur = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [key](const std::pair<pragma::platform::Key, WIHandle> &p) { return (p.first == key) ? true : false; });
-					pragma::gui::WIHandle hCur {};
+					auto itCur = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [key](const std::pair<platform::Key, WIHandle> &p) { return (p.first == key) ? true : false; });
+					WIHandle hCur {};
 					if(itCur != __lastKeyboardGUIElements.end())
 						hCur = itCur->second;
 					__lastKeyboardGUIElements[key] = gui->GetHandle();
@@ -2166,13 +2166,13 @@ bool pragma::gui::types::WIBase::__wiKeyCallback(prosper::Window &window, pragma
 					auto result = gui->KeyboardCallback(key, scanCode, state, mods);
 
 					// Callback may have invoked key release-event already, so we have to check if our element's still there
-					auto it = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [gui, key](const std::pair<pragma::platform::Key, WIHandle> &p) { return (p.first == key && p.second.get() == gui) ? true : false; });
+					auto it = std::find_if(__lastKeyboardGUIElements.begin(), __lastKeyboardGUIElements.end(), [gui, key](const std::pair<platform::Key, WIHandle> &p) { return (p.first == key && p.second.get() == gui) ? true : false; });
 					if(it != __lastKeyboardGUIElements.end()) {
-						if(!is_valid(it->second) || state == pragma::platform::KeyState::Release)
+						if(!is_valid(it->second) || state == platform::KeyState::Release)
 							__lastKeyboardGUIElements.erase(it); // Key is already released
 					}
 
-					if(state != pragma::platform::KeyState::Release && result == util::EventReply::Unhandled && hCur.IsValid()) {
+					if(state != platform::KeyState::Release && result == util::EventReply::Unhandled && hCur.IsValid()) {
 						// The "gui" element chose not to handle the keyboard event, so we'll restore the previous reference.
 						// Effectively this means:
 						// - Whichever element handled the "Press" event, gets to handle the "Release" event.
@@ -2298,10 +2298,10 @@ bool pragma::gui::types::WIBase::IsFadingOut() const
 		return false;
 	return (m_fade->alphaTarget < GetAlpha()) ? true : false;
 }
-void pragma::gui::types::WIBase::SetIgnoreParentAlpha(bool ignoreParentAlpha) { umath::set_flag(m_stateFlags, StateFlags::IgnoreParentAlpha, ignoreParentAlpha); }
-bool pragma::gui::types::WIBase::ShouldIgnoreParentAlpha() const { return umath::is_flag_set(m_stateFlags, StateFlags::IgnoreParentAlpha); }
+void pragma::gui::types::WIBase::SetIgnoreParentAlpha(bool ignoreParentAlpha) { math::set_flag(m_stateFlags, StateFlags::IgnoreParentAlpha, ignoreParentAlpha); }
+bool pragma::gui::types::WIBase::ShouldIgnoreParentAlpha() const { return math::is_flag_set(m_stateFlags, StateFlags::IgnoreParentAlpha); }
 
-std::ostream &pragma::gui::types::operator<<(std::ostream &stream, pragma::gui::types::WIBase &el)
+std::ostream &pragma::gui::types::operator<<(std::ostream &stream, WIBase &el)
 {
 	el.Print(stream);
 	return stream;

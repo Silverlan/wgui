@@ -41,10 +41,10 @@ export namespace pragma::gui {
 			void UpdateIMETarget();
 			const std::weak_ptr<const prosper::Window> &GetWindowPtr() const;
 			void SetWindow(const std::shared_ptr<const prosper::Window> &window);
-			pragma::platform::Cursor::Shape GetMainCursor() const;
-			const pragma::platform::CursorHandle &GetMainCustomCursor() const;
-			void SetMainCursor(pragma::platform::Cursor::Shape cursor);
-			void SetMainCustomCursor(const pragma::platform::CursorHandle &hCursor);
+			platform::Cursor::Shape GetMainCursor() const;
+			const platform::CursorHandle &GetMainCustomCursor() const;
+			void SetMainCursor(platform::Cursor::Shape cursor);
+			void SetMainCustomCursor(const platform::CursorHandle &hCursor);
 			void SetFocusEnabled(bool enabled);
 			bool IsFocusEnabled() const;
 			void SetFocusedElement(WIBase *el);
@@ -59,14 +59,14 @@ export namespace pragma::gui {
 
 			void RestoreTrappedFocus(WIBase *elRef = nullptr);
 		private:
-			pragma::gui::WIHandle m_hTooltip;
-			pragma::gui::WIHandle m_hTooltipTarget;
-			pragma::gui::WIHandle m_hImeTarget;
+			WIHandle m_hTooltip;
+			WIHandle m_hTooltipTarget;
+			WIHandle m_hImeTarget;
 			util::Clock::time_point m_tCursorOver;
 			std::weak_ptr<const prosper::Window> m_window {};
 			std::optional<Vector2> m_cursorPosOverride = {};
 
-			pragma::gui::WIHandle m_elFocused = {};
+			WIHandle m_elFocused = {};
 			uint32_t m_focusCount = 0; // Used to detect changes
 			std::deque<WIHandle> m_focusTrapStack;
 			bool m_focusEnabled = true;
@@ -74,8 +74,8 @@ export namespace pragma::gui {
 			bool m_fileDragHover = false;
 			std::vector<WIHandle> m_fileHoverElements;
 
-			pragma::platform::Cursor::Shape m_mainCursor = pragma::platform::Cursor::Shape::Arrow;
-			pragma::platform::CursorHandle m_mainCustomCursor = {};
+			platform::Cursor::Shape m_mainCursor = platform::Cursor::Shape::Arrow;
+			platform::CursorHandle m_mainCustomCursor = {};
 		};
 	}
 };

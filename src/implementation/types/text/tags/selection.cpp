@@ -7,7 +7,7 @@ module pragma.gui;
 
 import :text_tags;
 
-pragma::gui::WITextTagSelection::WITextTagSelection(types::WIText &text, util::text::TextOffset startOffset, util::text::TextOffset endOffset) : WITextDecorator {text}
+pragma::gui::WITextTagSelection::WITextTagSelection(types::WIText &text, string::TextOffset startOffset, string::TextOffset endOffset) : WITextDecorator {text}
 {
 	auto relStart = GetAbsOffset(startOffset);
 	auto relEnd = GetAbsOffset(endOffset);
@@ -17,7 +17,7 @@ pragma::gui::WITextTagSelection::WITextTagSelection(types::WIText &text, util::t
 	m_startAnchorPoint = formattedText.CreateAnchorPoint(relStart->first, relStart->second);
 	m_endAnchorPoint = formattedText.CreateAnchorPoint(relEnd->first, relEnd->second);
 }
-std::optional<std::pair<util::text::LineIndex, util::text::CharOffset>> pragma::gui::WITextTagSelection::GetAbsOffset(util::text::TextOffset offset) const
+std::optional<std::pair<pragma::string::LineIndex, pragma::string::CharOffset>> pragma::gui::WITextTagSelection::GetAbsOffset(string::TextOffset offset) const
 {
 	auto &formattedText = m_text.GetFormattedTextObject();
 	auto absOffset = formattedText.GetUnformattedTextOffset(offset);
@@ -25,17 +25,17 @@ std::optional<std::pair<util::text::LineIndex, util::text::CharOffset>> pragma::
 		return {};
 	return formattedText.GetRelativeCharOffset(*absOffset);
 }
-util::text::AnchorPoint *pragma::gui::WITextTagSelection::GetStartAnchorPoint() { return m_startAnchorPoint.Get(); }
-util::text::AnchorPoint *pragma::gui::WITextTagSelection::GetEndAnchorPoint() { return m_endAnchorPoint.Get(); }
+pragma::string::AnchorPoint *pragma::gui::WITextTagSelection::GetStartAnchorPoint() { return m_startAnchorPoint.Get(); }
+pragma::string::AnchorPoint *pragma::gui::WITextTagSelection::GetEndAnchorPoint() { return m_endAnchorPoint.Get(); }
 void pragma::gui::WITextTagSelection::CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) { inOutPos.y += 2; }
-void pragma::gui::WITextTagSelection::SetStartOffset(util::text::TextOffset offset)
+void pragma::gui::WITextTagSelection::SetStartOffset(string::TextOffset offset)
 {
 	auto &formattedText = m_text.GetFormattedTextObject();
 	auto absOffset = formattedText.GetUnformattedTextOffset(offset);
 	if(m_startAnchorPoint.IsValid() && absOffset.has_value())
 		m_startAnchorPoint->ShiftToOffset(*absOffset);
 }
-void pragma::gui::WITextTagSelection::SetEndOffset(util::text::TextOffset offset)
+void pragma::gui::WITextTagSelection::SetEndOffset(string::TextOffset offset)
 {
 	auto &formattedText = m_text.GetFormattedTextObject();
 	auto absOffset = formattedText.GetUnformattedTextOffset(offset);

@@ -34,8 +34,8 @@ const std::weak_ptr<const prosper::Window> &pragma::gui::types::WIRoot::GetWindo
 void pragma::gui::types::WIRoot::SetWindow(const std::shared_ptr<const prosper::Window> &window) { m_window = window; }
 pragma::platform::Cursor::Shape pragma::gui::types::WIRoot::GetMainCursor() const { return m_mainCursor; }
 const pragma::platform::CursorHandle &pragma::gui::types::WIRoot::GetMainCustomCursor() const { return m_mainCustomCursor; }
-void pragma::gui::types::WIRoot::SetMainCursor(pragma::platform::Cursor::Shape cursor) { m_mainCursor = cursor; }
-void pragma::gui::types::WIRoot::SetMainCustomCursor(const pragma::platform::CursorHandle &hCursor) { m_mainCustomCursor = hCursor; }
+void pragma::gui::types::WIRoot::SetMainCursor(platform::Cursor::Shape cursor) { m_mainCursor = cursor; }
+void pragma::gui::types::WIRoot::SetMainCustomCursor(const platform::CursorHandle &hCursor) { m_mainCustomCursor = hCursor; }
 void pragma::gui::types::WIRoot::SetFocusEnabled(bool enabled) { m_focusEnabled = enabled; }
 bool pragma::gui::types::WIRoot::IsFocusEnabled() const { return m_focusEnabled; }
 pragma::gui::types::WIBase *pragma::gui::types::WIRoot::GetFocusedElement() { return m_elFocused.get(); }

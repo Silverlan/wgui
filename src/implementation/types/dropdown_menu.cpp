@@ -31,7 +31,7 @@ pragma::gui::types::WIDropDownMenu::~WIDropDownMenu()
 
 void pragma::gui::types::WIDropDownMenu::SetListItemCount(uint32_t n) { m_numListItems = n; }
 
-void pragma::gui::types::WIDropDownMenu::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser)
+void pragma::gui::types::WIDropDownMenu::OnTextChanged(const string::Utf8String &text, bool changedByUser)
 {
 	WITextEntry::OnTextChanged(text, changedByUser);
 	if(changedByUser)
@@ -138,7 +138,7 @@ void pragma::gui::types::WIDropDownMenu::SelectOption(unsigned int idx)
 {
 	if(idx >= m_options.size() || idx == m_selected)
 		return;
-	pragma::gui::WIHandle &hOption = m_options[idx];
+	WIHandle &hOption = m_options[idx];
 	if(!hOption.IsValid())
 		return;
 	WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
@@ -170,7 +170,7 @@ void pragma::gui::types::WIDropDownMenu::SelectOption(const std::string &value)
 	SelectOption(option->GetIndex());
 }
 
-void pragma::gui::types::WIDropDownMenu::SelectOptionByText(const pragma::string::Utf8StringArg &name)
+void pragma::gui::types::WIDropDownMenu::SelectOptionByText(const string::Utf8StringArg &name)
 {
 	auto it = std::find_if(m_options.begin(), m_options.end(), [&name](const WIHandle &hOption) { return (hOption.IsValid() && static_cast<const WIDropDownMenuOption *>(hOption.get())->GetText() == *name) ? true : false; });
 	if(it == m_options.end())
@@ -219,7 +219,7 @@ std::string pragma::gui::types::WIDropDownMenu::GetValue()
 
 int32_t pragma::gui::types::WIDropDownMenu::GetSelectedOption() const { return m_selected; }
 
-void pragma::gui::types::WIDropDownMenu::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WIDropDownMenu::SetText(const string::Utf8StringArg &text)
 {
 	WITextEntry::SetText(text);
 	//SetText(text);
@@ -252,7 +252,7 @@ pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::Ad
 	if(!m_hList.IsValid())
 		return nullptr;
 	WIDropDownMenuOption *pOption = WGUI::GetInstance().Create<WIDropDownMenuOption>(m_hList.get());
-	pragma::gui::WIHandle hOption = pOption->GetHandle();
+	WIHandle hOption = pOption->GetHandle();
 	pOption->SetDropDownMenu(this);
 	pOption->SetText(option);
 	pOption->SetHeight(OPTION_HEIGHT);
@@ -271,14 +271,14 @@ pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::Ad
 		return CallbackReturnType::HasReturnValue;
 	}));
 	pOption->AddCallback("OnMouseEvent",
-	  FunctionCallback<util::EventReply, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier>::CreateWithOptionalReturn(
-	    [hOption](util::EventReply *reply, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier) mutable -> CallbackReturnType {
+	  FunctionCallback<util::EventReply, platform::MouseButton, platform::KeyState, platform::Modifier>::CreateWithOptionalReturn(
+	    [hOption](util::EventReply *reply, platform::MouseButton button, platform::KeyState state, platform::Modifier) mutable -> CallbackReturnType {
 		    if(!hOption.IsValid()) {
 			    *reply = util::EventReply::Handled;
 			    return CallbackReturnType::HasReturnValue;
 		    }
 		    WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
-		    if(button == pragma::platform::MouseButton::Left && state == pragma::platform::KeyState::Press) {
+		    if(button == platform::MouseButton::Left && state == platform::KeyState::Press) {
 			    WIDropDownMenu *dm = pOption->GetDropDownMenu();
 			    if(dm != nullptr) {
 				    dm->OnOptionSelected(pOption);
@@ -354,7 +354,7 @@ void pragma::gui::types::WIDropDownMenu::UpdateOptionItems(std::optional<uint32_
 		if(numOptions < numList)
 			numList = numOptions;
 		for(int i = curOffset; i < numList; i++) {
-			pragma::gui::WIHandle &hOption = m_options[i];
+			WIHandle &hOption = m_options[i];
 			if(hOption.IsValid())
 				hOption->SetVisible(false);
 		}
@@ -365,7 +365,7 @@ void pragma::gui::types::WIDropDownMenu::UpdateOptionItems(std::optional<uint32_
 	if(numOptions < numList)
 		numList = numOptions;
 	for(int i = m_listOffset; i < numList; i++) {
-		pragma::gui::WIHandle &hOption = m_options[i];
+		WIHandle &hOption = m_options[i];
 		if(hOption.IsValid()) {
 			WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
 			pOption->SetVisible(true);
@@ -467,7 +467,7 @@ void pragma::gui::types::WIDropDownMenu::OpenMenu()
 	auto text = GetText();
 	int w = GetWidth() - marginRight;
 	for(unsigned int i = 0; i < numOptions; i++) {
-		pragma::gui::WIHandle &hOption = m_options[i];
+		WIHandle &hOption = m_options[i];
 		if(hOption.IsValid()) {
 			WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
 			pOption->SetWidth(w);
@@ -501,11 +501,11 @@ void pragma::gui::types::WIDropDownMenu::ToggleMenu()
 	else
 		OpenMenu();
 }
-util::EventReply pragma::gui::types::WIDropDownMenu::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIDropDownMenu::MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	if(WITextEntry::MouseCallback(button, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
-	if(button == pragma::platform::MouseButton::Left && state == pragma::platform::KeyState::Press) {
+	if(button == platform::MouseButton::Left && state == platform::KeyState::Press) {
 		if(!IsMenuOpen()) {
 			if(!HasFocus())
 				OpenMenu();
@@ -513,7 +513,7 @@ util::EventReply pragma::gui::types::WIDropDownMenu::MouseCallback(pragma::platf
 	}
 	return util::EventReply::Handled;
 }
-util::EventReply pragma::gui::types::WIDropDownMenu::ScrollCallback(Vector2 offset, bool offsetAsPixels)
+pragma::util::EventReply pragma::gui::types::WIDropDownMenu::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
 	if(WITextEntry::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled || !m_hScrollBar.IsValid())
 		return util::EventReply::Handled;
@@ -570,7 +570,7 @@ void pragma::gui::types::WIDropDownMenuOption::Initialize()
 	SetScrollInputEnabled(true);
 }
 
-void pragma::gui::types::WIDropDownMenuOption::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WIDropDownMenuOption::SetText(const string::Utf8StringArg &text)
 {
 	if(!m_hText.IsValid())
 		return;

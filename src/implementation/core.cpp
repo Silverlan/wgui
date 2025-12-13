@@ -13,7 +13,7 @@ import pragma.string.unicode;
 
 static std::unique_ptr<pragma::gui::WGUI> s_wgui = nullptr;
 prosper::SampleCountFlags pragma::gui::wGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
-pragma::gui::WGUI &pragma::gui::WGUI::Open(prosper::IPrContext &context, const std::weak_ptr<msys::MaterialManager> &wpMatManager)
+pragma::gui::WGUI &pragma::gui::WGUI::Open(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager)
 {
 	s_wgui = nullptr;
 	s_wgui = std::make_unique<WGUI>(context, wpMatManager);
@@ -63,10 +63,10 @@ void pragma::gui::WGUI::Close()
 bool pragma::gui::WGUI::IsOpen() { return s_wgui != nullptr; }
 pragma::gui::WGUI &pragma::gui::WGUI::GetInstance() { return *s_wgui; }
 
-pragma::gui::WGUI::WGUI(prosper::IPrContext &context, const std::weak_ptr<msys::MaterialManager> &wpMatManager) : prosper::ContextObject(context), m_matManager(wpMatManager)
+pragma::gui::WGUI::WGUI(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager) : ContextObject(context), m_matManager(wpMatManager)
 {
-	m_typeFactory = std::make_unique<pragma::gui::TypeFactory>();
-	SetMaterialLoadHandler([this](const std::string &path) -> msys::Material * { return m_matManager.lock()->LoadAsset(path).get(); });
+	m_typeFactory = std::make_unique<TypeFactory>();
+	SetMaterialLoadHandler([this](const std::string &path) -> material::Material * { return m_matManager.lock()->LoadAsset(path).get(); });
 
 	RegisterTypes();
 }
@@ -76,29 +76,29 @@ pragma::gui::WGUI::~WGUI() {}
 void pragma::gui::WGUI::RegisterTypes()
 {
 	using namespace types;
-	RegisterType<types::WIArrow>("WIArrow");
-	RegisterType<types::WIBase>("WIBase");
-	RegisterType<types::WIButton>("WIButton");
-	RegisterType<types::WIContentWrapper>("WIContentWrapper");
-	RegisterType<types::WIContextMenu>("WIContextMenu");
-	RegisterType<types::WIDropDownMenu>("WIDropDownMenu");
-	RegisterType<types::WILine>("WILine");
-	RegisterType<types::WIMenuItem>("WIMenuItem");
-	RegisterType<types::WI9SliceRectSegment>("WI9SliceRectSegment");
-	RegisterType<types::WI9SliceRect>("WI9SliceRect");
-	RegisterType<types::WIRect>("WIRect");
-	RegisterType<types::WIOutlinedRect>("WIOutlinedRect");
-	RegisterType<types::WITexturedRect>("WITexturedRect");
-	RegisterType<types::WIRoundedRect>("WIRoundedRect");
-	RegisterType<types::WIRoundedTexturedRect>("WIRoundedTexturedRect");
-	RegisterType<types::WIScrollBar>("WIScrollBar");
-	RegisterType<types::WIShape>("WIShape");
-	RegisterType<types::WITexturedShape>("WITexturedShape");
-	RegisterType<types::WITextEntryBase>("WITextEntryBase");
-	RegisterType<types::WITextEntry>("WITextEntry");
-	RegisterType<types::WINumericEntry>("WINumericEntry");
-	RegisterType<types::WIText>("WIText");
-	RegisterType<types::WITooltip>("WITooltip");
+	RegisterType<WIArrow>("WIArrow");
+	RegisterType<WIBase>("WIBase");
+	RegisterType<WIButton>("WIButton");
+	RegisterType<WIContentWrapper>("WIContentWrapper");
+	RegisterType<WIContextMenu>("WIContextMenu");
+	RegisterType<WIDropDownMenu>("WIDropDownMenu");
+	RegisterType<WILine>("WILine");
+	RegisterType<WIMenuItem>("WIMenuItem");
+	RegisterType<WI9SliceRectSegment>("WI9SliceRectSegment");
+	RegisterType<WI9SliceRect>("WI9SliceRect");
+	RegisterType<WIRect>("WIRect");
+	RegisterType<WIOutlinedRect>("WIOutlinedRect");
+	RegisterType<WITexturedRect>("WITexturedRect");
+	RegisterType<WIRoundedRect>("WIRoundedRect");
+	RegisterType<WIRoundedTexturedRect>("WIRoundedTexturedRect");
+	RegisterType<WIScrollBar>("WIScrollBar");
+	RegisterType<WIShape>("WIShape");
+	RegisterType<WITexturedShape>("WITexturedShape");
+	RegisterType<WITextEntryBase>("WITextEntryBase");
+	RegisterType<WITextEntry>("WITextEntry");
+	RegisterType<WINumericEntry>("WINumericEntry");
+	RegisterType<WIText>("WIText");
+	RegisterType<WITooltip>("WITooltip");
 }
 
 void pragma::gui::WGUI::RegisterElement(types::WIBase &el, const std::string &className, types::WIBase *parent)
@@ -119,22 +119,22 @@ void pragma::gui::WGUI::RegisterElement(types::WIBase &el, const std::string &cl
 		m_createCallback(el);
 }
 
-void pragma::gui::WGUI::SetMaterialLoadHandler(const std::function<msys::Material *(const std::string &)> &handler) { m_materialLoadHandler = handler; }
-const std::function<msys::Material *(const std::string &)> &pragma::gui::WGUI::GetMaterialLoadHandler() const { return m_materialLoadHandler; }
+void pragma::gui::WGUI::SetMaterialLoadHandler(const std::function<material::Material *(const std::string &)> &handler) { m_materialLoadHandler = handler; }
+const std::function<pragma::material::Material *(const std::string &)> &pragma::gui::WGUI::GetMaterialLoadHandler() const { return m_materialLoadHandler; }
 
 double pragma::gui::WGUI::GetDeltaTime() const { return m_tDelta; }
 
-pragma::gui::shaders::ShaderColored *pragma::gui::WGUI::GetColoredShader() { return static_cast<pragma::gui::shaders::ShaderColored *>(m_shaderColored.get()); }
-pragma::gui::shaders::ShaderColoredRect *pragma::gui::WGUI::GetColoredRectShader() { return static_cast<pragma::gui::shaders::ShaderColoredRect *>(m_shaderColoredCheap.get()); }
-pragma::gui::shaders::ShaderColoredLine *pragma::gui::WGUI::GetColoredLineShader() { return static_cast<pragma::gui::shaders::ShaderColoredLine *>(m_shaderColoredLine.get()); }
-pragma::gui::shaders::ShaderText *pragma::gui::WGUI::GetTextShader() { return static_cast<pragma::gui::shaders::ShaderText *>(m_shaderText.get()); }
-pragma::gui::shaders::ShaderTextRect *pragma::gui::WGUI::GetTextRectShader() { return static_cast<pragma::gui::shaders::ShaderTextRect *>(m_shaderTextCheap.get()); }
-pragma::gui::shaders::ShaderTextRectColor *pragma::gui::WGUI::GetTextRectColorShader() { return static_cast<pragma::gui::shaders::ShaderTextRectColor *>(m_shaderTextCheapColor.get()); }
-pragma::gui::shaders::ShaderTextured *pragma::gui::WGUI::GetTexturedShader() { return static_cast<pragma::gui::shaders::ShaderTextured *>(m_shaderTextured.get()); }
-pragma::gui::shaders::ShaderTexturedRect *pragma::gui::WGUI::GetTexturedRectShader() { return static_cast<pragma::gui::shaders::ShaderTexturedRect *>(m_shaderTexturedCheap.get()); }
-pragma::gui::shaders::ShaderTexturedRectExpensive *pragma::gui::WGUI::GetTexturedRectExpensiveShader() { return static_cast<pragma::gui::shaders::ShaderTexturedRectExpensive *>(m_shaderTexturedExpensive.get()); }
-pragma::gui::shaders::ShaderStencil *pragma::gui::WGUI::GetStencilShader() { return static_cast<pragma::gui::shaders::ShaderStencil *>(m_shaderStencil.get()); }
-pragma::gui::shaders::ShaderTexturedSubRect *pragma::gui::WGUI::GetTexturedSubRectShader() { return static_cast<pragma::gui::shaders::ShaderTexturedSubRect *>(m_shaderTexturedSubRect.get()); }
+pragma::gui::shaders::ShaderColored *pragma::gui::WGUI::GetColoredShader() { return static_cast<shaders::ShaderColored *>(m_shaderColored.get()); }
+pragma::gui::shaders::ShaderColoredRect *pragma::gui::WGUI::GetColoredRectShader() { return static_cast<shaders::ShaderColoredRect *>(m_shaderColoredCheap.get()); }
+pragma::gui::shaders::ShaderColoredLine *pragma::gui::WGUI::GetColoredLineShader() { return static_cast<shaders::ShaderColoredLine *>(m_shaderColoredLine.get()); }
+pragma::gui::shaders::ShaderText *pragma::gui::WGUI::GetTextShader() { return static_cast<shaders::ShaderText *>(m_shaderText.get()); }
+pragma::gui::shaders::ShaderTextRect *pragma::gui::WGUI::GetTextRectShader() { return static_cast<shaders::ShaderTextRect *>(m_shaderTextCheap.get()); }
+pragma::gui::shaders::ShaderTextRectColor *pragma::gui::WGUI::GetTextRectColorShader() { return static_cast<shaders::ShaderTextRectColor *>(m_shaderTextCheapColor.get()); }
+pragma::gui::shaders::ShaderTextured *pragma::gui::WGUI::GetTexturedShader() { return static_cast<shaders::ShaderTextured *>(m_shaderTextured.get()); }
+pragma::gui::shaders::ShaderTexturedRect *pragma::gui::WGUI::GetTexturedRectShader() { return static_cast<shaders::ShaderTexturedRect *>(m_shaderTexturedCheap.get()); }
+pragma::gui::shaders::ShaderTexturedRectExpensive *pragma::gui::WGUI::GetTexturedRectExpensiveShader() { return static_cast<shaders::ShaderTexturedRectExpensive *>(m_shaderTexturedExpensive.get()); }
+pragma::gui::shaders::ShaderStencil *pragma::gui::WGUI::GetStencilShader() { return static_cast<shaders::ShaderStencil *>(m_shaderStencil.get()); }
+pragma::gui::shaders::ShaderTexturedSubRect *pragma::gui::WGUI::GetTexturedSubRectShader() { return static_cast<shaders::ShaderTexturedSubRect *>(m_shaderTexturedSubRect.get()); }
 
 void pragma::gui::DrawState::SetScissor(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
@@ -232,9 +232,9 @@ pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector
 
 prosper::IRenderPass &pragma::gui::WGUI::GetMsaaRenderPass() const { return *m_msaaRenderPass; }
 
-msys::MaterialManager &pragma::gui::WGUI::GetMaterialManager() { return *m_matManager.lock(); }
+pragma::material::MaterialManager &pragma::gui::WGUI::GetMaterialManager() { return *m_matManager.lock(); }
 
-void pragma::gui::WGUI::SetCursor(pragma::platform::Cursor::Shape cursor, prosper::Window *window)
+void pragma::gui::WGUI::SetCursor(platform::Cursor::Shape cursor, prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
@@ -244,20 +244,20 @@ void pragma::gui::WGUI::SetCursor(pragma::platform::Cursor::Shape cursor, prospe
 		return;
 	if(elRoot->GetMainCustomCursor() == nullptr && cursor == elRoot->GetMainCursor())
 		return;
-	if(cursor == pragma::platform::Cursor::Shape::Hidden) {
-		SetCursorInputMode(pragma::platform::CursorMode::Hidden, window);
+	if(cursor == platform::Cursor::Shape::Hidden) {
+		SetCursorInputMode(platform::CursorMode::Hidden, window);
 		return;
 	}
-	else if(elRoot->GetMainCursor() == pragma::platform::Cursor::Shape::Hidden)
-		SetCursorInputMode(pragma::platform::CursorMode::Normal, window);
-	auto icursor = static_cast<uint32_t>(cursor) - static_cast<uint32_t>(pragma::platform::Cursor::Shape::Arrow);
-	if(icursor > static_cast<uint32_t>(pragma::platform::Cursor::Shape::VResize))
+	else if(elRoot->GetMainCursor() == platform::Cursor::Shape::Hidden)
+		SetCursorInputMode(platform::CursorMode::Normal, window);
+	auto icursor = static_cast<uint32_t>(cursor) - static_cast<uint32_t>(platform::Cursor::Shape::Arrow);
+	if(icursor > static_cast<uint32_t>(platform::Cursor::Shape::VResize))
 		return;
-	SetCursor(pragma::platform::Cursor::GetStandardCursor(cursor), window);
+	SetCursor(platform::Cursor::GetStandardCursor(cursor), window);
 	elRoot->SetMainCursor(cursor);
-	elRoot->SetMainCustomCursor(pragma::platform::CursorHandle());
+	elRoot->SetMainCustomCursor(platform::CursorHandle());
 }
-void pragma::gui::WGUI::SetCursor(pragma::platform::Cursor &cursor, prosper::Window *window)
+void pragma::gui::WGUI::SetCursor(platform::Cursor &cursor, prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
@@ -271,7 +271,7 @@ void pragma::gui::WGUI::SetCursor(pragma::platform::Cursor &cursor, prosper::Win
 	(*window)->SetCursor(cursor);
 	elRoot->SetMainCustomCursor(cursor.GetHandle());
 }
-void pragma::gui::WGUI::SetCursorInputMode(pragma::platform::CursorMode mode, prosper::Window *window)
+void pragma::gui::WGUI::SetCursorInputMode(platform::CursorMode mode, prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
@@ -282,18 +282,18 @@ pragma::platform::Cursor::Shape pragma::gui::WGUI::GetCursor(const prosper::Wind
 {
 	window = GetWindow(window);
 	if(!window)
-		return pragma::platform::Cursor::Shape::Default;
+		return platform::Cursor::Shape::Default;
 	auto *elRoot = FindWindowRootElement(*window);
-	return elRoot ? elRoot->GetMainCursor() : pragma::platform::Cursor::Shape::Default;
+	return elRoot ? elRoot->GetMainCursor() : platform::Cursor::Shape::Default;
 }
 pragma::platform::CursorMode pragma::gui::WGUI::GetCursorInputMode(const prosper::Window *window)
 {
 	window = GetWindow(window);
 	if(!window)
-		return pragma::platform::CursorMode::Normal;
+		return platform::CursorMode::Normal;
 	return (*window)->GetCursorInputMode();
 }
-void pragma::gui::WGUI::ResetCursor(prosper::Window *window) { SetCursor(pragma::platform::Cursor::Shape::Arrow, window); }
+void pragma::gui::WGUI::ResetCursor(prosper::Window *window) { SetCursor(platform::Cursor::Shape::Arrow, window); }
 
 void pragma::gui::WGUI::GetMousePos(int &x, int &y, const prosper::Window *window)
 {
@@ -336,10 +336,10 @@ pragma::gui::types::WIRoot *pragma::gui::WGUI::FindRootElementUnderCursor() { re
 size_t pragma::gui::WGUI::GetLastThinkIndex() const { return m_thinkIndex; }
 void pragma::gui::WGUI::BeginDraw()
 {
-	pragma::gui::WGUI::GetInstance().SetLockedForDrawing(true);
+	GetInstance().SetLockedForDrawing(true);
 	FontManager::UpdateDirtyFonts();
 }
-void pragma::gui::WGUI::EndDraw() { pragma::gui::WGUI::GetInstance().SetLockedForDrawing(false); }
+void pragma::gui::WGUI::EndDraw() { GetInstance().SetLockedForDrawing(false); }
 void pragma::gui::WGUI::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
 	while(!m_removeQueue.empty()) {
@@ -359,16 +359,16 @@ void pragma::gui::WGUI::Think(const std::shared_ptr<prosper::IPrimaryCommandBuff
 			m_currentUpdateDepth = updateInfo.depth;
 			if(hEl.valid()) {
 				auto *el = const_cast<types::WIBase *>(hEl.get());
-				if(updateInfo.element.valid() && umath::is_flag_set(updateInfo.element->m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit)) {
+				if(updateInfo.element.valid() && math::is_flag_set(updateInfo.element->m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit)) {
 					auto &el = *updateInfo.element;
 					if(el.IsVisible() || el.ShouldThinkIfInvisible()) {
 						el.m_lastThinkUpdateIndex = m_thinkIndex;
 						el.Update();
-						umath::set_flag(el.m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit, false);
+						math::set_flag(el.m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit, false);
 					}
 					else {
-						umath::set_flag(el.m_stateFlags, types::WIBase::StateFlags::ScheduleUpdateOnVisible, true);
-						umath::set_flag(el.m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit, false);
+						math::set_flag(el.m_stateFlags, types::WIBase::StateFlags::ScheduleUpdateOnVisible, true);
+						math::set_flag(el.m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit, false);
 					}
 				}
 			}
@@ -402,20 +402,20 @@ void pragma::gui::WGUI::Think(const std::shared_ptr<prosper::IPrimaryCommandBuff
 		++m_thinkIndex;
 		return;
 	}
-	auto *el = GetCursorGUIElement(elBase, [](types::WIBase *el) -> bool { return el->GetCursor() != pragma::platform::Cursor::Shape::Default; }, window);
-	while(el && el->GetCursor() == pragma::platform::Cursor::Shape::Default)
+	auto *el = GetCursorGUIElement(elBase, [](types::WIBase *el) -> bool { return el->GetCursor() != platform::Cursor::Shape::Default; }, window);
+	while(el && el->GetCursor() == platform::Cursor::Shape::Default)
 		el = el->GetParent();
-	SetCursor(el ? el->GetCursor() : pragma::platform::Cursor::Shape::Arrow, window);
+	SetCursor(el ? el->GetCursor() : platform::Cursor::Shape::Arrow, window);
 
 	++m_thinkIndex;
 }
 
 void pragma::gui::WGUI::ScheduleElementForUpdate(types::WIBase &el, bool force)
 {
-	if(!force && umath::is_flag_set(el.m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit))
+	if(!force && math::is_flag_set(el.m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit))
 		return;
 	m_bGUIUpdateRequired = true;
-	umath::set_flag(el.m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit, true);
+	math::set_flag(el.m_stateFlags, types::WIBase::StateFlags::UpdateScheduledBit, true);
 	m_updateQueue.push({el.GetHandle(), el.GetDepth()});
 }
 
@@ -437,7 +437,7 @@ void pragma::gui::WGUI::Draw(const prosper::Window &window, prosper::ICommandBuf
 
 pragma::gui::types::WIBase *pragma::gui::WGUI::Create(std::string classname, types::WIBase *parent)
 {
-	ustring::to_lower(classname);
+	string::to_lower(classname);
 	auto &map = GetTypeFactory();
 	types::WIBase *(*factory)(void) = map.FindFactory(classname);
 	if(factory != nullptr) {
@@ -591,14 +591,14 @@ bool pragma::gui::WGUI::SetFocusedElement(types::WIBase *gui, types::WIRoot *opt
 	}
 	if(gui == nullptr) {
 		if(window)
-			(*window)->SetCursorInputMode(pragma::platform::CursorMode::Disabled);
+			(*window)->SetCursorInputMode(platform::CursorMode::Disabled);
 		elRoot->SetFocusedElement(nullptr);
 		if(m_onFocusChangedCallback != nullptr)
 			m_onFocusChangedCallback(pPrevFocused, elRoot->GetFocusedElement());
 		return true;
 	}
 	if(window)
-		(*window)->SetCursorInputMode(pragma::platform::CursorMode::Normal);
+		(*window)->SetCursorInputMode(platform::CursorMode::Normal);
 
 	elRoot->SetFocusedElement(gui);
 	elRoot->SetFocusCount(elRoot->GetFocusCount() + 1);
@@ -716,7 +716,7 @@ void pragma::gui::WGUI::ClearSkin()
 
 pragma::gui::WISkin *pragma::gui::WGUI::RegisterSkin(std::string id, std::unique_ptr<WISkin> &&skin)
 {
-	ustring::to_lower(id);
+	string::to_lower(id);
 	auto it = m_skins.find(id);
 	if(it != m_skins.end()) {
 		auto curSkin = std::move(it->second);
@@ -737,7 +737,7 @@ pragma::gui::WISkin *pragma::gui::WGUI::RegisterSkin(std::string id, std::unique
 			elements.push_back(el.GetHandle());
 			el.m_skin = nullptr;
 		};
-		for(auto &hEl : pragma::gui::WGUI::GetInstance().GetBaseElements()) {
+		for(auto &hEl : GetInstance().GetBaseElements()) {
 			if(!hEl.IsValid())
 				continue;
 			findSkinElements(const_cast<types::WIBase &>(*hEl.get()));
@@ -768,7 +768,7 @@ void pragma::gui::WGUI::SetSkin(std::string skin)
 	for(auto &hEl : m_rootElements) {
 		if(hEl.IsValid() == false)
 			continue;
-		ustring::to_lower(skin);
+		string::to_lower(skin);
 		auto it = m_skins.find(skin);
 		if(m_skin != nullptr && it != m_skins.end() && it->second.get() == m_skin)
 			return;
@@ -807,8 +807,8 @@ void pragma::gui::WGUI::SetCreateCallback(const std::function<void(types::WIBase
 void pragma::gui::WGUI::SetRemoveCallback(const std::function<void(types::WIBase &)> &onRemove) { m_removeCallback = onRemove; }
 void pragma::gui::WGUI::SetFocusCallback(const std::function<void(types::WIBase *, types::WIBase *)> &onFocusChanged) { m_onFocusChangedCallback = onFocusChanged; }
 
-void pragma::gui::WGUI::SetUiMouseButtonCallback(const std::function<void(types::WIBase &, pragma::platform::MouseButton, pragma::platform::KeyState, pragma::platform::Modifier)> &onMouseButton) { m_mouseButtonCallback = onMouseButton; }
-void pragma::gui::WGUI::SetUiKeyboardCallback(const std::function<void(types::WIBase &, pragma::platform::Key, int, pragma::platform::KeyState, pragma::platform::Modifier)> &onKeyEvent) { m_keyboardCallback = onKeyEvent; }
+void pragma::gui::WGUI::SetUiMouseButtonCallback(const std::function<void(types::WIBase &, platform::MouseButton, platform::KeyState, platform::Modifier)> &onMouseButton) { m_mouseButtonCallback = onMouseButton; }
+void pragma::gui::WGUI::SetUiKeyboardCallback(const std::function<void(types::WIBase &, platform::Key, int, platform::KeyState, platform::Modifier)> &onKeyEvent) { m_keyboardCallback = onKeyEvent; }
 void pragma::gui::WGUI::SetUiCharCallback(const std::function<void(types::WIBase &, unsigned int)> &onCharEvent) { m_charCallback = onCharEvent; }
 void pragma::gui::WGUI::SetUiScrollCallback(const std::function<void(types::WIBase &, Vector2)> &onScrollCallback) { m_scrollCallback = onScrollCallback; }
 
@@ -863,11 +863,11 @@ pragma::gui::types::WIRoot *pragma::gui::WGUI::FindWindowRootElementUnderCursor(
 	return rootCandidate;
 }
 
-bool pragma::gui::WGUI::HandleJoystickInput(prosper::Window &window, const pragma::platform::Joystick &joystick, uint32_t key, pragma::platform::KeyState state) { return types::WIBase::__wiJoystickCallback(window, joystick, key, state); }
+bool pragma::gui::WGUI::HandleJoystickInput(prosper::Window &window, const platform::Joystick &joystick, uint32_t key, platform::KeyState state) { return types::WIBase::__wiJoystickCallback(window, joystick, key, state); }
 
-bool pragma::gui::WGUI::HandleMouseInput(prosper::Window &window, pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) { return types::WIBase::__wiMouseButtonCallback(window, button, state, mods); }
+bool pragma::gui::WGUI::HandleMouseInput(prosper::Window &window, platform::MouseButton button, platform::KeyState state, platform::Modifier mods) { return types::WIBase::__wiMouseButtonCallback(window, button, state, mods); }
 
-bool pragma::gui::WGUI::HandleKeyboardInput(prosper::Window &window, pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods) { return types::WIBase::__wiKeyCallback(window, key, scanCode, state, mods); }
+bool pragma::gui::WGUI::HandleKeyboardInput(prosper::Window &window, platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods) { return types::WIBase::__wiKeyCallback(window, key, scanCode, state, mods); }
 
 bool pragma::gui::WGUI::HandleCharInput(prosper::Window &window, unsigned int c) { return types::WIBase::__wiCharCallback(window, c); }
 

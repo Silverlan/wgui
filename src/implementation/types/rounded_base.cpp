@@ -26,8 +26,8 @@ void pragma::gui::types::WIRoundedBase::DoUpdate()
 	float sinNeg = sinf(radNeg);
 	float cosNeg = cosf(radNeg);
 	for(float f = 0.f; f <= (90.f - step); f += step) {
-		float radPosNext = ((f + step) / 180.f) * float(umath::pi);
-		float radNegNext = ((-f - step) / 180.f) * float(umath::pi);
+		float radPosNext = ((f + step) / 180.f) * float(math::pi);
+		float radNegNext = ((-f - step) / 180.f) * float(math::pi);
 		float sinPosNext = sinf(radPosNext);
 		float cosPosNext = cosf(radPosNext);
 		float sinNegNext = sinf(radNegNext);

@@ -18,7 +18,7 @@ void pragma::gui::WISkin::ReleaseElement(types::WIBase *el)
 {
 	std::vector<WIHandle> *children = el->GetChildren();
 	for(unsigned int i = 0; i < children->size(); i++) {
-		pragma::gui::WIHandle &hChild = (*children)[i];
+		WIHandle &hChild = (*children)[i];
 		if(hChild.IsValid())
 			ReleaseElement(hChild.get());
 	}

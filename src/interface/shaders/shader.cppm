@@ -21,8 +21,8 @@ export namespace pragma::gui {
 		DLLWGUI void initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx);
 		class DLLWGUI Shader : public prosper::ShaderGraphics {
 		public:
-			static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
-			static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_POSITION;
+			static VertexBinding VERTEX_BINDING_VERTEX;
+			static VertexAttribute VERTEX_ATTRIBUTE_POSITION;
 			static StencilPipeline ToStencilPipelineIndex(uint32_t pipelineIdx, bool *optOutMsaa = nullptr);
 			static uint32_t ToAbsolutePipelineIndex(StencilPipeline pipelineIdx, bool msaa);
 			static bool IsMsaaPipeline(uint32_t pipelineIdx);

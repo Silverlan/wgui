@@ -28,7 +28,7 @@ void pragma::gui::types::WIText::LineInfo::ResizeBuffers(size_t size)
 	buffers.resize(size);
 }
 pragma::gui::types::WITextBase::SubBufferInfo *pragma::gui::types::WIText::LineInfo::GetBufferInfo(size_t idx) { return (idx < buffers.size()) ? &buffers[idx] : nullptr; }
-const pragma::gui::types::WITextBase::SubBufferInfo *pragma::gui::types::WIText::LineInfo::GetBufferInfo(size_t idx) const { return const_cast<pragma::gui::types::WIText::LineInfo *>(this)->GetBufferInfo(idx); }
+const pragma::gui::types::WITextBase::SubBufferInfo *pragma::gui::types::WIText::LineInfo::GetBufferInfo(size_t idx) const { return const_cast<LineInfo *>(this)->GetBufferInfo(idx); }
 void pragma::gui::types::WIText::LineInfo::ClearBuffers() { ResizeBuffers(0); }
 
 void pragma::gui::types::WIText::InitializeBlur(bool bReload)
@@ -396,7 +396,7 @@ void pragma::gui::types::WIText::RenderText(Mat4 &)
 
 void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	util::text::LineIndex lineIndex = 0;
+	string::LineIndex lineIndex = 0;
 	for(auto &lineInfo : m_lineInfos) {
 		if(lineInfo.bufferUpdateRequired == true)
 			InitializeTextBuffers(drawCmd, lineInfo, lineIndex);
@@ -407,7 +407,7 @@ void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<pro
 	}
 }
 
-void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, util::text::LineIndex lineIndex)
+void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, string::LineIndex lineIndex)
 {
 	lineInfo.bufferUpdateRequired = false;
 	if(lineInfo.wpLine.expired() == true) {
@@ -419,34 +419,34 @@ void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<pro
 
 	// Initialize Buffers
 	struct SubStringInfo {
-		pragma::string::Utf8StringView subString;
+		string::Utf8StringView subString;
 		uint32_t width;
 		uint32_t height;
 		float sx;
 		float sy;
-		util::text::CharOffset charOffset;
+		string::CharOffset charOffset;
 		std::vector<Vector4> glyphBounds;
 		std::vector<uint32_t> glyphIndices;
-		util::text::LineIndex absLineIndex;
+		string::LineIndex absLineIndex;
 		const FontInfo *font = nullptr;
 	};
 
 	std::vector<SubStringInfo> subStrings {};
 	auto numChars = m_text->GetCharCount();
 
-	std::function<void(const pragma::string::Utf8StringView &, util::text::LineIndex, util::text::CharOffset, int32_t &, int32_t &)> fAddSubString = nullptr;
-	fAddSubString = [this, &subStrings](const pragma::string::Utf8StringView &substr, util::text::LineIndex lineIndex, util::text::CharOffset charOffset, int32_t &inOutX, int32_t &inOutY) {
+	std::function<void(const string::Utf8StringView &, string::LineIndex, string::CharOffset, int32_t &, int32_t &)> fAddSubString = nullptr;
+	fAddSubString = [this, &subStrings](const string::Utf8StringView &substr, string::LineIndex lineIndex, string::CharOffset charOffset, int32_t &inOutX, int32_t &inOutY) {
 		if(substr.empty())
 			return;
 		// The sub-string may have to be cut into further sub-strings if the font changes
 		// mid-string (usually if a fallback font is required).
 		struct FontSubstr {
 			const FontInfo *font;
-			pragma::string::Utf8StringView view;
+			string::Utf8StringView view;
 		};
 		std::vector<FontSubstr> fontSubstrs;
 		const FontInfo *curFont = nullptr;
-		pragma::string::Utf8StringView u8Str {substr};
+		string::Utf8StringView u8Str {substr};
 		auto isHidden = IsTextHidden();
 		size_t startOffset = 0;
 		size_t len = 0;
@@ -509,7 +509,7 @@ void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<pro
 			// Populate glyph bounds and indices
 			auto fontSize = font.GetSize();
 			auto offset = 0u;
-			pragma::string::Utf8StringView u8Str {info.subString};
+			string::Utf8StringView u8Str {info.subString};
 			for(auto c : u8Str) {
 				if(isHidden)
 					c = '*';
@@ -549,9 +549,9 @@ void pragma::gui::types::WIText::InitializeTextBuffers(const std::shared_ptr<pro
 	int32_t y = 0u; // lineIndex *GetLineHeight();
 	int32_t x = 0u;
 	auto pLine = lineInfo.wpLine.lock();
-	auto lineView = pragma::string::Utf8StringView {static_cast<const pragma::string::Utf8String &>(pLine->GetFormattedLine())};
+	auto lineView = string::Utf8StringView {static_cast<const string::Utf8String &>(pLine->GetFormattedLine())};
 	auto subString = lineView;
-	util::text::CharOffset offset = 0;
+	string::CharOffset offset = 0;
 	auto subLines = lineInfo.subLines;
 	while(subString.empty() == false) {
 		auto curLineIndex = lineIndex;
@@ -670,13 +670,13 @@ void pragma::gui::types::WITextBase::InitializeTexture(prosper::Texture &tex, in
 	m_hTexture = pEl->GetHandle();
 }
 
-bool pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, shaders::ShaderTextRect &shader, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
+bool pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, shaders::ShaderTextRect &shader, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const math::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
   shaders::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, StencilPipeline stencilPipeline) const
 {
 	auto &textEl = static_cast<const WIText &>(*m_hText.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawCmd};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == false)
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, math::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == false)
 		return false;
 	uint32_t xScissor, yScissor, wScissor, hScissor;
 	drawState.GetScissor(xScissor, yScissor, wScissor, hScissor);
@@ -744,7 +744,7 @@ bool pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::IComma
 	return bHasColorBuffers;
 }
 
-void pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
+void pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const math::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
   shaders::ShaderTextRect::PushConstants &inOutPushConstants, uint32_t testStencilLevel, StencilPipeline stencilPipeline) const
 {
 	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
@@ -790,7 +790,7 @@ void pragma::gui::types::WITextBase::Render(const DrawInfo &drawInfo, DrawState 
 		}*/
 
 		auto col = drawInfo.GetColor(*this, drawState);
-		if(col.a <= 0.f && umath::is_flag_set(m_stateFlags, StateFlags::RenderIfZeroAlpha) == false)
+		if(col.a <= 0.f && math::is_flag_set(m_stateFlags, StateFlags::RenderIfZeroAlpha) == false)
 			return;
 		col.a *= GetLocalAlpha();
 		auto currentSize = GetSizeProperty()->GetValue();

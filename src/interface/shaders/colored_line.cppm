@@ -12,8 +12,8 @@ export import :shaders.colored;
 export namespace pragma::gui::shaders {
 	class DLLWGUI ShaderColoredLine : public ShaderColored {
 	  public:
-		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
-		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_COLOR;
+		static VertexBinding VERTEX_BINDING_VERTEX;
+		static VertexAttribute VERTEX_ATTRIBUTE_COLOR;
 
 		ShaderColoredLine(prosper::IPrContext &context, const std::string &identifier);
 

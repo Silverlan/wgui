@@ -12,7 +12,7 @@ import pragma.string.unicode;
 pragma::gui::types::WITextEntry::WITextEntry() : WIBase()
 {
 	RegisterCallback<void>("OnTextEntered");
-	RegisterCallback<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged");
+	RegisterCallback<void, std::reference_wrapper<const string::Utf8String>, bool>("OnTextChanged");
 	RegisterCallback<void>("OnContentsChanged");
 }
 
@@ -103,8 +103,8 @@ void pragma::gui::types::WITextEntry::Initialize()
 	    },
 	    this->GetHandle())));
 	pBase->AddCallback("OnTextChanged",
-	  FunctionCallback<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>::Create(std::bind(
-	    [](WIHandle hTextEntry, std::reference_wrapper<const pragma::string::Utf8String> text, bool changedByUser) {
+	  FunctionCallback<void, std::reference_wrapper<const string::Utf8String>, bool>::Create(std::bind(
+	    [](WIHandle hTextEntry, std::reference_wrapper<const string::Utf8String> text, bool changedByUser) {
 		    if(!hTextEntry.IsValid())
 			    return;
 		    WITextEntry *te = static_cast<WITextEntry *>(hTextEntry.get());
@@ -152,7 +152,7 @@ void pragma::gui::types::WITextEntry::Initialize()
 
 void pragma::gui::types::WITextEntry::OnTextEntered() { CallCallbacks<void>("OnTextEntered"); }
 
-void pragma::gui::types::WITextEntry::OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser) { CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>, bool>("OnTextChanged", text, changedByUser); }
+void pragma::gui::types::WITextEntry::OnTextChanged(const string::Utf8String &text, bool changedByUser) { CallCallbacks<void, std::reference_wrapper<const string::Utf8String>, bool>("OnTextChanged", text, changedByUser); }
 
 void pragma::gui::types::WITextEntry::OnContentsChanged()
 {
@@ -179,7 +179,7 @@ void pragma::gui::types::WITextEntry::SetSize(int x, int y)
 			if(pText != nullptr) {
 				auto *font = pText->GetFont();
 				if(font != nullptr)
-					yBase = umath::max(static_cast<uint32_t>(yBase), font->GetSize());
+					yBase = math::max(static_cast<uint32_t>(yBase), font->GetSize());
 			}
 			pBase->SetSize(x - 10, yBase);
 			pBase->SetPos(5, (y - yBase) / 2);
@@ -218,19 +218,19 @@ pragma::string::Utf8StringView pragma::gui::types::WITextEntry::GetText() const
 		return {};
 	return static_cast<const WITextEntryBase *>(m_hBase.get())->GetText();
 }
-void pragma::gui::types::WITextEntry::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WITextEntry::SetText(const string::Utf8StringArg &text)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetText(*text);
 }
-void pragma::gui::types::WITextEntry::InsertText(pragma::string::Utf8StringView instext, int pos)
+void pragma::gui::types::WITextEntry::InsertText(string::Utf8StringView instext, int pos)
 {
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->InsertText(instext, pos);
 }
-void pragma::gui::types::WITextEntry::InsertText(pragma::string::Utf8StringView text)
+void pragma::gui::types::WITextEntry::InsertText(string::Utf8StringView text)
 {
 	if(!m_hBase.IsValid())
 		return;
@@ -318,7 +318,7 @@ void pragma::gui::types::WITextEntry::RemoveSelection()
 
 void pragma::gui::types::WINumericEntry::Initialize()
 {
-	pragma::gui::types::WITextEntry::Initialize();
+	WITextEntry::Initialize();
 
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetNumeric(true);
 	m_numeric.min = nullptr;
@@ -333,10 +333,10 @@ void pragma::gui::types::WINumericEntry::Initialize()
 			if(!hThis.IsValid())
 				return CallbackReturnType::HasReturnValue;
 			auto text = GetText();
-			auto i = ustring::to_int(text.cpp_str());
+			auto i = string::to_int(text.cpp_str());
 			if(m_numeric.max != nullptr)
-				i = umath::min(++i, *m_numeric.max);
-			SetText(ustring::int_to_string(i));
+				i = math::min(++i, *m_numeric.max);
+			SetText(string::int_to_string(i));
 			return CallbackReturnType::HasReturnValue;
 		}));
 		static_cast<WIArrow *>(m_numeric.hUpArrow.get())->SetDirection(WIArrow::Direction::Up);
@@ -350,10 +350,10 @@ void pragma::gui::types::WINumericEntry::Initialize()
 			if(!hThis.IsValid())
 				return CallbackReturnType::HasReturnValue;
 			auto text = GetText();
-			auto i = ustring::to_int(text.cpp_str());
+			auto i = string::to_int(text.cpp_str());
 			if(m_numeric.min != nullptr)
-				i = umath::max(--i, *m_numeric.min);
-			SetText(ustring::int_to_string(i));
+				i = math::max(--i, *m_numeric.min);
+			SetText(string::int_to_string(i));
 			return CallbackReturnType::HasReturnValue;
 		}));
 	}
@@ -387,6 +387,6 @@ void pragma::gui::types::WINumericEntry::UpdateArrowPositions()
 
 void pragma::gui::types::WINumericEntry::SetSize(int x, int y)
 {
-	pragma::gui::types::WITextEntry::SetSize(x, y);
+	WITextEntry::SetSize(x, y);
 	UpdateArrowPositions();
 }

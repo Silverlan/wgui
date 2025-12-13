@@ -22,7 +22,7 @@ export namespace pragma::gui::types {
 		bool IsSelected() const;
 		virtual void OnCursorEntered() override;
 		virtual void OnCursorExited() override;
-		virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
+		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual void SetSize(int x, int y) override;
 		using WIBase::SetSize;
 		virtual void SizeToContents(bool x = true, bool y = true) override;
@@ -36,10 +36,10 @@ export namespace pragma::gui::types {
 		void UpdateRightText();
 		std::function<void(void)> m_fOnAction = nullptr;
 		std::vector<WIBase *> m_items = {};
-		pragma::gui::WIHandle m_hBg = {};
-		pragma::gui::WIHandle m_hBgOutline = {};
-		pragma::gui::WIHandle m_hText = {};
-		pragma::gui::WIHandle m_hRightText = {};
+		WIHandle m_hBg = {};
+		WIHandle m_hBgOutline = {};
+		WIHandle m_hText = {};
+		WIHandle m_hRightText = {};
 		std::string m_keyBindCommand = {};
 		bool m_bSelected = false;
 	};

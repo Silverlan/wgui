@@ -75,14 +75,14 @@ void pragma::gui::types::WILine::UpdateColorBuffer()
 void pragma::gui::types::WILine::SetColor(float r, float g, float b, float a)
 {
 	WIBase::SetColor(r, g, b, a);
-	Color col {static_cast<int16_t>(umath::round(r * 255.f)), static_cast<int16_t>(umath::round(g * 255.f)), static_cast<int16_t>(umath::round(b * 255.f)), static_cast<int16_t>(umath::round(a * 255.f))};
+	Color col {static_cast<int16_t>(math::round(r * 255.f)), static_cast<int16_t>(math::round(g * 255.f)), static_cast<int16_t>(math::round(b * 255.f)), static_cast<int16_t>(math::round(a * 255.f))};
 	m_colStart = col;
 	m_colEnd = col;
 	UpdateColorBuffer();
 }
 
-void pragma::gui::types::WILine::SetLineWidth(unsigned int width) { pragma::gui::WILineBase::SetLineWidth(width); }
-unsigned int pragma::gui::types::WILine::GetLineWidth() { return pragma::gui::WILineBase::GetLineWidth(); }
+void pragma::gui::types::WILine::SetLineWidth(unsigned int width) { WILineBase::SetLineWidth(width); }
+unsigned int pragma::gui::types::WILine::GetLineWidth() { return WILineBase::GetLineWidth(); }
 
 void pragma::gui::types::WILine::SetStartColor(const Color &col)
 {
@@ -134,7 +134,7 @@ void pragma::gui::types::WILine::Render(const DrawInfo &drawInfo, DrawState &dra
 	auto &shader = static_cast<shaders::ShaderColoredLine &>(*pShader);
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, math::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 		ElementData pushConstants {matDraw, col, ElementData::ToViewportSize(drawInfo.size)};
 		shader.RecordDraw(bindState, s_lineBuffer, m_bufColor, GetVertexCount(), GetLineWidth(), pushConstants, testStencilLevel);
 		shader.RecordEndDraw(bindState);
@@ -179,8 +179,8 @@ void pragma::gui::types::WILine::SizeToContents(bool x, bool y)
 
 std::pair<Vector2i, Vector2i> pragma::gui::types::WILine::GetNormalizedLineBounds() const { return {*m_posStart, *m_posEnd}; }
 
-const util::PVector2iProperty &pragma::gui::types::WILine::GetStartPosProperty() const { return m_posStart; }
-const util::PVector2iProperty &pragma::gui::types::WILine::GetEndPosProperty() const { return m_posEnd; }
+const pragma::util::PVector2iProperty &pragma::gui::types::WILine::GetStartPosProperty() const { return m_posStart; }
+const pragma::util::PVector2iProperty &pragma::gui::types::WILine::GetEndPosProperty() const { return m_posEnd; }
 Vector2i &pragma::gui::types::WILine::GetStartPos() const { return *m_posStart; }
 void pragma::gui::types::WILine::SetStartPos(Vector2i pos) { SetStartPos(pos.x, pos.y); }
 void pragma::gui::types::WILine::SetStartPos(int x, int y) { *m_posStart = Vector2i {x, y}; }

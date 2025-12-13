@@ -15,12 +15,12 @@ import pragma.string.unicode;
 export namespace pragma::gui::types {
 	class DLLWGUI WITooltip : public WIBase {
 	protected:
-		pragma::gui::WIHandle m_hText;
+		WIHandle m_hText;
 	public:
 		WITooltip();
 		virtual void Initialize() override;
 		void SetText(const std::string &text);
-		const pragma::string::Utf8String &GetText() const;
+		const string::Utf8String &GetText() const;
 	};
 
 	WITooltip::WITooltip() : WIBase() {}
@@ -45,10 +45,10 @@ export namespace pragma::gui::types {
 		pText->SetText(text);
 		pText->SizeToContents();
 	}
-	const pragma::string::Utf8String &WITooltip::GetText() const
+	const string::Utf8String &WITooltip::GetText() const
 	{
 		if(!m_hText.IsValid()) {
-			static pragma::string::Utf8String r;
+			static string::Utf8String r;
 			return r;
 		}
 		return static_cast<const WIText *>(m_hText.get())->GetText();

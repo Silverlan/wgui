@@ -12,7 +12,7 @@ void pragma::gui::types::WIText::UpdateSubLines()
 	if(m_autoBreak == AutoBreak::NONE)
 		return;
 	auto &lines = m_text->GetLines();
-	util::text::ShiftOffset lineShift = 0;
+	string::ShiftOffset lineShift = 0;
 	uint32_t curTagIdx = 0;
 	for(auto i = decltype(lines.size()) {0u}; i < lines.size(); ++i) {
 		if(BreakLineByWidth(i, lineShift) == false)
@@ -37,7 +37,7 @@ void pragma::gui::types::WIText::UpdateSubLines()
 	PerformTextPostProcessing();
 	CallCallbacks<void>("OnContentsChanged");
 }
-bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineShift)
+bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, string::ShiftOffset &lineShift)
 {
 	auto w = GetWidth();
 	if(m_autoBreak == AutoBreak::NONE || w == 0 || lineIndex >= m_lineInfos.size() || m_lineInfos.at(lineIndex).wpLine.expired())
@@ -46,7 +46,7 @@ bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, util::text
 	auto &lineInfo = m_lineInfos.at(lineIndex);
 	auto line = lineInfo.wpLine.lock();
 	auto &strLine = line->GetFormattedLine().GetText();
-	auto strView = pragma::string::Utf8StringView {strLine};
+	auto strView = string::Utf8StringView {strLine};
 	auto len = line->GetAbsFormattedLength() - 1;
 	auto i = line->GetAbsFormattedLength();
 	auto breakMode = m_autoBreak;
@@ -67,10 +67,10 @@ bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, util::text
 	auto oldSubLines = lineInfo.subLines;
 	auto numSubLines = lineInfo.subLines.empty() ? 1 : lineInfo.subLines.size();
 	lineInfo.subLines.clear();
-	const auto fBreakLine = [this, w, &strView, &lineInfo, font](util::text::CharOffset charOffset) -> std::optional<util::text::CharOffset> {
+	const auto fBreakLine = [this, w, &strView, &lineInfo, font](string::CharOffset charOffset) -> std::optional<string::CharOffset> {
 		auto startOffset = charOffset;
 		int32_t wText = 0;
-		auto lastSpaceCharOffset = util::text::LAST_CHAR;
+		auto lastSpaceCharOffset = string::LAST_CHAR;
 		while(charOffset < strView.length()) {
 			int32_t wChar = 0;
 			auto c = strView.at(charOffset);
@@ -79,7 +79,7 @@ bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, util::text
 				// Break
 				if(charOffset == 0)
 					return {}; // Don't break; Character will be out-of-bounds but there's nothing we can do
-				if(GetAutoBreakMode() == AutoBreak::WHITESPACE && lastSpaceCharOffset != util::text::LAST_CHAR)
+				if(GetAutoBreakMode() == AutoBreak::WHITESPACE && lastSpaceCharOffset != string::LAST_CHAR)
 					charOffset = lastSpaceCharOffset + 1;
 				if(charOffset == startOffset)
 					++charOffset;
@@ -96,7 +96,7 @@ bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, util::text
 			lineInfo.subLines.push_back(charOffset - startOffset);
 		return {};
 	};
-	std::optional<util::text::CharOffset> startOffset = 0;
+	std::optional<string::CharOffset> startOffset = 0;
 	while(startOffset.has_value())
 		startOffset = fBreakLine(*startOffset);
 
@@ -112,28 +112,28 @@ bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, util::text
 			lineInfo.GetBufferInfo(i)->absLineIndex += lineShift;
 	}
 
-	lineShift += static_cast<util::text::ShiftOffset>(newNumSubLines) - static_cast<util::text::ShiftOffset>(numSubLines);
+	lineShift += static_cast<string::ShiftOffset>(newNumSubLines) - static_cast<string::ShiftOffset>(numSubLines);
 	return subLinesHaveChanged;
 }
 
-void pragma::gui::types::WIText::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WIText::SetText(const string::Utf8StringArg &text)
 {
 	if(IsDirty() == false && *m_text == *text)
 		return;
-	umath::set_flag(m_flags, Flags::TextDirty, false);
-	umath::set_flag(m_flags, Flags::ApplySubTextTags);
+	math::set_flag(m_flags, Flags::TextDirty, false);
+	math::set_flag(m_flags, Flags::ApplySubTextTags);
 	ScheduleRenderUpdate(true);
-	pragma::string::Utf8String oldText = *m_text;
+	string::Utf8String oldText = *m_text;
 	auto textCpy = *text;
 
 	m_text->Clear();
 	m_text->SetText(*text);
 
-	pragma::string::Utf8String newText = *m_text;
+	string::Utf8String newText = *m_text;
 	auto *font = GetFont();
 	if(font)
 		FontManager::InitializeFontGlyphs(newText, *font);
-	CallCallbacks<void, std::reference_wrapper<const pragma::string::Utf8String>>("OnTextChanged", std::reference_wrapper<const pragma::string::Utf8String>(newText));
+	CallCallbacks<void, std::reference_wrapper<const string::Utf8String>>("OnTextChanged", std::reference_wrapper<const string::Utf8String>(newText));
 	CallCallbacks<void>("OnContentsChanged");
 }
 void pragma::gui::types::WIText::PerformTextPostProcessing()
@@ -155,7 +155,7 @@ void pragma::gui::types::WIText::AutoSizeToText()
 		return;
 	// Calling SizeToContents here would result in infinite recursion
 	int32_t w, h;
-	if(GetAutoBreakMode() == pragma::gui::types::WIText::AutoBreak::NONE)
+	if(GetAutoBreakMode() == AutoBreak::NONE)
 		GetTextSize(&w, &h);
 	else
 		w = GetWidth();

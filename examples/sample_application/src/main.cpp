@@ -312,7 +312,7 @@ private:
 	GUIProgram()=default;
 	bool Initialize()
 	{
-		auto lib = util::Library::Load(util::get_program_path() +"/pr_prosper_vulkan.dll");//pr_prosper_opengl.dll");
+		auto lib = pragma::util::Library::Load(pragma::util::get_program_path() +"/pr_prosper_vulkan.dll");//pr_prosper_opengl.dll");
 		if(lib == nullptr)
 			return false;
 		m_libRenderAPI = lib;
@@ -434,7 +434,7 @@ private:
 		auto &outputImg = m_stagingRenderTarget->GetTexture().GetImage();
 
 
-		//uimg::ImageBuffer::
+		//image::ImageBuffer::
 		static std::shared_ptr<prosper::Texture> texTest = nullptr;
 		static std::shared_ptr<prosper::IFramebuffer> framebuffer = nullptr;
 		static std::shared_ptr<prosper::IBuffer> buffer = nullptr;
@@ -637,7 +637,7 @@ private:
 	std::shared_ptr<prosper::RenderTarget> m_stagingRenderTarget = nullptr;
 	std::shared_ptr<prosper::IPrContext> m_context = nullptr;
 	std::shared_ptr<CMaterialManager> m_matManager = nullptr;
-	std::shared_ptr<util::Library> m_libRenderAPI = nullptr;
+	std::shared_ptr<pragma::util::Library> m_libRenderAPI = nullptr;
 	pragma::gui::WIHandle m_elTest {};
 };
 

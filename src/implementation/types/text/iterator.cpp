@@ -7,7 +7,7 @@ module pragma.gui;
 
 import :text_iterator;
 
-pragma::gui::TextLineIteratorBase::TextLineIteratorBase(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, bool iterateSubLines) : m_text {&text}, m_info {nullptr, lineIndex, 0, 0}, m_bIterateSubLines {iterateSubLines}
+pragma::gui::TextLineIteratorBase::TextLineIteratorBase(types::WIText &text, string::LineIndex lineIndex, string::LineIndex subLineIndex, bool iterateSubLines) : m_text {&text}, m_info {nullptr, lineIndex, 0, 0}, m_bIterateSubLines {iterateSubLines}
 {
 	UpdateLine();
 	auto &lines = text.GetLines();
@@ -63,7 +63,7 @@ const pragma::gui::TextLineIteratorBase::value_type &pragma::gui::TextLineIterat
 		--m_info.relSubLineIndex;
 		--m_info.absSubLineIndex;
 	}
-	auto decrementLineIndex = m_bIterateSubLines == false || m_info.relSubLineIndex == util::text::INVALID_LINE_INDEX;
+	auto decrementLineIndex = m_bIterateSubLines == false || m_info.relSubLineIndex == string::INVALID_LINE_INDEX;
 	if(decrementLineIndex) {
 		--m_info.lineIndex;
 
@@ -141,18 +141,18 @@ void pragma::gui::TextLineIteratorBase::UpdateLine()
 }
 decltype(pragma::gui::TextLineIteratorBase::INVALID_LINE_INFO) pragma::gui::TextLineIteratorBase::INVALID_LINE_INFO = {nullptr, INVALID_LINE, INVALID_LINE, INVALID_LINE};
 
-pragma::gui::TextLineIterator::TextLineIterator(types::WIText &text, util::text::LineIndex startLineIndex, util::text::LineIndex subLineIndex, bool iterateSubLines) : m_text {text}, m_bIterateSubLines {iterateSubLines}, m_startLineIndex {startLineIndex}, m_startSubLineIndex {subLineIndex} {}
+pragma::gui::TextLineIterator::TextLineIterator(types::WIText &text, string::LineIndex startLineIndex, string::LineIndex subLineIndex, bool iterateSubLines) : m_text {text}, m_bIterateSubLines {iterateSubLines}, m_startLineIndex {startLineIndex}, m_startSubLineIndex {subLineIndex} {}
 pragma::gui::TextLineIteratorBase pragma::gui::TextLineIterator::begin() const { return TextLineIteratorBase {m_text, m_startLineIndex, m_startSubLineIndex, m_bIterateSubLines}; }
-pragma::gui::TextLineIteratorBase pragma::gui::TextLineIterator::end() const { return TextLineIteratorBase {m_text, static_cast<uint32_t>(m_text.GetLines().size()), util::text::LAST_LINE, m_bIterateSubLines}; }
+pragma::gui::TextLineIteratorBase pragma::gui::TextLineIterator::end() const { return TextLineIteratorBase {m_text, static_cast<uint32_t>(m_text.GetLines().size()), string::LAST_LINE, m_bIterateSubLines}; }
 
 //////////////////////
 
-pragma::gui::CharIteratorBase::CharIteratorBase(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset, Flags flags) : m_text {&text}, m_info {lineIndex, subLineIndex, 0, 0, 0}, m_flags {flags}
+pragma::gui::CharIteratorBase::CharIteratorBase(types::WIText &text, string::LineIndex lineIndex, string::LineIndex subLineIndex, string::TextOffset absLineStartOffset, string::CharOffset charOffset, Flags flags) : m_text {&text}, m_info {lineIndex, subLineIndex, 0, 0, 0}, m_flags {flags}
 {
-	m_info.charOffsetRelToText = util::text::LAST_CHAR;
+	m_info.charOffsetRelToText = string::LAST_CHAR;
 	auto &lines = text.GetLines();
 	if(lineIndex >= lines.size() || lines.at(lineIndex).wpLine.expired()) {
-		m_info.lineIndex = pragma::gui::TextLineIteratorBase::INVALID_LINE;
+		m_info.lineIndex = TextLineIteratorBase::INVALID_LINE;
 		return;
 	}
 	auto &lineInfo = lines.at(lineIndex);
@@ -170,11 +170,11 @@ pragma::gui::CharIteratorBase::CharIteratorBase(types::WIText &text, util::text:
 	m_info.charOffsetRelToSubLine = subLineCharOffset;
 
 	if(lineInfo.subLines.empty() == true && m_info.subLineIndex > 0)
-		m_info.lineIndex = pragma::gui::TextLineIteratorBase::INVALID_LINE;
+		m_info.lineIndex = TextLineIteratorBase::INVALID_LINE;
 	else
 		UpdatePixelWidth();
 
-	if(umath::is_flag_set(flags, Flags::UpdatePixelWidth)) {
+	if(math::is_flag_set(flags, Flags::UpdatePixelWidth)) {
 		auto &formattedLine = pLine->GetFormattedLine().GetText();
 		if(formattedLine.empty() == false) {
 			int32_t w;
@@ -193,20 +193,20 @@ const pragma::gui::CharIteratorBase::value_type &pragma::gui::CharIteratorBase::
 	auto &line = lines.at(m_info.lineIndex);
 	if(line.wpLine.expired()) {
 		// Invalidate
-		m_info.lineIndex = pragma::gui::TextLineIteratorBase::INVALID_LINE;
+		m_info.lineIndex = TextLineIteratorBase::INVALID_LINE;
 		return INVALID_INFO;
 	}
 	auto pLine = line.wpLine.lock();
 	auto len = pLine->GetAbsFormattedLength();
 	if(m_info.charOffsetRelToLine >= len) {
 		// Invalidate
-		m_info.lineIndex = pragma::gui::TextLineIteratorBase::INVALID_LINE;
+		m_info.lineIndex = TextLineIteratorBase::INVALID_LINE;
 		return INVALID_INFO;
 	}
 	++m_info.charOffsetRelToLine;
 	++m_info.charOffsetRelToSubLine;
 	++m_info.charOffsetRelToText;
-	if(umath::is_flag_set(m_flags, Flags::UpdatePixelWidth)) {
+	if(math::is_flag_set(m_flags, Flags::UpdatePixelWidth)) {
 		m_info.pxOffset += m_info.pxWidth;
 		UpdatePixelWidth();
 	}
@@ -216,14 +216,14 @@ const pragma::gui::CharIteratorBase::value_type &pragma::gui::CharIteratorBase::
 			++m_info.subLineIndex;
 			m_info.charOffsetRelToSubLine = 0;
 			m_info.pxOffset = 0;
-			if(umath::is_flag_set(m_flags, Flags::BreakAtEndOfSubLine))
-				m_info.lineIndex = pragma::gui::TextLineIteratorBase::INVALID_LINE;
+			if(math::is_flag_set(m_flags, Flags::BreakAtEndOfSubLine))
+				m_info.lineIndex = TextLineIteratorBase::INVALID_LINE;
 			else
 				UpdatePixelWidth();
 		}
 	}
 	else if(line.subLines.empty() == false && m_info.subLineIndex > 0)
-		m_info.lineIndex = pragma::gui::TextLineIteratorBase::INVALID_LINE;
+		m_info.lineIndex = TextLineIteratorBase::INVALID_LINE;
 	return m_info;
 }
 const pragma::gui::CharIteratorBase::value_type &pragma::gui::CharIteratorBase::operator++(int) { return operator++(); }
@@ -260,20 +260,20 @@ bool pragma::gui::CharIteratorBase::operator==(const CharIteratorBase &other) co
 bool pragma::gui::CharIteratorBase::operator!=(const CharIteratorBase &other) const { return operator==(other) == false; }
 
 pragma::gui::types::WIText &pragma::gui::CharIteratorBase::GetText() const { return *m_text; }
-decltype(pragma::gui::CharIteratorBase::INVALID_INFO) pragma::gui::CharIteratorBase::INVALID_INFO = {pragma::gui::TextLineIteratorBase::INVALID_LINE, util::text::LAST_CHAR, util::text::LAST_CHAR, util::text::LAST_CHAR};
+decltype(pragma::gui::CharIteratorBase::INVALID_INFO) pragma::gui::CharIteratorBase::INVALID_INFO = {TextLineIteratorBase::INVALID_LINE, string::LAST_CHAR, string::LAST_CHAR, string::LAST_CHAR};
 
-pragma::gui::CharIterator::CharIterator(types::WIText &text, const pragma::gui::TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth, bool breakAtEndOfSubLine)
+pragma::gui::CharIterator::CharIterator(types::WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth, bool breakAtEndOfSubLine)
     : CharIterator {text, lineInfo.lineIndex, lineInfo.relSubLineIndex, lineInfo.absLineStartOffset, lineInfo.relCharStartOffset, updatePixelWidth, breakAtEndOfSubLine}
 {
 }
-pragma::gui::CharIterator::CharIterator(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset, bool updatePixelWidth, bool breakAtEndOfSubLine)
+pragma::gui::CharIterator::CharIterator(types::WIText &text, string::LineIndex lineIndex, string::LineIndex subLineIndex, string::TextOffset absLineStartOffset, string::CharOffset charOffset, bool updatePixelWidth, bool breakAtEndOfSubLine)
     : m_text {text}, m_lineIndex {lineIndex}, m_subLineIndex {subLineIndex}, m_absLineStartOffset {absLineStartOffset}, m_charOffset {charOffset}
 {
-	m_flags = pragma::gui::CharIteratorBase::Flags::None;
+	m_flags = CharIteratorBase::Flags::None;
 	if(updatePixelWidth)
-		m_flags |= pragma::gui::CharIteratorBase::Flags::UpdatePixelWidth;
+		m_flags |= CharIteratorBase::Flags::UpdatePixelWidth;
 	if(breakAtEndOfSubLine)
-		m_flags |= pragma::gui::CharIteratorBase::Flags::BreakAtEndOfSubLine;
+		m_flags |= CharIteratorBase::Flags::BreakAtEndOfSubLine;
 }
 pragma::gui::CharIteratorBase pragma::gui::CharIterator::begin() const { return CharIteratorBase {m_text, m_lineIndex, m_subLineIndex, m_absLineStartOffset, m_charOffset, m_flags}; }
-pragma::gui::CharIteratorBase pragma::gui::CharIterator::end() const { return CharIteratorBase {m_text, pragma::gui::TextLineIteratorBase::INVALID_LINE, pragma::gui::TextLineIteratorBase::INVALID_LINE, m_absLineStartOffset, m_charOffset, m_flags}; }
+pragma::gui::CharIteratorBase pragma::gui::CharIterator::end() const { return CharIteratorBase {m_text, TextLineIteratorBase::INVALID_LINE, TextLineIteratorBase::INVALID_LINE, m_absLineStartOffset, m_charOffset, m_flags}; }

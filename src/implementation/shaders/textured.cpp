@@ -66,8 +66,8 @@ void pragma::gui::shaders::ShaderTexturedRectExpensive::InitializeShaderResource
 	Shader::InitializeShaderResources();
 
 	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
-	AddVertexAttribute(pragma::gui::shaders::ShaderTextured::VERTEX_ATTRIBUTE_UV);
-	AddDescriptorSetGroup(pragma::gui::shaders::ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	AddVertexAttribute(ShaderTextured::VERTEX_ATTRIBUTE_UV);
+	AddDescriptorSetGroup(ShaderTextured::DESCRIPTOR_SET_TEXTURE);
 	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 void pragma::gui::shaders::ShaderTexturedRectExpensive::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
@@ -100,7 +100,7 @@ void pragma::gui::shaders::ShaderTexturedRect::InitializeShaderResources()
 	Shader::InitializeShaderResources();
 
 	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
-	AddVertexAttribute(pragma::gui::shaders::ShaderTextured::VERTEX_ATTRIBUTE_UV);
-	AddDescriptorSetGroup(pragma::gui::shaders::ShaderTextured::DESCRIPTOR_SET_TEXTURE);
+	AddVertexAttribute(ShaderTextured::VERTEX_ATTRIBUTE_UV);
+	AddDescriptorSetGroup(ShaderTextured::DESCRIPTOR_SET_TEXTURE);
 	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }

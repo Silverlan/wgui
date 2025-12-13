@@ -13,13 +13,13 @@ export import :shaders.shader;
 export namespace pragma::gui::shaders {
 	class DLLWGUI ShaderText : public Shader {
 	  public:
-		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_VERTEX;
-		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_POSITION;
-		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_UV;
+		static VertexBinding VERTEX_BINDING_VERTEX;
+		static VertexAttribute VERTEX_ATTRIBUTE_POSITION;
+		static VertexAttribute VERTEX_ATTRIBUTE_UV;
 
-		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_GLYPH;
-		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_GLYPH_INDEX;
-		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_GLYPH_BOUNDS;
+		static VertexBinding VERTEX_BINDING_GLYPH;
+		static VertexAttribute VERTEX_ATTRIBUTE_GLYPH_INDEX;
+		static VertexAttribute VERTEX_ATTRIBUTE_GLYPH_BOUNDS;
 
 		static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
 		static prosper::DescriptorSetInfo DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER;
@@ -74,8 +74,8 @@ export namespace pragma::gui::shaders {
 
 	class DLLWGUI ShaderTextRectColor : public ShaderTextRect {
 	  public:
-		static prosper::ShaderGraphics::VertexBinding VERTEX_BINDING_COLOR;
-		static prosper::ShaderGraphics::VertexAttribute VERTEX_ATTRIBUTE_COLOR;
+		static VertexBinding VERTEX_BINDING_COLOR;
+		static VertexAttribute VERTEX_ATTRIBUTE_COLOR;
 		ShaderTextRectColor(prosper::IPrContext &context, const std::string &identifier);
 		ShaderTextRectColor(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader = "");
 

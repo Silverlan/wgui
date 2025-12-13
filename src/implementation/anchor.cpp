@@ -23,4 +23,4 @@ void pragma::gui::WIAttachment::SetRelativePosition(const Vector2 &pos)
 	m_relativePosition = pos;
 	UpdateAbsolutePosition();
 }
-const util::PVector2iProperty &pragma::gui::WIAttachment::GetAbsPosProperty() const { return m_absPosProperty; }
+const pragma::util::PVector2iProperty &pragma::gui::WIAttachment::GetAbsPosProperty() const { return m_absPosProperty; }

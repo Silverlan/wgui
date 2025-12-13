@@ -154,7 +154,7 @@ void pragma::gui::types::WI9SliceRect::UpdateSegments()
 	auto *albedoMap = m_material->GetAlbedoMap();
 	if(!albedoMap || !albedoMap->texture)
 		return;
-	auto &tex = *static_cast<msys::Texture *>(albedoMap->texture.get());
+	auto &tex = *static_cast<material::Texture *>(albedoMap->texture.get());
 	uint32_t imgWidth = tex.GetWidth();
 	uint32_t imgHeight = tex.GetHeight();
 	Vector2 offset {0.f, 0.f};
@@ -183,7 +183,7 @@ void pragma::gui::types::WI9SliceRect::UpdateSegments()
 	};
 
 	auto updateSegment = [this, imgWidth, imgHeight](Segment segment, const Vector2 &offset, const Vector2 &scale, int32_t x, int32_t y) -> WI9SliceRectSegment * {
-		auto *el = static_cast<WI9SliceRectSegment *>(m_segmentElements[umath::to_integral(segment)].get());
+		auto *el = static_cast<WI9SliceRectSegment *>(m_segmentElements[math::to_integral(segment)].get());
 		if(!el)
 			return nullptr;
 		auto [w, h] = GetSegmentSize(segment, imgWidth, imgHeight);
@@ -255,16 +255,16 @@ void pragma::gui::types::WI9SliceRect::UpdateSegments()
 	SetSize(origWidth, origHeight);
 }
 
-msys::Material *pragma::gui::types::WI9SliceRect::GetMaterial() { return m_material.get(); }
+pragma::material::Material *pragma::gui::types::WI9SliceRect::GetMaterial() { return m_material.get(); }
 
-void pragma::gui::types::WI9SliceRect::SetMaterial(msys::Material &mat)
+void pragma::gui::types::WI9SliceRect::SetMaterial(material::Material &mat)
 {
 	if(&mat == m_material.get())
 		return;
 	auto *albedoMap = mat.GetAlbedoMap();
 	if(!albedoMap || !albedoMap->texture)
 		return;
-	auto &tex = *static_cast<msys::Texture *>(albedoMap->texture.get());
+	auto &tex = *static_cast<material::Texture *>(albedoMap->texture.get());
 	m_nineSlice = {};
 	auto &slice = m_nineSlice;
 	auto texWidth = tex.GetWidth();

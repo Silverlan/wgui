@@ -22,9 +22,9 @@ export namespace pragma::gui::types {
 		int m_index;
 
 		bool m_selected = false;
-		pragma::gui::WIHandle m_hBackground;
-		pragma::gui::WIHandle m_hText;
-		pragma::gui::WIHandle m_dropDownMenu;
+		WIHandle m_hBackground;
+		WIHandle m_hText;
+		WIHandle m_dropDownMenu;
 		std::string m_value;
 
 		void UpdateTextPos();
@@ -37,8 +37,8 @@ export namespace pragma::gui::types {
 		const std::string &GetValue();
 		void SetIndex(int idx);
 		int GetIndex();
-		void SetText(const pragma::string::Utf8StringArg &text);
-		pragma::string::Utf8StringView GetText() const;
+		void SetText(const string::Utf8StringArg &text);
+		string::Utf8StringView GetText() const;
 		WIText *GetTextElement();
 		virtual void SetSize(int x, int y) override;
 		virtual void OnCursorEntered() override;
@@ -54,16 +54,16 @@ export namespace pragma::gui::types {
 		unsigned int m_listOffset;
 		int m_selected;
 
-		pragma::gui::WIHandle m_hOutline;
-		pragma::gui::WIHandle m_hArrow;
-		pragma::gui::WIHandle m_hList;
+		WIHandle m_hOutline;
+		WIHandle m_hArrow;
+		WIHandle m_hList;
 		CallbackHandle m_cbListWindowUpdate;
-		pragma::gui::WIHandle m_hScrollBar;
+		WIHandle m_hScrollBar;
 		std::vector<WIHandle> m_options;
 
 		void UpdateTextPos();
 		void UpdateText();
-		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser) override;
+		virtual void OnTextChanged(const string::Utf8String &text, bool changedByUser) override;
 		void UpdateListWindow();
 		void UpdateOptionItems(std::optional<uint32_t> oldOffset);
 	  public:
@@ -75,20 +75,20 @@ export namespace pragma::gui::types {
 		void SetListItemCount(uint32_t n);
 		void SelectOption(unsigned int idx);
 		void SelectOption(const std::string &value);
-		void SelectOptionByText(const pragma::string::Utf8StringArg &name);
+		void SelectOptionByText(const string::Utf8StringArg &name);
 		const WIDropDownMenuOption *FindOptionByValue(const std::string &value) const;
 		WIDropDownMenuOption *FindOptionByValue(const std::string &value);
 		bool HasOption(const std::string &value) const;
 		void OnOptionSelected(WIDropDownMenuOption *option);
 		void ClearSelectedOption();
-		pragma::string::Utf8StringView GetText() const;
+		string::Utf8StringView GetText() const;
 		std::string GetValue();
 		int32_t GetSelectedOption() const;
-		pragma::string::Utf8StringView GetOptionText(uint32_t idx);
+		string::Utf8StringView GetOptionText(uint32_t idx);
 		std::string GetOptionValue(uint32_t idx);
 		void SetOptionText(uint32_t idx, const std::string &text);
 		void SetOptionValue(uint32_t idx, const std::string &val);
-		void SetText(const pragma::string::Utf8StringArg &text);
+		void SetText(const string::Utf8StringArg &text);
 		unsigned int GetOptionCount();
 		WIDropDownMenuOption *AddOption(const std::string &option, const std::string &value);
 		WIDropDownMenuOption *AddOption(const std::string &option);
@@ -103,7 +103,7 @@ export namespace pragma::gui::types {
 		void ScrollToOption(uint32_t offset, bool center = false);
 		bool IsMenuOpen();
 		void ToggleMenu();
-		virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
+		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
 		virtual void SetSize(int x, int y) override;
 	};

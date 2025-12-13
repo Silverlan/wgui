@@ -42,10 +42,10 @@ void pragma::gui::types::WIText::SetTagArgument(const std::string &tagLabel, uin
 void pragma::gui::types::WIText::SetTagsEnabled(bool bEnabled) { m_text->SetTagsEnabled(bEnabled); }
 bool pragma::gui::types::WIText::AreTagsEnabled() const { return m_text->AreTagsEnabled(); }
 
-bool pragma::gui::types::WIText::IsTextHidden() const { return umath::is_flag_set(m_flags, Flags::HideText); }
-void pragma::gui::types::WIText::HideText(bool hide) { umath::set_flag(m_flags, Flags::HideText, hide); }
+bool pragma::gui::types::WIText::IsTextHidden() const { return math::is_flag_set(m_flags, Flags::HideText); }
+void pragma::gui::types::WIText::HideText(bool hide) { math::set_flag(m_flags, Flags::HideText, hide); }
 
-Color pragma::gui::types::WIText::GetCharColor(util::text::TextOffset offset) const
+Color pragma::gui::types::WIText::GetCharColor(string::TextOffset offset) const
 {
 	auto itTag = std::find_if(m_tagInfos.begin(), m_tagInfos.end(), [offset](const std::shared_ptr<WITextDecorator> &pTag) {
 		if(pTag->IsValid() == false || pTag->IsTag() == false)

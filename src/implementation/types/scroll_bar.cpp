@@ -39,7 +39,7 @@ void pragma::gui::types::WIScrollBar::SetScrollOffset(unsigned int offset)
 	UpdateSliderOffset();
 	CallCallbacks<void, unsigned int>("OnScrollOffsetChanged", offset);
 }
-util::EventReply pragma::gui::types::WIScrollBar::ScrollCallback(Vector2 offset, bool offsetAsPixels)
+pragma::util::EventReply pragma::gui::types::WIScrollBar::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
 	if(WIBase::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled)
 		return util::EventReply::Handled;
@@ -48,18 +48,18 @@ util::EventReply pragma::gui::types::WIScrollBar::ScrollCallback(Vector2 offset,
 	else {
 		auto scrollAmount = GetScrollAmount();
 		auto &window = WGUI::GetInstance().GetContext().GetWindow();
-		auto isAltDown = (window->GetKeyState(pragma::platform::Key::LeftAlt) != pragma::platform::KeyState::Release || window->GetKeyState(pragma::platform::Key::RightAlt) != pragma::platform::KeyState::Release) ? true : false;
+		auto isAltDown = (window->GetKeyState(platform::Key::LeftAlt) != platform::KeyState::Release || window->GetKeyState(platform::Key::RightAlt) != platform::KeyState::Release) ? true : false;
 		if(isAltDown)
 			scrollAmount = m_numListed;
 		AddScrollOffset(static_cast<int>(-offset.y * static_cast<double>(scrollAmount)));
 	}
 	return util::EventReply::Handled;
 }
-util::EventReply pragma::gui::types::WIScrollBar::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIScrollBar::MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	if(WIBase::MouseCallback(button, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
-	if(state == pragma::platform::KeyState::Press && button == pragma::platform::MouseButton::Left) {
+	if(state == platform::KeyState::Press && button == platform::MouseButton::Left) {
 		if(m_slider.IsValid()) {
 			int mouseX, mouseY;
 			GetMousePos(&mouseX, &mouseY);
@@ -92,7 +92,7 @@ void pragma::gui::types::WIScrollBar::AddScrollOffset(int scroll)
 
 uint32_t pragma::gui::types::WIScrollBar::GetElementCount() const { return m_numElements; }
 uint32_t pragma::gui::types::WIScrollBar::GetScrollElementCount() const { return m_numListed; }
-uint32_t pragma::gui::types::WIScrollBar::GetBottomScrollOffset() { return umath::min(GetScrollOffset() + GetScrollElementCount(), GetElementCount()); }
+uint32_t pragma::gui::types::WIScrollBar::GetBottomScrollOffset() { return math::min(GetScrollOffset() + GetScrollElementCount(), GetElementCount()); }
 
 void pragma::gui::types::WIScrollBar::SetUp(unsigned int numElementsListed, unsigned int numElementsTotal)
 {
@@ -160,8 +160,8 @@ void pragma::gui::types::WIScrollBar::UpdateSliderSize()
 		int h = (m_numElements > 0u) ? static_cast<int>(static_cast<float>(GetSliderHeight()) * (static_cast<float>(m_numListed) / static_cast<float>(m_numElements))) : 0;
 		if(h == 0)
 			h = 1;
-		auto minH = umath::min(slider->GetParent()->GetHeight(), 20);
-		h = umath::max(h, minH);
+		auto minH = math::min(slider->GetParent()->GetHeight(), 20);
+		h = math::max(h, minH);
 		slider->SetSliderSize(GetSliderWidth(), h);
 		slider->SetSliderPos(0, GetSliderWidth());
 	}
@@ -269,12 +269,12 @@ void pragma::gui::types::WIScrollBarSlider::SetSliderX(int x) { return (m_bHoriz
 void pragma::gui::types::WIScrollBarSlider::SetSliderY(int y) { return (m_bHorizontal == true) ? SetX(y) : SetY(y); }
 void pragma::gui::types::WIScrollBarSlider::SetSliderPos(int x, int y) { (m_bHorizontal == true) ? SetPos(y, x) : SetPos(x, y); }
 void pragma::gui::types::WIScrollBarSlider::SetSliderSize(int w, int h) { (m_bHorizontal == true) ? SetSize(h, w) : SetSize(w, h); }
-util::EventReply pragma::gui::types::WIScrollBarSlider::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIScrollBarSlider::MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	if(WIRect::MouseCallback(button, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
-	if(button == pragma::platform::MouseButton::Left) {
-		if(state == pragma::platform::KeyState::Press) {
+	if(button == platform::MouseButton::Left) {
+		if(state == platform::KeyState::Press) {
 			int x, y;
 			WGUI::GetInstance().GetMousePos(x, y);
 			if(IsVertical()) {
@@ -288,7 +288,7 @@ util::EventReply pragma::gui::types::WIScrollBarSlider::MouseCallback(pragma::pl
 			m_bMoving = true;
 			EnableThinking();
 		}
-		else if(state == pragma::platform::KeyState::Release)
+		else if(state == platform::KeyState::Release)
 			StopDragging();
 	}
 	return util::EventReply::Handled;
@@ -346,7 +346,7 @@ void pragma::gui::types::WIScrollBarSlider::SetHorizontal(bool b)
 bool pragma::gui::types::WIScrollBarSlider::IsHorizontal() { return m_bHorizontal; }
 bool pragma::gui::types::WIScrollBarSlider::IsVertical() { return !m_bHorizontal; }
 
-util::EventReply pragma::gui::types::WIScrollBarSlider::ScrollCallback(Vector2 offset, bool offsetAsPixels)
+pragma::util::EventReply pragma::gui::types::WIScrollBarSlider::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
 	if(WIRect::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled)
 		return util::EventReply::Handled;

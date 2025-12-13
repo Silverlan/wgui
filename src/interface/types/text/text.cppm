@@ -27,9 +27,9 @@ export namespace pragma::gui::types {
 			std::shared_ptr<prosper::IBuffer> buffer;
 			std::shared_ptr<prosper::IBuffer> colorBuffer;
 			const FontInfo *font = nullptr;
-			util::text::TextLength numChars = 0u;
-			util::text::CharOffset charOffset = 0u;
-			util::text::LineIndex absLineIndex = 0;
+			string::TextLength numChars = 0u;
+			string::CharOffset charOffset = 0u;
+			string::LineIndex absLineIndex = 0;
 			uint32_t width = 0u;
 			uint32_t height = 0u;
 			float sx = 0.f;
@@ -40,12 +40,12 @@ export namespace pragma::gui::types {
 		void InitializeTexture(prosper::Texture &tex, int32_t w, int32_t h);
 		void SetTextElement(WIText &elText);
 	  private:
-		bool RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, shaders::ShaderTextRect &shader, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
+		bool RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, shaders::ShaderTextRect &shader, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const math::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
 		  shaders::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, StencilPipeline stencilPipeline) const;
-		void RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const umath::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
+		void RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const math::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
 		  shaders::ShaderTextRect::PushConstants &inOutPushConstants, uint32_t testStencilLevel, StencilPipeline stencilPipeline) const;
-		pragma::gui::WIHandle m_hTexture = {};
-		pragma::gui::WIHandle m_hText = {};
+		WIHandle m_hTexture = {};
+		WIHandle m_hText = {};
 	};
 
 	class DLLWGUI WIText : public WIBase {
@@ -81,11 +81,11 @@ export namespace pragma::gui::types {
 			void AddBuffer(prosper::IBuffer &buf);
 			void ResizeBuffers(size_t size);
 
-			std::weak_ptr<util::text::FormattedTextLine> wpLine;
+			std::weak_ptr<string::FormattedTextLine> wpLine;
 			int32_t widthInPixels = 0u;
 			bool bufferUpdateRequired = true;
-			util::text::LineIndex subLineIndexOffset = 0;
-			std::vector<util::text::TextLength> subLines = {};
+			string::LineIndex subLineIndexOffset = 0;
+			std::vector<string::TextLength> subLines = {};
 		  private:
 			std::vector<WITextBase::SubBufferInfo> buffers = {};
 		};
@@ -103,15 +103,15 @@ export namespace pragma::gui::types {
 		uint32_t GetTotalLineCount() const;
 		const std::vector<LineInfo> &GetLines() const;
 		std::vector<LineInfo> &GetLines();
-		util::text::FormattedTextLine *GetLine(util::text::LineIndex lineIdx);
+		string::FormattedTextLine *GetLine(string::LineIndex lineIdx);
 		int GetLineHeight() const;
 		int GetBreakHeight();
 		void SetBreakHeight(int breakHeight);
-		const util::text::FormattedText &GetFormattedTextObject() const;
-		util::text::FormattedText &GetFormattedTextObject();
-		const pragma::string::Utf8String &GetText() const;
-		const pragma::string::Utf8String &GetFormattedText() const;
-		void SetText(const pragma::string::Utf8StringArg &text);
+		const string::FormattedText &GetFormattedTextObject() const;
+		string::FormattedText &GetFormattedTextObject();
+		const string::Utf8String &GetText() const;
+		const string::Utf8String &GetFormattedText() const;
+		void SetText(const string::Utf8StringArg &text);
 		void SetFont(const std::string_view &font);
 		void SetFont(const FontInfo *font, bool reload = false);
 		void ReloadFont();
@@ -123,29 +123,29 @@ export namespace pragma::gui::types {
 		Vector2i CalcTextSize() const;
 		std::shared_ptr<prosper::Texture> GetTexture() const;
 		virtual std::string GetDebugInfo() const override;
-		std::pair<Vector2i, Vector2i> GetCharacterPixelBounds(util::text::LineIndex lineIdx, util::text::CharOffset charOffset) const;
+		std::pair<Vector2i, Vector2i> GetCharacterPixelBounds(string::LineIndex lineIdx, string::CharOffset charOffset) const;
 		void SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const std::string &arg);
 		void SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const Vector4 &arg);
 		void SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const CallbackHandle &arg);
 		void SetTagArgument(const std::string &tagLabel, uint32_t argumentIndex, const Color &arg);
 		void SetTagsEnabled(bool bEnabled);
 		bool AreTagsEnabled() const;
-		Color GetCharColor(util::text::TextOffset offset) const;
+		Color GetCharColor(string::TextOffset offset) const;
 
 		bool IsTextHidden() const;
 		void HideText(bool hide = true);
 
 		void UpdateSubLines();
-		void AppendText(const pragma::string::Utf8StringArg &text);
-		bool InsertText(const pragma::string::Utf8StringArg &text, util::text::LineIndex lineIdx, util::text::CharOffset charOffset = util::text::LAST_CHAR);
-		void AppendLine(const pragma::string::Utf8StringArg &line);
+		void AppendText(const string::Utf8StringArg &text);
+		bool InsertText(const string::Utf8StringArg &text, string::LineIndex lineIdx, string::CharOffset charOffset = string::LAST_CHAR);
+		void AppendLine(const string::Utf8StringArg &line);
 		void PopFrontLine();
 		void PopBackLine();
-		void RemoveLine(util::text::LineIndex lineIdx);
-		bool RemoveText(util::text::LineIndex lineIdx, util::text::CharOffset charOffset, util::text::TextLength len);
-		bool RemoveText(util::text::TextOffset offset, util::text::TextLength len);
-		bool MoveText(util::text::LineIndex lineIdx, util::text::CharOffset startOffset, util::text::TextLength len, util::text::LineIndex targetLineIdx, util::text::CharOffset targetCharOffset = util::text::LAST_CHAR);
-		pragma::string::Utf8StringView Substr(util::text::TextOffset startOffset, util::text::TextLength len) const;
+		void RemoveLine(string::LineIndex lineIdx);
+		bool RemoveText(string::LineIndex lineIdx, string::CharOffset charOffset, string::TextLength len);
+		bool RemoveText(string::TextOffset offset, string::TextLength len);
+		bool MoveText(string::LineIndex lineIdx, string::CharOffset startOffset, string::TextLength len, string::LineIndex targetLineIdx, string::CharOffset targetCharOffset = string::LAST_CHAR);
+		string::Utf8StringView Substr(string::TextOffset startOffset, string::TextLength len) const;
 		void Clear();
 
 		void SetTabSpaceCount(uint32_t numberOfSpaces);
@@ -193,7 +193,7 @@ export namespace pragma::gui::types {
 			auto it = std::find_if(m_tagInfos.begin(), m_tagInfos.end(), [startOffset](const std::shared_ptr<WITextDecorator> &decoratorOther) { return decoratorOther->GetStartTextCharOffset() >= startOffset; });
 			m_tagInfos.insert(it, pDecorator);
 			pDecorator->SetDirty();
-			m_flags = static_cast<Flags>(umath::to_integral(m_flags) | umath::to_integral(Flags::ApplySubTextTags));
+			m_flags = static_cast<Flags>(math::to_integral(m_flags) | math::to_integral(Flags::ApplySubTextTags));
 			return pDecorator;
 		}
 		void RemoveDecorator(const WITextDecorator &decorator);
@@ -211,14 +211,14 @@ export namespace pragma::gui::types {
 	  private:
 		static std::shared_ptr<prosper::IUniformResizableBuffer> s_textBuffer;
 		util::WeakHandle<prosper::Shader> m_shader = {};
-		std::shared_ptr<util::text::FormattedText> m_text = nullptr;
+		std::shared_ptr<string::FormattedText> m_text = nullptr;
 		std::vector<LineInfo> m_lineInfos = {};
 
 		std::vector<std::shared_ptr<WITextDecorator>> m_tagInfos = {};
 		std::unordered_map<std::string, std::vector<std::weak_ptr<WITextTag>>> m_labelToDecorators = {};
 
 		std::unordered_map<std::string, std::unordered_map<uint32_t, WITextTagArgument>> m_tagArgumentOverrides = {};
-		pragma::gui::WIHandle m_baseEl;
+		WIHandle m_baseEl;
 		std::shared_ptr<const FontInfo> m_font;
 		int m_breakHeight;
 		AutoBreak m_autoBreak;
@@ -226,7 +226,7 @@ export namespace pragma::gui::types {
 		uint32_t m_tabSpaceCount = 4u;
 
 		// Shadow
-		pragma::gui::WIHandle m_baseTextShadow;
+		WIHandle m_baseTextShadow;
 		WITextShadowInfo m_shadow;
 		//
 
@@ -240,7 +240,7 @@ export namespace pragma::gui::types {
 		unsigned int m_wTexture;
 		unsigned int m_hTexture;
 
-		bool BreakLineByWidth(uint32_t lineIndex, util::text::ShiftOffset &lineShift);
+		bool BreakLineByWidth(uint32_t lineIndex, string::ShiftOffset &lineShift);
 
 		void PerformTextPostProcessing();
 		void AutoSizeToText();
@@ -251,9 +251,9 @@ export namespace pragma::gui::types {
 		void ApplySubTextTags();
 		void ApplySubTextTag(WITextDecorator &tag);
 		void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
-		void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, util::text::LineIndex lineIndex);
+		void InitializeTextBuffers(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd, LineInfo &lineInfo, string::LineIndex lineIndex);
 		void UpdateRenderTexture(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd);
-		void GetTextSize(int *w, int *h, const pragma::string::Utf8StringView *inText = nullptr, const FontInfo *font = nullptr);
+		void GetTextSize(int *w, int *h, const string::Utf8StringView *inText = nullptr, const FontInfo *font = nullptr);
 		void RenderText();
 		void RenderText(Mat4 &mat);
 		void InitializeShadow(bool bReload = false);

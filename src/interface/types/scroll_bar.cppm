@@ -38,7 +38,7 @@ export namespace pragma::gui::types {
 		virtual ~WIScrollBarSlider() override = default;
 		virtual void Initialize() override;
 		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-		virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
+		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 		void SetHorizontal(bool b);
 		bool IsHorizontal();
@@ -53,9 +53,9 @@ export namespace pragma::gui::types {
 		unsigned int m_numElements;
 		unsigned int m_numListed;
 		unsigned int m_scrollAmount;
-		pragma::gui::WIHandle m_buttonUp;
-		pragma::gui::WIHandle m_buttonDown;
-		pragma::gui::WIHandle m_slider;
+		WIHandle m_buttonUp;
+		WIHandle m_buttonDown;
+		WIHandle m_slider;
 		int GetSliderWidth();
 		int GetSliderHeight();
 		int GetSliderX();
@@ -85,7 +85,7 @@ export namespace pragma::gui::types {
 		bool IsHorizontal();
 		bool IsVertical();
 		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-		virtual util::EventReply MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
+		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual void SetSize(int x, int y) override;
 	};
 };

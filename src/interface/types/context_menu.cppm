@@ -18,12 +18,12 @@ export namespace pragma::gui::types {
 		static WIContextMenu *OpenContextMenu();
 		static bool IsContextMenuOpen();
 		static WIContextMenu *GetActiveContextMenu();
-		static void SetKeyBindHandler(const std::function<std::string(pragma::platform::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey);
+		static void SetKeyBindHandler(const std::function<std::string(platform::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey);
 
 		WIContextMenu();
 		virtual void Initialize() override;
 		virtual void OnRemove() override;
-		virtual util::EventReply KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods) override;
+		virtual util::EventReply KeyboardCallback(platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods) override;
 		virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
 
 		bool IsCursorInMenuBounds() const;
@@ -42,7 +42,7 @@ export namespace pragma::gui::types {
 		virtual void DoUpdate() override;
 		std::vector<WIHandle> m_items = {};
 		std::vector<WIHandle> m_subMenues = {};
-		pragma::gui::WIHandle m_hBg = {};
-		pragma::gui::WIHandle m_hBgOutline = {};
+		WIHandle m_hBg = {};
+		WIHandle m_hBgOutline = {};
 	};
 }

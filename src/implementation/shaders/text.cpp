@@ -80,12 +80,12 @@ void pragma::gui::shaders::ShaderTextRect::InitializeShaderResources()
 {
 	Shader::InitializeShaderResources();
 
-	AddVertexAttribute(pragma::gui::shaders::ShaderText::VERTEX_ATTRIBUTE_POSITION);
-	AddVertexAttribute(pragma::gui::shaders::ShaderText::VERTEX_ATTRIBUTE_UV);
+	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
+	AddVertexAttribute(VERTEX_ATTRIBUTE_UV);
 	AddVertexAttribute(VERTEX_ATTRIBUTE_GLYPH_INDEX);
 	AddVertexAttribute(VERTEX_ATTRIBUTE_GLYPH_BOUNDS);
-	AddDescriptorSetGroup(pragma::gui::shaders::ShaderText::DESCRIPTOR_SET_TEXTURE);
-	AddDescriptorSetGroup(pragma::gui::shaders::ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
+	AddDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE);
+	AddDescriptorSetGroup(DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
 	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::VertexBit | prosper::ShaderStageFlags::FragmentBit);
 }
 
@@ -97,11 +97,11 @@ pragma::gui::shaders::ShaderTextRectColor::ShaderTextRectColor(prosper::IPrConte
 pragma::gui::shaders::ShaderTextRectColor::ShaderTextRectColor(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : ShaderTextRect {context, identifier, vsShader, fsShader, gsShader} {}
 bool pragma::gui::shaders::ShaderTextRectColor::RecordDraw(prosper::ShaderBindState &bindState, prosper::IBuffer &glyphBoundsIndexBuffer, prosper::IBuffer &colorBuffer, prosper::IDescriptorSet &descTextureSet, const PushConstants &pushConstants, uint32_t instanceCount, uint32_t testStencilLevel) const
 {
-	return RecordBindVertexBuffers(bindState, {&colorBuffer}, 2u) && pragma::gui::shaders::ShaderTextRect::RecordDraw(bindState, glyphBoundsIndexBuffer, descTextureSet, pushConstants, instanceCount, testStencilLevel);
+	return RecordBindVertexBuffers(bindState, {&colorBuffer}, 2u) && ShaderTextRect::RecordDraw(bindState, glyphBoundsIndexBuffer, descTextureSet, pushConstants, instanceCount, testStencilLevel);
 }
-void pragma::gui::shaders::ShaderTextRectColor::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) { pragma::gui::shaders::ShaderTextRect::InitializeGfxPipeline(pipelineInfo, pipelineIdx); }
+void pragma::gui::shaders::ShaderTextRectColor::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) { ShaderTextRect::InitializeGfxPipeline(pipelineInfo, pipelineIdx); }
 void pragma::gui::shaders::ShaderTextRectColor::InitializeShaderResources()
 {
-	pragma::gui::shaders::ShaderTextRect::InitializeShaderResources();
+	ShaderTextRect::InitializeShaderResources();
 	AddVertexAttribute(VERTEX_ATTRIBUTE_COLOR);
 }

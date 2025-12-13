@@ -22,7 +22,7 @@ void pragma::gui::types::WIButton::Initialize()
 	m_text = CreateChild<WIText>();
 }
 void pragma::gui::types::WIButton::SetSize(int x, int y) { WIBase::SetSize(x, y); }
-void pragma::gui::types::WIButton::SetText(const pragma::string::Utf8StringArg &text)
+void pragma::gui::types::WIButton::SetText(const string::Utf8StringArg &text)
 {
 	if(!m_text.IsValid())
 		return;
@@ -33,20 +33,20 @@ void pragma::gui::types::WIButton::SetText(const pragma::string::Utf8StringArg &
 const pragma::string::Utf8String &pragma::gui::types::WIButton::GetText() const
 {
 	if(!m_text.IsValid()) {
-		static pragma::string::Utf8String emptyString {};
+		static string::Utf8String emptyString {};
 		return emptyString;
 	}
 	return static_cast<const WIText *>(m_text.get())->GetText();
 }
-util::EventReply pragma::gui::types::WIButton::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIButton::MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	auto hThis = GetHandle();
 	auto reply = WIBase::MouseCallback(button, state, mods);
 	if(reply == util::EventReply::Handled || hThis.IsValid() == false)
 		return util::EventReply::Handled;
 	auto response = util::EventReply::Handled;
-	if(button == pragma::platform::MouseButton::Left) {
-		if(state == pragma::platform::KeyState::Press)
+	if(button == platform::MouseButton::Left) {
+		if(state == platform::KeyState::Press)
 			m_bPressed = true;
 		else {
 			if(m_bPressed == true)

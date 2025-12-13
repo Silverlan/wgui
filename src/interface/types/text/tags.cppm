@@ -35,20 +35,20 @@ export namespace pragma::gui {
 
 		virtual void Initialize();
 		virtual void Apply();
-		virtual util::text::AnchorPoint *GetStartAnchorPoint() = 0;
-		virtual util::text::AnchorPoint *GetEndAnchorPoint() = 0;
-		const util::text::AnchorPoint *GetStartAnchorPoint() const;
-		const util::text::AnchorPoint *GetEndAnchorPoint() const;
+		virtual string::AnchorPoint *GetStartAnchorPoint() = 0;
+		virtual string::AnchorPoint *GetEndAnchorPoint() = 0;
+		const string::AnchorPoint *GetStartAnchorPoint() const;
+		const string::AnchorPoint *GetEndAnchorPoint() const;
 
-		virtual util::text::TextOffset GetStartTextCharOffset() const;
-		virtual util::text::TextOffset GetEndTextCharOffset() const;
+		virtual string::TextOffset GetStartTextCharOffset() const;
+		virtual string::TextOffset GetEndTextCharOffset() const;
 
-		void GetTagRange(util::text::LineIndex &startLine, util::text::LineIndex &endLine, util::text::TextOffset &startOffset, util::text::TextOffset &endOffset) const;
-		int32_t GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset &startOffset, util::text::CharOffset &endOffset) const;
-		int32_t GetTagRange(const util::text::FormattedTextLine &line, util::text::CharOffset minOffsetInLine, util::text::CharOffset maxOffsetInLine, util::text::CharOffset &outTagStartOffsetInLine, util::text::CharOffset &outTagEndOffsetInLine) const;
+		void GetTagRange(string::LineIndex &startLine, string::LineIndex &endLine, string::TextOffset &startOffset, string::TextOffset &endOffset) const;
+		int32_t GetTagRange(const string::FormattedTextLine &line, string::CharOffset &startOffset, string::CharOffset &endOffset) const;
+		int32_t GetTagRange(const string::FormattedTextLine &line, string::CharOffset minOffsetInLine, string::CharOffset maxOffsetInLine, string::CharOffset &outTagStartOffsetInLine, string::CharOffset &outTagEndOffsetInLine) const;
 	  protected:
 		void CreateOverlayElements();
-		void CreateOverlayElement(util::text::LineIndex lineIndex, util::text::TextOffset startOffset, util::text::TextOffset endOffset, std::vector<WIHandle> &cachedOverlays);
+		void CreateOverlayElement(string::LineIndex lineIndex, string::TextOffset startOffset, string::TextOffset endOffset, std::vector<WIHandle> &cachedOverlays);
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize);
 		virtual void InitializeOverlay(types::WIBase &overlay);
 
@@ -59,21 +59,21 @@ export namespace pragma::gui {
 
 	class DLLWGUI WITextTag : public WITextDecorator {
 	  public:
-		WITextTag(types::WIText &text, util::text::TextTag &tag);
+		WITextTag(types::WIText &text, string::TextTag &tag);
 		virtual bool IsTag() const override;
 		virtual bool IsValid() const override;
-		virtual util::text::AnchorPoint *GetStartAnchorPoint() override;
-		virtual util::text::AnchorPoint *GetEndAnchorPoint() override;
-		virtual util::text::TextOffset GetStartTextCharOffset() const override;
-		virtual util::text::TextOffset GetEndTextCharOffset() const override;
+		virtual string::AnchorPoint *GetStartAnchorPoint() override;
+		virtual string::AnchorPoint *GetEndAnchorPoint() override;
+		virtual string::TextOffset GetStartTextCharOffset() const override;
+		virtual string::TextOffset GetEndTextCharOffset() const override;
 
-		const util::text::TextTag &GetTag() const;
-		util::text::TextTag &GetTag();
+		const string::TextTag &GetTag() const;
+		string::TextTag &GetTag();
 		const std::vector<WITextTagArgument> &GetArguments() const;
 		std::vector<WITextTagArgument> &GetArguments();
 	  protected:
 		std::vector<WITextTagArgument> m_args = {};
-		util::text::TextTag &m_tag;
+		string::TextTag &m_tag;
 	};
 
 	class DLLWGUI WITextTagUnderline : public WITextTag {
@@ -123,19 +123,19 @@ export namespace pragma::gui {
 
 	class DLLWGUI WITextTagSelection : public WITextDecorator {
 	  public:
-		WITextTagSelection(types::WIText &text, util::text::TextOffset startOffset, util::text::TextOffset endOffset);
+		WITextTagSelection(types::WIText &text, string::TextOffset startOffset, string::TextOffset endOffset);
 		virtual void Apply() override;
 		virtual bool IsValid() const override;
-		virtual util::text::AnchorPoint *GetStartAnchorPoint() override;
-		virtual util::text::AnchorPoint *GetEndAnchorPoint() override;
+		virtual string::AnchorPoint *GetStartAnchorPoint() override;
+		virtual string::AnchorPoint *GetEndAnchorPoint() override;
 
-		void SetStartOffset(util::text::TextOffset offset);
-		void SetEndOffset(util::text::TextOffset offset);
+		void SetStartOffset(string::TextOffset offset);
+		void SetEndOffset(string::TextOffset offset);
 	  protected:
 		virtual void InitializeOverlay(types::WIBase &overlay) override;
 		virtual void CalcBounds(Vector2i &inOutPos, Vector2i &inOutSize) override;
-		std::optional<std::pair<util::text::LineIndex, util::text::CharOffset>> GetAbsOffset(util::text::TextOffset offset) const;
-		util::TSharedHandle<util::text::AnchorPoint> m_startAnchorPoint = nullptr;
-		util::TSharedHandle<util::text::AnchorPoint> m_endAnchorPoint = nullptr;
+		std::optional<std::pair<string::LineIndex, string::CharOffset>> GetAbsOffset(string::TextOffset offset) const;
+		util::TSharedHandle<string::AnchorPoint> m_startAnchorPoint = nullptr;
+		util::TSharedHandle<string::AnchorPoint> m_endAnchorPoint = nullptr;
 	};
 };

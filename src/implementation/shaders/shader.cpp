@@ -12,11 +12,11 @@ import :shaders.shader;
 decltype(pragma::gui::shaders::Shader::VERTEX_BINDING_VERTEX) pragma::gui::shaders::Shader::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
 decltype(pragma::gui::shaders::Shader::VERTEX_ATTRIBUTE_POSITION) pragma::gui::shaders::Shader::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX, prosper::CommonBufferCache::GetSquareVertexFormat()};
 
-pragma::gui::shaders::Shader::Shader(prosper::IPrContext &context, const std::string &identifier) : ShaderGraphics(context, identifier, "programs/gui/colored", "programs/gui/colored") { SetPipelineCount(umath::to_integral(StencilPipeline::Count) * 2); }
+pragma::gui::shaders::Shader::Shader(prosper::IPrContext &context, const std::string &identifier) : ShaderGraphics(context, identifier, "programs/gui/colored", "programs/gui/colored") { SetPipelineCount(math::to_integral(StencilPipeline::Count) * 2); }
 
 pragma::gui::shaders::Shader::Shader(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : ShaderGraphics(context, identifier, vsShader, fsShader, gsShader)
 {
-	SetPipelineCount(umath::to_integral(StencilPipeline::Count) * 2);
+	SetPipelineCount(math::to_integral(StencilPipeline::Count) * 2);
 }
 
 void pragma::gui::shaders::Shader::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx, bool enableStencilTest)
@@ -37,10 +37,10 @@ void pragma::gui::shaders::Shader::InitializeRenderPass(std::shared_ptr<prosper:
 
 pragma::gui::StencilPipeline pragma::gui::shaders::Shader::ToStencilPipelineIndex(uint32_t pipelineIdx, bool *optOutMsaa)
 {
-	if(pipelineIdx >= umath::to_integral(StencilPipeline::Count)) {
+	if(pipelineIdx >= math::to_integral(StencilPipeline::Count)) {
 		if(optOutMsaa)
 			*optOutMsaa = true;
-		return static_cast<StencilPipeline>(pipelineIdx - umath::to_integral(StencilPipeline::Count));
+		return static_cast<StencilPipeline>(pipelineIdx - math::to_integral(StencilPipeline::Count));
 	}
 	if(optOutMsaa)
 		*optOutMsaa = false;
@@ -49,11 +49,11 @@ pragma::gui::StencilPipeline pragma::gui::shaders::Shader::ToStencilPipelineInde
 uint32_t pragma::gui::shaders::Shader::ToAbsolutePipelineIndex(StencilPipeline pipelineIdx, bool msaa)
 {
 	if(msaa)
-		return umath::to_integral(pipelineIdx) + umath::to_integral(StencilPipeline::Count);
-	return umath::to_integral(pipelineIdx);
+		return math::to_integral(pipelineIdx) + math::to_integral(StencilPipeline::Count);
+	return math::to_integral(pipelineIdx);
 }
 
-static bool is_msaa_pipeline(uint32_t pipelineIdx) { return pipelineIdx >= umath::to_integral(pragma::gui::StencilPipeline::Count); }
+static bool is_msaa_pipeline(uint32_t pipelineIdx) { return pipelineIdx >= pragma::math::to_integral(pragma::gui::StencilPipeline::Count); }
 bool pragma::gui::shaders::Shader::IsMsaaPipeline(uint32_t pipelineIdx) { return is_msaa_pipeline(pipelineIdx); }
 
 bool pragma::gui::shaders::Shader::RecordBeginDraw(prosper::ShaderBindState &bindState, DrawState &drawState, uint32_t width, uint32_t height, StencilPipeline pipelineIdx, bool msaa) const
@@ -82,7 +82,7 @@ void pragma::gui::shaders::initialize_stencil_properties(prosper::GraphicsPipeli
 {
 	pipelineInfo.ToggleStencilTest(true);
 	pipelineInfo.ToggleDynamicState(true, prosper::DynamicState::StencilReference);
-	switch(pragma::gui::shaders::Shader::ToStencilPipelineIndex(pipelineIdx)) {
+	switch(Shader::ToStencilPipelineIndex(pipelineIdx)) {
 	case StencilPipeline::Test:
 		pipelineInfo.SetStencilTestProperties(true, prosper::StencilOp::Keep, /* fail */
 		  prosper::StencilOp::Keep,                                           /* pass */

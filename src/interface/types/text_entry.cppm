@@ -15,12 +15,12 @@ export namespace pragma::gui::types {
 	class WIRect;
 	class DLLWGUI WITextEntry : public WIBase {
 	  protected:
-		pragma::gui::WIHandle m_hBase;
-		pragma::gui::WIHandle m_hOutline;
-		pragma::gui::WIHandle m_hBg;
+		WIHandle m_hBase;
+		WIHandle m_hOutline;
+		WIHandle m_hBg;
 
 		virtual void OnTextEntered();
-		virtual void OnTextChanged(const pragma::string::Utf8String &text, bool changedByUser);
+		virtual void OnTextChanged(const string::Utf8String &text, bool changedByUser);
 		virtual void OnContentsChanged();
 	  public:
 		WITextEntry();
@@ -36,10 +36,10 @@ export namespace pragma::gui::types {
 
 		WIText *GetTextElement();
 		void SetInputHidden(bool b);
-		pragma::string::Utf8StringView GetText() const;
-		void SetText(const pragma::string::Utf8StringArg &text);
-		void InsertText(pragma::string::Utf8StringView instext, int pos);
-		void InsertText(pragma::string::Utf8StringView text);
+		string::Utf8StringView GetText() const;
+		void SetText(const string::Utf8StringArg &text);
+		void InsertText(string::Utf8StringView instext, int pos);
+		void InsertText(string::Utf8StringView text);
 		int GetCaretPos() const;
 		void SetCaretPos(int pos);
 		WIRect *GetCaretElement();
@@ -64,8 +64,8 @@ export namespace pragma::gui::types {
 	class DLLWGUI WINumericEntry : public WITextEntry {
 	  private:
 		struct Numeric {
-			pragma::gui::WIHandle hUpArrow;
-			pragma::gui::WIHandle hDownArrow;
+			WIHandle hUpArrow;
+			WIHandle hDownArrow;
 			std::unique_ptr<int32_t> min;
 			std::unique_ptr<int32_t> max;
 		} m_numeric;

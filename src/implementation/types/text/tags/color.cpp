@@ -53,15 +53,15 @@ void pragma::gui::WITextTagColor::Apply()
 	auto &context = WGUI::GetInstance().GetContext();
 	auto &openingTag = *m_tag.GetOpeningTagComponent();
 
-	util::text::LineIndex startLineIdx, endLineIdx;
-	util::text::TextOffset absStartCharOffset, absEndCharOffset;
+	string::LineIndex startLineIdx, endLineIdx;
+	string::TextOffset absStartCharOffset, absEndCharOffset;
 	GetTagRange(startLineIdx, endLineIdx, absStartCharOffset, absEndCharOffset);
 
 	auto &startAnchorPoint = *openingTag.GetStartAnchorPoint();
 	for(auto lineIdx = startLineIdx; lineIdx <= endLineIdx; ++lineIdx) {
 		auto &line = *m_text.GetLine(lineIdx);
 
-		util::text::CharOffset localStartOffset, localEndOffset;
+		string::CharOffset localStartOffset, localEndOffset;
 		auto numChars = GetTagRange(line, localStartOffset, localEndOffset);
 		if(numChars == -1)
 			break;

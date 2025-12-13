@@ -10,7 +10,7 @@ import :types.context_menu;
 static pragma::gui::types::WIContextMenu *s_contextMenu = nullptr;
 static std::function<std::string(pragma::platform::Key, const std::string &)> s_fBindKey = nullptr;
 static std::function<std::optional<std::string>(const std::string &)> s_fGetBoundKey = nullptr;
-void pragma::gui::types::WIContextMenu::SetKeyBindHandler(const std::function<std::string(pragma::platform::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey)
+void pragma::gui::types::WIContextMenu::SetKeyBindHandler(const std::function<std::string(platform::Key, const std::string &)> &fBindKey, const std::function<std::optional<std::string>(const std::string &)> &fGetBoundKey)
 {
 	s_fBindKey = fBindKey;
 	s_fGetBoundKey = fGetBoundKey;
@@ -58,7 +58,7 @@ void pragma::gui::types::WIContextMenu::Initialize()
 	m_hBgOutline = pBgOutline->GetHandle();
 }
 void pragma::gui::types::WIContextMenu::OnRemove() { WIRect::OnRemove(); }
-util::EventReply pragma::gui::types::WIContextMenu::KeyboardCallback(pragma::platform::Key key, int scanCode, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIContextMenu::KeyboardCallback(platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods)
 {
 	if(WIRect::KeyboardCallback(key, scanCode, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;

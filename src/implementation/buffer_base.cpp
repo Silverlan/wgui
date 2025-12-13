@@ -15,8 +15,8 @@ pragma::gui::types::WIBufferBase::WIBufferBase() : WIBase()
 {
 	auto *pShaderColored = WGUI::GetInstance().GetColoredShader();
 	auto *pShaderColoredCheap = WGUI::GetInstance().GetColoredRectShader();
-	m_shader = (pShaderColored != nullptr) ? pShaderColored->GetHandle() : util::WeakHandle<prosper::Shader> {};
-	m_shaderCheap = (pShaderColoredCheap != nullptr) ? pShaderColoredCheap->GetHandle() : util::WeakHandle<prosper::Shader> {};
+	m_shader = (pShaderColored != nullptr) ? pShaderColored->GetHandle() : pragma::util::WeakHandle<prosper::Shader> {};
+	m_shaderCheap = (pShaderColoredCheap != nullptr) ? pShaderColoredCheap->GetHandle() : pragma::util::WeakHandle<prosper::Shader> {};
 #if USE_STAGING_BUFFER != 0
 	if(s_elementCount++ == 0u) {
 		prosper::util::BufferCreateInfo createInfo {};
@@ -93,7 +93,7 @@ void pragma::gui::types::WIBufferBase::Render(const DrawInfo &drawInfo, DrawStat
 		auto *pShader = static_cast<shaders::ShaderColoredRect *>(m_shaderCheap.get());
 		auto &context = WGUI::GetInstance().GetContext();
 		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-		if(pShader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
+		if(pShader->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, math::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 			pShader->RecordDraw(bindState, {matDraw, col, ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
 			pShader->RecordEndDraw(bindState);
 		}
@@ -107,7 +107,7 @@ void pragma::gui::types::WIBufferBase::Render(const DrawInfo &drawInfo, DrawStat
 	auto &shader = static_cast<shaders::ShaderColored &>(*m_shader.get());
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
-	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, umath::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
+	if(shader.RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, math::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 		shader.RecordDraw(bindState, *buf, GetVertexCount(), ElementData {matDraw, col, ElementData::ToViewportSize(drawInfo.size)}, testStencilLevel);
 		shader.RecordEndDraw(bindState);
 	}

@@ -72,11 +72,11 @@ void pragma::gui::types::WIMenuItem::OnCursorExited()
 	WIBase::OnCursorExited();
 	SetSelected(false);
 }
-util::EventReply pragma::gui::types::WIMenuItem::MouseCallback(pragma::platform::MouseButton button, pragma::platform::KeyState state, pragma::platform::Modifier mods)
+pragma::util::EventReply pragma::gui::types::WIMenuItem::MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
 	if(WIBase::MouseCallback(button, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
-	if(button != pragma::platform::MouseButton::Left || state != pragma::platform::KeyState::Press || m_fOnAction == nullptr)
+	if(button != platform::MouseButton::Left || state != platform::KeyState::Press || m_fOnAction == nullptr)
 		return util::EventReply::Handled;
 	m_fOnAction();
 	return util::EventReply::Unhandled;

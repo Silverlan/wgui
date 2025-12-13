@@ -18,19 +18,19 @@ export namespace pragma::gui {
 	class DLLWGUI TextLineIteratorBase {
 	  public:
 		struct DLLWGUI Info {
-			util::text::FormattedTextLine *line = nullptr;
-			util::text::LineIndex lineIndex = 0;
-			util::text::LineIndex relSubLineIndex = 0;
-			util::text::LineIndex absSubLineIndex = 0;
+			string::FormattedTextLine *line = nullptr;
+			string::LineIndex lineIndex = 0;
+			string::LineIndex relSubLineIndex = 0;
+			string::LineIndex absSubLineIndex = 0;
 			bool isLastLine = false;
 			bool isLastSubLine = false;
 
-			util::text::TextLength charCountLine = 0;
-			util::text::TextLength charCountSubLine = 0;
+			string::TextLength charCountLine = 0;
+			string::TextLength charCountSubLine = 0;
 
-			util::text::CharOffset relCharStartOffset = 0;
-			util::text::TextOffset absLineStartOffset = 0;
-			util::text::TextOffset GetAbsCharStartOffset() const { return absLineStartOffset + relCharStartOffset; }
+			string::CharOffset relCharStartOffset = 0;
+			string::TextOffset absLineStartOffset = 0;
+			string::TextOffset GetAbsCharStartOffset() const { return absLineStartOffset + relCharStartOffset; }
 		};
 
 		using iterator_category = std::forward_iterator_tag;
@@ -39,10 +39,10 @@ export namespace pragma::gui {
 		using pointer = value_type *;
 		using reference = value_type &;
 
-		static const auto INVALID_LINE = std::numeric_limits<util::text::LineIndex>::max();
+		static const auto INVALID_LINE = std::numeric_limits<string::LineIndex>::max();
 		static const Info INVALID_LINE_INFO;
 
-		TextLineIteratorBase(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
+		TextLineIteratorBase(types::WIText &text, string::LineIndex lineIndex, string::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase(const TextLineIteratorBase &other) = default;
 		TextLineIteratorBase &operator=(const TextLineIteratorBase &other) = default;
 
@@ -64,14 +64,14 @@ export namespace pragma::gui {
 
 	class DLLWGUI TextLineIterator {
 	  public:
-		TextLineIterator(types::WIText &text, util::text::LineIndex startLineIndex = 0, util::text::LineIndex subLineIndex = 0, bool iterateSubLines = true);
+		TextLineIterator(types::WIText &text, string::LineIndex startLineIndex = 0, string::LineIndex subLineIndex = 0, bool iterateSubLines = true);
 		TextLineIteratorBase begin() const;
 		TextLineIteratorBase end() const;
 	  private:
 		types::WIText &m_text;
 		bool m_bIterateSubLines = true;
-		util::text::LineIndex m_startLineIndex = 0;
-		util::text::LineIndex m_startSubLineIndex = 0;
+		string::LineIndex m_startLineIndex = 0;
+		string::LineIndex m_startSubLineIndex = 0;
 	};
 
 	//////////////////////
@@ -79,11 +79,11 @@ export namespace pragma::gui {
 	class DLLWGUI CharIteratorBase {
 	  public:
 		struct DLLWGUI Info {
-			util::text::LineIndex lineIndex = 0;
-			util::text::LineIndex subLineIndex = 0;
-			util::text::CharOffset charOffsetRelToSubLine = 0;
-			util::text::CharOffset charOffsetRelToLine = 0;
-			util::text::CharOffset charOffsetRelToText = 0;
+			string::LineIndex lineIndex = 0;
+			string::LineIndex subLineIndex = 0;
+			string::CharOffset charOffsetRelToSubLine = 0;
+			string::CharOffset charOffsetRelToLine = 0;
+			string::CharOffset charOffsetRelToText = 0;
 
 			uint32_t pxOffset = 0;
 			uint32_t pxWidth = 0;
@@ -98,7 +98,7 @@ export namespace pragma::gui {
 
 		static const Info INVALID_INFO;
 
-		CharIteratorBase(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset, Flags flags);
+		CharIteratorBase(types::WIText &text, string::LineIndex lineIndex, string::LineIndex subLineIndex, string::TextOffset absLineStartOffset, string::CharOffset charOffset, Flags flags);
 
 		const value_type &operator++();
 		const value_type &operator++(int);
@@ -116,16 +116,16 @@ export namespace pragma::gui {
 
 	class DLLWGUI CharIterator {
 	  public:
-		CharIterator(types::WIText &text, util::text::LineIndex lineIndex, util::text::LineIndex subLineIndex, util::text::TextOffset absLineStartOffset, util::text::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
+		CharIterator(types::WIText &text, string::LineIndex lineIndex, string::LineIndex subLineIndex, string::TextOffset absLineStartOffset, string::CharOffset charOffset = 0, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
 		CharIterator(types::WIText &text, const TextLineIteratorBase::Info &lineInfo, bool updatePixelWidth = false, bool breakAtEndOfSubLine = true);
 		CharIteratorBase begin() const;
 		CharIteratorBase end() const;
 	  private:
 		types::WIText &m_text;
-		util::text::LineIndex m_lineIndex = 0;
-		util::text::LineIndex m_subLineIndex = 0;
-		util::text::TextOffset m_absLineStartOffset = 0;
-		util::text::CharOffset m_charOffset = 0;
+		string::LineIndex m_lineIndex = 0;
+		string::LineIndex m_subLineIndex = 0;
+		string::TextOffset m_absLineStartOffset = 0;
+		string::CharOffset m_charOffset = 0;
 		CharIteratorBase::Flags m_flags = CharIteratorBase::Flags::BreakAtEndOfSubLine;
 	};
 };

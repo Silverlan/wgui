@@ -11,7 +11,7 @@ import :type_factory;
 
 void pragma::gui::TypeFactory::AddClass(std::string name, const std::type_info &info, Factory fc)
 {
-	ustring::to_lower(name);
+	string::to_lower(name);
 	m_factories.insert(std::unordered_map<std::string, types::WIBase *(*)(void)>::value_type(name, fc));
 	m_classNames.insert(std::unordered_map<size_t, std::string>::value_type(info.hash_code(), name));
 }
@@ -29,7 +29,7 @@ bool pragma::gui::TypeFactory::GetClassName(const std::type_info &info, std::str
 
 pragma::gui::TypeFactory::Factory pragma::gui::TypeFactory::FindFactory(std::string classname) const
 {
-	ustring::to_lower(classname);
+	string::to_lower(classname);
 	auto i = m_factories.find(classname);
 	if(i == m_factories.end())
 		return nullptr;

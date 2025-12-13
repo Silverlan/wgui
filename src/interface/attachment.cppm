@@ -20,7 +20,7 @@ export namespace pragma::gui {
 		void UpdateAbsolutePosition();
 		const util::PVector2iProperty &GetAbsPosProperty() const;
 	private:
-		pragma::gui::WIHandle m_hOwner = {};
+		WIHandle m_hOwner = {};
 		Vector2 m_relativePosition = {};
 		util::PVector2iProperty m_absPosProperty = nullptr;
 	};

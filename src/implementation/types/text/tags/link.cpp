@@ -27,7 +27,7 @@ void pragma::gui::WITextTagLink::InitializeOverlay(types::WIBase &overlay)
 	overlay.SetZPos(20);
 	overlay.SetMouseInputEnabled(true);
 	overlay.SetMouseMovementCheckEnabled(true);
-	overlay.SetCursor(pragma::platform::Cursor::Shape::Hand);
+	overlay.SetCursor(platform::Cursor::Shape::Hand);
 }
 void pragma::gui::WITextTagLink::Initialize()
 {

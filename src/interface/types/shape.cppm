@@ -66,9 +66,9 @@ export namespace pragma::gui::types {
 		bool GetAlphaOnly() const;
 		float GetLOD() const;
 		void SetLOD(float lod);
-		void SetMaterial(msys::Material *material);
+		void SetMaterial(material::Material *material);
 		void SetMaterial(const std::string &material);
-		msys::Material *GetMaterial();
+		material::Material *GetMaterial();
 		void SetTexture(prosper::Texture &tex, std::optional<uint32_t> layerIndex = {});
 		void ClearTexture();
 		const std::shared_ptr<prosper::Texture> &GetTexture() const;
@@ -92,7 +92,7 @@ export namespace pragma::gui::types {
 		void UpdateShaderState();
 		virtual void DoUpdate() override;
 		bool PrepareRender(const DrawInfo &drawInfo, DrawState &drawState, Vector4 &outColor);
-		msys::MaterialHandle m_hMaterial;
+		material::MaterialHandle m_hMaterial;
 		std::shared_ptr<prosper::Texture> m_texture = nullptr;
 		std::shared_ptr<bool> m_texLoadCallback;
 		std::shared_ptr<prosper::IBuffer> m_uvBuffer = nullptr;
@@ -114,7 +114,7 @@ export namespace pragma::gui::types {
 		uint32_t m_texUpdateCountRef = std::numeric_limits<uint32_t>::max();
 		void UpdateMaterialDescriptorSetTexture();
 		void ClearTextureLoadCallback();
-		void InitializeTextureLoadCallback(const std::shared_ptr<msys::Texture> &texture);
+		void InitializeTextureLoadCallback(const std::shared_ptr<material::Texture> &texture);
 	};
 };
 export {REGISTER_ENUM_FLAGS(pragma::gui::types::WITexturedShape::StateFlags)}
