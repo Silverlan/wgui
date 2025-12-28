@@ -5,6 +5,8 @@ option(WGUI_INCLUDE_DEPENDENCIES "Include dependencies required to build the wgu
 set(PROJ_NAME wgui)
 pr_add_library(${PROJ_NAME} SHARED)
 
+pr_include_windows_clang_export_definitions_workaround(${PROJ_NAME})
+
 pr_add_dependency(${PROJ_NAME} util_image TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} iglfw TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} util_unicode TARGET PUBLIC)
