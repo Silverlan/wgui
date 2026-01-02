@@ -49,7 +49,11 @@ export namespace pragma::gui {
 		class ShaderStencil;
 	}
 	namespace wGUI {
+#ifdef WINDOWS_CLANG_COMPILER_FIX
+		DLLWGUI prosper::SampleCountFlags &GET_MSAA_SAMPLE_COUNT();
+#else
 		CLASS_ENUM_COMPAT prosper::SampleCountFlags MSAA_SAMPLE_COUNT;
+#endif
 	}
 	using Element = types::WIBase;
 	class DLLWGUI WGUI : public prosper::ContextObject {

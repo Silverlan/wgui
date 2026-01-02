@@ -10,7 +10,15 @@ import pragma.string.unicode;
 #undef FindWindow
 
 static std::unique_ptr<pragma::gui::WGUI> s_wgui = nullptr;
+#ifdef WINDOWS_CLANG_COMPILER_FIX
+prosper::SampleCountFlags &pragma::gui::wGUI::GET_MSAA_SAMPLE_COUNT()
+{
+	static prosper::SampleCountFlags v = prosper::SampleCountFlags::e1Bit;
+	return v;
+}
+#else
 prosper::SampleCountFlags pragma::gui::wGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
+#endif
 pragma::gui::WGUI &pragma::gui::WGUI::Open(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager)
 {
 	s_wgui = nullptr;

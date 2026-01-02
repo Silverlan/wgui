@@ -6,6 +6,13 @@ set(PROJ_NAME wgui)
 pr_add_library(${PROJ_NAME} SHARED)
 pr_add_export_macro(${PROJ_NAME} DLLWGUI)
 
+if (WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	# WINDOWS_CLANG_COMPILER_FIX
+	target_compile_definitions(${PROJ_NAME} PUBLIC
+		"MSAA_SAMPLE_COUNT=GET_MSAA_SAMPLE_COUNT()"
+	)
+endif()
+
 pr_add_dependency(${PROJ_NAME} util_image TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} iglfw TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} util_unicode TARGET PUBLIC)
