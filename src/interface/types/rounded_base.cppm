@@ -1,18 +1,14 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.gui:types.rounded_base;
 
 export namespace pragma::gui::types {
 	class WIShape;
 	class DLLWGUI WIRoundedBase {
-	public:
+	  public:
 		friend WIShape;
-	protected:
+	  protected:
 		WIRoundedBase();
 		char m_roundness;
 		float m_cornerSize;
@@ -22,7 +18,7 @@ export namespace pragma::gui::types {
 		bool m_bRoundLowerRight;
 		virtual void DoUpdate();
 		virtual void Initialize();
-	public:
+	  public:
 		virtual ~WIRoundedBase() = default;
 		char GetRoundness();
 		void SetRoundness(char roundness);

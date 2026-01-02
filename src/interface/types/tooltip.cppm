@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.gui:types.tooltip;
 
 import :handle;
@@ -14,9 +10,9 @@ import pragma.string.unicode;
 
 export namespace pragma::gui::types {
 	class DLLWGUI WITooltip : public WIBase {
-	protected:
+	  protected:
 		WIHandle m_hText;
-	public:
+	  public:
 		WITooltip();
 		virtual void Initialize() override;
 		void SetText(const std::string &text);

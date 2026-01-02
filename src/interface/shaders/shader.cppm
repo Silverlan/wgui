@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.gui:shaders.shader;
 
 import :draw_state;
@@ -20,7 +16,7 @@ export namespace pragma::gui {
 		DLLWGUI void get_render_pass(WGUI &gui, prosper::IPrContext &context, std::shared_ptr<prosper::IRenderPass> &outRenderPass, bool msaa);
 		DLLWGUI void initialize_stencil_properties(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx);
 		class DLLWGUI Shader : public prosper::ShaderGraphics {
-		public:
+		  public:
 			static VertexBinding VERTEX_BINDING_VERTEX;
 			static VertexAttribute VERTEX_ATTRIBUTE_POSITION;
 			static StencilPipeline ToStencilPipelineIndex(uint32_t pipelineIdx, bool *optOutMsaa = nullptr);
@@ -32,7 +28,7 @@ export namespace pragma::gui {
 			bool RecordBeginDraw(prosper::ShaderBindState &bindState, DrawState &drawState, uint32_t width, uint32_t height, StencilPipeline pipelineIdx, bool msaa) const;
 			virtual size_t GetBaseTypeHashCode() const override;
 			using ShaderGraphics::RecordBeginDraw;
-		protected:
+		  protected:
 			bool RecordSetStencilReference(prosper::ShaderBindState &bindState, uint32_t testStencilLevel) const;
 			virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx) override;
 			virtual void InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) override;

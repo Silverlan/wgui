@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include "util_enum_flags.hpp"
 
 #undef DrawState
@@ -42,8 +41,8 @@ export namespace pragma::gui::types {
 	  private:
 		bool RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, shaders::ShaderTextRect &shader, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const math::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
 		  shaders::ShaderTextRect::PushConstants &inOutPushConstants, const std::function<void(prosper::ShaderBindState &, const SubBufferInfo &, prosper::IDescriptorSet &)> &fDraw, bool colorPass, StencilPipeline stencilPipeline) const;
-		void RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const math::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
-		  shaders::ShaderTextRect::PushConstants &inOutPushConstants, uint32_t testStencilLevel, StencilPipeline stencilPipeline) const;
+		void RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const math::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize, shaders::ShaderTextRect::PushConstants &inOutPushConstants,
+		  uint32_t testStencilLevel, StencilPipeline stencilPipeline) const;
 		WIHandle m_hTexture = {};
 		WIHandle m_hText = {};
 	};
@@ -263,4 +262,6 @@ export namespace pragma::gui::types {
 		void ScheduleRenderUpdate(bool bFull = false);
 	};
 };
-export {REGISTER_ENUM_FLAGS(pragma::gui::types::WIText::Flags)}
+export {
+	REGISTER_ENUM_FLAGS(pragma::gui::types::WIText::Flags)
+}

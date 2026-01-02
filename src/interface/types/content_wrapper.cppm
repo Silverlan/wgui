@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2024 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.gui:types.content_wrapper;
 
 import :types.base;
@@ -19,7 +15,7 @@ export namespace pragma::gui {
 
 	namespace types {
 		class DLLWGUI WIContentWrapper : public WIBase {
-		public:
+		  public:
 			WIContentWrapper();
 
 			void SetPadding(const WIPadding &border);
@@ -35,7 +31,7 @@ export namespace pragma::gui {
 			void SetPaddingTopBottom(int32_t border);
 
 			virtual void SetSize(int x, int y) override;
-		private:
+		  private:
 			void UpdateChildElement();
 			WIPadding m_padding;
 			CallbackHandle m_onChildSizeChanged;

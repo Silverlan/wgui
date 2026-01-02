@@ -1,3 +1,0 @@
-LIBRARY "wgui"
-EXPORTS
-    ?MSAA_SAMPLE_COUNT@wGUI@gui@pragma@@3W4SampleCountFlags@prosper@@A

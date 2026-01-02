@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include "util_enum_flags.hpp"
 
 export module pragma.gui:types.text_entry_base;
@@ -88,4 +87,6 @@ export namespace pragma::gui::types {
 		void OnTextChanged(bool changedByUser);
 	};
 };
-export {REGISTER_ENUM_FLAGS(pragma::gui::types::WITextEntryBase::StateFlags)}
+export {
+	REGISTER_ENUM_FLAGS(pragma::gui::types::WITextEntryBase::StateFlags)
+}

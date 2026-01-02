@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include "util_enum_flags.hpp"
 
 export module pragma.gui:core;
@@ -273,4 +272,6 @@ export namespace pragma::gui {
 		void ClearSkin();
 	};
 };
-export {REGISTER_ENUM_FLAGS(pragma::gui::WGUI::ElementBuffer)}
+export {
+	REGISTER_ENUM_FLAGS(pragma::gui::WGUI::ElementBuffer)
+}

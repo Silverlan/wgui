@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
 module pragma.gui;
 
 import :shaders.text;
@@ -95,7 +93,8 @@ decltype(pragma::gui::shaders::ShaderTextRectColor::VERTEX_BINDING_COLOR) pragma
 decltype(pragma::gui::shaders::ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR) pragma::gui::shaders::ShaderTextRectColor::VERTEX_ATTRIBUTE_COLOR = {VERTEX_BINDING_COLOR, prosper::Format::R32G32B32A32_SFloat};
 pragma::gui::shaders::ShaderTextRectColor::ShaderTextRectColor(prosper::IPrContext &context, const std::string &identifier) : ShaderTextRectColor {context, identifier, "programs/gui/text_cheap_color", "programs/gui/text_cheap_color"} {}
 pragma::gui::shaders::ShaderTextRectColor::ShaderTextRectColor(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : ShaderTextRect {context, identifier, vsShader, fsShader, gsShader} {}
-bool pragma::gui::shaders::ShaderTextRectColor::RecordDraw(prosper::ShaderBindState &bindState, prosper::IBuffer &glyphBoundsIndexBuffer, prosper::IBuffer &colorBuffer, prosper::IDescriptorSet &descTextureSet, const PushConstants &pushConstants, uint32_t instanceCount, uint32_t testStencilLevel) const
+bool pragma::gui::shaders::ShaderTextRectColor::RecordDraw(prosper::ShaderBindState &bindState, prosper::IBuffer &glyphBoundsIndexBuffer, prosper::IBuffer &colorBuffer, prosper::IDescriptorSet &descTextureSet, const PushConstants &pushConstants, uint32_t instanceCount,
+  uint32_t testStencilLevel) const
 {
 	return RecordBindVertexBuffers(bindState, {&colorBuffer}, 2u) && ShaderTextRect::RecordDraw(bindState, glyphBoundsIndexBuffer, descTextureSet, pushConstants, instanceCount, testStencilLevel);
 }

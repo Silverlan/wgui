@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.gui:types.context_menu;
 
 import :handle;
@@ -13,7 +9,7 @@ import :types.rect;
 
 export namespace pragma::gui::types {
 	class DLLWGUI WIContextMenu : public WIRect {
-	public:
+	  public:
 		static void CloseContextMenu();
 		static WIContextMenu *OpenContextMenu();
 		static bool IsContextMenuOpen();
@@ -38,7 +34,7 @@ export namespace pragma::gui::types {
 		const std::vector<WIHandle> &GetSubMenues() const;
 		WIMenuItem *SelectItem(uint32_t idx);
 		std::optional<uint32_t> GetSelectedItemIndex() const;
-	private:
+	  private:
 		virtual void DoUpdate() override;
 		std::vector<WIHandle> m_items = {};
 		std::vector<WIHandle> m_subMenues = {};

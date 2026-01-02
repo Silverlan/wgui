@@ -1,18 +1,15 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
-#undef DrawState
-
 export module pragma.gui:types.line;
 
 import :buffer_base;
 import :draw_info;
 import :draw_state;
+
 export import pragma.util;
+
+#undef DrawState
 
 export namespace pragma::gui {
 	class DLLWGUI WILineBase {
@@ -27,7 +24,7 @@ export namespace pragma::gui {
 
 	namespace types {
 		class DLLWGUI WILine : public WIBufferBase, WILineBase {
-		private:
+		  private:
 			util::PVector2iProperty m_posStart = nullptr;
 			util::PVector2iProperty m_posEnd = nullptr;
 			Color m_colStart;
@@ -35,7 +32,7 @@ export namespace pragma::gui {
 			float m_dot;
 			std::shared_ptr<prosper::IBuffer> m_bufColor = nullptr;
 			void UpdateColorBuffer();
-		public:
+		  public:
 			WILine();
 			virtual ~WILine() override;
 			virtual void SetColor(float r, float g, float b, float a = 1.f) override;

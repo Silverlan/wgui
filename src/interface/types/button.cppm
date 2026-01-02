@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.gui:types.button;
 
 import :handle;
@@ -14,10 +10,10 @@ import pragma.string.unicode;
 
 export namespace pragma::gui::types {
 	class DLLWGUI WIButton : public WIBase {
-	protected:
+	  protected:
 		WIHandle m_text;
 		bool m_bPressed;
-	public:
+	  public:
 		WIButton();
 		virtual ~WIButton() override;
 		virtual void Initialize() override;

@@ -1,16 +1,12 @@
 // SPDX-FileCopyrightText: (c) 2025 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
-#undef DrawState
-
 export module pragma.gui:types.nine_slice_rect;
 
 export import :shaders.textured;
 export import :types.rect;
+
+#undef DrawState
 
 export namespace pragma::gui::types {
 	class DLLWGUI WI9SliceRectSegment : public WITexturedRect {

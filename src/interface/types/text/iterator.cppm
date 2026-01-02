@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include "util_enum_flags.hpp"
 
 export module pragma.gui:text_iterator;
@@ -130,4 +129,6 @@ export namespace pragma::gui {
 	};
 };
 
-export {REGISTER_ENUM_FLAGS(pragma::gui::CharIteratorBase::Flags)}
+export {
+	REGISTER_ENUM_FLAGS(pragma::gui::CharIteratorBase::Flags)
+}

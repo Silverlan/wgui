@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include "util_enum_flags.hpp"
 
 export module pragma.gui:types.base;
@@ -37,9 +36,9 @@ export namespace pragma::gui {
 	namespace types {
 		class WIRoot;
 		class DLLWGUI WIBase : public util::CallbackHandler {
-		public:
+		  public:
 			friend WGUI;
-		public:
+		  public:
 			enum class StateFlags : uint64_t {
 				None = 0u,
 				AcceptMouseInputBit = 1u,
@@ -373,7 +372,7 @@ export namespace pragma::gui {
 
 			// Handles
 			WIHandle GetHandle() const;
-		protected:
+		  protected:
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
 			Mat4 GetAbsolutePose(float x, float y) const;
 			Mat4 GetRelativePose(float x, float y) const;
@@ -447,7 +446,7 @@ export namespace pragma::gui {
 			virtual void OnRemove();
 
 			bool ShouldThink() const;
-		private:
+		  private:
 			void UpdateThink();
 			void UpdateMouseInBounds(const Vector2 &relPos, bool forceFalse);
 			WIBase *FindDeepestChild(const std::function<bool(const WIBase &)> &predInspect, const std::function<bool(const WIBase &)> &predValidCandidate);
@@ -458,7 +457,7 @@ export namespace pragma::gui {
 			util::PBoolProperty m_bVisible = nullptr;
 			util::PBoolProperty m_bHasFocus = nullptr;
 			util::PVector2Property m_scale = nullptr;
-		private:
+		  private:
 			std::vector<std::string> m_styleClasses;
 			WISkin *m_skin = nullptr;
 			ChronoTimePoint m_clickStart;

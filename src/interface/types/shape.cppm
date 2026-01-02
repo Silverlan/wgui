@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include "util_enum_flags.hpp"
 
 #undef DrawState
@@ -117,4 +116,6 @@ export namespace pragma::gui::types {
 		void InitializeTextureLoadCallback(const std::shared_ptr<material::Texture> &texture);
 	};
 };
-export {REGISTER_ENUM_FLAGS(pragma::gui::types::WITexturedShape::StateFlags)}
+export {
+	REGISTER_ENUM_FLAGS(pragma::gui::types::WITexturedShape::StateFlags)
+}

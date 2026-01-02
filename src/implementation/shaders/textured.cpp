@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
 module pragma.gui;
 
 import :shaders.textured;
@@ -21,8 +19,8 @@ pragma::gui::shaders::ShaderTextured::ShaderTextured(prosper::IPrContext &contex
 
 pragma::gui::shaders::ShaderTextured::ShaderTextured(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
 
-bool pragma::gui::shaders::ShaderTextured::RecordDraw(prosper::ShaderBindState &bindState, const std::shared_ptr<prosper::IBuffer> &vertBuffer, const std::shared_ptr<prosper::IBuffer> &uvBuffer, uint32_t vertCount, prosper::IDescriptorSet &descSetTexture, const PushConstants &pushConstants,
-  uint32_t testStencilLevel) const
+bool pragma::gui::shaders::ShaderTextured::RecordDraw(prosper::ShaderBindState &bindState, const std::shared_ptr<prosper::IBuffer> &vertBuffer, const std::shared_ptr<prosper::IBuffer> &uvBuffer, uint32_t vertCount, prosper::IDescriptorSet &descSetTexture,
+  const PushConstants &pushConstants, uint32_t testStencilLevel) const
 {
 	if(RecordBindVertexBuffers(bindState, {vertBuffer.get(), uvBuffer.get()}) == false || RecordBindDescriptorSets(bindState, {&descSetTexture}) == false || RecordPushConstants(bindState, pushConstants) == false || RecordSetStencilReference(bindState, testStencilLevel) == false
 	  || ShaderGraphics::RecordDraw(bindState, vertCount) == false)
