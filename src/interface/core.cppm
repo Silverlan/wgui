@@ -102,11 +102,13 @@ export namespace pragma::gui {
 		template<class TElement>
 		void Setup(Element &el, Element *parent = nullptr)
 		{
-			std::string classname;
 			auto &map = GetTypeFactory();
-			if(map.GetClassName(typeid(TElement), &classname))
-				SetupElement(el, classname);
-			RegisterElement(el, classname, parent);
+			auto className = map.FindClassName(typeid(TElement));
+			if(className)
+				SetupElement(el, *className);
+			else
+				className = "";
+			RegisterElement(el, *className, parent);
 		}
 		void RegisterElement(Element &el, const std::string &className, Element *parent = nullptr);
 		Element *Create(std::string classname, Element *parent = nullptr);

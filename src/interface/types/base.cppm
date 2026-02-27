@@ -118,6 +118,7 @@ export namespace pragma::gui {
 			void TrapFocus(bool b);
 			bool IsFocusTrapped();
 			virtual std::string GetClass() const;
+			TypeId GetTypeId() const;
 			void CallOnRemove(CallbackHandle callback);
 			// Anything with a higher z-position will be drawn in front of everything with a lower one.
 			virtual void SetZPos(int zpos);

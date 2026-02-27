@@ -351,6 +351,13 @@ void pragma::gui::types::WIBase::TrapFocus(bool b)
 }
 bool pragma::gui::types::WIBase::IsFocusTrapped() { return math::is_flag_set(m_stateFlags, StateFlags::TrapFocusBit); }
 std::string pragma::gui::types::WIBase::GetClass() const { return m_class; }
+pragma::gui::TypeId pragma::gui::types::WIBase::GetTypeId() const
+{
+	auto typeId = WGUI::GetInstance().GetTypeFactory().FindTypeId(GetClass());
+	if(typeId)
+		return *typeId;
+	return std::numeric_limits<TypeId>::max();
+}
 void pragma::gui::types::WIBase::CallOnRemove(CallbackHandle callback) { AddCallback("OnRemove", callback); }
 void pragma::gui::types::WIBase::SetZPos(int zpos)
 {
