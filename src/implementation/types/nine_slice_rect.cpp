@@ -145,16 +145,42 @@ std::pair<int32_t, int32_t> pragma::gui::types::WI9SliceRect::GetSegmentSize(Seg
 	return {w, h};
 }
 
-void pragma::gui::types::WI9SliceRect::UpdateSegments()
+std::pair<int32_t, int32_t> pragma::gui::types::WI9SliceRect::GetSegmentSize(Segment segment) const
+{
+	uint32_t imgWidth;
+	uint32_t imgHeight;
+	if(!GetImageSize(imgWidth, imgHeight))
+		return {0, 0};
+	return GetSegmentSize(segment, imgWidth, imgHeight);
+}
+std::pair<int32_t, int32_t> pragma::gui::types::WI9SliceRect::GetSegmentOffset(Segment segment) const
+{
+	uint32_t imgWidth;
+	uint32_t imgHeight;
+	if(!GetImageSize(imgWidth, imgHeight))
+		return {0, 0};
+	return GetSegmentOffset(segment, imgWidth, imgHeight);
+}
+
+bool pragma::gui::types::WI9SliceRect::GetImageSize(uint32_t &w, uint32_t &h) const
 {
 	if(!m_material)
-		return;
+		return false;
 	auto *albedoMap = m_material->GetAlbedoMap();
 	if(!albedoMap || !albedoMap->texture)
-		return;
+		return false;
 	auto &tex = *static_cast<material::Texture *>(albedoMap->texture.get());
-	uint32_t imgWidth = tex.GetWidth();
-	uint32_t imgHeight = tex.GetHeight();
+	w = tex.GetWidth();
+	h = tex.GetHeight();
+	return true;
+}
+
+void pragma::gui::types::WI9SliceRect::UpdateSegments()
+{
+	uint32_t imgWidth;
+	uint32_t imgHeight;
+	if(!GetImageSize(imgWidth, imgHeight))
+		return;
 	Vector2 offset {0.f, 0.f};
 	Vector2 scale {0.f, 0.f};
 

@@ -51,7 +51,10 @@ export namespace pragma::gui::types {
 		void SetMaterial(const std::string &matPath);
 		void SetMaterial(material::Material &mat);
 		material::Material *GetMaterial();
+		std::pair<int32_t, int32_t> GetSegmentSize(Segment segment) const;
+		std::pair<int32_t, int32_t> GetSegmentOffset(Segment segment) const;
 	  private:
+		bool GetImageSize(uint32_t &w, uint32_t &h) const;
 		std::pair<int32_t, int32_t> GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		std::pair<int32_t, int32_t> GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
 		std::tuple<float, float, float, float> GetSegmentAnchor(Segment segment) const;
