@@ -49,10 +49,8 @@ pragma::gui::types::WIBase::WIBase()
 	m_pos->AddCallback([this](std::reference_wrapper<const Vector2i> oldPos, std::reference_wrapper<const Vector2i> pos) {
 		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
-		if(math::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false) {
-			UpdateAnchorTopLeftPixelOffsets();
-			UpdateAnchorBottomRightPixelOffsets();
-		}
+		if(math::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false)
+			UpdateAnchorOffsets();
 		CallCallbacks<void>("SetPos");
 
 		UpdateParentAutoSizeToContents();
@@ -61,7 +59,7 @@ pragma::gui::types::WIBase::WIBase()
 		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
 		if(math::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false)
-			UpdateAnchorBottomRightPixelOffsets();
+			UpdateAnchorOffsets(true);
 		CallCallbacks<void>("SetSize");
 		for(auto &hChild : m_children) {
 			if(is_valid(hChild) == false)
@@ -1501,37 +1499,51 @@ void pragma::gui::types::WIBase::AnchorWithMargin(uint32_t left, uint32_t top, u
 	SetAnchor(0.f, 0.f, 1.f, 1.f);
 }
 void pragma::gui::types::WIBase::AnchorWithMargin(uint32_t margin) { AnchorWithMargin(margin, margin, margin, margin); }
+void pragma::gui::types::WIBase::SetAnchorEdgeEnabled(Anchor::Edge edge, bool enabled)
+{
+	if(!m_anchor)
+		return;
+	m_anchor->SetEdgeEnabled(edge, enabled);
+}
+bool pragma::gui::types::WIBase::IsAnchorEdgeEnabled(Anchor::Edge edge) const
+{
+	if(!m_anchor)
+		return false;
+	return m_anchor->IsEdgeEnabled(edge);
+}
+void pragma::gui::types::WIBase::InitializeAnchor()
+{
+	if(!m_anchor.has_value() || m_anchor->IsInitialized())
+		return;
+	m_anchor->SetInitialized();
+
+	UpdateAnchorOffsets();
+	UpdateAnchorTransform();
+}
 void pragma::gui::types::WIBase::SetAnchor(float left, float top, float right, float bottom, uint32_t refWidth, uint32_t refHeight)
 {
-	m_anchor = WIAnchor {};
+	m_anchor = Anchor {};
 	m_anchor->left = left;
 	m_anchor->right = right;
 	m_anchor->top = top;
 	m_anchor->bottom = bottom;
-	m_anchor->referenceWidth = refWidth;
-	m_anchor->referenceHeight = refHeight;
+	m_anchor->SetEdgeEnabled(Anchor::Edge::Left);
+	m_anchor->SetEdgeEnabled(Anchor::Edge::Right);
+	m_anchor->SetEdgeEnabled(Anchor::Edge::Top);
+	m_anchor->SetEdgeEnabled(Anchor::Edge::Bottom);
 
-	if(m_anchor.has_value() && m_anchor->initialized == false) {
-		m_anchor->initialized = true;
-
-		UpdateAnchorTopLeftPixelOffsets();
-		UpdateAnchorBottomRightPixelOffsets();
-		UpdateAnchorTransform();
+	InitializeAnchor();
+}
+void pragma::gui::types::WIBase::UpdateAnchorOffsets(bool bottomRightOnly)
+{
+	if(m_anchor.has_value() == false || m_anchor->IsInitialized() == false)
+		return;
+	auto anchorBounds = GetAnchorBounds(m_parent ? m_parent->GetWidth() : GetWidth(), m_parent ? m_parent->GetHeight() : GetHeight());
+	if(bottomRightOnly == false) {
+		m_anchor->pxOffsetLeft = GetLeft() - anchorBounds.first.x;
+		m_anchor->pxOffsetTop = GetTop() - anchorBounds.first.y;
 	}
-}
-void pragma::gui::types::WIBase::UpdateAnchorTopLeftPixelOffsets()
-{
-	if(m_anchor.has_value() == false || m_anchor->initialized == false)
-		return;
-	auto anchorBounds = GetAnchorBounds(m_anchor->referenceWidth, m_anchor->referenceHeight);
-	m_anchor->pxOffsetLeft = GetLeft() - anchorBounds.first.x;
-	m_anchor->pxOffsetTop = GetTop() - anchorBounds.first.y;
-}
-void pragma::gui::types::WIBase::UpdateAnchorBottomRightPixelOffsets()
-{
-	if(m_anchor.has_value() == false || m_anchor->initialized == false)
-		return;
-	auto anchorBounds = GetAnchorBounds(m_anchor->referenceWidth, m_anchor->referenceHeight);
+
 	m_anchor->pxOffsetRight = GetRight() - anchorBounds.second.x;
 	m_anchor->pxOffsetBottom = GetBottom() - anchorBounds.second.y;
 }
@@ -1542,33 +1554,30 @@ void pragma::gui::types::WIBase::SetAnchor(float left, float top, float right, f
 	auto h = pParent ? pParent->GetHeight() : GetHeight();
 	SetAnchor(left, top, right, bottom, w, h);
 }
-void pragma::gui::types::WIBase::SetAnchorLeft(float f)
+void pragma::gui::types::WIBase::SetAnchor(Anchor::Edge edge, float f)
 {
 	if(m_anchor.has_value() == false)
-		m_anchor = WIAnchor {};
-	m_anchor->initialized = false;
-	m_anchor->left = f;
-}
-void pragma::gui::types::WIBase::SetAnchorRight(float f)
-{
-	if(m_anchor.has_value() == false)
-		m_anchor = WIAnchor {};
-	m_anchor->initialized = false;
-	m_anchor->right = f;
-}
-void pragma::gui::types::WIBase::SetAnchorTop(float f)
-{
-	if(m_anchor.has_value() == false)
-		m_anchor = WIAnchor {};
-	m_anchor->initialized = false;
-	m_anchor->top = f;
-}
-void pragma::gui::types::WIBase::SetAnchorBottom(float f)
-{
-	if(m_anchor.has_value() == false)
-		m_anchor = WIAnchor {};
-	m_anchor->initialized = false;
-	m_anchor->bottom = f;
+		m_anchor = Anchor {};
+	m_anchor->SetInitialized(false);
+	m_anchor->SetEdgeEnabled(edge, true);
+	switch(edge) {
+	case Anchor::Edge::Left:
+		m_anchor->left = f;
+		break;
+	case Anchor::Edge::Right:
+		m_anchor->right = f;
+		break;
+	case Anchor::Edge::Top:
+		m_anchor->top = f;
+		break;
+	case Anchor::Edge::Bottom:
+		m_anchor->bottom = f;
+		break;
+	}
+	InitializeAnchor();
+
+	UpdateAnchorOffsets();
+	UpdateAnchorTransform();
 }
 bool pragma::gui::types::WIBase::GetAnchor(float &outLeft, float &outTop, float &outRight, float &outBottom) const
 {
@@ -1590,11 +1599,39 @@ void pragma::gui::types::WIBase::UpdateAnchorTransform()
 	auto *pParent = GetParent();
 	if(pParent == nullptr || m_anchor.has_value() == false)
 		return;
-	auto szParent = pParent->GetSize();
 	auto anchorBounds = GetAnchorBounds();
 
-	auto elMin = Vector2 {anchorBounds.first.x + m_anchor->pxOffsetLeft, anchorBounds.first.y + m_anchor->pxOffsetTop};
-	auto elMax = Vector2 {anchorBounds.second.x + m_anchor->pxOffsetRight, anchorBounds.second.y + m_anchor->pxOffsetBottom};
+	auto curPos = GetPos();
+	auto curSize = GetSize();
+	auto elMin = Vector2 {curPos.x, curPos.y};
+	auto elMax = Vector2 {curPos.x + curSize.x, curPos.y + curSize.y};
+
+	if(m_anchor->IsEdgeEnabled(Anchor::Edge::Left) && m_anchor->IsEdgeEnabled(Anchor::Edge::Right)) {
+		elMin.x = anchorBounds.first.x + m_anchor->pxOffsetLeft;
+		elMax.x = anchorBounds.second.x + m_anchor->pxOffsetRight;
+	}
+	else if(m_anchor->IsEdgeEnabled(Anchor::Edge::Left)) {
+		elMin.x = anchorBounds.first.x + m_anchor->pxOffsetLeft;
+		elMax.x = elMin.x + curSize.x;
+	}
+	else if(m_anchor->IsEdgeEnabled(Anchor::Edge::Right)) {
+		elMax.x = anchorBounds.second.x + m_anchor->pxOffsetRight;
+		elMin.x = elMax.x - curSize.x;
+	}
+
+	if(m_anchor->IsEdgeEnabled(Anchor::Edge::Top) && m_anchor->IsEdgeEnabled(Anchor::Edge::Bottom)) {
+		elMin.y = anchorBounds.first.y + m_anchor->pxOffsetTop;
+		elMax.y = anchorBounds.second.y + m_anchor->pxOffsetBottom;
+	}
+	else if(m_anchor->IsEdgeEnabled(Anchor::Edge::Top)) {
+		elMin.y = anchorBounds.first.y + m_anchor->pxOffsetTop;
+		elMax.y = elMin.y + curSize.y;
+	}
+	else if(m_anchor->IsEdgeEnabled(Anchor::Edge::Bottom)) {
+		elMax.y = anchorBounds.second.y + m_anchor->pxOffsetBottom;
+		elMin.y = elMax.y - curSize.y;
+	}
+
 	auto sz = elMax - elMin;
 	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform);
 	SetPos(elMin);

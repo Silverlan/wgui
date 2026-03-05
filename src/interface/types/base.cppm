@@ -317,12 +317,11 @@ export namespace pragma::gui {
 			void ClearAnchor();
 			void SetAnchor(float left, float top, float right, float bottom);
 			void SetAnchor(float left, float top, float right, float bottom, uint32_t refWidth, uint32_t refHeight);
+			void SetAnchorEdgeEnabled(Anchor::Edge edge, bool enabled);
+			bool IsAnchorEdgeEnabled(Anchor::Edge edge) const;
 			void AnchorWithMargin(uint32_t left, uint32_t top, uint32_t right, uint32_t bottom);
 			void AnchorWithMargin(uint32_t margin);
-			void SetAnchorLeft(float f);
-			void SetAnchorRight(float f);
-			void SetAnchorTop(float f);
-			void SetAnchorBottom(float f);
+			void SetAnchor(Anchor::Edge edge, float f);
 			bool GetAnchor(float &outLeft, float &outTop, float &outRight, float &outBottom) const;
 			bool HasAnchor() const;
 			std::pair<Vector2, Vector2> GetAnchorBounds() const;
@@ -374,6 +373,7 @@ export namespace pragma::gui {
 			// Handles
 			WIHandle GetHandle() const;
 		  protected:
+			void InitializeAnchor();
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
 			Mat4 GetAbsolutePose(float x, float y) const;
 			Mat4 GetRelativePose(float x, float y) const;
@@ -393,8 +393,7 @@ export namespace pragma::gui {
 			void UpdateVisibility();
 			void UpdateParentThink();
 			void UpdateAnchorTransform();
-			void UpdateAnchorTopLeftPixelOffsets();
-			void UpdateAnchorBottomRightPixelOffsets();
+			void UpdateAnchorOffsets(bool bottomRightOnly = false);
 			uint64_t m_index = std::numeric_limits<uint64_t>::max();
 			size_t m_lastThinkUpdateIndex = std::numeric_limits<size_t>::max();
 			uint32_t m_depth = 0;
@@ -406,7 +405,7 @@ export namespace pragma::gui {
 			std::string m_name;
 			std::string m_toolTip;
 			std::unique_ptr<Mat4> m_rotationMatrix = nullptr;
-			std::optional<WIAnchor> m_anchor = {};
+			std::optional<Anchor> m_anchor = {};
 			std::unordered_map<std::string, std::shared_ptr<WIAttachment>> m_attachments = {};
 			std::unique_ptr<WIFadeInfo> m_fade = nullptr;
 			platform::Cursor::Shape m_cursor = {};
