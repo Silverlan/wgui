@@ -374,6 +374,8 @@ export namespace pragma::gui {
 			WIHandle GetHandle() const;
 		  protected:
 			void InitializeAnchor();
+			void UpdateCenterToParent();
+			void UpdateAlignToParent();
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
 			Mat4 GetAbsolutePose(float x, float y) const;
 			Mat4 GetRelativePose(float x, float y) const;
@@ -409,17 +411,10 @@ export namespace pragma::gui {
 			std::unordered_map<std::string, std::shared_ptr<WIAttachment>> m_attachments = {};
 			std::unique_ptr<WIFadeInfo> m_fade = nullptr;
 			platform::Cursor::Shape m_cursor = {};
-			CallbackHandle m_callbackFocusGained = {};
-			CallbackHandle m_callbackFocusKilled = {};
 			Mat4 m_mvpLast = umat::identity();
 			float m_localAlpha = 1.f;
 			Vector4 m_colorLast = {0.f, 0.f, 0.f, 1.f};
 			int m_zpos = -1;
-			CallbackHandle m_cbAutoAlign = {};
-			CallbackHandle m_cbAutoCenterX = {};
-			CallbackHandle m_cbAutoCenterXOwn = {};
-			CallbackHandle m_cbAutoCenterY = {};
-			CallbackHandle m_cbAutoCenterYOwn = {};
 			int m_lastMouseX = 0;
 			int m_lastMouseY = 0;
 			std::vector<WIHandle> m_children;

@@ -66,7 +66,8 @@ export namespace pragma::gui::types {
 			Cache = FullUpdateScheduled << 1u,
 			TextDirty = Cache << 1u,
 			ApplySubTextTags = TextDirty << 1u,
-			HideText = ApplySubTextTags << 1u // If enabled, text will be rendered as '*'
+			HideText = ApplySubTextTags << 1u, // If enabled, text will be rendered as '*'
+			AutoSizeToText = HideText << 1u,
 		};
 		enum class TagType : uint32_t { None = 0u, Color, Link, Underline, Tooltip, Template };
 		struct DLLWGUI LineInfo {
@@ -221,7 +222,6 @@ export namespace pragma::gui::types {
 		std::shared_ptr<const FontInfo> m_font;
 		int m_breakHeight;
 		AutoBreak m_autoBreak;
-		bool m_bAutoSizeToText = false;
 		uint32_t m_tabSpaceCount = 4u;
 
 		// Shadow
@@ -235,7 +235,7 @@ export namespace pragma::gui::types {
 		std::shared_ptr<prosper::BlurSet> m_shadowBlurSet = nullptr;
 		//
 
-		Flags m_flags = Flags::FullUpdateScheduled;
+		Flags m_flags = static_cast<Flags>(math::to_integral(Flags::FullUpdateScheduled) | math::to_integral(Flags::AutoSizeToText));
 		unsigned int m_wTexture;
 		unsigned int m_hTexture;
 

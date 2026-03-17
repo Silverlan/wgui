@@ -123,8 +123,8 @@ pragma::gui::types::WIText::~WIText()
 	DestroyBlur();
 }
 
-void pragma::gui::types::WIText::SetAutoSizeToText(bool bAutoSize) { m_bAutoSizeToText = bAutoSize; }
-bool pragma::gui::types::WIText::ShouldAutoSizeToText() const { return m_bAutoSizeToText; }
+void pragma::gui::types::WIText::SetAutoSizeToText(bool bAutoSize) { math::set_flag(m_flags, Flags::AutoSizeToText, bAutoSize); }
+bool pragma::gui::types::WIText::ShouldAutoSizeToText() const { return math::is_flag_set(m_flags, Flags::AutoSizeToText); }
 void pragma::gui::types::WIText::UpdateTags() { SetFlag(Flags::ApplySubTextTags); }
 
 std::string pragma::gui::types::WIText::GetDebugInfo() const { return "Text: " + GetText().cpp_str(); }

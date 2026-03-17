@@ -61,12 +61,25 @@ pragma::gui::types::WIBase::WIBase()
 		if(math::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false)
 			UpdateAnchorOffsets(true);
 		CallCallbacks<void>("SetSize");
+		auto hasAutoAlignChild = false;
 		for(auto &hChild : m_children) {
 			if(is_valid(hChild) == false)
 				continue;
 			hChild->UpdateAnchorTransform();
+			hChild->UpdateCenterToParent();
+
+			if(math::is_flag_set(hChild->m_stateFlags, StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit))
+				hasAutoAlignChild = true;
 		}
 
+		UpdateCenterToParent();
+		if(hasAutoAlignChild) {
+			for(auto &hChild : m_children) {
+				if(is_valid(hChild) == false)
+					continue;
+				hChild->UpdateAlignToParent();
+			}
+		}
 		UpdateParentAutoSizeToContents();
 	});
 	m_bVisible->AddCallback([this](std::reference_wrapper<const bool> oldVisible, std::reference_wrapper<const bool> visible) {
@@ -77,21 +90,36 @@ pragma::gui::types::WIBase::WIBase()
 }
 pragma::gui::types::WIBase::~WIBase()
 {
-	if(m_cbAutoAlign.IsValid())
-		m_cbAutoAlign.Remove();
-	if(m_cbAutoCenterX.IsValid())
-		m_cbAutoCenterX.Remove();
-	if(m_cbAutoCenterXOwn.IsValid())
-		m_cbAutoCenterXOwn.Remove();
-	if(m_cbAutoCenterY.IsValid())
-		m_cbAutoCenterY.Remove();
-	if(m_cbAutoCenterYOwn.IsValid())
-		m_cbAutoCenterYOwn.Remove();
 	for(unsigned int i = 0; i < m_children.size(); i++) {
 		if(m_children[i].IsValid())
 			m_children[i]->Remove();
 	}
 	m_fade = nullptr;
+}
+
+void pragma::gui::types::WIBase::UpdateCenterToParent()
+{
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit))
+		CenterToParentX();
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit))
+		CenterToParentY();
+}
+void pragma::gui::types::WIBase::UpdateAlignToParent()
+{
+	if(!math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit))
+		return;
+	auto *parent = GetParent();
+	if(parent == nullptr)
+		return;
+	auto &pos = GetPos();
+	auto size = GetSize();
+	if((math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) == true && pos.x != 0) || (math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit) == true && pos.y != 0))
+		SetPos(0, 0);
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) == true)
+		size.x = parent->GetWidth();
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit) == true)
+		size.y = parent->GetHeight();
+	SetSize(size);
 }
 
 void pragma::gui::types::WIBase::SetLocalRenderTransform(const math::ScaledTransform &transform) { m_localRenderTransform = std::make_unique<math::ScaledTransform>(transform); }
@@ -209,82 +237,22 @@ void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY, bool bRe
 		return;
 	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentXBit, bX);
 	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentYBit, bY);
-	if(m_cbAutoAlign.IsValid())
-		m_cbAutoAlign.Remove();
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) == false && math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit) == false)
-		return;
-	auto *parent = GetParent();
-	if(parent == nullptr)
-		return;
-	auto hEl = GetHandle();
-	m_cbAutoAlign = parent->AddCallback("SetSize", FunctionCallback<>::Create([hEl]() mutable {
-		if(!is_valid(hEl))
-			return;
-		auto *p = hEl.get();
-		auto *parent = p->GetParent();
-		if(parent == nullptr)
-			return;
-		auto &pos = p->GetPos();
-		auto size = p->GetSize();
-		if((math::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentXBit) == true && pos.x != 0) || (math::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentYBit) == true && pos.y != 0))
-			p->SetPos(0, 0);
-		if(math::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentXBit) == true)
-			size.x = parent->GetWidth();
-		if(math::is_flag_set(p->m_stateFlags, StateFlags::AutoAlignToParentYBit) == true)
-			size.y = parent->GetHeight();
-		p->SetSize(size);
-	}));
-	m_cbAutoAlign(this);
 }
 void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b, bool bReload)
 {
 	if(b == math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) && (bReload == false || b == false))
 		return;
-	if(m_cbAutoCenterX.IsValid())
-		m_cbAutoCenterX.Remove();
-	if(m_cbAutoCenterXOwn.IsValid())
-		m_cbAutoCenterXOwn.Remove();
 	math::set_flag(m_stateFlags, StateFlags::AutoCenterToParentXBit, b);
-	if(b == false)
-		return;
-	WIBase *parent = GetParent();
-	if(parent == nullptr)
-		return;
-	auto hEl = GetHandle();
-	auto cb = [hEl]() mutable {
-		if(!is_valid(hEl))
-			return;
-		auto *p = hEl.get();
-		p->CenterToParentX();
-	};
-	m_cbAutoCenterX = parent->AddCallback("SetSize", FunctionCallback<>::Create(cb));
-	m_cbAutoCenterXOwn = AddCallback("SetSize", FunctionCallback<>::Create(cb));
-	m_cbAutoCenterX(this);
+	if(b)
+		CenterToParentX();
 }
 void pragma::gui::types::WIBase::SetAutoCenterToParentY(bool b, bool bReload)
 {
 	if(b == math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) && (bReload == false || b == false))
 		return;
-	if(m_cbAutoCenterY.IsValid())
-		m_cbAutoCenterY.Remove();
-	if(m_cbAutoCenterYOwn.IsValid())
-		m_cbAutoCenterYOwn.Remove();
 	math::set_flag(m_stateFlags, StateFlags::AutoCenterToParentYBit, b);
-	if(b == false)
-		return;
-	WIBase *parent = GetParent();
-	if(parent == nullptr)
-		return;
-	auto hEl = GetHandle();
-	auto cb = [hEl]() mutable {
-		if(!is_valid(hEl))
-			return;
-		auto *p = hEl.get();
-		p->CenterToParentY();
-	};
-	m_cbAutoCenterY = parent->AddCallback("SetSize", FunctionCallback<>::Create(cb));
-	m_cbAutoCenterYOwn = AddCallback("SetSize", FunctionCallback<>::Create(cb));
-	m_cbAutoCenterY(this);
+	if(b)
+		CenterToParentY();
 }
 void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY) { SetAutoAlignToParent(bX, bY, false); }
 void pragma::gui::types::WIBase::SetAutoAlignToParent(bool b) { SetAutoAlignToParent(b, b, false); }
