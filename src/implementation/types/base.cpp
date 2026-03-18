@@ -66,13 +66,11 @@ pragma::gui::types::WIBase::WIBase()
 			if(is_valid(hChild) == false)
 				continue;
 			hChild->UpdateAnchorTransform();
-			hChild->UpdateCenterToParent();
 
 			if(math::is_flag_set(hChild->m_stateFlags, StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit))
 				hasAutoAlignChild = true;
 		}
 
-		UpdateCenterToParent();
 		if(HasPivot()) {
 			// Restore pivot position
 			SetPivotPos(Vector2 {GetPos()} + GetPivotOffset(oldSize.get()));
@@ -99,14 +97,6 @@ pragma::gui::types::WIBase::~WIBase()
 			m_children[i]->Remove();
 	}
 	m_fade = nullptr;
-}
-
-void pragma::gui::types::WIBase::UpdateCenterToParent()
-{
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit))
-		CenterToParentX();
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit))
-		CenterToParentY();
 }
 void pragma::gui::types::WIBase::UpdateAlignToParent()
 {
@@ -242,21 +232,42 @@ void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY, bool bRe
 	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentXBit, bX);
 	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentYBit, bY);
 }
+void pragma::gui::types::WIBase::UpdateCenterToParentPivot()
+{
+	Vector2 pivot {0.f, 0.f};
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit))
+		pivot.x = 0.5f;
+	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit))
+		pivot.y = 0.5f;
+	SetPivot(pivot);
+}
 void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b, bool bReload)
 {
 	if(b == math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) && (bReload == false || b == false))
 		return;
 	math::set_flag(m_stateFlags, StateFlags::AutoCenterToParentXBit, b);
-	if(b)
+	UpdateCenterToParentPivot();
+	SetAnchorEdgeEnabled(Anchor::Edge::Left, false);
+	SetAnchorEdgeEnabled(Anchor::Edge::Right, false);
+	if(b) {
 		CenterToParentX();
+		SetAnchor(Anchor::Edge::Left, 0.5f);
+		SetAnchor(Anchor::Edge::Right, 0.5f);
+	}
 }
 void pragma::gui::types::WIBase::SetAutoCenterToParentY(bool b, bool bReload)
 {
 	if(b == math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) && (bReload == false || b == false))
 		return;
 	math::set_flag(m_stateFlags, StateFlags::AutoCenterToParentYBit, b);
-	if(b)
+	UpdateCenterToParentPivot();
+	SetAnchorEdgeEnabled(Anchor::Edge::Top, false);
+	SetAnchorEdgeEnabled(Anchor::Edge::Bottom, false);
+	if(b) {
 		CenterToParentY();
+		SetAnchor(Anchor::Edge::Top, 0.5f);
+		SetAnchor(Anchor::Edge::Bottom, 0.5f);
+	}
 }
 void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY) { SetAutoAlignToParent(bX, bY, false); }
 void pragma::gui::types::WIBase::SetAutoAlignToParent(bool b) { SetAutoAlignToParent(b, b, false); }
@@ -1617,6 +1628,7 @@ void pragma::gui::types::WIBase::SetPivot(const Vector2 &pivot)
 	auto pivotEnabled = math::abs(m_pivot.x) > 0.0001f || math::abs(m_pivot.y) > 0.0001f;
 	math::set_flag(m_stateFlags, StateFlags::HasPivot, pivotEnabled);
 }
+void pragma::gui::types::WIBase::SetPivot(float x, float y) { SetPivot(Vector2 {x, y}); }
 const Vector2 &pragma::gui::types::WIBase::GetPivot() const { return m_pivot; }
 Vector2 pragma::gui::types::WIBase::GetPivotOffset(const Vector2i &size) const { return Vector2 {m_pivot.x * size.x, m_pivot.y * size.y}; }
 Vector2 pragma::gui::types::WIBase::GetPivotOffset() const { return GetPivotOffset(GetSize()); }

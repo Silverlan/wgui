@@ -329,6 +329,7 @@ export namespace pragma::gui {
 			std::pair<Vector2, Vector2> GetAnchorBounds(uint32_t refWidth, uint32_t refHeight) const;
 
 			void SetPivot(const Vector2 &pivot);
+			void SetPivot(float x, float y);
 			const Vector2 &GetPivot() const;
 			Vector2 GetPivotOffset() const;
 			void SetPivotPos(const Vector2 &pos);
@@ -383,7 +384,7 @@ export namespace pragma::gui {
 		  protected:
 			Vector2 GetPivotOffset(const Vector2i &size) const;
 			void InitializeAnchor();
-			void UpdateCenterToParent();
+			void UpdateCenterToParentPivot();
 			void UpdateAlignToParent();
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
 			Mat4 GetAbsolutePose(float x, float y) const;
