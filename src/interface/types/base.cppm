@@ -77,6 +77,7 @@ export namespace pragma::gui {
 				IsInThinkingList = SkinCallbacksEnabled << 1u,
 				FileDropInputEnabled = IsInThinkingList << 1u,
 				FileDropHover = FileDropInputEnabled << 1u,
+				HasPivot = FileDropHover << 1u,
 			};
 			static void CalcBounds(const Mat4 &mat, int32_t w, int32_t h, Vector2i &outPos, Vector2i &outSize);
 
@@ -327,6 +328,13 @@ export namespace pragma::gui {
 			std::pair<Vector2, Vector2> GetAnchorBounds() const;
 			std::pair<Vector2, Vector2> GetAnchorBounds(uint32_t refWidth, uint32_t refHeight) const;
 
+			void SetPivot(const Vector2 &pivot);
+			const Vector2 &GetPivot() const;
+			Vector2 GetPivotOffset() const;
+			void SetPivotPos(const Vector2 &pos);
+			Vector2 GetPivotPos() const;
+			bool HasPivot() const;
+
 			uint32_t GetDepth() const { return m_depth; }
 
 			WIBase *Wrap(const std::string &wrapperClass);
@@ -373,6 +381,7 @@ export namespace pragma::gui {
 			// Handles
 			WIHandle GetHandle() const;
 		  protected:
+			Vector2 GetPivotOffset(const Vector2i &size) const;
 			void InitializeAnchor();
 			void UpdateCenterToParent();
 			void UpdateAlignToParent();
@@ -408,6 +417,7 @@ export namespace pragma::gui {
 			std::string m_toolTip;
 			std::unique_ptr<Mat4> m_rotationMatrix = nullptr;
 			std::optional<Anchor> m_anchor = {};
+			Vector2 m_pivot {0.f, 0.f};
 			std::unordered_map<std::string, std::shared_ptr<WIAttachment>> m_attachments = {};
 			std::unique_ptr<WIFadeInfo> m_fade = nullptr;
 			platform::Cursor::Shape m_cursor = {};

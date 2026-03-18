@@ -73,6 +73,10 @@ pragma::gui::types::WIBase::WIBase()
 		}
 
 		UpdateCenterToParent();
+		if(HasPivot()) {
+			// Restore pivot position
+			SetPivotPos(Vector2 {GetPos()} + GetPivotOffset(oldSize.get()));
+		}
 		if(hasAutoAlignChild) {
 			for(auto &hChild : m_children) {
 				if(is_valid(hChild) == false)
@@ -1507,13 +1511,14 @@ void pragma::gui::types::WIBase::UpdateAnchorOffsets(bool bottomRightOnly)
 	if(m_anchor.has_value() == false || m_anchor->IsInitialized() == false)
 		return;
 	auto anchorBounds = GetAnchorBounds(m_parent ? m_parent->GetWidth() : GetWidth(), m_parent ? m_parent->GetHeight() : GetHeight());
+	auto &pos = GetPos();
 	if(bottomRightOnly == false) {
-		m_anchor->pxOffsetLeft = GetLeft() - anchorBounds.first.x;
-		m_anchor->pxOffsetTop = GetTop() - anchorBounds.first.y;
+		m_anchor->pxOffsetLeft = pos.x - anchorBounds.first.x;
+		m_anchor->pxOffsetTop = pos.y - anchorBounds.first.y;
 	}
 
-	m_anchor->pxOffsetRight = GetRight() - anchorBounds.second.x;
-	m_anchor->pxOffsetBottom = GetBottom() - anchorBounds.second.y;
+	m_anchor->pxOffsetRight = pos.x + GetWidth() - anchorBounds.second.x;
+	m_anchor->pxOffsetBottom = pos.y + GetHeight() - anchorBounds.second.y;
 }
 void pragma::gui::types::WIBase::SetAnchor(float left, float top, float right, float bottom)
 {
@@ -1602,10 +1607,27 @@ void pragma::gui::types::WIBase::UpdateAnchorTransform()
 
 	auto sz = elMax - elMin;
 	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform);
-	SetPos(elMin);
 	SetSize(sz);
+	SetPos(elMin);
 	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform, false);
 }
+void pragma::gui::types::WIBase::SetPivot(const Vector2 &pivot)
+{
+	m_pivot = pivot;
+	auto pivotEnabled = math::abs(m_pivot.x) > 0.0001f || math::abs(m_pivot.y) > 0.0001f;
+	math::set_flag(m_stateFlags, StateFlags::HasPivot, pivotEnabled);
+}
+const Vector2 &pragma::gui::types::WIBase::GetPivot() const { return m_pivot; }
+Vector2 pragma::gui::types::WIBase::GetPivotOffset(const Vector2i &size) const { return Vector2 {m_pivot.x * size.x, m_pivot.y * size.y}; }
+Vector2 pragma::gui::types::WIBase::GetPivotOffset() const { return GetPivotOffset(GetSize()); }
+void pragma::gui::types::WIBase::SetPivotPos(const Vector2 &pos)
+{
+	auto offset = GetPivotOffset();
+	auto newPos = pos - offset;
+	SetPos(newPos);
+}
+Vector2 pragma::gui::types::WIBase::GetPivotPos() const { return Vector2 {GetPos()} + GetPivotOffset(); }
+bool pragma::gui::types::WIBase::HasPivot() const { return math::is_flag_set(m_stateFlags, StateFlags::HasPivot); }
 void pragma::gui::types::WIBase::Remove()
 {
 	if(math::is_flag_set(m_stateFlags, StateFlags::IsBeingRemoved))
