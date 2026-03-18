@@ -9,6 +9,7 @@ decltype(pragma::gui::types::WIText::s_textBuffer) pragma::gui::types::WIText::s
 pragma::gui::types::WIText::WIText() : WIBase(), m_font(nullptr), m_breakHeight(0), m_wTexture(0), m_hTexture(0), m_autoBreak(AutoBreak::NONE), m_renderTarget(nullptr)
 {
 	SetColor(Color(0, 0, 0, 255));
+	SetAutoSizeToText(true);
 
 	m_text = string::FormattedText::Create();
 	string::FormattedText::Callbacks callbacks {};
@@ -123,8 +124,8 @@ pragma::gui::types::WIText::~WIText()
 	DestroyBlur();
 }
 
-void pragma::gui::types::WIText::SetAutoSizeToText(bool bAutoSize) { math::set_flag(m_flags, Flags::AutoSizeToText, bAutoSize); }
-bool pragma::gui::types::WIText::ShouldAutoSizeToText() const { return math::is_flag_set(m_flags, Flags::AutoSizeToText); }
+void pragma::gui::types::WIText::SetAutoSizeToText(bool bAutoSize) { SetAutoSizeToContents(bAutoSize); }
+bool pragma::gui::types::WIText::ShouldAutoSizeToText() const { return ShouldAutoSizeToContentsX() || ShouldAutoSizeToContentsY(); }
 void pragma::gui::types::WIText::UpdateTags() { SetFlag(Flags::ApplySubTextTags); }
 
 std::string pragma::gui::types::WIText::GetDebugInfo() const { return "Text: " + GetText().cpp_str(); }
@@ -257,6 +258,8 @@ void pragma::gui::types::WIText::SetFont(const FontInfo *font, bool reload)
 	if(m_font)
 		FontManager::InitializeFontGlyphs(GetText(), *m_font);
 	SetDirty();
+	if(ShouldAutoSizeToText())
+		SizeToContents();
 	CallCallbacks<void, const FontInfo *>("OnFontChanged", font);
 }
 void pragma::gui::types::WIText::ReloadFont()
