@@ -117,7 +117,7 @@ export namespace pragma::gui::types {
 		void SetAutoBreakMode(AutoBreak b);
 		AutoBreak GetAutoBreakMode() const;
 		using WIBase::SetSize;
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		int GetTextHeight();
 		Vector2i CalcTextSize() const;
 		std::shared_ptr<prosper::Texture> GetTexture() const;

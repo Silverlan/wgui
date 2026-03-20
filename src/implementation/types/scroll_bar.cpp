@@ -106,9 +106,9 @@ void pragma::gui::types::WIScrollBar::SetUp(unsigned int numElementsListed, unsi
 		SetVisible(true);
 }
 
-void pragma::gui::types::WIScrollBar::SetSize(int x, int y)
+void pragma::gui::types::WIScrollBar::SetSize(int x, int y, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y);
+	WIBase::SetSize(x, y, changeSource);
 	if(m_buttonUp.IsValid()) {
 		WIButton *button = static_cast<WIButton *>(m_buttonUp.get());
 		if(m_bHorizontal)

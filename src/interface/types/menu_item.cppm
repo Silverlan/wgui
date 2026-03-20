@@ -19,7 +19,7 @@ export namespace pragma::gui::types {
 		virtual void OnCursorEntered() override;
 		virtual void OnCursorExited() override;
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		using WIBase::SetSize;
 		virtual void SizeToContents(bool x = true, bool y = true) override;
 		void SetAction(const std::function<void(void)> &fOnClickAction);

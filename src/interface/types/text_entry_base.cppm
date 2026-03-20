@@ -37,7 +37,7 @@ export namespace pragma::gui::types {
 		virtual util::EventReply KeyboardCallback(platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods) override;
 		virtual util::EventReply CharCallback(unsigned int c, platform::Modifier mods = platform::Modifier::None) override;
 		virtual util::EventReply OnDoubleClick() override;
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		int GetCaretPos() const;
 		void SetCaretPos(int pos);
 		WIRect *GetCaretElement();

@@ -193,10 +193,10 @@ void pragma::gui::types::WIText::Initialize()
 
 pragma::gui::types::WITextBase *pragma::gui::types::WIText::GetBaseElement() { return static_cast<WITextBase *>(m_baseEl.get()); }
 
-void pragma::gui::types::WIText::SetSize(int x, int y)
+void pragma::gui::types::WIText::SetSize(int x, int y, ChangeSource changeSource)
 {
 	auto oldWidth = GetWidth();
-	WIBase::SetSize(x, y);
+	WIBase::SetSize(x, y, changeSource);
 	if(x != oldWidth && m_autoBreak != AutoBreak::NONE)
 		SizeToContents();
 }
@@ -362,11 +362,11 @@ void pragma::gui::types::WIText::SizeToContents(bool x, bool y)
 		h += shadowOffset.y;
 	}
 	if(x && y)
-		SetSize(w, h);
+		ApplySize(w, h);
 	else if(x)
-		SetWidth(w);
+		ApplyWidth(w);
 	else if(y)
-		SetHeight(h);
+		ApplyHeight(h);
 }
 
 pragma::gui::types::WIText::AutoBreak pragma::gui::types::WIText::GetAutoBreakMode() const { return m_autoBreak; }

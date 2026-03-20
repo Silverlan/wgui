@@ -36,7 +36,7 @@ export namespace pragma::gui::types {
 		void SetText(const string::Utf8StringArg &text);
 		string::Utf8StringView GetText() const;
 		WIText *GetTextElement();
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		virtual void OnCursorEntered() override;
 		virtual void OnCursorExited() override;
 		virtual void OnVisibilityChanged(bool bVisible) override;
@@ -101,6 +101,6 @@ export namespace pragma::gui::types {
 		void ToggleMenu();
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 	};
 };

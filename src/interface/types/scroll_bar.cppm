@@ -82,6 +82,6 @@ export namespace pragma::gui::types {
 		bool IsVertical();
 		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 	};
 };

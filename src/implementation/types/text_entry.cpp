@@ -166,9 +166,9 @@ void pragma::gui::types::WITextEntry::OnContentsChanged()
 	CallCallbacks<void>("OnContentsChanged");
 }
 
-void pragma::gui::types::WITextEntry::SetSize(int x, int y)
+void pragma::gui::types::WITextEntry::SetSize(int x, int y, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y);
+	WIBase::SetSize(x, y, changeSource);
 	if(m_hBase.IsValid()) {
 		auto *pBase = static_cast<WITextEntryBase *>(m_hBase.get());
 		auto *pText = pBase->GetTextElement();

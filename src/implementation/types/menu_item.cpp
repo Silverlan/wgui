@@ -79,9 +79,9 @@ pragma::util::EventReply pragma::gui::types::WIMenuItem::MouseCallback(platform:
 	m_fOnAction();
 	return util::EventReply::Unhandled;
 }
-void pragma::gui::types::WIMenuItem::SetSize(int x, int y)
+void pragma::gui::types::WIMenuItem::SetSize(int x, int y, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y);
+	WIBase::SetSize(x, y, changeSource);
 	UpdateRightText();
 }
 const auto border = 8u;

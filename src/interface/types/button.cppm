@@ -19,7 +19,7 @@ export namespace pragma::gui::types {
 		virtual void Initialize() override;
 		void SetText(const string::Utf8StringArg &text);
 		const string::Utf8String &GetText() const;
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual void SizeToContents(bool x = true, bool y = true) override;
 	};

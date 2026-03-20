@@ -72,9 +72,9 @@ void pragma::gui::types::WIOutlinedRect::UpdateLines()
 	}
 }
 
-void pragma::gui::types::WIOutlinedRect::SetSize(int x, int y)
+void pragma::gui::types::WIOutlinedRect::SetSize(int x, int y, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y);
+	WIBase::SetSize(x, y, changeSource);
 	UpdateLines();
 }
 

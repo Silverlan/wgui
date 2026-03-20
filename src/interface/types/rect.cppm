@@ -25,7 +25,7 @@ export namespace pragma::gui::types {
 		virtual void Initialize() override;
 		unsigned int GetOutlineWidth();
 		void SetOutlineWidth(unsigned int width);
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		using WIBase::SetColor;
 	};
 

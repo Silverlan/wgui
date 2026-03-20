@@ -49,7 +49,7 @@ pragma::gui::types::WIBase::WIBase()
 	m_pos->AddCallback([this](std::reference_wrapper<const Vector2i> oldPos, std::reference_wrapper<const Vector2i> pos) {
 		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
-		if(math::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false)
+		if(m_changeSource == ChangeSource::User)
 			UpdateAnchorOffsets();
 		CallCallbacks<void>("SetPos");
 
@@ -58,7 +58,7 @@ pragma::gui::types::WIBase::WIBase()
 	m_size->AddCallback([this](std::reference_wrapper<const Vector2i> oldSize, std::reference_wrapper<const Vector2i> size) {
 		for(auto &pair : m_attachments)
 			pair.second->UpdateAbsolutePosition();
-		if(math::is_flag_set(m_stateFlags, StateFlags::UpdatingAnchorTransform) == false)
+		if(m_changeSource == ChangeSource::User)
 			UpdateAnchorOffsets(true);
 		CallCallbacks<void>("SetSize");
 		auto hasAutoAlignChild = false;
@@ -72,6 +72,7 @@ pragma::gui::types::WIBase::WIBase()
 		}
 
 		if(HasPivot()) {
+			UpdateAnchorTransform(true);
 			// Restore pivot position
 			SetPivotPos(Vector2 {GetPos()} + GetPivotOffset(oldSize.get()));
 		}
@@ -406,40 +407,54 @@ void pragma::gui::types::WIBase::SetRight(int32_t pos) { SetLeft(pos - GetWidth(
 void pragma::gui::types::WIBase::SetTop(int32_t pos) { SetY(pos); }
 void pragma::gui::types::WIBase::SetBottom(int32_t pos) { SetTop(pos - GetHeight()); }
 Vector2i pragma::gui::types::WIBase::GetEndPos() const { return Vector2i(GetRight(), GetBottom()); }
-void pragma::gui::types::WIBase::SetX(int x)
+void pragma::gui::types::WIBase::SetX(int x, ChangeSource changeSource)
 {
 	if(x == GetX())
 		return;
-	SetPos(x, (*m_pos)->y);
+	SetPos(x, (*m_pos)->y, changeSource);
 }
-void pragma::gui::types::WIBase::SetY(int y)
+void pragma::gui::types::WIBase::SetY(int y, ChangeSource changeSource)
 {
 	if(y == GetY())
 		return;
-	SetPos((*m_pos)->x, y);
+	SetPos((*m_pos)->x, y, changeSource);
 }
+void pragma::gui::types::WIBase::ApplyX(int x) { SetX(x, ChangeSource::Layout); }
+void pragma::gui::types::WIBase::ApplyY(int y) { SetY(y, ChangeSource::Layout); }
 float pragma::gui::types::WIBase::GetAspectRatio() const
 {
 	auto h = GetHeight();
 	return (h != 0) ? (GetWidth() / static_cast<float>(h)) : 1.f;
 }
-void pragma::gui::types::WIBase::SetWidth(int w, bool keepRatio)
+void pragma::gui::types::WIBase::SetWidth(int w, bool keepRatio, ChangeSource changeSource)
 {
 	if(w == GetWidth())
 		return;
 	auto h = (*m_size)->y;
 	if(keepRatio)
 		h = w * (1.f / GetAspectRatio());
-	SetSize(w, h);
+	SetSize(w, h, changeSource);
 }
-void pragma::gui::types::WIBase::SetHeight(int h, bool keepRatio)
+void pragma::gui::types::WIBase::SetHeight(int h, bool keepRatio, ChangeSource changeSource)
 {
 	if(h == GetHeight())
 		return;
 	auto w = (*m_size)->x;
 	if(keepRatio)
 		w = h * GetAspectRatio();
-	SetSize(w, h);
+	SetSize(w, h, changeSource);
+}
+void pragma::gui::types::WIBase::ApplyWidth(int w)
+{
+	if(w == GetWidth())
+		return;
+	SetWidth(w, false, ChangeSource::Layout);
+}
+void pragma::gui::types::WIBase::ApplyHeight(int h)
+{
+	if(h == GetHeight())
+		return;
+	SetHeight(h, false, ChangeSource::Layout);
 }
 int pragma::gui::types::WIBase::GetZPos() const { return m_zpos; }
 float pragma::gui::types::WIBase::GetAlpha() const { return m_color->GetValue().a / 255.f; }
@@ -975,7 +990,14 @@ void pragma::gui::types::WIBase::SetColor(const Vector4 &col) { SetColor(col.r, 
 void pragma::gui::types::WIBase::SetColor(const Color &col) { SetColor(static_cast<float>(col.r) / 255.f, static_cast<float>(col.g) / 255.f, static_cast<float>(col.b) / 255.f, static_cast<float>(col.a) / 255.f); }
 void pragma::gui::types::WIBase::SetColor(float r, float g, float b, float a) { *m_color = Color(r * 255.f, g * 255.f, b * 255.f, a * 255.f); }
 void pragma::gui::types::WIBase::SetPos(const Vector2i &pos) { SetPos(pos.x, pos.y); }
-void pragma::gui::types::WIBase::SetPos(int x, int y) { *m_pos = Vector2i {x, y}; }
+void pragma::gui::types::WIBase::SetPos(int x, int y, ChangeSource changeSource)
+{
+	m_changeSource = changeSource;
+	*m_pos = Vector2i {x, y};
+	m_changeSource = ChangeSource::Layout;
+}
+void pragma::gui::types::WIBase::ApplyPos(const Vector2i &pos) { ApplyPos(pos.x, pos.y); }
+void pragma::gui::types::WIBase::ApplyPos(int x, int y) { SetPos(x, y, ChangeSource::Layout); }
 pragma::math::intersection::Intersect pragma::gui::types::WIBase::IsInBounds(int x, int y, int w, int h) const
 {
 	Vector3 minA {x, y, 0.f};
@@ -994,7 +1016,7 @@ void pragma::gui::types::WIBase::GetSize(int *w, int *h)
 	*h = (*m_size)->y;
 }
 void pragma::gui::types::WIBase::SetSize(const Vector2i &size) { SetSize(size.x, size.y); }
-void pragma::gui::types::WIBase::SetSize(int x, int y)
+void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource)
 {
 #ifdef WGUI_ENABLE_SANITY_EXCEPTIONS
 	if(x < 0 || y < 0)
@@ -1002,8 +1024,12 @@ void pragma::gui::types::WIBase::SetSize(int x, int y)
 #endif
 	x = math::max(x, 0);
 	y = math::max(y, 0);
+	m_changeSource = changeSource;
 	*m_size = Vector2i {x, y};
+	m_changeSource = ChangeSource::Layout;
 }
+void pragma::gui::types::WIBase::ApplySize(const Vector2i &size) { ApplySize(size.x, size.y); }
+void pragma::gui::types::WIBase::ApplySize(int x, int y) { SetSize(x, y, ChangeSource::Layout); }
 Mat4 pragma::gui::types::WIBase::GetTransformPose(const Vector2i &origin, int w, int h, const Mat4 &poseParent, const Vector2 &scale) const
 {
 	Vector3 normOrigin {(origin.x) * 2, (origin.y) * 2, 0.f};
@@ -1578,7 +1604,22 @@ bool pragma::gui::types::WIBase::GetAnchor(float &outLeft, float &outTop, float 
 	outBottom = m_anchor->bottom;
 	return true;
 }
-void pragma::gui::types::WIBase::UpdateAnchorTransform()
+bool pragma::gui::types::WIBase::GetAnchorPixelOffsets(float &outLeft, float &outTop, float &outRight, float &outBottom) const
+{
+	if(m_anchor.has_value() == false) {
+		outLeft = 0.f;
+		outRight = 0.f;
+		outTop = 0.f;
+		outBottom = 0.f;
+		return false;
+	}
+	outLeft = m_anchor->pxOffsetLeft;
+	outRight = m_anchor->pxOffsetRight;
+	outTop = m_anchor->pxOffsetTop;
+	outBottom = m_anchor->pxOffsetBottom;
+	return true;
+}
+void pragma::gui::types::WIBase::UpdateAnchorTransform(bool positionOnly)
 {
 	auto *pParent = GetParent();
 	if(pParent == nullptr || m_anchor.has_value() == false)
@@ -1617,10 +1658,9 @@ void pragma::gui::types::WIBase::UpdateAnchorTransform()
 	}
 
 	auto sz = elMax - elMin;
-	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform);
-	SetSize(sz);
-	SetPos(elMin);
-	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform, false);
+	if(!positionOnly)
+		ApplySize(sz);
+	ApplyPos(elMin);
 }
 void pragma::gui::types::WIBase::SetPivot(const Vector2 &pivot)
 {
@@ -1636,7 +1676,9 @@ void pragma::gui::types::WIBase::SetPivotPos(const Vector2 &pos)
 {
 	auto offset = GetPivotOffset();
 	auto newPos = pos - offset;
+	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform);
 	SetPos(newPos);
+	math::set_flag(m_stateFlags, StateFlags::UpdatingAnchorTransform, false);
 }
 Vector2 pragma::gui::types::WIBase::GetPivotPos() const { return Vector2 {GetPos()} + GetPivotOffset(); }
 bool pragma::gui::types::WIBase::HasPivot() const { return math::is_flag_set(m_stateFlags, StateFlags::HasPivot); }

@@ -22,7 +22,7 @@ export namespace pragma::gui::types {
 		WITextEntry();
 		virtual ~WITextEntry() override;
 		virtual void Initialize() override;
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		virtual void SetMouseInputEnabled(bool b) override;
 		virtual void SetKeyboardInputEnabled(bool b) override;
 		virtual void SizeToContents(bool x = true, bool y = true) override;
@@ -68,7 +68,7 @@ export namespace pragma::gui::types {
 		void UpdateArrowPositions();
 	  public:
 		virtual void Initialize() override;
-		virtual void SetSize(int x, int y) override;
+		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		void SetMinValue(int32_t min);
 		void SetMinValue();
 		void SetMaxValue(int32_t max);

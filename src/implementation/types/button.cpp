@@ -19,7 +19,7 @@ void pragma::gui::types::WIButton::Initialize()
 	SetSize(64, 28);
 	m_text = CreateChild<WIText>();
 }
-void pragma::gui::types::WIButton::SetSize(int x, int y) { WIBase::SetSize(x, y); }
+void pragma::gui::types::WIButton::SetSize(int x, int y, ChangeSource changeSource) { WIBase::SetSize(x, y, changeSource); }
 void pragma::gui::types::WIButton::SetText(const string::Utf8StringArg &text)
 {
 	if(!m_text.IsValid())

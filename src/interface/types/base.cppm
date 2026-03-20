@@ -31,6 +31,11 @@ export namespace pragma::gui {
 	using ChronoTimePoint = util::Clock::time_point;
 	using ChronoDuration = util::Clock::duration;
 
+	enum class ChangeSource : uint8_t {
+		User = 0,
+		Layout,
+	};
+
 	class WISkin;
 	class WGUI;
 	namespace types {
@@ -58,8 +63,7 @@ export namespace pragma::gui {
 				UpdateIfInvisibleBit = ClickedBit << 1u,
 				IgnoreParentAlpha = UpdateIfInvisibleBit << 1u,
 				RenderIfZeroAlpha = IgnoreParentAlpha << 1u,
-				UpdatingAnchorTransform = RenderIfZeroAlpha << 1u,
-				ThinkingEnabled = UpdatingAnchorTransform << 1u,
+				ThinkingEnabled = RenderIfZeroAlpha << 1u,
 				ParentVisible = ThinkingEnabled << 1u,
 				ParentUpdateIfInvisibleBit = ParentVisible << 1u,
 				AutoSizeToContentsX = ParentUpdateIfInvisibleBit << 1u,
@@ -171,11 +175,15 @@ export namespace pragma::gui {
 			void SetTop(int32_t pos);
 			void SetBottom(int32_t pos);
 			Vector2i GetEndPos() const;
-			void SetX(int x);
-			void SetY(int y);
+			void SetX(int x, ChangeSource changeSource = ChangeSource::User);
+			void SetY(int y, ChangeSource changeSource = ChangeSource::User);
+			void ApplyX(int x);
+			void ApplyY(int y);
 			float GetAspectRatio() const;
-			void SetWidth(int w, bool keepRatio = false);
-			void SetHeight(int h, bool keepRatio = false);
+			void SetWidth(int w, bool keepRatio = false, ChangeSource changeSource = ChangeSource::User);
+			void SetHeight(int h, bool keepRatio = false, ChangeSource changeSource = ChangeSource::User);
+			void ApplyWidth(int w);
+			void ApplyHeight(int h);
 			Mat4 GetAbsolutePose() const;
 			Vector2 GetAbsolutePos(const Vector2 &localPos, bool includeRotation = true) const;
 			Vector2 GetAbsolutePos(bool includeRotation = true) const;
@@ -192,7 +200,9 @@ export namespace pragma::gui {
 			void FindDescendantsByName(const std::string &name, std::vector<WIHandle> &children);
 			void GetPos(int *x, int *y) const;
 			void SetPos(const Vector2i &pos);
-			virtual void SetPos(int x, int y);
+			virtual void SetPos(int x, int y, ChangeSource changeSource = ChangeSource::User);
+			void ApplyPos(const Vector2i &pos);
+			void ApplyPos(int x, int y);
 			math::intersection::Intersect IsInBounds(int x, int y, int w = 0, int h = 0) const;
 			const Color &GetColor() const;
 			const std::shared_ptr<util::ColorProperty> &GetColorProperty() const;
@@ -209,7 +219,9 @@ export namespace pragma::gui {
 			const Vector2i &GetSize() const;
 			void GetSize(int *w, int *h);
 			void SetSize(const Vector2i &size);
-			virtual void SetSize(int x, int y);
+			virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User);
+			void ApplySize(const Vector2i &size);
+			void ApplySize(int x, int y);
 			virtual void Draw(int w, int h, std::shared_ptr<prosper::ICommandBuffer> &cmdBuf);
 			void Draw(const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &offsetParent, const Vector2i &scissorOffset, const Vector2i &scissorSize, const Vector2 &scale, uint32_t testStencilLevel = 0u);
 			void Draw(const DrawInfo &drawInfo, DrawState &drawState);
@@ -324,6 +336,7 @@ export namespace pragma::gui {
 			void AnchorWithMargin(uint32_t margin);
 			void SetAnchor(Anchor::Edge edge, float f);
 			bool GetAnchor(float &outLeft, float &outTop, float &outRight, float &outBottom) const;
+			bool GetAnchorPixelOffsets(float &outLeft, float &outTop, float &outRight, float &outBottom) const;
 			bool HasAnchor() const;
 			std::pair<Vector2, Vector2> GetAnchorBounds() const;
 			std::pair<Vector2, Vector2> GetAnchorBounds(uint32_t refWidth, uint32_t refHeight) const;
@@ -404,7 +417,7 @@ export namespace pragma::gui {
 			bool IsFullyTransparent() const;
 			void UpdateVisibility();
 			void UpdateParentThink();
-			void UpdateAnchorTransform();
+			void UpdateAnchorTransform(bool positionOnly = false);
 			void UpdateAnchorOffsets(bool bottomRightOnly = false);
 			uint64_t m_index = std::numeric_limits<uint64_t>::max();
 			size_t m_lastThinkUpdateIndex = std::numeric_limits<size_t>::max();
@@ -464,6 +477,7 @@ export namespace pragma::gui {
 			util::PBoolProperty m_bHasFocus = nullptr;
 			util::PVector2Property m_scale = nullptr;
 		  private:
+			ChangeSource m_changeSource = ChangeSource::Layout;
 			std::vector<std::string> m_styleClasses;
 			WISkin *m_skin = nullptr;
 			ChronoTimePoint m_clickStart;
