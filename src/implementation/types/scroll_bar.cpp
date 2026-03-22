@@ -106,36 +106,37 @@ void pragma::gui::types::WIScrollBar::SetUp(unsigned int numElementsListed, unsi
 		SetVisible(true);
 }
 
-void pragma::gui::types::WIScrollBar::SetSize(int x, int y, ChangeSource changeSource)
+void pragma::gui::types::WIScrollBar::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y, changeSource);
+	auto w = GetWidth();
+	auto h = GetHeight();
 	if(m_buttonUp.IsValid()) {
 		WIButton *button = static_cast<WIButton *>(m_buttonUp.get());
 		if(m_bHorizontal)
-			button->SetSize(y, y);
+			button->SetSize(h, h);
 		else
-			button->SetSize(x, x);
+			button->SetSize(w, w);
 	}
 	if(m_buttonDown.IsValid()) {
 		WIButton *button = static_cast<WIButton *>(m_buttonDown.get());
 		if(m_bHorizontal)
-			button->SetSize(y, y);
+			button->SetSize(h, h);
 		else
-			button->SetSize(x, x);
+			button->SetSize(w, w);
 		if(m_bHorizontal)
-			button->SetPos(x - y, 0);
+			button->SetPos(w - h, 0);
 		else
-			button->SetPos(0, y - x);
+			button->SetPos(0, h - w);
 	}
 	if(m_slider.IsValid()) {
 		WIScrollBarSlider *slider = static_cast<WIScrollBarSlider *>(m_slider.get());
 		if(m_bHorizontal) {
-			slider->SetHeight(y);
-			slider->SetLimits(y, x - y);
+			slider->SetHeight(h);
+			slider->SetLimits(h, w - h);
 		}
 		else {
-			slider->SetWidth(x);
-			slider->SetLimits(x, y - x);
+			slider->SetWidth(w);
+			slider->SetLimits(w, h - w);
 		}
 	}
 	UpdateSliderSize();

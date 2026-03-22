@@ -43,6 +43,24 @@ export namespace pragma::gui::types {
 	};
 
 	class DLLWGUI WIScrollBar : public WIBase {
+	  public:
+		WIScrollBar();
+		virtual ~WIScrollBar() override;
+		void SetUp(unsigned int numElementsListed, unsigned int numElementsTotal);
+		unsigned int GetScrollAmount();
+		void SetScrollAmount(unsigned int am);
+		unsigned int GetScrollOffset();
+		void SetScrollOffset(unsigned int offset);
+		void AddScrollOffset(int scroll);
+		uint32_t GetElementCount() const;
+		uint32_t GetScrollElementCount() const;
+		uint32_t GetBottomScrollOffset();
+		virtual void Initialize() override;
+		void SetHorizontal(bool b);
+		bool IsHorizontal();
+		bool IsVertical();
+		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
+		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 	  protected:
 		bool m_bHorizontal;
 		unsigned int m_offset;
@@ -64,24 +82,6 @@ export namespace pragma::gui::types {
 		void SetSliderSize(int w, int h);
 		void UpdateSliderSize();
 		void UpdateSliderOffset();
-	  public:
-		WIScrollBar();
-		virtual ~WIScrollBar() override;
-		void SetUp(unsigned int numElementsListed, unsigned int numElementsTotal);
-		unsigned int GetScrollAmount();
-		void SetScrollAmount(unsigned int am);
-		unsigned int GetScrollOffset();
-		void SetScrollOffset(unsigned int offset);
-		void AddScrollOffset(int scroll);
-		uint32_t GetElementCount() const;
-		uint32_t GetScrollElementCount() const;
-		uint32_t GetBottomScrollOffset();
-		virtual void Initialize() override;
-		void SetHorizontal(bool b);
-		bool IsHorizontal();
-		bool IsVertical();
-		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
+		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 	};
 };

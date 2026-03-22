@@ -44,7 +44,7 @@ void pragma::gui::types::WIOutlinedRect::SetOutlineWidth(unsigned int width)
 void pragma::gui::types::WIOutlinedRect::UpdateLines()
 {
 	int w, h;
-	GetSize(&w, &h);
+	GetSize(w, h);
 	unsigned int wLine = GetOutlineWidth();
 	for(auto i = decltype(m_lines.size()) {0}; i < m_lines.size(); ++i) {
 		auto &hLine = m_lines[i];
@@ -72,11 +72,7 @@ void pragma::gui::types::WIOutlinedRect::UpdateLines()
 	}
 }
 
-void pragma::gui::types::WIOutlinedRect::SetSize(int x, int y, ChangeSource changeSource)
-{
-	WIBase::SetSize(x, y, changeSource);
-	UpdateLines();
-}
+void pragma::gui::types::WIOutlinedRect::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) { UpdateLines(); }
 
 ///////////////////
 

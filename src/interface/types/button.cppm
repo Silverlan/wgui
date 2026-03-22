@@ -10,17 +10,16 @@ import pragma.string.unicode;
 
 export namespace pragma::gui::types {
 	class DLLWGUI WIButton : public WIBase {
-	  protected:
-		WIHandle m_text;
-		bool m_bPressed;
 	  public:
 		WIButton();
 		virtual ~WIButton() override;
 		virtual void Initialize() override;
 		void SetText(const string::Utf8StringArg &text);
 		const string::Utf8String &GetText() const;
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
-		virtual void SizeToContents(bool x = true, bool y = true) override;
+		virtual void SizeToContents(bool x = true, bool y = true, ChangeSource changeSource = ChangeSource::User) override;
+	  protected:
+		WIHandle m_text;
+		bool m_bPressed;
 	};
 }

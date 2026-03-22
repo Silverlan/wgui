@@ -16,17 +16,17 @@ export namespace pragma::gui::types {
 	};
 
 	class DLLWGUI WIOutlinedRect : public WIBase {
-	  private:
-		std::array<WIHandle, 4> m_lines;
-		unsigned int m_lineWidth;
-		void UpdateLines();
 	  public:
 		WIOutlinedRect();
 		virtual void Initialize() override;
 		unsigned int GetOutlineWidth();
 		void SetOutlineWidth(unsigned int width);
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		using WIBase::SetColor;
+	  private:
+		std::array<WIHandle, 4> m_lines;
+		unsigned int m_lineWidth;
+		void UpdateLines();
+		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 	};
 
 	class DLLWGUI WIRoundedRect : public WIShape, public WIRoundedBase {

@@ -10,22 +10,13 @@ export namespace pragma::gui::types {
 	class WIText;
 	class WIRect;
 	class DLLWGUI WITextEntry : public WIBase {
-	  protected:
-		WIHandle m_hBase;
-		WIHandle m_hOutline;
-		WIHandle m_hBg;
-
-		virtual void OnTextEntered();
-		virtual void OnTextChanged(const string::Utf8String &text, bool changedByUser);
-		virtual void OnContentsChanged();
 	  public:
 		WITextEntry();
 		virtual ~WITextEntry() override;
 		virtual void Initialize() override;
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		virtual void SetMouseInputEnabled(bool b) override;
 		virtual void SetKeyboardInputEnabled(bool b) override;
-		virtual void SizeToContents(bool x = true, bool y = true) override;
+		virtual void SizeToContents(bool x = true, bool y = true, ChangeSource changeSource = ChangeSource::User) override;
 		virtual void SetColor(float r, float g, float b, float a = 1.f) override;
 		using WIBase::SetColor;
 		using WIBase::SetSize;
@@ -55,20 +46,20 @@ export namespace pragma::gui::types {
 		virtual bool HasFocus() override;
 		void SetMaxLength(int length);
 		int GetMaxLength() const;
+	  protected:
+		WIHandle m_hBase;
+		WIHandle m_hOutline;
+		WIHandle m_hBg;
+
+		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
+		virtual void OnTextEntered();
+		virtual void OnTextChanged(const string::Utf8String &text, bool changedByUser);
+		virtual void OnContentsChanged();
 	};
 
 	class DLLWGUI WINumericEntry : public WITextEntry {
-	  private:
-		struct Numeric {
-			WIHandle hUpArrow;
-			WIHandle hDownArrow;
-			std::unique_ptr<int32_t> min;
-			std::unique_ptr<int32_t> max;
-		} m_numeric;
-		void UpdateArrowPositions();
 	  public:
 		virtual void Initialize() override;
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		void SetMinValue(int32_t min);
 		void SetMinValue();
 		void SetMaxValue(int32_t max);
@@ -77,5 +68,14 @@ export namespace pragma::gui::types {
 		const int32_t *GetMinValue() const;
 		const int32_t *GetMaxValue() const;
 		virtual bool IsNumeric() const override;
+	  private:
+		struct Numeric {
+			WIHandle hUpArrow;
+			WIHandle hDownArrow;
+			std::unique_ptr<int32_t> min;
+			std::unique_ptr<int32_t> max;
+		} m_numeric;
+		void UpdateArrowPositions();
+		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 	};
 };

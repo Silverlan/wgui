@@ -29,9 +29,8 @@ export namespace pragma::gui {
 			void SetPaddingBottom(int32_t border);
 			void SetPaddingLeftRight(int32_t border);
 			void SetPaddingTopBottom(int32_t border);
-
-			virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		  private:
+			virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 			void UpdateChildElement();
 			WIPadding m_padding;
 			CallbackHandle m_onChildSizeChanged;

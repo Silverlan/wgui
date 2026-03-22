@@ -34,6 +34,9 @@ export namespace pragma::gui {
 	enum class ChangeSource : uint8_t {
 		User = 0,
 		Layout,
+		Content,
+
+		Count,
 	};
 
 	class WISkin;
@@ -153,8 +156,7 @@ export namespace pragma::gui {
 			virtual void SetFileDropInputEnabled(bool b);
 			void SetMouseMovementCheckEnabled(bool b);
 			void Update();
-			virtual void SizeToContents(bool x = true, bool y = true);
-			const util::PVector2iProperty &GetPosProperty() const;
+			virtual void SizeToContents(bool x = true, bool y = true, ChangeSource changeSource = ChangeSource::Content);
 			const Vector2i &GetPos() const;
 			Vector2 GetCenter() const;
 			float GetCenterX() const;
@@ -198,9 +200,9 @@ export namespace pragma::gui {
 			void FindChildrenByName(const std::string &name, std::vector<WIHandle> &children);
 			WIBase *FindDescendantByName(const std::string &name);
 			void FindDescendantsByName(const std::string &name, std::vector<WIHandle> &children);
-			void GetPos(int *x, int *y) const;
+			void GetPos(int &x, int &y) const;
 			void SetPos(const Vector2i &pos);
-			virtual void SetPos(int x, int y, ChangeSource changeSource = ChangeSource::User);
+			void SetPos(int x, int y, ChangeSource changeSource = ChangeSource::User);
 			void ApplyPos(const Vector2i &pos);
 			void ApplyPos(int x, int y);
 			math::intersection::Intersect IsInBounds(int x, int y, int w = 0, int h = 0) const;
@@ -215,11 +217,10 @@ export namespace pragma::gui {
 			void SetLocalAlpha(float a);
 			int GetWidth() const;
 			int GetHeight() const;
-			const util::PVector2iProperty &GetSizeProperty() const;
 			const Vector2i &GetSize() const;
-			void GetSize(int *w, int *h);
+			void GetSize(int &w, int &h);
 			void SetSize(const Vector2i &size);
-			virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User);
+			void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User);
 			void ApplySize(const Vector2i &size);
 			void ApplySize(int x, int y);
 			virtual void Draw(int w, int h, std::shared_ptr<prosper::ICommandBuffer> &cmdBuf);
@@ -330,6 +331,11 @@ export namespace pragma::gui {
 			void ClearAnchor();
 			void SetAnchor(float left, float top, float right, float bottom);
 			void SetAnchor(float left, float top, float right, float bottom, uint32_t refWidth, uint32_t refHeight);
+			void SetAnchorHorizontal(float left, float right);
+			void SetAnchorVertical(float top, float bottom);
+			void SetAnchorCenter(int32_t offsetX = 0, int32_t offsetY = 0);
+			void SetAnchorHorizontalCenter(int32_t offset = 0);
+			void SetAnchorVerticalCenter(int32_t offset = 0);
 			void SetAnchorEdgeEnabled(Anchor::Edge edge, bool enabled);
 			bool IsAnchorEdgeEnabled(Anchor::Edge edge) const;
 			void AnchorWithMargin(uint32_t left, uint32_t top, uint32_t right, uint32_t bottom);
@@ -345,7 +351,7 @@ export namespace pragma::gui {
 			void SetPivot(float x, float y);
 			const Vector2 &GetPivot() const;
 			Vector2 GetPivotOffset() const;
-			void SetPivotPos(const Vector2 &pos);
+			void SetPivotPos(const Vector2 &pos, ChangeSource changeSource = ChangeSource::User);
 			Vector2 GetPivotPos() const;
 			bool HasPivot() const;
 
@@ -395,8 +401,10 @@ export namespace pragma::gui {
 			// Handles
 			WIHandle GetHandle() const;
 		  protected:
+			virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changedSource);
+			virtual void OnPosChanged(const Vector2i &oldPos, ChangeSource changedSource);
 			Vector2 GetPivotOffset(const Vector2i &size) const;
-			void InitializeAnchor();
+			void InitializeAnchor(Anchor::EdgeFlags edges);
 			void UpdateCenterToParentPivot();
 			void UpdateAlignToParent();
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
@@ -418,7 +426,7 @@ export namespace pragma::gui {
 			void UpdateVisibility();
 			void UpdateParentThink();
 			void UpdateAnchorTransform(bool positionOnly = false);
-			void UpdateAnchorOffsets(bool bottomRightOnly = false);
+			void UpdateAnchorOffsets(Anchor::EdgeFlags edges);
 			uint64_t m_index = std::numeric_limits<uint64_t>::max();
 			size_t m_lastThinkUpdateIndex = std::numeric_limits<size_t>::max();
 			uint32_t m_depth = 0;
@@ -465,19 +473,19 @@ export namespace pragma::gui {
 			virtual void OnRemove();
 
 			bool ShouldThink() const;
+		  protected:
+			Vector2i m_pos {0, 0};
+			Vector2i m_size {0, 0};
 		  private:
 			void UpdateThink();
 			void UpdateMouseInBounds(const Vector2 &relPos, bool forceFalse);
 			WIBase *FindDeepestChild(const std::function<bool(const WIBase &)> &predInspect, const std::function<bool(const WIBase &)> &predValidCandidate);
-			util::PVector2iProperty m_pos = nullptr;
-			util::PVector2iProperty m_size = nullptr;
 			util::PColorProperty m_color = nullptr;
 			util::PBoolProperty m_bMouseInBounds = nullptr;
 			util::PBoolProperty m_bVisible = nullptr;
 			util::PBoolProperty m_bHasFocus = nullptr;
 			util::PVector2Property m_scale = nullptr;
 		  private:
-			ChangeSource m_changeSource = ChangeSource::Layout;
 			std::vector<std::string> m_styleClasses;
 			WISkin *m_skin = nullptr;
 			ChronoTimePoint m_clickStart;

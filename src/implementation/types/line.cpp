@@ -139,7 +139,7 @@ void pragma::gui::types::WILine::Render(const DrawInfo &drawInfo, DrawState &dra
 	}
 }
 
-void pragma::gui::types::WILine::SizeToContents(bool x, bool y)
+void pragma::gui::types::WILine::SizeToContents(bool x, bool y, ChangeSource changeSource)
 {
 	auto bounds = GetNormalizedLineBounds();
 	const Vector2i &pos = bounds.first;
@@ -161,15 +161,15 @@ void pragma::gui::types::WILine::SizeToContents(bool x, bool y)
 		yU = posEnd.y;
 		yB = pos.y;
 	}
-	SetPos(xL, yU);
+	SetPos(xL, yU, changeSource);
 	auto w = xR - xL;
 	auto h = yB - yU + 1;
 	if(x && y)
-		SetSize(w, h);
+		SetSize(w, h, changeSource);
 	else if(x)
-		SetWidth(w);
+		SetWidth(w, false, changeSource);
 	else if(y)
-		SetHeight(h);
+		SetHeight(h, false, changeSource);
 	Vector2 dir = Vector2(posEnd.x, posEnd.y) - Vector2(posEnd.x, posEnd.y);
 	dir = glm::normalize(dir);
 	m_dot = glm::dot(Vector2(1.f, 0.f), dir);

@@ -37,7 +37,6 @@ export namespace pragma::gui::types {
 		virtual util::EventReply KeyboardCallback(platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods) override;
 		virtual util::EventReply CharCallback(unsigned int c, platform::Modifier mods = platform::Modifier::None) override;
 		virtual util::EventReply OnDoubleClick() override;
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		int GetCaretPos() const;
 		void SetCaretPos(int pos);
 		WIRect *GetCaretElement();
@@ -63,6 +62,7 @@ export namespace pragma::gui::types {
 		int GetMaxLength() const;
 		void SetEntryFieldElement(WIBase *el);
 	  protected:
+		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 		virtual void OnTextContentsChanged();
 		std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;
 		WIHandle m_hText;

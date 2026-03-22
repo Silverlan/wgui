@@ -517,12 +517,11 @@ pragma::util::EventReply pragma::gui::types::WIDropDownMenu::ScrollCallback(Vect
 	static_cast<WIScrollBar *>(m_hScrollBar.get())->ScrollCallback(offset, offsetAsPixels);
 	return util::EventReply::Handled;
 }
-void pragma::gui::types::WIDropDownMenu::SetSize(int x, int y, ChangeSource changeSource)
+void pragma::gui::types::WIDropDownMenu::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
 {
-	WITextEntry::SetSize(x, y, changeSource);
 	if(m_hOutline.IsValid()) {
 		WIOutlinedRect *pOutline = static_cast<WIOutlinedRect *>(m_hOutline.get());
-		pOutline->SetSize(x, y);
+		pOutline->SetSize(GetWidth(), GetHeight());
 	}
 	/*if(m_hArrow.IsValid())
 	{
@@ -593,12 +592,11 @@ void pragma::gui::types::WIDropDownMenuOption::UpdateTextPos()
 		return;
 	m_hText.get()->SetY(static_cast<int>(static_cast<float>(GetHeight()) * 0.5f - static_cast<float>(m_hText.get()->GetHeight()) * 0.5f));
 }
-void pragma::gui::types::WIDropDownMenuOption::SetSize(int x, int y, ChangeSource changeSource)
+void pragma::gui::types::WIDropDownMenuOption::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y, changeSource);
 	if(m_hBackground.IsValid()) {
 		WIRect *pBackground = static_cast<WIRect *>(m_hBackground.get());
-		pBackground->SetSize(x, y);
+		pBackground->SetSize(GetWidth(), GetHeight());
 	}
 	UpdateTextPos();
 }

@@ -116,8 +116,6 @@ export namespace pragma::gui::types {
 		void ReloadFont();
 		void SetAutoBreakMode(AutoBreak b);
 		AutoBreak GetAutoBreakMode() const;
-		using WIBase::SetSize;
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		int GetTextHeight();
 		Vector2i CalcTextSize() const;
 		std::shared_ptr<prosper::Texture> GetTexture() const;
@@ -175,7 +173,7 @@ export namespace pragma::gui::types {
 
 		virtual void SelectShader();
 		virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
-		virtual void SizeToContents(bool x = true, bool y = true) override;
+		virtual void SizeToContents(bool x = true, bool y = true, ChangeSource changeSource = ChangeSource::Content) override;
 
 		void SetCacheEnabled(bool bEnabled);
 		bool IsCacheEnabled() const;
@@ -259,6 +257,7 @@ export namespace pragma::gui::types {
 		void InitializeBlur(bool bReload = false);
 		void DestroyBlur();
 		void ScheduleRenderUpdate(bool bFull = false);
+		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 	};
 };
 export {

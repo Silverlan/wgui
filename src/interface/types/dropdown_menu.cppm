@@ -14,17 +14,6 @@ export namespace pragma::gui::types {
 	class DLLWGUI WIDropDownMenuOption : public WIBase {
 	  public:
 		friend WIDropDownMenu;
-	  protected:
-		int m_index;
-
-		bool m_selected = false;
-		WIHandle m_hBackground;
-		WIHandle m_hText;
-		WIHandle m_dropDownMenu;
-		std::string m_value;
-
-		void UpdateTextPos();
-		void SetDropDownMenu(WIDropDownMenu *menu);
 	  public:
 		WIDropDownMenuOption();
 		virtual ~WIDropDownMenuOption() override;
@@ -36,32 +25,26 @@ export namespace pragma::gui::types {
 		void SetText(const string::Utf8StringArg &text);
 		string::Utf8StringView GetText() const;
 		WIText *GetTextElement();
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
 		virtual void OnCursorEntered() override;
 		virtual void OnCursorExited() override;
 		virtual void OnVisibilityChanged(bool bVisible) override;
 		WIDropDownMenu *GetDropDownMenu();
 		bool IsSelected() const;
+	  protected:
+		int m_index;
+
+		bool m_selected = false;
+		WIHandle m_hBackground;
+		WIHandle m_hText;
+		WIHandle m_dropDownMenu;
+		std::string m_value;
+
+		void UpdateTextPos();
+		void SetDropDownMenu(WIDropDownMenu *menu);
+		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 	};
 
 	class DLLWGUI WIDropDownMenu : public WITextEntry {
-	  protected:
-		unsigned int m_numListItems;
-		unsigned int m_listOffset;
-		int m_selected;
-
-		WIHandle m_hOutline;
-		WIHandle m_hArrow;
-		WIHandle m_hList;
-		CallbackHandle m_cbListWindowUpdate;
-		WIHandle m_hScrollBar;
-		std::vector<WIHandle> m_options;
-
-		void UpdateTextPos();
-		void UpdateText();
-		virtual void OnTextChanged(const string::Utf8String &text, bool changedByUser) override;
-		void UpdateListWindow();
-		void UpdateOptionItems(std::optional<uint32_t> oldOffset);
 	  public:
 		WIDropDownMenu();
 		virtual ~WIDropDownMenu() override;
@@ -101,6 +84,23 @@ export namespace pragma::gui::types {
 		void ToggleMenu();
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-		virtual void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User) override;
+	  protected:
+		unsigned int m_numListItems;
+		unsigned int m_listOffset;
+		int m_selected;
+
+		WIHandle m_hOutline;
+		WIHandle m_hArrow;
+		WIHandle m_hList;
+		CallbackHandle m_cbListWindowUpdate;
+		WIHandle m_hScrollBar;
+		std::vector<WIHandle> m_options;
+
+		void UpdateTextPos();
+		void UpdateText();
+		virtual void OnTextChanged(const string::Utf8String &text, bool changedByUser) override;
+		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
+		void UpdateListWindow();
+		void UpdateOptionItems(std::optional<uint32_t> oldOffset);
 	};
 };

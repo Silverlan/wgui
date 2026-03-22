@@ -58,14 +58,14 @@ void pragma::gui::types::WITextEntry::SetKeyboardInputEnabled(bool b)
 		return;
 	m_hBase->SetKeyboardInputEnabled(b);
 }
-void pragma::gui::types::WITextEntry::SizeToContents(bool x, bool y)
+void pragma::gui::types::WITextEntry::SizeToContents(bool x, bool y, ChangeSource changeSource)
 {
 	if(m_hBase.IsValid()) {
-		m_hBase->SizeToContents(x, y);
-		SetSize(m_hBase->GetSize());
+		m_hBase->SizeToContents(x, y, changeSource);
+		SetSize(m_hBase->GetWidth(), m_hBase->GetHeight(), changeSource);
 	}
 	else
-		WIBase::SizeToContents(x, y);
+		WIBase::SizeToContents(x, y, changeSource);
 }
 void pragma::gui::types::WITextEntry::SetColor(float r, float g, float b, float a)
 {
@@ -160,40 +160,41 @@ void pragma::gui::types::WITextEntry::OnContentsChanged()
 		if(pText && pText->ShouldAutoSizeToText()) {
 			//pBase->SizeToContents();
 			if(pText->GetAutoBreakMode() != WIText::AutoBreak::NONE)
-				SetHeight(pBase->GetHeight());
+				ApplyHeight(pBase->GetHeight());
 		}
 	}
 	CallCallbacks<void>("OnContentsChanged");
 }
 
-void pragma::gui::types::WITextEntry::SetSize(int x, int y, ChangeSource changeSource)
+void pragma::gui::types::WITextEntry::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y, changeSource);
+	auto w = GetWidth();
+	auto h = GetHeight();
 	if(m_hBase.IsValid()) {
 		auto *pBase = static_cast<WITextEntryBase *>(m_hBase.get());
 		auto *pText = pBase->GetTextElement();
 		if(IsMultiLine() == false) {
-			auto yBase = y - 10;
+			auto yBase = h - 10;
 			if(pText != nullptr) {
 				auto *font = pText->GetFont();
 				if(font != nullptr)
 					yBase = math::max(static_cast<uint32_t>(yBase), font->GetSize());
 			}
-			pBase->SetSize(x - 10, yBase);
-			pBase->SetPos(5, (y - yBase) / 2);
+			pBase->SetSize(w - 10, yBase);
+			pBase->SetPos(5, (h - yBase) / 2);
 		}
 		else {
-			pBase->SetSize(x, y);
+			pBase->SetSize(w, h);
 			pBase->SetPos(0, 0);
 		}
 	}
 	if(m_hOutline.IsValid()) {
 		WIOutlinedRect *pRect = static_cast<WIOutlinedRect *>(m_hOutline.get());
-		pRect->SetSize(x, y);
+		pRect->SetSize(w, h);
 	}
 	if(m_hBg.IsValid()) {
 		WIRect *pBg = static_cast<WIRect *>(m_hBg.get());
-		pBg->SetSize(x, y);
+		pBg->SetSize(w, h);
 	}
 }
 
@@ -383,8 +384,4 @@ void pragma::gui::types::WINumericEntry::UpdateArrowPositions()
 	m_numeric.hDownArrow->SetPos(w - m_numeric.hDownArrow->GetWidth() - 4, GetHeight() - m_numeric.hDownArrow->GetHeight() - 2);
 }
 
-void pragma::gui::types::WINumericEntry::SetSize(int x, int y)
-{
-	WITextEntry::SetSize(x, y);
-	UpdateArrowPositions();
-}
+void pragma::gui::types::WINumericEntry::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) { UpdateArrowPositions(); }

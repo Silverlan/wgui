@@ -49,9 +49,8 @@ void pragma::gui::types::WIContentWrapper::SetPaddingTopBottom(int32_t border)
 	UpdateChildElement();
 }
 
-void pragma::gui::types::WIContentWrapper::SetSize(int x, int y, ChangeSource changeSource)
+void pragma::gui::types::WIContentWrapper::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y, changeSource);
 	if(m_skipChildResize)
 		return;
 	UpdateChildElement();

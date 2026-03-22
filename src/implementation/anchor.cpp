@@ -16,15 +16,17 @@ static pragma::gui::Anchor::StateFlags edge_to_availability_flag(pragma::gui::An
 		return pragma::gui::Anchor::StateFlags::TopEdgeEnabled;
 	case pragma::gui::Anchor::Edge::Bottom:
 		return pragma::gui::Anchor::StateFlags::BottomEdgeEnabled;
+	case pragma::gui::Anchor::Edge::HorizontalCenter:
+		return pragma::gui::Anchor::StateFlags::HorizontalCenterEnabled;
+	case pragma::gui::Anchor::Edge::VerticalCenter:
+		return pragma::gui::Anchor::StateFlags::VerticalCenterEnabled;
 	}
+	static_assert(pragma::math::to_integral(pragma::gui::Anchor::Edge::Count) == 6, "Update this list when new enums are added!");
 	std::unreachable();
 	return {};
 }
 bool pragma::gui::Anchor::IsEdgeEnabled(Edge edge) const { return math::is_flag_set(stateFlags, edge_to_availability_flag(edge)); }
 void pragma::gui::Anchor::SetEdgeEnabled(Edge edge, bool enabled) { math::set_flag(stateFlags, edge_to_availability_flag(edge), enabled); }
-
-bool pragma::gui::Anchor::IsInitialized() const { return math::is_flag_set(stateFlags, StateFlags::Initialized); }
-void pragma::gui::Anchor::SetInitialized(bool initialized) { math::set_flag(stateFlags, StateFlags::Initialized, initialized); }
 
 pragma::gui::WIAttachment::WIAttachment(types::WIBase &owner, const Vector2 &pos) : m_hOwner {owner.GetHandle()}, m_absPosProperty {util::Vector2iProperty::Create(pos)} {}
 void pragma::gui::WIAttachment::UpdateAbsolutePosition()

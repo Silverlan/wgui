@@ -53,7 +53,7 @@ export namespace pragma::gui {
 			void SetEndColor(const Color &col);
 			const Color &GetStartColor() const;
 			const Color &GetEndColor() const;
-			virtual void SizeToContents(bool x = true, bool y = true) override;
+			virtual void SizeToContents(bool x = true, bool y = true, ChangeSource changeSource = ChangeSource::User) override;
 			virtual unsigned int GetVertexCount() override;
 			virtual void Render(const DrawInfo &drawInfo, DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale = {1.f, 1.f}, uint32_t testStencilLevel = 0u, StencilPipeline stencilPipeline = StencilPipeline::Test) override;
 			virtual Mat4 GetTransformPose(const Vector2i &origin, int w, int h, const Mat4 &poseParent, const Vector2 &scale = {1.f, 1.f}) const override;

@@ -193,12 +193,10 @@ void pragma::gui::types::WIText::Initialize()
 
 pragma::gui::types::WITextBase *pragma::gui::types::WIText::GetBaseElement() { return static_cast<WITextBase *>(m_baseEl.get()); }
 
-void pragma::gui::types::WIText::SetSize(int x, int y, ChangeSource changeSource)
+void pragma::gui::types::WIText::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
 {
-	auto oldWidth = GetWidth();
-	WIBase::SetSize(x, y, changeSource);
-	if(x != oldWidth && m_autoBreak != AutoBreak::NONE)
-		SizeToContents();
+	if(GetWidth() != oldSize.x && m_autoBreak != AutoBreak::NONE)
+		SizeToContents(true, true, changeSource);
 }
 
 const pragma::gui::FontInfo *pragma::gui::types::WIText::GetFont() const { return m_font.get(); }
@@ -259,7 +257,7 @@ void pragma::gui::types::WIText::SetFont(const FontInfo *font, bool reload)
 		FontManager::InitializeFontGlyphs(GetText(), *m_font);
 	SetDirty();
 	if(ShouldAutoSizeToText())
-		SizeToContents();
+		SizeToContents(true, true, ChangeSource::Content);
 	CallCallbacks<void, const FontInfo *>("OnFontChanged", font);
 }
 void pragma::gui::types::WIText::ReloadFont()
@@ -344,7 +342,7 @@ void pragma::gui::types::WIText::Think(const std::shared_ptr<prosper::IPrimaryCo
 void pragma::gui::types::WIText::SetDirty() { SetFlag(Flags::TextDirty); }
 bool pragma::gui::types::WIText::IsDirty() const { return math::is_flag_set(m_flags, Flags::TextDirty); }
 
-void pragma::gui::types::WIText::SizeToContents(bool x, bool y)
+void pragma::gui::types::WIText::SizeToContents(bool x, bool y, ChangeSource changeSource)
 {
 	int w, h;
 	GetTextSize(&w, &h);
@@ -362,11 +360,11 @@ void pragma::gui::types::WIText::SizeToContents(bool x, bool y)
 		h += shadowOffset.y;
 	}
 	if(x && y)
-		ApplySize(w, h);
+		SetSize(w, h, changeSource);
 	else if(x)
-		ApplyWidth(w);
+		SetWidth(w, false, changeSource);
 	else if(y)
-		ApplyHeight(h);
+		SetHeight(h, false, changeSource);
 }
 
 pragma::gui::types::WIText::AutoBreak pragma::gui::types::WIText::GetAutoBreakMode() const { return m_autoBreak; }
@@ -377,7 +375,7 @@ void pragma::gui::types::WIText::SetAutoBreakMode(AutoBreak b)
 		return;
 	m_autoBreak = b;
 	SetAutoSizeToText(b != AutoBreak::NONE);
-	SizeToContents();
+	SizeToContents(true, true, ChangeSource::Content);
 }
 
 void pragma::gui::types::WIText::AppendText(const string::Utf8StringArg &text) { m_text->AppendText(text); }

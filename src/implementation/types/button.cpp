@@ -19,7 +19,6 @@ void pragma::gui::types::WIButton::Initialize()
 	SetSize(64, 28);
 	m_text = CreateChild<WIText>();
 }
-void pragma::gui::types::WIButton::SetSize(int x, int y, ChangeSource changeSource) { WIBase::SetSize(x, y, changeSource); }
 void pragma::gui::types::WIButton::SetText(const string::Utf8StringArg &text)
 {
 	if(!m_text.IsValid())
@@ -55,7 +54,7 @@ pragma::util::EventReply pragma::gui::types::WIButton::MouseCallback(platform::M
 	return util::EventReply::Handled;
 }
 
-void pragma::gui::types::WIButton::SizeToContents(bool x, bool y)
+void pragma::gui::types::WIButton::SizeToContents(bool x, bool y, ChangeSource changeSource)
 {
 	if(!m_text.IsValid())
 		return;
@@ -63,9 +62,9 @@ void pragma::gui::types::WIButton::SizeToContents(bool x, bool y)
 	auto w = pText->GetWidth();
 	auto h = pText->GetHeight();
 	if(x && y)
-		SetSize(w + 30, h + 15);
+		SetSize(w + 30, h + 15, changeSource);
 	else if(x)
-		SetWidth(w + 30);
+		SetWidth(w + 30, false, changeSource);
 	else if(y)
-		SetHeight(h + 15);
+		SetHeight(h + 15, false, changeSource);
 }

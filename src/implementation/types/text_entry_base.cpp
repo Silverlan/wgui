@@ -160,15 +160,16 @@ void pragma::gui::types::WITextEntryBase::OnEnter()
 	CallCallbacks<void>("OnTextEntered");
 }
 
-void pragma::gui::types::WITextEntryBase::SetSize(int x, int y, ChangeSource changeSource)
+void pragma::gui::types::WITextEntryBase::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
 {
-	WIBase::SetSize(x, y, changeSource);
 	if(m_hText.IsValid()) {
+		auto w = GetWidth();
+		auto h = GetHeight();
 		WIText *pText = static_cast<WIText *>(m_hText.get());
 		if(pText->ShouldAutoSizeToText() == false)
-			pText->SetSize(x, y);
+			pText->ApplySize(w, h);
 		else
-			pText->SetWidth(x);
+			pText->ApplyWidth(w);
 		if(m_hCaret.IsValid()) {
 			auto *font = pText->GetFont();
 			if(font != NULL)

@@ -79,26 +79,22 @@ pragma::util::EventReply pragma::gui::types::WIMenuItem::MouseCallback(platform:
 	m_fOnAction();
 	return util::EventReply::Unhandled;
 }
-void pragma::gui::types::WIMenuItem::SetSize(int x, int y, ChangeSource changeSource)
-{
-	WIBase::SetSize(x, y, changeSource);
-	UpdateRightText();
-}
+void pragma::gui::types::WIMenuItem::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) { UpdateRightText(); }
 const auto border = 8u;
-void pragma::gui::types::WIMenuItem::SizeToContents(bool x, bool y)
+void pragma::gui::types::WIMenuItem::SizeToContents(bool x, bool y, ChangeSource changeSource)
 {
 	if(m_hText.IsValid() == false)
 		return;
 	auto sz = m_hText->GetSize();
 	sz.x += border * 2;
 	if(x && y)
-		SetSize(sz);
+		SetSize(sz.x, sz.y, changeSource);
 	else if(x)
-		SetWidth(sz.x);
+		SetWidth(sz.x, false, changeSource);
 	else if(y)
-		SetHeight(sz.y);
-	m_hText->SetX(border);
-	m_hText->SetY(GetHeight() * 0.5f - m_hText->GetHeight() * 0.5f);
+		SetHeight(sz.y, false, changeSource);
+	m_hText->SetX(border, changeSource);
+	m_hText->SetY(GetHeight() * 0.5f - m_hText->GetHeight() * 0.5f, changeSource);
 }
 void pragma::gui::types::WIMenuItem::SetAction(const std::function<void(void)> &fOnClickAction) { m_fOnAction = fOnClickAction; }
 void pragma::gui::types::WIMenuItem::SetKeybindCommand(const std::string &cmd) { m_keyBindCommand = cmd; }

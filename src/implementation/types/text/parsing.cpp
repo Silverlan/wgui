@@ -157,5 +157,5 @@ void pragma::gui::types::WIText::AutoSizeToText()
 		GetTextSize(&w, &h);
 	else
 		w = GetWidth();
-	WIBase::SetSize(w, GetTextHeight());
+	WIBase::SetSize(w, GetTextHeight(), ChangeSource::Content);
 }

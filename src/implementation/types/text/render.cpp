@@ -793,8 +793,8 @@ void pragma::gui::types::WITextBase::Render(const DrawInfo &drawInfo, DrawState 
 		if(col.a <= 0.f && math::is_flag_set(m_stateFlags, StateFlags::RenderIfZeroAlpha) == false)
 			return;
 		col.a *= GetLocalAlpha();
-		auto currentSize = GetSizeProperty()->GetValue();
-		auto &size = GetSizeProperty()->GetValue();
+		auto currentSize = GetSize();
+		auto &size = m_size;
 
 		//auto matText = GetTransformedMatrix(origin,width,height,matParent);
 
@@ -810,8 +810,8 @@ void pragma::gui::types::WITextBase::Render(const DrawInfo &drawInfo, DrawState 
 			auto *pShadowColor = textEl.GetShadowColor();
 			if(pShadowColor != nullptr && pShadowColor->w > 0.f) {
 				auto *pOffset = textEl.GetShadowOffset();
-				auto currentPos = GetPosProperty()->GetValue();
-				auto &pos = GetPosProperty()->GetValue();
+				auto currentPos = GetPos();
+				auto &pos = m_pos;
 				if(pOffset != nullptr) {
 					pos.x += pOffset->x;
 					pos.y += pOffset->y;
