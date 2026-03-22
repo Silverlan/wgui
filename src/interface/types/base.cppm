@@ -39,6 +39,8 @@ export namespace pragma::gui {
 		Count,
 	};
 
+	DLLWGUI bool is_valid(const WIHandle &hEl);
+
 	class WISkin;
 	class WGUI;
 	namespace types {
@@ -55,9 +57,7 @@ export namespace pragma::gui {
 				MouseCheckEnabledBit = AcceptScrollInputBit << 1u,
 				AutoAlignToParentXBit = MouseCheckEnabledBit << 1u,
 				AutoAlignToParentYBit = AutoAlignToParentXBit << 1u,
-				AutoCenterToParentXBit = AutoAlignToParentYBit << 1u,
-				AutoCenterToParentYBit = AutoCenterToParentXBit << 1u,
-				TrapFocusBit = AutoCenterToParentYBit << 1u,
+				TrapFocusBit = AutoAlignToParentYBit << 1u,
 				ShouldScissorBit = TrapFocusBit << 1u,
 				UpdateScheduledBit = ShouldScissorBit << 1u,
 				RemoveScheduledBit = UpdateScheduledBit << 1u,
@@ -84,7 +84,6 @@ export namespace pragma::gui {
 				IsInThinkingList = SkinCallbacksEnabled << 1u,
 				FileDropInputEnabled = IsInThinkingList << 1u,
 				FileDropHover = FileDropInputEnabled << 1u,
-				HasPivot = FileDropHover << 1u,
 			};
 			static void CalcBounds(const Mat4 &mat, int32_t w, int32_t h, Vector2i &outPos, Vector2i &outSize);
 
@@ -347,14 +346,6 @@ export namespace pragma::gui {
 			std::pair<Vector2, Vector2> GetAnchorBounds() const;
 			std::pair<Vector2, Vector2> GetAnchorBounds(uint32_t refWidth, uint32_t refHeight) const;
 
-			void SetPivot(const Vector2 &pivot);
-			void SetPivot(float x, float y);
-			const Vector2 &GetPivot() const;
-			Vector2 GetPivotOffset() const;
-			void SetPivotPos(const Vector2 &pos, ChangeSource changeSource = ChangeSource::User);
-			Vector2 GetPivotPos() const;
-			bool HasPivot() const;
-
 			uint32_t GetDepth() const { return m_depth; }
 
 			WIBase *Wrap(const std::string &wrapperClass);
@@ -403,9 +394,7 @@ export namespace pragma::gui {
 		  protected:
 			virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changedSource);
 			virtual void OnPosChanged(const Vector2i &oldPos, ChangeSource changedSource);
-			Vector2 GetPivotOffset(const Vector2i &size) const;
 			void InitializeAnchor(Anchor::EdgeFlags edges);
-			void UpdateCenterToParentPivot();
 			void UpdateAlignToParent();
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
 			Mat4 GetAbsolutePose(float x, float y) const;
@@ -439,7 +428,6 @@ export namespace pragma::gui {
 			std::string m_toolTip;
 			std::unique_ptr<Mat4> m_rotationMatrix = nullptr;
 			std::optional<Anchor> m_anchor = {};
-			Vector2 m_pivot {0.f, 0.f};
 			std::unordered_map<std::string, std::shared_ptr<WIAttachment>> m_attachments = {};
 			std::unique_ptr<WIFadeInfo> m_fade = nullptr;
 			platform::Cursor::Shape m_cursor = {};
@@ -466,8 +454,6 @@ export namespace pragma::gui {
 			virtual void OnVisibilityChanged(bool bVisible);
 			WISkin *GetSkin();
 			void SetAutoAlignToParent(bool bX, bool bY, bool bReload);
-			void SetAutoCenterToParentX(bool b, bool bReload);
-			void SetAutoCenterToParentY(bool b, bool bReload);
 			virtual void OnChildAdded(WIBase *child);
 			virtual void OnChildRemoved(WIBase *child);
 			virtual void OnRemove();

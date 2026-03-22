@@ -12,7 +12,7 @@ module pragma.gui;
 
 import :types.base;
 
-static bool is_valid(const pragma::gui::WIHandle &hEl) { return hEl.IsValid() && !hEl->IsRemovalScheduled(); }
+bool pragma::gui::is_valid(const pragma::gui::WIHandle &hEl) { return hEl.IsValid() && !hEl->IsRemovalScheduled(); }
 
 pragma::gui::types::WIBase::WIBase()
     : CallbackHandler(), m_cursor(platform::Cursor::Shape::Default), m_color(util::ColorProperty::Create(colors::White)), m_bVisible(util::BoolProperty::Create(true)), m_bHasFocus(util::BoolProperty::Create(false)), m_bMouseInBounds(util::BoolProperty::Create(false)),
@@ -193,47 +193,24 @@ void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY, bool bRe
 	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentXBit, bX);
 	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentYBit, bY);
 }
-void pragma::gui::types::WIBase::UpdateCenterToParentPivot()
+void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b)
 {
-	Vector2 pivot {0.f, 0.f};
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit))
-		pivot.x = 0.5f;
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit))
-		pivot.y = 0.5f;
-	SetPivot(pivot);
+	if(b)
+		SetAnchorHorizontalCenter();
+	else
+		SetAnchorEdgeEnabled(Anchor::Edge::HorizontalCenter, false);
+	UpdateAnchorTransform();
 }
-void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b, bool bReload)
+void pragma::gui::types::WIBase::SetAutoCenterToParentY(bool b)
 {
-	if(b == math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) && (bReload == false || b == false))
-		return;
-	math::set_flag(m_stateFlags, StateFlags::AutoCenterToParentXBit, b);
-	UpdateCenterToParentPivot();
-	SetAnchorEdgeEnabled(Anchor::Edge::Left, false);
-	SetAnchorEdgeEnabled(Anchor::Edge::Right, false);
-	if(b) {
-		CenterToParentX();
-		SetAnchor(Anchor::Edge::Left, 0.5f);
-		SetAnchor(Anchor::Edge::Right, 0.5f);
-	}
-}
-void pragma::gui::types::WIBase::SetAutoCenterToParentY(bool b, bool bReload)
-{
-	if(b == math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) && (bReload == false || b == false))
-		return;
-	math::set_flag(m_stateFlags, StateFlags::AutoCenterToParentYBit, b);
-	UpdateCenterToParentPivot();
-	SetAnchorEdgeEnabled(Anchor::Edge::Top, false);
-	SetAnchorEdgeEnabled(Anchor::Edge::Bottom, false);
-	if(b) {
-		CenterToParentY();
-		SetAnchor(Anchor::Edge::Top, 0.5f);
-		SetAnchor(Anchor::Edge::Bottom, 0.5f);
-	}
+	if(b)
+		SetAnchorVerticalCenter();
+	else
+		SetAnchorEdgeEnabled(Anchor::Edge::VerticalCenter, false);
+	UpdateAnchorTransform();
 }
 void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY) { SetAutoAlignToParent(bX, bY, false); }
 void pragma::gui::types::WIBase::SetAutoAlignToParent(bool b) { SetAutoAlignToParent(b, b, false); }
-void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b) { SetAutoCenterToParentX(b, false); }
-void pragma::gui::types::WIBase::SetAutoCenterToParentY(bool b) { SetAutoCenterToParentY(b, false); }
 void pragma::gui::types::WIBase::SetAutoCenterToParent(bool b)
 {
 	SetAutoCenterToParentX(b);
@@ -320,7 +297,7 @@ static void InsertGUIElement(std::vector<pragma::gui::WIHandle> &elements, const
 		int zpos = pChild->GetZPos();
 		int numElements = static_cast<int>(elements.size());
 		for(int i = numElements - 1; i >= 0; i--) {
-			if(is_valid(elements[i])) {
+			if(pragma::gui::is_valid(elements[i])) {
 				pragma::gui::types::WIBase *p = elements[i].get();
 				if(zpos >= p->GetZPos()) {
 					elements.insert(elements.begin() + i + 1, hElement);
@@ -1003,6 +980,7 @@ void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource
 		pair.second->UpdateAbsolutePosition();
 	if(changeSource != ChangeSource::Layout)
 		UpdateAnchorOffsets(Anchor::EdgeFlags::Left | Anchor::EdgeFlags::Right | Anchor::EdgeFlags::Top | Anchor::EdgeFlags::Bottom);
+	UpdateAnchorTransform(true);
 	CallCallbacks<void>("OnSizeChanged");
 	auto hasAutoAlignChild = false;
 	for(auto &hChild : m_children) {
@@ -1014,11 +992,6 @@ void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource
 			hasAutoAlignChild = true;
 	}
 
-	if(HasPivot()) {
-		UpdateAnchorTransform(true);
-		// Restore pivot position
-		SetPivotPos(Vector2 {GetPos()} + GetPivotOffset(oldSize), changeSource);
-	}
 	if(hasAutoAlignChild) {
 		for(auto &hChild : m_children) {
 			if(is_valid(hChild) == false)
@@ -1732,24 +1705,6 @@ void pragma::gui::types::WIBase::UpdateAnchorTransform(bool positionOnly)
 		ApplySize(sz);
 	ApplyPos(elMin);
 }
-void pragma::gui::types::WIBase::SetPivot(const Vector2 &pivot)
-{
-	m_pivot = pivot;
-	auto pivotEnabled = math::abs(m_pivot.x) > 0.0001f || math::abs(m_pivot.y) > 0.0001f;
-	math::set_flag(m_stateFlags, StateFlags::HasPivot, pivotEnabled);
-}
-void pragma::gui::types::WIBase::SetPivot(float x, float y) { SetPivot(Vector2 {x, y}); }
-const Vector2 &pragma::gui::types::WIBase::GetPivot() const { return m_pivot; }
-Vector2 pragma::gui::types::WIBase::GetPivotOffset(const Vector2i &size) const { return Vector2 {m_pivot.x * size.x, m_pivot.y * size.y}; }
-Vector2 pragma::gui::types::WIBase::GetPivotOffset() const { return GetPivotOffset(GetSize()); }
-void pragma::gui::types::WIBase::SetPivotPos(const Vector2 &pos, ChangeSource changeSource)
-{
-	auto offset = GetPivotOffset();
-	auto newPos = pos - offset;
-	SetPos(math::round(newPos.x), math::round(newPos.y), changeSource);
-}
-Vector2 pragma::gui::types::WIBase::GetPivotPos() const { return Vector2 {GetPos()} + GetPivotOffset(); }
-bool pragma::gui::types::WIBase::HasPivot() const { return math::is_flag_set(m_stateFlags, StateFlags::HasPivot); }
 void pragma::gui::types::WIBase::Remove()
 {
 	if(math::is_flag_set(m_stateFlags, StateFlags::IsBeingRemoved))
@@ -1840,10 +1795,6 @@ void pragma::gui::types::WIBase::SetParent(WIBase *base, std::optional<uint32_t>
 		m_parent = WIHandle();
 		if(GetAutoAlignToParent() == true)
 			SetAutoAlignToParent(true, true);
-		if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) == true)
-			SetAutoCenterToParentX(true, true);
-		if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) == true)
-			SetAutoCenterToParentY(true, true);
 		UpdateVisibility();
 		UpdateParentThink();
 		return;
@@ -1854,11 +1805,6 @@ void pragma::gui::types::WIBase::SetParent(WIBase *base, std::optional<uint32_t>
 
 	if((m_stateFlags & (StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit)) != StateFlags::None)
 		SetAutoAlignToParent(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit), math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit), true);
-
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentXBit) == true)
-		SetAutoCenterToParentX(true, true);
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoCenterToParentYBit) == true)
-		SetAutoCenterToParentY(true, true);
 
 	UpdateVisibility();
 	UpdateParentThink();

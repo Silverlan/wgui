@@ -42,7 +42,6 @@ uint32_t pragma::gui::types::WIRoot::GetFocusCount() const { return m_focusCount
 void pragma::gui::types::WIRoot::SetFocusCount(uint32_t focusCount) { m_focusCount = focusCount; }
 std::deque<pragma::gui::WIHandle> &pragma::gui::types::WIRoot::GetFocusTrapStack() { return m_focusTrapStack; }
 
-bool is_valid(const pragma::gui::WIHandle &hEl);
 void pragma::gui::types::WIRoot::RestoreTrappedFocus(WIBase *elRef)
 {
 	for(auto it = m_focusTrapStack.rbegin(); it != m_focusTrapStack.rend();) {
