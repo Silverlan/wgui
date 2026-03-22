@@ -802,28 +802,20 @@ void pragma::gui::types::WITextBase::Render(const DrawInfo &drawInfo, DrawState 
 		Vector2i absPos, absSize;
 		CalcBounds(matDraw, drawInfo.size.x, drawInfo.size.y, absPos, absSize);
 		auto &commandBuffer = drawInfo.commandBuffer;
-		const auto fDraw = [&context, &commandBuffer, &pushConstants, &size, &drawInfo, &drawState, &matDraw, this, &textEl, &absPos, &absSize, &scale, testStencilLevel, stencilPipeline](
-		                     bool bClear) { RenderLines(commandBuffer, drawInfo, drawState, absPos, matDraw, scale, size, pushConstants, testStencilLevel, stencilPipeline); };
 
 		// Render Shadow
 		if(textEl.m_shadow.enabled) {
 			auto *pShadowColor = textEl.GetShadowColor();
 			if(pShadowColor != nullptr && pShadowColor->w > 0.f) {
 				auto *pOffset = textEl.GetShadowOffset();
-				auto currentPos = GetPos();
-				auto &pos = m_pos;
-				if(pOffset != nullptr) {
-					pos.x += pOffset->x;
-					pos.y += pOffset->y;
-				}
-				auto tmpMatrix = pushConstants.elementData.modelMatrix;
+				auto shadowDrawInfo = drawInfo;
+
+				if(pOffset != nullptr)
+					shadowDrawInfo.offset += *pOffset;
+
 				auto tmpColor = pushConstants.elementData.color;
-				pushConstants.elementData.modelMatrix = GetTransformPose(drawInfo.offset, drawInfo.size.x, drawInfo.size.y, drawInfo.transform /* parent transform */, scale);
-				if(pShadowColor != nullptr)
-					pushConstants.elementData.color = *pShadowColor;
-				fDraw(true); // TODO: Render text shadow shadow at the same time? (Single framebuffer)
-				pos = currentPos;
-				pushConstants.elementData.modelMatrix = tmpMatrix;
+				pushConstants.elementData.color = *pShadowColor;
+				RenderLines(commandBuffer, shadowDrawInfo, drawState, absPos, matDraw, scale, size, pushConstants, testStencilLevel, stencilPipeline);
 				pushConstants.elementData.color = tmpColor;
 
 				/*if(m_shadow.blurSize != 0.f && m_shadowBlurSet != nullptr)
@@ -840,7 +832,7 @@ void pragma::gui::types::WITextBase::Render(const DrawInfo &drawInfo, DrawState 
 		//
 
 		// Render Text
-		fDraw(false);
+		RenderLines(commandBuffer, drawInfo, drawState, absPos, matDraw, scale, size, pushConstants, testStencilLevel, stencilPipeline);
 		//
 
 		// Reset size

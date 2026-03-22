@@ -199,11 +199,10 @@ export namespace pragma::gui::types {
 		static void ClearTextBuffer();
 	  private:
 		struct WITextShadowInfo {
-			WITextShadowInfo() : enabled(false), blurSize(0.f) {}
-			Vector2i offset;
-			bool enabled;
-			Vector4 color;
-			float blurSize;
+			Vector2i offset = {1, 1};
+			bool enabled = false;
+			Vector4 color = {0.f, 0.f, 0.f, 1.f};
+			float blurSize = 0.f;
 		};
 	  private:
 		static std::shared_ptr<prosper::IUniformResizableBuffer> s_textBuffer;
