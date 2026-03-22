@@ -70,7 +70,7 @@ void pragma::gui::types::WIContentWrapper::UpdateChildElement()
 	pChild->SetSize(size.x - m_padding.left - m_padding.right, size.y - m_padding.top - m_padding.bottom);
 	m_skipCallback = false;
 	if(m_onChildSizeChanged.IsValid() == false) {
-		m_onChildSizeChanged = pChild->AddCallback("SetSize", FunctionCallback<void>::Create([this, pChild]() {
+		m_onChildSizeChanged = pChild->AddCallback("OnSizeChanged", FunctionCallback<void>::Create([this, pChild]() {
 			if(m_skipCallback || m_skipChildResize)
 				return;
 			m_skipChildResize = true;

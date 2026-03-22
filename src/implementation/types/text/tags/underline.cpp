@@ -9,7 +9,7 @@ void pragma::gui::WITextTagUnderline::InitializeOverlay(types::WIBase &overlay)
 {
 	auto *pUnderline = WGUI::GetInstance().Create<types::WIRect>(&overlay);
 	auto hOverlay = overlay.GetHandle();
-	overlay.AddCallback("SetSize", FunctionCallback<void>::Create([this, pUnderline, hOverlay]() {
+	overlay.AddCallback("OnSizeChanged", FunctionCallback<void>::Create([this, pUnderline, hOverlay]() {
 		if(hOverlay.IsValid() == false)
 			return;
 		pUnderline->SetPos(Vector2i {0, hOverlay.get()->GetHeight() - 1});
