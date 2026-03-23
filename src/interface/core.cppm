@@ -55,10 +55,23 @@ export namespace pragma::gui {
 		CLASS_ENUM_COMPAT prosper::SampleCountFlags MSAA_SAMPLE_COUNT;
 #endif
 	}
+
+	struct DLLWGUI LocalizedString {
+		using FormatArg = std::variant<string::Utf8String, LocalizedString>;
+
+		std::string key;
+		std::vector<FormatArg> args;
+		string::Utf8String Resolve() const;
+		bool IsValid() const { return !key.empty(); }
+	};
+	using TextArg = std::variant<string::Utf8String, LocalizedString>;
+	using Loc = LocalizedString;
+
 	using Element = types::WIBase;
 	class DLLWGUI WGUI : public prosper::ContextObject {
 	  public:
 		friend Element;
+		using LocaleResolver = std::function<string::Utf8String(const std::string &, const std::vector<string::Utf8String> &)>;
 		enum class ElementBuffer : uint32_t {
 			SizeColor = sizeof(Vector4),
 			SizeMVP = sizeof(Mat4),
@@ -145,6 +158,10 @@ export namespace pragma::gui {
 		void SetCreateCallback(const std::function<void(Element &)> &onCreate);
 		void SetRemoveCallback(const std::function<void(Element &)> &onRemove);
 		void SetFocusCallback(const std::function<void(Element *, Element *)> &onFocusChanged);
+
+		string::Utf8String GetLocalizedText(const std::string &key, const std::vector<string::Utf8String> &args = {}) const;
+		void SetLocaleResolver(const LocaleResolver &resolver);
+		void RefreshLocale();
 
 		types::WIRoot *FindWindowRootElement(const prosper::Window &window);
 		types::WIRoot *FindWindowRootElementUnderCursor();
@@ -239,6 +256,7 @@ export namespace pragma::gui {
 		void ClearWindow(const prosper::Window &window);
 		std::vector<WIHandle> m_windowRootElements {};
 		uint64_t m_nextGuiElementIndex = 0u;
+		LocaleResolver m_localeResolver;
 
 		// In general very few elements actually need to apply any continuous logic,
 		// so we keep a separate reference to those elements for better efficiency.

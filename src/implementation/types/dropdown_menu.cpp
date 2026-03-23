@@ -245,14 +245,14 @@ void pragma::gui::types::WIDropDownMenu::UpdateTextPos()
 
 void pragma::gui::types::WIDropDownMenu::OnOptionSelected(WIDropDownMenuOption *option) { SelectOption(option->GetIndex()); }
 
-pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const std::string &option, const std::string &value)
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddTextOption(const TextArg &text, const std::string &value)
 {
 	if(!m_hList.IsValid())
 		return nullptr;
 	WIDropDownMenuOption *pOption = WGUI::GetInstance().Create<WIDropDownMenuOption>(m_hList.get());
 	WIHandle hOption = pOption->GetHandle();
 	pOption->SetDropDownMenu(this);
-	pOption->SetText(option);
+	std::visit([pOption](auto &&text) { pOption->SetText(text); }, text);
 	pOption->SetHeight(OPTION_HEIGHT);
 	pOption->SetIndex(static_cast<int>(m_options.size()));
 	pOption->SetValue(value);
@@ -292,11 +292,19 @@ pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::Ad
 	ScheduleUpdate();
 	return pOption;
 }
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const string::Utf8StringArg &option, const std::string &value) { return AddTextOption(TextArg {option->to_str()}, value); }
 
-pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const std::string &option)
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const string::Utf8StringArg &option)
 {
 	auto idx = m_options.size();
 	return AddOption(option, std::to_string(idx));
+}
+
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const LocalizedString &str, const std::string &value) { return AddTextOption(TextArg {str}, value); }
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const LocalizedString &str)
+{
+	auto idx = m_options.size();
+	return AddOption(str, std::to_string(idx));
 }
 
 pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::GetOptionElement(uint32_t idx)
@@ -575,6 +583,23 @@ void pragma::gui::types::WIDropDownMenuOption::SetText(const string::Utf8StringA
 	pText->SetX(MARGIN_LEFT);
 	pText->SizeToContents();
 	UpdateTextPos();
+}
+
+void pragma::gui::types::WIDropDownMenuOption::SetText(const LocalizedString &str)
+{
+	if(!m_hText.IsValid())
+		return;
+	WIText *pText = static_cast<WIText *>(m_hText.get());
+	pText->SetText(str);
+	pText->SetX(MARGIN_LEFT);
+	pText->SizeToContents();
+	UpdateTextPos();
+}
+const pragma::gui::LocalizedString *pragma::gui::types::WIDropDownMenuOption::GetLocaleText() const
+{
+	if(!m_hText.IsValid())
+		return nullptr;
+	return &static_cast<const WIText *>(m_hText.get())->GetLocaleText();
 }
 
 pragma::gui::types::WIText *pragma::gui::types::WIDropDownMenuOption::GetTextElement() { return static_cast<WIText *>(m_hText.get()); }

@@ -23,6 +23,8 @@ export namespace pragma::gui::types {
 		void SetIndex(int idx);
 		int GetIndex();
 		void SetText(const string::Utf8StringArg &text);
+		void SetText(const LocalizedString &str);
+		const LocalizedString *GetLocaleText() const;
 		string::Utf8StringView GetText() const;
 		WIText *GetTextElement();
 		virtual void OnCursorEntered() override;
@@ -69,8 +71,10 @@ export namespace pragma::gui::types {
 		void SetOptionValue(uint32_t idx, const std::string &val);
 		void SetText(const string::Utf8StringArg &text);
 		unsigned int GetOptionCount();
-		WIDropDownMenuOption *AddOption(const std::string &option, const std::string &value);
-		WIDropDownMenuOption *AddOption(const std::string &option);
+		WIDropDownMenuOption *AddOption(const string::Utf8StringArg &option, const std::string &value);
+		WIDropDownMenuOption *AddOption(const string::Utf8StringArg &option);
+		WIDropDownMenuOption *AddOption(const LocalizedString &str, const std::string &value);
+		WIDropDownMenuOption *AddOption(const LocalizedString &str);
 		WIDropDownMenuOption *GetOptionElement(uint32_t idx);
 		WIDropDownMenuOption *FindOptionSelectedByCursor();
 		void ClearOptions();
@@ -84,7 +88,8 @@ export namespace pragma::gui::types {
 		void ToggleMenu();
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-	  protected:
+	protected:
+		WIDropDownMenuOption *AddTextOption(const TextArg &text, const std::string &value);
 		unsigned int m_numListItems;
 		unsigned int m_listOffset;
 		int m_selected;

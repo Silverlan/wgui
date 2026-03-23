@@ -106,6 +106,12 @@ void pragma::gui::types::WITextEntryBase::Initialize()
 		    te->OnTextChanged(false);
 	    },
 	    this->GetHandle(), std::placeholders::_1)));
+	pText->AddCallback("TranslateText", FunctionCallback<void, std::reference_wrapper<string::Utf8StringArg>>::Create([this, hTe](std::reference_wrapper<string::Utf8StringArg> text) {
+		if(!hTe.IsValid())
+			return;
+		if(m_maxLength >= 0)
+			text.get() = text.get()->substr(0, m_maxLength);
+	}));
 
 	m_hCaret = CreateChild<WIRect>();
 	WIRect *pRect = static_cast<WIRect *>(m_hCaret.get());
@@ -218,18 +224,16 @@ pragma::string::Utf8StringView pragma::gui::types::WITextEntryBase::GetText() co
 	return static_cast<const WIText *>(m_hText.get())->GetText();
 }
 
-void pragma::gui::types::WITextEntryBase::SetText(const string::Utf8StringArg &text)
+void pragma::gui::types::WITextEntryBase::ApplyText(const TextArg &text)
 {
-	if(!m_hText.IsValid())
-		return;
-	auto view = *text;
-	if(m_maxLength >= 0)
-		view = view.substr(0, m_maxLength);
 	auto *pText = GetTextElement();
-	if(pText)
-		pText->SetText(view);
+	if(!pText)
+		return;
+	std::visit([pText](auto &&text) { pText->SetText(text); }, text);
 	SetCaretPos(GetCaretPos());
 }
+void pragma::gui::types::WITextEntryBase::SetText(const string::Utf8StringArg &text) { ApplyText(TextArg {text->to_str()}); }
+void pragma::gui::types::WITextEntryBase::SetText(const LocalizedString &str) { ApplyText(TextArg {str}); }
 
 bool pragma::gui::types::WITextEntryBase::IsSelectable() const { return math::is_flag_set(m_stateFlags, StateFlags::Selectable); }
 void pragma::gui::types::WITextEntryBase::SetSelectable(bool bSelectable) { math::set_flag(m_stateFlags, StateFlags::Selectable, bSelectable); }

@@ -31,6 +31,7 @@ export namespace pragma::gui::types {
 		string::Utf8StringView GetText() const;
 		WIText *GetTextElement();
 		void SetText(const string::Utf8StringArg &text);
+		void SetText(const LocalizedString &str);
 		void InsertText(const string::Utf8StringArg &instext, int pos);
 		void InsertText(const string::Utf8StringArg &text);
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
@@ -62,12 +63,14 @@ export namespace pragma::gui::types {
 		int GetMaxLength() const;
 		void SetEntryFieldElement(WIBase *el);
 	  protected:
+		void ApplyText(const TextArg &text);
 		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 		virtual void OnTextContentsChanged();
 		std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;
 		WIHandle m_hText;
 		WIHandle m_hCaret;
 		WIHandle m_hEntryFieldElement;
+		CallbackHandle m_cbUpdateText;
 		int m_maxLength;
 		int m_posCaret;
 		StateFlags m_stateFlags = static_cast<StateFlags>(math::to_integral(StateFlags::Editable) | math::to_integral(StateFlags::Selectable));

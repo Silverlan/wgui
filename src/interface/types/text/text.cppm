@@ -111,6 +111,8 @@ export namespace pragma::gui::types {
 		const string::Utf8String &GetText() const;
 		const string::Utf8String &GetFormattedText() const;
 		void SetText(const string::Utf8StringArg &text);
+		void SetText(const LocalizedString &str);
+		const LocalizedString &GetLocaleText() const;
 		void SetFont(const std::string_view &font);
 		void SetFont(const FontInfo *font, bool reload = false);
 		void ReloadFont();
@@ -208,6 +210,7 @@ export namespace pragma::gui::types {
 		static std::shared_ptr<prosper::IUniformResizableBuffer> s_textBuffer;
 		util::WeakHandle<prosper::Shader> m_shader = {};
 		std::shared_ptr<string::FormattedText> m_text = nullptr;
+		LocalizedString m_localeText;
 		std::vector<LineInfo> m_lineInfos = {};
 
 		std::vector<std::shared_ptr<WITextDecorator>> m_tagInfos = {};
@@ -257,6 +260,7 @@ export namespace pragma::gui::types {
 		void DestroyBlur();
 		void ScheduleRenderUpdate(bool bFull = false);
 		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
+		virtual void RefreshLocale() override;
 	};
 };
 export {

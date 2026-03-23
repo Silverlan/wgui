@@ -159,6 +159,19 @@ void pragma::gui::DrawState::GetScissor(uint32_t &x, uint32_t &y, uint32_t &w, u
 }
 bool pragma::gui::UpdatePriority::operator()(const UpdateInfo &h0, const UpdateInfo &h1) const { return h0.depth < h1.depth; }
 
+pragma::string::Utf8String pragma::gui::LocalizedString::Resolve() const
+{
+	std::vector<string::Utf8String> locArgs;
+	locArgs.reserve(args.size());
+	for(auto &arg : args) {
+		if(std::holds_alternative<string::Utf8String>(arg))
+			locArgs.push_back(std::get<string::Utf8String>(arg));
+		else
+			locArgs.push_back(std::get<LocalizedString>(arg).Resolve());
+	}
+	return WGUI::GetInstance().GetLocalizedText(key, locArgs);
+}
+
 pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName) { return Initialize(resolution, fontFileName, {}); }
 pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName, const std::vector<std::string> &fallbackFontFileNames)
 {
@@ -812,6 +825,33 @@ void pragma::gui::WGUI::ClearSkins()
 void pragma::gui::WGUI::SetCreateCallback(const std::function<void(types::WIBase &)> &onCreate) { m_createCallback = onCreate; }
 void pragma::gui::WGUI::SetRemoveCallback(const std::function<void(types::WIBase &)> &onRemove) { m_removeCallback = onRemove; }
 void pragma::gui::WGUI::SetFocusCallback(const std::function<void(types::WIBase *, types::WIBase *)> &onFocusChanged) { m_onFocusChangedCallback = onFocusChanged; }
+
+void pragma::gui::WGUI::SetLocaleResolver(const LocaleResolver &resolver) { m_localeResolver = resolver; }
+pragma::string::Utf8String pragma::gui::WGUI::GetLocalizedText(const std::string &key, const std::vector<string::Utf8String> &args) const
+{
+	if(!m_localeResolver)
+		return key;
+	return m_localeResolver(key, args);
+}
+void pragma::gui::WGUI::RefreshLocale()
+{
+	if(!m_localeResolver)
+		return;
+	std::function<void(types::WIBase &)> applyToTextElements;
+	applyToTextElements = [&applyToTextElements](types::WIBase &el) {
+		el.RefreshLocale();
+		for(auto &hChild : el.m_children) {
+			if(!hChild.IsValid())
+				continue;
+			applyToTextElements(*hChild.get());
+		}
+	};
+	for(auto &hEl : m_rootElements) {
+		if(hEl.IsValid() == false)
+			continue;
+		applyToTextElements(*hEl.get());
+	}
+}
 
 void pragma::gui::WGUI::SetUiMouseButtonCallback(const std::function<void(types::WIBase &, platform::MouseButton, platform::KeyState, platform::Modifier)> &onMouseButton) { m_mouseButtonCallback = onMouseButton; }
 void pragma::gui::WGUI::SetUiKeyboardCallback(const std::function<void(types::WIBase &, platform::Key, int, platform::KeyState, platform::Modifier)> &onKeyEvent) { m_keyboardCallback = onKeyEvent; }

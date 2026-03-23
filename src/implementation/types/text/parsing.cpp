@@ -114,8 +114,24 @@ bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, string::Sh
 	return subLinesHaveChanged;
 }
 
-void pragma::gui::types::WIText::SetText(const string::Utf8StringArg &text)
+void pragma::gui::types::WIText::SetText(const LocalizedString &str)
 {
+	m_localeText = str;
+	RefreshLocale();
+}
+const pragma::gui::LocalizedString &pragma::gui::types::WIText::GetLocaleText() const { return m_localeText; }
+void pragma::gui::types::WIText::RefreshLocale()
+{
+	if(!m_localeText.IsValid())
+		return;
+	SetText(m_localeText.Resolve());
+}
+
+void pragma::gui::types::WIText::SetText(const string::Utf8StringArg &inText)
+{
+	// TranslateText may modify the text before it is applied
+	string::Utf8StringArg text = *inText;
+	CallCallbacks<void, std::reference_wrapper<string::Utf8StringArg>>("TranslateText", std::reference_wrapper<string::Utf8StringArg>(text));
 	if(IsDirty() == false && *m_text == *text)
 		return;
 	math::set_flag(m_flags, Flags::TextDirty, false);
