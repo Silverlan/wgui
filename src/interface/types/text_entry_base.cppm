@@ -63,7 +63,7 @@ export namespace pragma::gui::types {
 		int GetMaxLength() const;
 		void SetEntryFieldElement(WIBase *el);
 	  protected:
-		void ApplyText(const TextArg &text);
+		void ApplyText(const DisplayText &text);
 		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 		virtual void OnTextContentsChanged();
 		std::shared_ptr<WITextDecorator> m_selectionDecorator = nullptr;

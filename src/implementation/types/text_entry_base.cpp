@@ -224,7 +224,7 @@ pragma::string::Utf8StringView pragma::gui::types::WITextEntryBase::GetText() co
 	return static_cast<const WIText *>(m_hText.get())->GetText();
 }
 
-void pragma::gui::types::WITextEntryBase::ApplyText(const TextArg &text)
+void pragma::gui::types::WITextEntryBase::ApplyText(const DisplayText &text)
 {
 	auto *pText = GetTextElement();
 	if(!pText)
@@ -232,8 +232,8 @@ void pragma::gui::types::WITextEntryBase::ApplyText(const TextArg &text)
 	std::visit([pText](auto &&text) { pText->SetText(text); }, text);
 	SetCaretPos(GetCaretPos());
 }
-void pragma::gui::types::WITextEntryBase::SetText(const string::Utf8StringArg &text) { ApplyText(TextArg {text->to_str()}); }
-void pragma::gui::types::WITextEntryBase::SetText(const LocalizedString &str) { ApplyText(TextArg {str}); }
+void pragma::gui::types::WITextEntryBase::SetText(const string::Utf8StringArg &text) { ApplyText(DisplayText {text->to_str()}); }
+void pragma::gui::types::WITextEntryBase::SetText(const LocalizedString &str) { ApplyText(DisplayText {str}); }
 
 bool pragma::gui::types::WITextEntryBase::IsSelectable() const { return math::is_flag_set(m_stateFlags, StateFlags::Selectable); }
 void pragma::gui::types::WITextEntryBase::SetSelectable(bool bSelectable) { math::set_flag(m_stateFlags, StateFlags::Selectable, bSelectable); }

@@ -315,8 +315,9 @@ export namespace pragma::gui {
 			void RemoveStyleClass(const std::string &className);
 			void ClearStyleClasses();
 
-			void SetTooltip(const std::string &msg);
-			const std::string &GetTooltip() const;
+			void SetTooltip(const string::Utf8StringArg &msg);
+			void SetTooltip(const LocalizedString &str);
+			std::optional<string::Utf8String> GetTooltip() const;
 			bool HasTooltip() const;
 
 			WIAttachment *GetAttachment(const std::string &name);
@@ -426,7 +427,6 @@ export namespace pragma::gui {
 			util::TSharedHandle<WIBase> m_handle {};
 			std::string m_class = "WIBase";
 			std::string m_name;
-			std::string m_toolTip;
 			std::unique_ptr<Mat4> m_rotationMatrix = nullptr;
 			std::optional<Anchor> m_anchor = {};
 			std::unordered_map<std::string, std::shared_ptr<WIAttachment>> m_attachments = {};

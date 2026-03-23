@@ -89,7 +89,7 @@ export namespace pragma::gui::types {
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
 	protected:
-		WIDropDownMenuOption *AddTextOption(const TextArg &text, const std::string &value);
+		WIDropDownMenuOption *AddTextOption(const DisplayText &text, const std::string &value);
 		unsigned int m_numListItems;
 		unsigned int m_listOffset;
 		int m_selected;

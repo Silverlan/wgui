@@ -245,7 +245,7 @@ void pragma::gui::types::WIDropDownMenu::UpdateTextPos()
 
 void pragma::gui::types::WIDropDownMenu::OnOptionSelected(WIDropDownMenuOption *option) { SelectOption(option->GetIndex()); }
 
-pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddTextOption(const TextArg &text, const std::string &value)
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddTextOption(const DisplayText &text, const std::string &value)
 {
 	if(!m_hList.IsValid())
 		return nullptr;
@@ -292,7 +292,7 @@ pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::Ad
 	ScheduleUpdate();
 	return pOption;
 }
-pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const string::Utf8StringArg &option, const std::string &value) { return AddTextOption(TextArg {option->to_str()}, value); }
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const string::Utf8StringArg &option, const std::string &value) { return AddTextOption(DisplayText {option->to_str()}, value); }
 
 pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const string::Utf8StringArg &option)
 {
@@ -300,7 +300,7 @@ pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::Ad
 	return AddOption(option, std::to_string(idx));
 }
 
-pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const LocalizedString &str, const std::string &value) { return AddTextOption(TextArg {str}, value); }
+pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const LocalizedString &str, const std::string &value) { return AddTextOption(DisplayText {str}, value); }
 pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const LocalizedString &str)
 {
 	auto idx = m_options.size();

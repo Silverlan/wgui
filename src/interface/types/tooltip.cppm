@@ -15,7 +15,7 @@ export namespace pragma::gui::types {
 	  public:
 		WITooltip();
 		virtual void Initialize() override;
-		void SetText(const std::string &text);
+		void SetText(const string::Utf8StringArg &text);
 		const string::Utf8String &GetText() const;
 	};
 
@@ -30,7 +30,7 @@ export namespace pragma::gui::types {
 		m_hText = pText->GetHandle();
 	}
 
-	void WITooltip::SetText(const std::string &text)
+	void WITooltip::SetText(const string::Utf8StringArg &text)
 	{
 		if(!m_hText.IsValid())
 			return;

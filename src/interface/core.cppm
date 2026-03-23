@@ -7,8 +7,10 @@ module;
 
 export module pragma.gui:core;
 
+import :display_text;
 import :handle;
 import :skin;
+import :tooltip_manager;
 import :type_factory;
 
 export import pragma.materialsystem;
@@ -55,17 +57,6 @@ export namespace pragma::gui {
 		CLASS_ENUM_COMPAT prosper::SampleCountFlags MSAA_SAMPLE_COUNT;
 #endif
 	}
-
-	struct DLLWGUI LocalizedString {
-		using FormatArg = std::variant<string::Utf8String, LocalizedString>;
-
-		std::string key;
-		std::vector<FormatArg> args;
-		string::Utf8String Resolve() const;
-		bool IsValid() const { return !key.empty(); }
-	};
-	using TextArg = std::variant<string::Utf8String, LocalizedString>;
-	using Loc = LocalizedString;
 
 	using Element = types::WIBase;
 	class DLLWGUI WGUI : public prosper::ContextObject {
@@ -212,6 +203,7 @@ export namespace pragma::gui {
 		void EndDraw();
 
 		size_t GetLastThinkIndex() const;
+		TooltipManager &GetTooltipManager() { return m_tooltipManager; }
 
 		shaders::ShaderColored *GetColoredShader();
 		shaders::ShaderColoredRect *GetColoredRectShader();
@@ -257,6 +249,7 @@ export namespace pragma::gui {
 		std::vector<WIHandle> m_windowRootElements {};
 		uint64_t m_nextGuiElementIndex = 0u;
 		LocaleResolver m_localeResolver;
+		TooltipManager m_tooltipManager;
 
 		// In general very few elements actually need to apply any continuous logic,
 		// so we keep a separate reference to those elements for better efficiency.

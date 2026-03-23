@@ -95,7 +95,9 @@ void pragma::gui::types::WIRoot::Think(const std::shared_ptr<prosper::IPrimaryCo
 				WGUI::GetInstance().GetMousePos(x, y);
 				//pTooltip->FadeIn(0.1f);
 				pTooltip->SetParent(&FindTooltipBaseElement(*el));
-				pTooltip->SetText(el->GetTooltip());
+				auto tooltipText = el->GetTooltip();
+				if(tooltipText)
+					pTooltip->SetText(*el->GetTooltip());
 				pTooltip->SetZPos(std::numeric_limits<int>::max());
 				pTooltip->SetName("tooltip");
 				pTooltip->RefreshSkin();

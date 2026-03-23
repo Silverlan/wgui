@@ -1363,9 +1363,12 @@ void pragma::gui::types::WIBase::Draw(int w, int h, std::shared_ptr<prosper::ICo
 	Draw(drawInfo, drawState);
 }
 std::string pragma::gui::types::WIBase::GetDebugInfo() const { return ""; }
-void pragma::gui::types::WIBase::SetTooltip(const std::string &msg) { m_toolTip = msg; }
-const std::string &pragma::gui::types::WIBase::GetTooltip() const { return m_toolTip; }
-bool pragma::gui::types::WIBase::HasTooltip() const { return !m_toolTip.empty(); }
+
+void pragma::gui::types::WIBase::SetTooltip(const string::Utf8StringArg &msg) { WGUI::GetInstance().GetTooltipManager().Set(*this, msg); }
+void pragma::gui::types::WIBase::SetTooltip(const LocalizedString &str) { WGUI::GetInstance().GetTooltipManager().Set(*this, str); }
+std::optional<pragma::string::Utf8String> pragma::gui::types::WIBase::GetTooltip() const { return WGUI::GetInstance().GetTooltipManager().Get(*this); }
+bool pragma::gui::types::WIBase::HasTooltip() const { return WGUI::GetInstance().GetTooltipManager().Contains(*this); }
+
 pragma::gui::WIAttachment *pragma::gui::types::WIBase::AddAttachment(const std::string &name, const Vector2 &position)
 {
 	auto lname = name;
