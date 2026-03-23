@@ -114,6 +114,11 @@ bool pragma::gui::types::WIText::BreakLineByWidth(uint32_t lineIndex, string::Sh
 	return subLinesHaveChanged;
 }
 
+void pragma::gui::types::WIText::SetPrefixText(const std::string &text) { m_prefix = text; }
+const std::string &pragma::gui::types::WIText::GetPrefixText() const { return m_prefix; }
+void pragma::gui::types::WIText::SetSuffixText(const std::string &text) { m_suffix = text; }
+const std::string &pragma::gui::types::WIText::GetSuffixText() const { return m_suffix; }
+
 void pragma::gui::types::WIText::SetText(const LocalizedString &str)
 {
 	m_localeText = str;
@@ -131,6 +136,10 @@ void pragma::gui::types::WIText::SetText(const string::Utf8StringArg &inText)
 {
 	// TranslateText may modify the text before it is applied
 	string::Utf8StringArg text = *inText;
+	if(!m_prefix.empty())
+		text = string::Utf8String {m_prefix} + text->to_str();
+	if(!m_suffix.empty())
+		text = text->to_str() +string::Utf8String {m_suffix};
 	CallCallbacks<void, std::reference_wrapper<string::Utf8StringArg>>("TranslateText", std::reference_wrapper<string::Utf8StringArg>(text));
 	if(IsDirty() == false && *m_text == *text)
 		return;

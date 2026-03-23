@@ -112,6 +112,10 @@ export namespace pragma::gui::types {
 		const string::Utf8String &GetFormattedText() const;
 		void SetText(const string::Utf8StringArg &text);
 		void SetText(const LocalizedString &str);
+		void SetPrefixText(const std::string &text);
+		const std::string &GetPrefixText() const;
+		void SetSuffixText(const std::string &text);
+		const std::string &GetSuffixText() const;
 		const LocalizedString &GetLocaleText() const;
 		void SetFont(const std::string_view &font);
 		void SetFont(const FontInfo *font, bool reload = false);
@@ -211,6 +215,8 @@ export namespace pragma::gui::types {
 		util::WeakHandle<prosper::Shader> m_shader = {};
 		std::shared_ptr<string::FormattedText> m_text = nullptr;
 		LocalizedString m_localeText;
+		std::string m_prefix;
+		std::string m_suffix;
 		std::vector<LineInfo> m_lineInfos = {};
 
 		std::vector<std::shared_ptr<WITextDecorator>> m_tagInfos = {};
