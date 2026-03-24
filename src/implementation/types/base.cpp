@@ -192,6 +192,7 @@ void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY, bool bRe
 		return;
 	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentXBit, bX);
 	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentYBit, bY);
+	UpdateAlignToParent();
 }
 void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b)
 {
