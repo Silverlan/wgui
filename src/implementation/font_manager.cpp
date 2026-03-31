@@ -15,7 +15,7 @@ import pragma.string.unicode;
 
 namespace pragma::gui {
 	class DynamicFontMap {
-	public:
+	  public:
 		static std::unique_ptr<DynamicFontMap> Create(const std::string &cpath, const FontSettings &fontSettings);
 		static constexpr auto INVALID_GLYPH_INDEX = std::numeric_limits<uint32_t>::max();
 #pragma pack(push, 1)
@@ -33,6 +33,7 @@ namespace pragma::gui {
 			uint32_t width;
 			uint32_t height;
 		};
+		~DynamicFontMap();
 		void AddCharacter(int32_t c);
 		bool GenerateImageMap();
 		void ClearMap();
@@ -61,7 +62,7 @@ namespace pragma::gui {
 				return INVALID_GLYPH_INDEX;
 			return it->second;
 		}
-	private:
+	  private:
 		DynamicFontMap();
 		uint32_t m_curGlyphIndex = 0;
 		std::vector<GlyphExtent> m_glyphExtents;
@@ -75,7 +76,9 @@ namespace pragma::gui {
 		uint32_t m_maxGlyphSize = 0;
 
 		FontFace m_face;
-		std::vector<uint8_t> m_fontData;
+		fs::VFilePtr m_file;
+		FT_StreamRec m_streamRec;
+
 		int32_t m_glyphTopMax = 0;
 		uint32_t m_fontSize = 0;
 		uint32_t m_numGlyphsPerRow = 0;
@@ -177,20 +180,42 @@ std::unique_ptr<pragma::gui::DynamicFontMap> pragma::gui::DynamicFontMap::Create
 	if(f == nullptr)
 		return {};
 	auto size = f->GetSize();
-	fontMap->m_fontData.resize(size);
-	f->Read(fontMap->m_fontData.data(), size);
 
 	auto lib = FontManager::GetFontLibrary();
 	auto &face = fontMap->m_face.GetFtFace();
 	auto &ncFace = const_cast<FT_Face &>(face);
-	if(FT_New_Memory_Face(lib, &fontMap->m_fontData[0], static_cast<FT_Long>(size), 0, &ncFace) != 0 || FT_Set_Pixel_Sizes(face, 0, fontSettings.fontSize) != 0) {
-		fontMap->m_fontData.clear();
+
+	fontMap->m_file = f;
+	auto &stream = fontMap->m_streamRec;
+	stream.size = size;
+	stream.pos = 0;
+	stream.descriptor.pointer = fontMap.get();
+	stream.read = +[](FT_Stream stream, unsigned long offset, unsigned char *buffer, unsigned long count) -> unsigned long {
+		auto *dynamicFontMap = static_cast<DynamicFontMap *>(stream->descriptor.pointer);
+		auto &fp = dynamicFontMap->m_file;
+		fp->Seek(offset);
+		return fp->Read(buffer, 1, count);
+	};
+	stream.close = +[](FT_Stream stream) {
+		auto *dynamicFontMap = static_cast<DynamicFontMap *>(stream->descriptor.pointer);
+		dynamicFontMap->m_file = nullptr;
+	};
+
+	FT_Open_Args args {};
+	args.flags = FT_OPEN_STREAM;
+	args.stream = &stream;
+
+	if(FT_Open_Face(lib, &args, 0, &ncFace) != 0 || FT_Set_Pixel_Sizes(face, 0, fontSettings.fontSize) != 0)
 		return {};
-	}
 	fontMap->m_fontSize = fontSettings.fontSize;
 	return fontMap;
 }
 pragma::gui::DynamicFontMap::DynamicFontMap() { FontManager::SetFontsDirty(); }
+pragma::gui::DynamicFontMap::~DynamicFontMap()
+{
+	m_streamRec = {};
+	m_file = nullptr;
+}
 void pragma::gui::DynamicFontMap::AddCharacter(int32_t c)
 {
 	if(m_glyphIndexMap.find(c) != m_glyphIndexMap.end())
@@ -322,8 +347,9 @@ bool pragma::gui::DynamicFontMap::GenerateImageMap()
 	auto imgViewCreateInfo = prosper::util::ImageViewCreateInfo {};
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
 	auto glyphMapImage = context.CreateImage(imgCreateInfo);
-	m_glyphMap = context.CreateTexture({}, *glyphMapImage, imgViewCreateInfo, samplerCreateInfo);
-	m_glyphMap->SetDebugName("glyph_map_tex");
+	prosper::util::TextureCreateInfo texCreateInfo {};
+	texCreateInfo.debugName = "glyph_map_tex";
+	m_glyphMap = context.CreateTexture(texCreateInfo, *glyphMapImage, imgViewCreateInfo, samplerCreateInfo);
 
 	auto setupCmd = context.GetSetupCommandBuffer();
 	// Initialize glyph images
