@@ -289,10 +289,10 @@ bool pragma::gui::DynamicFontMap::GenerateImageMap()
 	glyphBufCreateInfo.size = m_glyphImageBufData.size();
 	glyphBufCreateInfo.usageFlags = prosper::BufferUsageFlags::TransferSrcBit;
 	glyphBufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::HostAccessable;
+	glyphBufCreateInfo.debugName = "tmp_glyph_buf";
 
 	auto &context = WGUI::GetInstance().GetContext();
 	auto glyphBuf = context.CreateBuffer(glyphBufCreateInfo, m_glyphImageBufData.data());
-	glyphBuf->SetDebugName("tmp_glyph_buf");
 
 	// Initialize font image map
 	const auto format = prosper::Format::R8_UNorm;
@@ -376,8 +376,8 @@ bool pragma::gui::DynamicFontMap::GenerateImageMap()
 	bufCreateInfo.size = m_glyphCharacterBounds.size() * sizeof(m_glyphCharacterBounds.front());
 	bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
 	bufCreateInfo.usageFlags = prosper::BufferUsageFlags::StorageBufferBit;
+	bufCreateInfo.debugName = "font_glyph_bounds_buffer";
 	m_glyphBoundsBuffer = context.CreateBuffer(bufCreateInfo, m_glyphCharacterBounds.data());
-	m_glyphBoundsBuffer->SetDebugName("font_glyph_bounds_buffer");
 	m_glyphBoundsDsg = context.CreateDescriptorSetGroup(shaders::ShaderText::DESCRIPTOR_SET_GLYPH_BOUNDS_BUFFER);
 	m_glyphBoundsDsg->GetDescriptorSet()->SetBindingStorageBuffer(*m_glyphBoundsBuffer, 0u);
 	context.FlushSetupCommandBuffer();

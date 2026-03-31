@@ -53,6 +53,7 @@ void pragma::gui::types::WIText::InitializeShadow(bool bReload)
 	createInfo.height = m_hTexture;
 	createInfo.format = prosper::Format::R8_UNorm;
 	createInfo.usage = prosper::ImageUsageFlags::SampledBit | prosper::ImageUsageFlags::ColorAttachmentBit;
+	createInfo.debugName = "text_shadow";
 	createInfo.postCreateLayout = prosper::ImageLayout::ShaderReadOnlyOptimal;
 	auto imgViewCreateInfo = prosper::util::ImageViewCreateInfo {};
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
@@ -212,6 +213,7 @@ void pragma::gui::types::WIText::UpdateRenderTexture(const std::shared_ptr<prosp
 	imgCreateInfo.format = prosper::Format::R8_UNorm;
 	imgCreateInfo.usage = prosper::ImageUsageFlags::SampledBit | prosper::ImageUsageFlags::ColorAttachmentBit;
 	imgCreateInfo.postCreateLayout = prosper::ImageLayout::ShaderReadOnlyOptimal;
+	imgCreateInfo.debugName = "text_render_texture";
 
 	auto &context = WGUI::GetInstance().GetContext();
 	auto img = context.CreateImage(imgCreateInfo);
@@ -644,9 +646,9 @@ void pragma::gui::types::WIText::InitializeTextBuffer(prosper::IPrContext &conte
 	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 	createInfo.size = instanceSize * maxInstances;
 	createInfo.flags |= prosper::util::BufferCreateInfo::Flags::Persistent;
+	createInfo.debugName = "text_glyph_bounds_info_buf";
 	s_textBuffer = context.CreateUniformResizableBuffer(createInfo, instanceSize, createInfo.size * 5u, 0.05f);
 	s_textBuffer->SetPermanentlyMapped(true, prosper::IBuffer::MapFlags::WriteBit);
-	s_textBuffer->SetDebugName("text_glyph_bounds_info_buf");
 }
 void pragma::gui::types::WIText::ClearTextBuffer()
 {

@@ -32,8 +32,8 @@ pragma::gui::types::WILine::WILine() : WIBufferBase(), WILineBase(), m_posStart 
 		bufCreateInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
 		bufCreateInfo.size = util::size_of_container(verts);
 		bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+		bufCreateInfo.debugName = "gui_line_vertex_buf";
 		s_lineBuffer = context.CreateBuffer(bufCreateInfo, verts.data());
-		s_lineBuffer->SetDebugName("gui_line_vertex_buf");
 	}
 	InitializeBufferData(*s_lineBuffer);
 
@@ -42,8 +42,8 @@ pragma::gui::types::WILine::WILine() : WIBufferBase(), WILineBase(), m_posStart 
 	bufCreateInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
 	bufCreateInfo.size = util::size_of_container(colors);
 	bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+	bufCreateInfo.debugName = "gui_line_color_buf";
 	m_bufColor = context.CreateBuffer(bufCreateInfo, colors.data());
-	m_bufColor->SetDebugName("gui_line_color_buf");
 
 	auto col = colors::White.ToVector4();
 	SetColor(col.x, col.y, col.z, col.w);

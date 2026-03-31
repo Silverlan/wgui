@@ -151,8 +151,8 @@ std::shared_ptr<prosper::IBuffer> pragma::gui::types::WIShape::CreateBuffer(cons
 	createInfo.size = verts.size() * sizeof(Vector2);
 	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit;
 	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+	createInfo.debugName = "gui_shape_vertex_buf";
 	auto buf = context.CreateBuffer(createInfo, verts.data());
-	buf->SetDebugName("gui_shape_vertex_buf");
 	return buf;
 }
 void pragma::gui::types::WIShape::SetBuffer(prosper::IBuffer &buffer, uint32_t numVerts)

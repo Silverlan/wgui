@@ -623,6 +623,7 @@ private:
 		imgCreateInfo.width = m_context->GetWindowWidth();
 		imgCreateInfo.height = m_context->GetWindowHeight();
 		imgCreateInfo.postCreateLayout = prosper::ImageLayout::ColorAttachmentOptimal;
+		imgCreateInfo.debugName = "staging_target";
 		auto stagingImg = m_context->CreateImage(imgCreateInfo);
 		prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
 		auto stagingTex = m_context->CreateTexture({},*stagingImg,imgViewCreateInfo);
