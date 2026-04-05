@@ -640,14 +640,14 @@ void pragma::gui::types::WIText::InitializeTextBuffer(prosper::IPrContext &conte
 	if(s_textBuffer != nullptr)
 		return;
 	const auto maxInstances = 8'192; // 5 MiB total space
-	auto instanceSize = sizeof(GlyphBoundsInfo) * MAX_CHARS_PER_BUFFER;
+	constexpr auto instanceSize = sizeof(GlyphBoundsInfo) * MAX_CHARS_PER_BUFFER;
 	prosper::util::BufferCreateInfo createInfo {};
 	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
 	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 	createInfo.size = instanceSize * maxInstances;
 	createInfo.flags |= prosper::util::BufferCreateInfo::Flags::Persistent;
 	createInfo.debugName = "text_glyph_bounds_info_buf";
-	s_textBuffer = context.CreateUniformResizableBuffer(createInfo, instanceSize, createInfo.size * 5u, 0.05f);
+	s_textBuffer = context.CreateUniformResizableBuffer(createInfo, instanceSize);
 	s_textBuffer->SetPermanentlyMapped(true, prosper::IBuffer::MapFlags::WriteBit);
 }
 void pragma::gui::types::WIText::ClearTextBuffer()
