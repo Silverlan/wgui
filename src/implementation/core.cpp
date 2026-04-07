@@ -130,18 +130,6 @@ const std::function<pragma::material::Material *(const std::string &)> &pragma::
 
 double pragma::gui::WGUI::GetDeltaTime() const { return m_tDelta; }
 
-pragma::gui::shaders::ShaderColored *pragma::gui::WGUI::GetColoredShader() { return static_cast<shaders::ShaderColored *>(m_shaderColored.get()); }
-pragma::gui::shaders::ShaderColoredRect *pragma::gui::WGUI::GetColoredRectShader() { return static_cast<shaders::ShaderColoredRect *>(m_shaderColoredCheap.get()); }
-pragma::gui::shaders::ShaderColoredLine *pragma::gui::WGUI::GetColoredLineShader() { return static_cast<shaders::ShaderColoredLine *>(m_shaderColoredLine.get()); }
-pragma::gui::shaders::ShaderText *pragma::gui::WGUI::GetTextShader() { return static_cast<shaders::ShaderText *>(m_shaderText.get()); }
-pragma::gui::shaders::ShaderTextRect *pragma::gui::WGUI::GetTextRectShader() { return static_cast<shaders::ShaderTextRect *>(m_shaderTextCheap.get()); }
-pragma::gui::shaders::ShaderTextRectColor *pragma::gui::WGUI::GetTextRectColorShader() { return static_cast<shaders::ShaderTextRectColor *>(m_shaderTextCheapColor.get()); }
-pragma::gui::shaders::ShaderTextured *pragma::gui::WGUI::GetTexturedShader() { return static_cast<shaders::ShaderTextured *>(m_shaderTextured.get()); }
-pragma::gui::shaders::ShaderTexturedRect *pragma::gui::WGUI::GetTexturedRectShader() { return static_cast<shaders::ShaderTexturedRect *>(m_shaderTexturedCheap.get()); }
-pragma::gui::shaders::ShaderTexturedRectExpensive *pragma::gui::WGUI::GetTexturedRectExpensiveShader() { return static_cast<shaders::ShaderTexturedRectExpensive *>(m_shaderTexturedExpensive.get()); }
-pragma::gui::shaders::ShaderStencil *pragma::gui::WGUI::GetStencilShader() { return static_cast<shaders::ShaderStencil *>(m_shaderStencil.get()); }
-pragma::gui::shaders::ShaderTexturedSubRect *pragma::gui::WGUI::GetTexturedSubRectShader() { return static_cast<shaders::ShaderTexturedSubRect *>(m_shaderTexturedSubRect.get()); }
-
 void pragma::gui::DrawState::SetScissor(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
 #ifdef WGUI_ENABLE_SANITY_EXCEPTIONS
@@ -209,18 +197,21 @@ pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector
 	shaderManager.RegisterShader("wguitextured_expensive", [](prosper::IPrContext &context, const std::string &identifier) { return new shaders::ShaderTexturedRectExpensive(context, identifier); });
 	shaderManager.RegisterShader("wguistencil", [](prosper::IPrContext &context, const std::string &identifier) { return new shaders::ShaderStencil(context, identifier); });
 	shaderManager.RegisterShader("wguisubtexturedrect", [](prosper::IPrContext &context, const std::string &identifier) { return new shaders::ShaderTexturedSubRect(context, identifier); });
+	shaderManager.RegisterShader("wgui_nine_slice_textured_rect", [](prosper::IPrContext &context, const std::string &identifier) { return new shaders::ShaderTexturedNineSlice(context, identifier); });
 
-	m_shaderColored = shaderManager.GetShader("wguicolored");
-	m_shaderColoredCheap = shaderManager.GetShader("wguicolored_cheap");
-	m_shaderColoredLine = shaderManager.GetShader("wguicoloredline");
-	m_shaderText = shaderManager.GetShader("wguitext");
-	m_shaderTextCheap = shaderManager.GetShader("wguitext_cheap");
-	m_shaderTextCheapColor = shaderManager.GetShader("wguitext_cheap_color");
-	m_shaderTextured = shaderManager.GetShader("wguitextured");
-	m_shaderTexturedCheap = shaderManager.GetShader("wguitextured_cheap");
-	m_shaderTexturedExpensive = shaderManager.GetShader("wguitextured_expensive");
-	m_shaderStencil = shaderManager.GetShader("wguistencil");
-	m_shaderTexturedSubRect = shaderManager.GetShader("wguisubtexturedrect");
+	m_shaders[math::to_integral(shaders::ShaderType::Colored)] = shaderManager.GetShader("wguicolored");
+	m_shaders[math::to_integral(shaders::ShaderType::ColoredRect)] = shaderManager.GetShader("wguicolored_cheap");
+	m_shaders[math::to_integral(shaders::ShaderType::ColoredLine)] = shaderManager.GetShader("wguicoloredline");
+	m_shaders[math::to_integral(shaders::ShaderType::Text)] = shaderManager.GetShader("wguitext");
+	m_shaders[math::to_integral(shaders::ShaderType::TextCheap)] = shaderManager.GetShader("wguitext_cheap");
+	m_shaders[math::to_integral(shaders::ShaderType::TextCheapColor)] = shaderManager.GetShader("wguitext_cheap_color");
+	m_shaders[math::to_integral(shaders::ShaderType::Textured)] = shaderManager.GetShader("wguitextured");
+	m_shaders[math::to_integral(shaders::ShaderType::TexturedSubRect)] = shaderManager.GetShader("wguisubtexturedrect");
+	m_shaders[math::to_integral(shaders::ShaderType::TexturedNineSlice)] = shaderManager.GetShader("wgui_nine_slice_textured_rect");
+	m_shaders[math::to_integral(shaders::ShaderType::TexturedCheap)] = shaderManager.GetShader("wguitextured_cheap");
+	m_shaders[math::to_integral(shaders::ShaderType::TexturedExpensive)] = shaderManager.GetShader("wguitextured_expensive");
+	m_shaders[math::to_integral(shaders::ShaderType::Stencil)] = shaderManager.GetShader("wguistencil");
+	static_assert(math::to_integral(shaders::ShaderType::Count) == 12, "Update this list when new shaders are added!");
 
 	GetContext().GetPipelineLoader().Flush();
 

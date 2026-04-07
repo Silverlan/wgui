@@ -749,7 +749,7 @@ bool pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::IComma
 void pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::ICommandBuffer> &drawCmd, const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &absPos, const math::ScaledTransform &transform, const Vector2 &scale, Vector2i &inOutSize,
   shaders::ShaderTextRect::PushConstants &inOutPushConstants, uint32_t testStencilLevel, StencilPipeline stencilPipeline) const
 {
-	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
+	auto *pShaderTextRect = WGUI::GetInstance().GetShader<shaders::ShaderType::TextCheap>();
 	prosper::ShaderBindState bindState {*drawCmd};
 	auto bHasColorBuffers = RenderLines(
 	  drawCmd, *pShaderTextRect, drawInfo, drawState, absPos, transform, scale, inOutSize, inOutPushConstants,
@@ -757,7 +757,7 @@ void pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::IComma
 	  false, stencilPipeline);
 	if(bHasColorBuffers == false)
 		return;
-	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
+	auto *pShaderTextRectColor = WGUI::GetInstance().GetShader<shaders::ShaderType::TextCheapColor>();
 	RenderLines(
 	  drawCmd, *pShaderTextRectColor, drawInfo, drawState, absPos, transform, scale, inOutSize, inOutPushConstants,
 	  [&inOutPushConstants, pShaderTextRectColor, testStencilLevel](prosper::ShaderBindState &bindState, const SubBufferInfo &bufInfo, prosper::IDescriptorSet &descSet) {
@@ -777,8 +777,8 @@ void pragma::gui::types::WITextBase::Render(const DrawInfo &drawInfo, DrawState 
 	auto &textEl = static_cast<WIText &>(*m_hText.get());
 	if(textEl.m_renderTarget != nullptr && textEl.IsCacheEnabled() == true)
 		return;
-	auto *pShaderTextRect = WGUI::GetInstance().GetTextRectShader();
-	auto *pShaderTextRectColor = WGUI::GetInstance().GetTextRectColorShader();
+	auto *pShaderTextRect = WGUI::GetInstance().GetShader<shaders::ShaderType::TextCheap>();
+	auto *pShaderTextRectColor = WGUI::GetInstance().GetShader<shaders::ShaderType::TextCheapColor>();
 	if(pShaderTextRect != nullptr) {
 		auto &context = WGUI::GetInstance().GetContext();
 		/*for(auto &lineInfo : textEl.m_lineInfos)

@@ -11,8 +11,8 @@ import :draw_state;
 
 pragma::gui::types::WIBufferBase::WIBufferBase() : WIBase()
 {
-	auto *pShaderColored = WGUI::GetInstance().GetColoredShader();
-	auto *pShaderColoredCheap = WGUI::GetInstance().GetColoredRectShader();
+	auto *pShaderColored = WGUI::GetInstance().GetShader<shaders::ShaderType::Colored>();
+	auto *pShaderColoredCheap = WGUI::GetInstance().GetShader<shaders::ShaderType::ColoredRect>();
 	m_shader = (pShaderColored != nullptr) ? pShaderColored->GetHandle() : pragma::util::WeakHandle<prosper::Shader> {};
 	m_shaderCheap = (pShaderColoredCheap != nullptr) ? pShaderColoredCheap->GetHandle() : pragma::util::WeakHandle<prosper::Shader> {};
 #if USE_STAGING_BUFFER != 0

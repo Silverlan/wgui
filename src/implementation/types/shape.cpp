@@ -187,8 +187,8 @@ pragma::gui::types::WIOutlinedShape::WIOutlinedShape() : WIShape(), WILineBase()
 pragma::gui::types::WITexturedShape::WITexturedShape() : WIShape(), m_hMaterial(), m_texture(), m_uvBuffer(nullptr), m_shader(), m_descSetTextureGroup(nullptr), m_texLoadCallback(nullptr)
 {
 	auto &instance = WGUI::GetInstance();
-	auto *pShader = instance.GetTexturedShader();
-	auto *pShaderCheap = instance.GetTexturedRectShader();
+	auto *pShader = instance.GetShader<shaders::ShaderType::Textured>();
+	auto *pShaderCheap = instance.GetShader<shaders::ShaderType::TexturedCheap>();
 	if(pShader != nullptr)
 		SetShader(*pShader, pShaderCheap);
 	ReloadDescriptorSet();
@@ -538,7 +538,7 @@ void pragma::gui::types::WITexturedShape::Render(const DrawInfo &drawInfo, DrawS
 	// Try to use cheap shader if no custom vertex buffer was used
 	if(math::is_flag_set(m_stateFlags, StateFlags::ShaderOverride) == false && ((m_vertexBufferData == nullptr && m_uvBuffer == nullptr) || m_shader.expired())) {
 		if(math::is_flag_set(m_stateFlags, StateFlags::ExpensiveShaderRequired)) {
-			auto *pShaderExpensive = static_cast<shaders::ShaderTexturedRectExpensive *>(WGUI::GetInstance().GetTexturedRectExpensiveShader());
+			auto *pShaderExpensive = WGUI::GetInstance().GetShader<shaders::ShaderType::TexturedExpensive>();
 			if(pShaderExpensive == nullptr)
 				return;
 			auto &context = WGUI::GetInstance().GetContext();

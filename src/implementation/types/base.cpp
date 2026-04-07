@@ -1050,7 +1050,7 @@ void pragma::gui::types::WIBase::Render(const DrawInfo &drawInfo, DrawState &dra
 		return;
 
 	// We don't actually render the element, but it still needs to be drawn to the stencil buffer
-	auto *shader = WGUI::GetInstance().GetStencilShader();
+	auto *shader = WGUI::GetInstance().GetShader<shaders::ShaderType::Stencil>();
 	assert(shader != nullptr);
 	auto &context = WGUI::GetInstance().GetContext();
 	prosper::ShaderBindState bindState {*drawInfo.commandBuffer};

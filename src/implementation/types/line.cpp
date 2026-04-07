@@ -23,7 +23,7 @@ pragma::gui::types::WILine::WILine() : WIBufferBase(), WILineBase(), m_posStart 
 	const std::array<Vector2, 2> verts = {Vector2(0.f, 0.f), Vector2(1.f, 1.f)};
 	auto &instance = WGUI::GetInstance();
 	auto &context = instance.GetContext();
-	auto *pShader = instance.GetColoredLineShader();
+	auto *pShader = instance.GetShader<shaders::ShaderType::ColoredLine>();
 	if(pShader != nullptr)
 		SetShader(*pShader);
 
