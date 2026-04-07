@@ -9,7 +9,7 @@ export namespace pragma::gui::shaders {
 	class DLLWGUI ShaderTexturedSubRect : public ShaderTextured {
 	  public:
 		static constexpr auto PUSH_CONSTANT_BASE_SIZE = sizeof(PushConstants);
-		static constexpr auto PUSH_CONSTANT_BASE_PADDING = sizeof(float);
+		static constexpr size_t PUSH_CONSTANT_BASE_PADDING = 0;
 		static constexpr auto PUSH_CONSTANT_TOTAL_BASE_SIZE = PUSH_CONSTANT_BASE_SIZE + PUSH_CONSTANT_BASE_PADDING;
 
 #pragma pack(push, 1)

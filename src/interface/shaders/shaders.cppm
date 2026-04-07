@@ -7,4 +7,5 @@ export import :shaders.colored;
 export import :shaders.colored_line;
 export import :shaders.text;
 export import :shaders.textured;
+export import :shaders.textured_nine_slice;
 export import :shaders.textured_sub_rect;

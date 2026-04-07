@@ -90,7 +90,8 @@ void pragma::gui::WGUI::RegisterTypes()
 	RegisterType<WIDropDownMenu>("WIDropDownMenu");
 	RegisterType<WILine>("WILine");
 	RegisterType<WIMenuItem>("WIMenuItem");
-	RegisterType<WI9SliceRectSegment>("WI9SliceRectSegment");
+	RegisterType<WISegmentedRectSegment>("WISegmentedRectSegment");
+	RegisterType<WISegmentedRect>("WISegmentedRect");
 	RegisterType<WI9SliceRect>("WI9SliceRect");
 	RegisterType<WIRect>("WIRect");
 	RegisterType<WIOutlinedRect>("WIOutlinedRect");

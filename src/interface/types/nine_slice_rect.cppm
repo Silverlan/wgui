@@ -3,64 +3,18 @@
 
 export module pragma.gui:types.nine_slice_rect;
 
-export import :shaders.textured;
-export import :types.rect;
-
-#undef DrawState
+export import :types.segmented_rect;
 
 export namespace pragma::gui::types {
-	class DLLWGUI WI9SliceRectSegment : public WITexturedRect {
+	class DLLWGUI WI9SliceRect : public WIBaseSegmentedRect<WITexturedRect> {
 	  public:
-		WI9SliceRectSegment();
-		virtual void Initialize() override;
-		void SetRenderImageOffset(const Vector2 &offset) { m_renderOffset = offset; }
-		void SetRenderImageScale(const Vector2 &scale) { m_renderScale = scale; }
-		const Vector2 &GetRenderImageOffset() const { return m_renderOffset; }
-		const Vector2 &GetRenderImageScale() const { return m_renderScale; }
-
-		virtual void BindShader(shaders::ShaderTextured &shader, prosper::ShaderBindState &bindState, DrawState &drawState) override;
-	  private:
-		Vector2 m_renderOffset {};
-		Vector2 m_renderScale {1.f, 1.f};
-	};
-
-	class DLLWGUI WI9SliceRect : public WIBase {
-	  public:
-		enum class Segment : uint8_t {
-			TopLeftCorner = 0,
-			TopRightCorner,
-			BottomLeftCorner,
-			BottomRightCorner,
-			TopEdge,
-			BottomEdge,
-			LeftEdge,
-			RightEdge,
-			Center,
-			Count,
-		};
-
-		struct NineSlice {
-			uint32_t left = 0;
-			uint32_t right = 0;
-			uint32_t top = 0;
-			uint32_t bottom = 0;
-		};
-
 		WI9SliceRect();
-		virtual void Initialize() override;
-		void SetMaterial(const std::string &matPath);
-		void SetMaterial(material::Material &mat);
-		material::Material *GetMaterial();
-		std::pair<int32_t, int32_t> GetSegmentSize(Segment segment) const;
-		std::pair<int32_t, int32_t> GetSegmentOffset(Segment segment) const;
-	  private:
-		bool GetImageSize(uint32_t &w, uint32_t &h) const;
-		std::pair<int32_t, int32_t> GetSegmentSize(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
-		std::pair<int32_t, int32_t> GetSegmentOffset(Segment segment, uint32_t imgWidth, uint32_t imgHeight) const;
-		std::tuple<float, float, float, float> GetSegmentAnchor(Segment segment) const;
-		void UpdateSegments();
-		std::array<WIHandle, math::to_integral(Segment::Count)> m_segmentElements;
-		material::MaterialHandle m_material;
-		NineSlice m_nineSlice;
+		void Initialize() override;
+		void BindShader(shaders::ShaderTextured &shader, prosper::ShaderBindState &bindState, DrawState &drawState) override;
+	  protected:
+		void OnMaterialChanged() override;
+		material::Material *GetSegmentMaterial() override;
+		Vector2 m_textureSize;
+		Vector4 m_borderSizes;
 	};
 };

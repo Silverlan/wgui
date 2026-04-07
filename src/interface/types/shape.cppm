@@ -90,6 +90,7 @@ export namespace pragma::gui::types {
 		virtual void UpdateTransparencyState() override;
 		void UpdateShaderState();
 		virtual void DoUpdate() override;
+		virtual void OnMaterialChanged() {}
 		bool PrepareRender(const DrawInfo &drawInfo, DrawState &drawState, Vector4 &outColor);
 		material::MaterialHandle m_hMaterial;
 		std::shared_ptr<prosper::Texture> m_texture = nullptr;

@@ -35,8 +35,8 @@ void pragma::gui::WITextTagColor::Apply()
 	if(color.has_value() == false)
 		return;
 	if(s_colorBuffer == nullptr) {
-		const auto maxInstances = 2'048; // 1 MiB total space
-		auto instanceSize = sizeof(Vector4) * types::WIText::MAX_CHARS_PER_BUFFER;
+		constexpr uint32_t maxInstances = 128;  // Not an absolute limit, but exceeding it will trigger re-allocation
+		constexpr auto instanceSize = sizeof(Vector4) * types::WIText::MAX_CHARS_PER_BUFFER;
 		prosper::util::BufferCreateInfo createInfo {};
 		createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
 		createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;

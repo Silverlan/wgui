@@ -46,9 +46,77 @@ export namespace pragma::gui {
 		class ShaderTextRectColor;
 		class ShaderTextured;
 		class ShaderTexturedSubRect;
+		class ShaderTexturedNineSlice;
 		class ShaderTexturedRect;
 		class ShaderTexturedRectExpensive;
 		class ShaderStencil;
+
+		enum class ShaderType : uint8_t {
+			Colored = 0,
+			ColoredRect,
+			ColoredLine,
+			Text,
+			TextCheap,
+			TextCheapColor,
+			Textured,
+			TexturedSubRect,
+			TexturedNineSlice,
+			TexturedCheap,
+			TexturedExpensive,
+			Stencil,
+
+			Count,
+		};
+		template<ShaderType S>
+		struct ShaderTraits;
+		template<>
+		struct ShaderTraits<ShaderType::Colored> {
+			using type = ShaderColored;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::ColoredRect> {
+			using type = ShaderColoredRect;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::ColoredLine> {
+			using type = ShaderColoredLine;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::Text> {
+			using type = ShaderText;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::TextCheap> {
+			using type = ShaderTextRect;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::TextCheapColor> {
+			using type = ShaderTextRectColor;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::Textured> {
+			using type = ShaderTextured;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::TexturedSubRect> {
+			using type = ShaderTexturedSubRect;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::TexturedNineSlice> {
+			using type = ShaderTexturedNineSlice;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::TexturedCheap> {
+			using type = ShaderTexturedRect;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::TexturedExpensive> {
+			using type = ShaderTexturedRectExpensive;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::Stencil> {
+			using type = ShaderStencil;
+		};
 	}
 	namespace wGUI {
 #ifdef WINDOWS_CLANG_COMPILER_FIX
@@ -205,17 +273,11 @@ export namespace pragma::gui {
 		size_t GetLastThinkIndex() const;
 		TooltipManager &GetTooltipManager() { return m_tooltipManager; }
 
-		shaders::ShaderColored *GetColoredShader();
-		shaders::ShaderColoredRect *GetColoredRectShader();
-		shaders::ShaderColoredLine *GetColoredLineShader();
-		shaders::ShaderText *GetTextShader();
-		shaders::ShaderTextRect *GetTextRectShader();
-		shaders::ShaderTextRectColor *GetTextRectColorShader();
-		shaders::ShaderTextured *GetTexturedShader();
-		shaders::ShaderTexturedSubRect *GetTexturedSubRectShader();
-		shaders::ShaderTexturedRect *GetTexturedRectShader();
-		shaders::ShaderTexturedRectExpensive *GetTexturedRectExpensiveShader();
-		shaders::ShaderStencil *GetStencilShader();
+		template<shaders::ShaderType S>
+		shaders::ShaderTraits<S>::type *GetShader()
+		{
+			return static_cast<shaders::ShaderTraits<S>::type *>(m_shaders[math::to_integral(S)].get());
+		}
 
 		template<class T>
 		void RegisterType(const std::string &name)
@@ -273,17 +335,7 @@ export namespace pragma::gui {
 		double m_tDelta = 0.f;
 		size_t m_thinkIndex = 0;
 
-		util::WeakHandle<prosper::Shader> m_shaderColored = {};
-		util::WeakHandle<prosper::Shader> m_shaderColoredCheap = {};
-		util::WeakHandle<prosper::Shader> m_shaderColoredLine = {};
-		util::WeakHandle<prosper::Shader> m_shaderText = {};
-		util::WeakHandle<prosper::Shader> m_shaderTextCheap = {};
-		util::WeakHandle<prosper::Shader> m_shaderTextCheapColor = {};
-		util::WeakHandle<prosper::Shader> m_shaderTextured = {};
-		util::WeakHandle<prosper::Shader> m_shaderTexturedSubRect = {};
-		util::WeakHandle<prosper::Shader> m_shaderTexturedCheap = {};
-		util::WeakHandle<prosper::Shader> m_shaderTexturedExpensive = {};
-		util::WeakHandle<prosper::Shader> m_shaderStencil = {};
+		std::array<util::WeakHandle<prosper::Shader>, math::to_integral(shaders::ShaderType::Count)> m_shaders;
 
 		bool SetFocusedElement(Element *gui, types::WIRoot *optElRoot = nullptr);
 		void ClearSkin();
