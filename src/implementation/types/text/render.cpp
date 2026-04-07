@@ -639,7 +639,7 @@ void pragma::gui::types::WIText::InitializeTextBuffer(prosper::IPrContext &conte
 {
 	if(s_textBuffer != nullptr)
 		return;
-	const auto maxInstances = 8'192; // 5 MiB total space
+	const auto maxInstances = 512; // Not an absolute limit, but exceeding it will trigger re-allocation
 	constexpr auto instanceSize = sizeof(GlyphBoundsInfo) * MAX_CHARS_PER_BUFFER;
 	prosper::util::BufferCreateInfo createInfo {};
 	createInfo.usageFlags = prosper::BufferUsageFlags::VertexBufferBit | prosper::BufferUsageFlags::TransferDstBit;
