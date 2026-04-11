@@ -40,11 +40,20 @@ set(ZLIB_INCLUDE_DIR ${DEPENDENCY_ZLIB_INCLUDE} CACHE STRING "" FORCE)
 set(ZLIB_LIBRARY ${DEPENDENCY_ZLIB_LIBRARY} CACHE STRING "" FORCE)
 
 if(UNIX)
+	# Use system freetype
 	find_package(Freetype REQUIRED)
 	target_include_directories(${PROJ_NAME} PUBLIC ${FREETYPE_INCLUDE_DIR_freetype2})
 	target_link_libraries(${PROJ_NAME} PUBLIC ${FREETYPE_LIBRARIES})
 else()
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
+	find_package(freetype_win REQUIRED)
+
+	add_library(freetype SHARED IMPORTED)
+	set_property(TARGET freetype PROPERTY IMPORTED_IMPLIB "${freetype_win_LIBRARIES}")
+
+	target_include_directories(freetype INTERFACE ${freetype_win_INCLUDE_DIRS})
+	set_target_properties(freetype PROPERTIES FOLDER third_party_libs)
+
 	pr_add_third_party_dependency(${PROJ_NAME} freetype_win PUBLIC)
 endif()
 
