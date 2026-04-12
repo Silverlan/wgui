@@ -92,7 +92,7 @@ export namespace pragma::gui {
 	class DLLWGUI FontManager {
 	  public:
 		static const auto TAB_WIDTH_SPACE_COUNT = 4u;
-		static bool Initialize();
+		static bool Initialize(const util::Heap *heap = nullptr);
 		static std::shared_ptr<const FontInfo> GetDefaultFont();
 		static const std::unordered_map<std::string, std::shared_ptr<FontInfo>> &GetFonts();
 		static void SetDefaultFont(const FontInfo &font);

@@ -87,6 +87,19 @@ export namespace pragma::gui {
 			};
 			static void CalcBounds(const Mat4 &mat, int32_t w, int32_t h, Vector2i &outPos, Vector2i &outSize);
 
+			void* operator new(size_t size) {
+				void* ptr = ::operator new(size);
+				MemoryTracker::totalAllocated += size;
+				if (MemoryTracker::currentUsage() > MemoryTracker::peakUsage)
+					MemoryTracker::peakUsage = MemoryTracker::currentUsage();
+				return ptr;
+			}
+
+			void operator delete(void* ptr, size_t size) noexcept {
+				MemoryTracker::totalFreed += size;
+				::operator delete(ptr);
+			}
+
 			WIBase();
 			virtual ~WIBase();
 			WIBase(const WIBase &) = delete;

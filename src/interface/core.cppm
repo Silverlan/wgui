@@ -126,6 +126,14 @@ export namespace pragma::gui {
 #endif
 	}
 
+	class DLLWGUI MemoryTracker {
+	  public:
+		static size_t totalAllocated;
+		static size_t totalFreed;
+		static size_t currentUsage() { return totalAllocated - totalFreed; }
+		static size_t peakUsage;
+	};
+
 	using Element = types::WIBase;
 	class DLLWGUI WGUI : public prosper::ContextObject {
 	  public:
@@ -152,12 +160,12 @@ export namespace pragma::gui {
 			ErrorInitializingShaders,
 			FontNotFound,
 		};
-		WGUI(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager);
+		WGUI(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager, util::HeapManager *heapManager);
 		WGUI(const WGUI &) = delete;
 		~WGUI();
 		WGUI &operator=(const WGUI &) = delete;
 
-		static WGUI &Open(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager);
+		static WGUI &Open(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager, util::HeapManager *heapManager = nullptr);
 		static void Close();
 		static WGUI &GetInstance();
 		static bool IsOpen();
@@ -167,6 +175,7 @@ export namespace pragma::gui {
 		template<class TElement>
 		TElement *Create(Element *parent = nullptr)
 		{
+			util::HeapScope heapScope {m_guiHeap};
 			auto *el = new TElement;
 			Setup<TElement>(*el, parent);
 			return el;
@@ -174,6 +183,7 @@ export namespace pragma::gui {
 		template<class TElement>
 		void Setup(Element &el, Element *parent = nullptr)
 		{
+			util::HeapScope heapScope {m_guiHeap};
 			auto &map = GetTypeFactory();
 			auto className = map.FindClassName(typeid(TElement));
 			if(className)
@@ -285,6 +295,7 @@ export namespace pragma::gui {
 			m_typeFactory->AddClass(name, typeid(T), []() -> Element * { return GetInstance().Create<T>(); });
 		}
 		const TypeFactory &GetTypeFactory() const { return *m_typeFactory; }
+		const util::Heap *GetHeap() const { return m_guiHeap; }
 	  private:
 		void ScheduleElementForUpdate(Element &el, bool force = false);
 		void RegisterTypes();
@@ -312,6 +323,8 @@ export namespace pragma::gui {
 		uint64_t m_nextGuiElementIndex = 0u;
 		LocaleResolver m_localeResolver;
 		TooltipManager m_tooltipManager;
+		util::HeapManager *m_heapManager = nullptr;
+		const util::Heap *m_guiHeap = nullptr;
 
 		// In general very few elements actually need to apply any continuous logic,
 		// so we keep a separate reference to those elements for better efficiency.

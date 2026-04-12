@@ -463,6 +463,7 @@ decltype(pragma::gui::FontManager::m_fontDefault) pragma::gui::FontManager::m_fo
 decltype(pragma::gui::FontManager::m_fallbackFonts) pragma::gui::FontManager::m_fallbackFonts = {};
 decltype(pragma::gui::FontManager::m_lib) pragma::gui::FontManager::m_lib = {};
 decltype(pragma::gui::FontManager::m_fonts) pragma::gui::FontManager::m_fonts;
+static const pragma::util::Heap *g_heap = nullptr;
 
 pragma::gui::FontManager::Library::~Library()
 {
@@ -495,6 +496,7 @@ static std::string get_font_file_path(const std::string &cpath)
 }
 std::shared_ptr<const pragma::gui::FontInfo> pragma::gui::FontManager::LoadFont(const std::string &cidentifier, const std::string &cpath, const FontSettings &fontSettings, bool bForceReload)
 {
+	util::HeapScope heapScope {g_heap};
 	auto &lib = m_lib.GetFtLibrary();
 	if(lib == nullptr)
 		return nullptr;
@@ -534,8 +536,10 @@ const std::unordered_map<std::string, std::shared_ptr<pragma::gui::FontInfo>> &p
 std::shared_ptr<const pragma::gui::FontInfo> pragma::gui::FontManager::GetDefaultFont() { return m_fontDefault; }
 void pragma::gui::FontManager::SetDefaultFont(const FontInfo &font) { m_fontDefault = font.shared_from_this(); }
 
-bool pragma::gui::FontManager::Initialize()
+bool pragma::gui::FontManager::Initialize(const util::Heap *heap)
 {
+	g_heap = heap;
+	util::HeapScope heapScope {heap};
 	auto &lib = m_lib.GetFtLibrary();
 	if(lib != nullptr)
 		return true;
@@ -555,6 +559,7 @@ void pragma::gui::FontManager::UpdateDirtyFonts()
 {
 	if(!g_fontsDirty)
 		return;
+	util::HeapScope heapScope {g_heap};
 	g_fontsDirty = false;
 	for(auto &[name, fontInfo] : m_fonts) {
 		fontInfo->m_dynamicFontMap->GenerateImageMap();
@@ -570,6 +575,7 @@ void pragma::gui::FontManager::Close()
 }
 void pragma::gui::FontManager::InitializeFontGlyphs(const string::Utf8StringArg &text, const FontInfo &font)
 {
+	util::HeapScope heapScope {g_heap};
 	for(auto c : *text) {
 		auto *glyph = font.InitializeGlyph(c);
 		if(glyph == nullptr) {

@@ -9,6 +9,10 @@ import pragma.string.unicode;
 #undef DrawState
 #undef FindWindow
 
+size_t pragma::gui::MemoryTracker::totalAllocated = 0;
+size_t pragma::gui::MemoryTracker::totalFreed = 0;
+size_t pragma::gui::MemoryTracker::peakUsage = 0;
+
 static std::unique_ptr<pragma::gui::WGUI> s_wgui = nullptr;
 #ifdef WINDOWS_CLANG_COMPILER_FIX
 prosper::SampleCountFlags &pragma::gui::wGUI::GET_MSAA_SAMPLE_COUNT()
@@ -19,10 +23,10 @@ prosper::SampleCountFlags &pragma::gui::wGUI::GET_MSAA_SAMPLE_COUNT()
 #else
 prosper::SampleCountFlags pragma::gui::wGUI::MSAA_SAMPLE_COUNT = prosper::SampleCountFlags::e1Bit;
 #endif
-pragma::gui::WGUI &pragma::gui::WGUI::Open(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager)
+pragma::gui::WGUI &pragma::gui::WGUI::Open(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager, util::HeapManager *heapManager)
 {
 	s_wgui = nullptr;
-	s_wgui = std::make_unique<WGUI>(context, wpMatManager);
+	s_wgui = std::make_unique<WGUI>(context, wpMatManager, heapManager);
 	return GetInstance();
 }
 void pragma::gui::WGUI::ClearWindow(const prosper::Window &window)
@@ -69,8 +73,11 @@ void pragma::gui::WGUI::Close()
 bool pragma::gui::WGUI::IsOpen() { return s_wgui != nullptr; }
 pragma::gui::WGUI &pragma::gui::WGUI::GetInstance() { return *s_wgui; }
 
-pragma::gui::WGUI::WGUI(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager) : ContextObject(context), m_matManager(wpMatManager)
+pragma::gui::WGUI::WGUI(prosper::IPrContext &context, const std::weak_ptr<material::MaterialManager> &wpMatManager, util::HeapManager *heapManager) : ContextObject(context), m_matManager(wpMatManager), m_heapManager {heapManager}
 {
+	if(heapManager)
+		m_guiHeap = heapManager->CreateHeap("gui");
+	util::HeapScope heapScope {m_guiHeap};
 	m_typeFactory = std::make_unique<TypeFactory>();
 	SetMaterialLoadHandler([this](const std::string &path) -> material::Material * { return m_matManager.lock()->LoadAsset(path).get(); });
 
@@ -164,7 +171,10 @@ pragma::string::Utf8String pragma::gui::LocalizedString::Resolve() const
 pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName) { return Initialize(resolution, fontFileName, {}); }
 pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector2i> resolution, std::optional<std::string> fontFileName, const std::vector<std::string> &fallbackFontFileNames)
 {
-	if(!FontManager::Initialize())
+	const util::Heap *fontSystemHeap = nullptr;
+	if(m_heapManager)
+		fontSystemHeap = m_heapManager->CreateHeap("font_system");
+	if(!FontManager::Initialize(fontSystemHeap))
 		return ResultCode::UnableToInitializeFontManager;
 
 	m_time.Update();
