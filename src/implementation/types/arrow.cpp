@@ -23,7 +23,7 @@ pragma::gui::types::WIArrow::WIArrow() : WIShape()
 			bufCreateInfo.size = verts.size() * sizeof(verts.front());
 			bufCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
 			s_vertexBuffers[i] = context.CreateBuffer(bufCreateInfo, verts.data());
-			s_vertexBuffers[i]->SetDebugName("gui_arrow_vertex_buffer_" + std::to_string(i));
+			s_vertexBuffers[i]->SetDebugName("gui_arrow_vertex_buffer_" + util::to_string(i));
 		}
 	}
 	SetSize(8, 8);

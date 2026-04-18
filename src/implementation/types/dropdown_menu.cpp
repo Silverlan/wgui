@@ -297,14 +297,14 @@ pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::Ad
 pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const string::Utf8StringArg &option)
 {
 	auto idx = m_options.size();
-	return AddOption(option, std::to_string(idx));
+	return AddOption(option, util::to_string(idx));
 }
 
 pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const LocalizedString &str, const std::string &value) { return AddTextOption(DisplayText {str}, value); }
 pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::AddOption(const LocalizedString &str)
 {
 	auto idx = m_options.size();
-	return AddOption(str, std::to_string(idx));
+	return AddOption(str, util::to_string(idx));
 }
 
 pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::GetOptionElement(uint32_t idx)

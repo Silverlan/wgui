@@ -160,7 +160,7 @@ void pragma::gui::types::WITextEntryBase::OnEnter()
 
 		parser_t parser;
 		if(parser.compile(expression_string, expression))
-			SetText(std::to_string(expression.value()));
+			SetText(util::to_string(expression.value()));
 	}
 
 	CallCallbacks<void>("OnTextEntered");
