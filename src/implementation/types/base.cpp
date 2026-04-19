@@ -1805,7 +1805,7 @@ void pragma::gui::types::WIBase::SetParent(WIBase *base, std::optional<uint32_t>
 	}
 
 	m_parent = base->GetHandle();
-	base->AddChild(this, childIndex);
+	base->AddChild(this, childIndex, false);
 
 	if((m_stateFlags & (StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit)) != StateFlags::None)
 		SetAutoAlignToParent(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit), math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit), true);
@@ -1842,15 +1842,17 @@ void pragma::gui::types::WIBase::RemoveChild(WIBase *child)
 		}
 	}
 }
-void pragma::gui::types::WIBase::AddChild(WIBase *child, std::optional<uint32_t> childIndex)
+void pragma::gui::types::WIBase::AddChild(WIBase *child, std::optional<uint32_t> childIndex, bool enableCheck)
 {
 	if(child == this)
 		return;
-	auto curIndex = FindChildIndex(*child);
-	if(curIndex.has_value()) {
-		if(childIndex.has_value() == false || *curIndex == *childIndex)
-			return;
-		child->ClearParent();
+	if(enableCheck) {
+		auto curIndex = FindChildIndex(*child);
+		if(curIndex.has_value()) {
+			if(childIndex.has_value() == false || *curIndex == *childIndex)
+				return;
+			child->ClearParent();
+		}
 	}
 	if(child->HasChild(this))
 		child->RemoveChild(this);
@@ -1858,6 +1860,7 @@ void pragma::gui::types::WIBase::AddChild(WIBase *child, std::optional<uint32_t>
 	child->SetParent(this);
 	OnChildAdded(child);
 }
+void pragma::gui::types::WIBase::AddChild(WIBase *child, std::optional<uint32_t> childIndex) { AddChild(child, childIndex, true); }
 bool pragma::gui::types::WIBase::HasChild(WIBase *child)
 {
 	for(unsigned int i = 0; i < m_children.size(); i++) {

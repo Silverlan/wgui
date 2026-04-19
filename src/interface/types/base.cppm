@@ -396,6 +396,7 @@ export namespace pragma::gui {
 			virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changedSource);
 			virtual void OnPosChanged(const Vector2i &oldPos, ChangeSource changedSource);
 			virtual void RefreshLocale() {}
+			void AddChild(WIBase *child, std::optional<uint32_t> childIndex, bool enableCheck);
 			void InitializeAnchor(Anchor::EdgeFlags edges);
 			void UpdateAlignToParent();
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
