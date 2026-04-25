@@ -20,8 +20,8 @@ pragma::gui::types::WIBase::WIBase()
 {
 	RegisterCallback<void>("OnFocusGained");
 	RegisterCallback<void>("OnFocusKilled");
-	RegisterCallback<void>("OnPosChanged");
-	RegisterCallback<void>("OnSizeChanged");
+	RegisterCallback<void, ChangeSource>("OnPosChanged");
+	RegisterCallback<void, ChangeSource>("OnSizeChanged");
 	RegisterCallback<void, int32_t, int32_t>("OnCursorMoved");
 	RegisterCallback<void>("Think");
 	RegisterCallback<void>("OnPreRemove");
@@ -937,7 +937,7 @@ void pragma::gui::types::WIBase::SetPos(int x, int y, ChangeSource changeSource)
 		pair.second->UpdateAbsolutePosition();
 	if(changeSource != ChangeSource::Layout)
 		UpdateAnchorOffsets(Anchor::EdgeFlags::Left | Anchor::EdgeFlags::Right | Anchor::EdgeFlags::Top | Anchor::EdgeFlags::Bottom);
-	CallCallbacks<void>("OnPosChanged");
+	CallCallbacks<void, ChangeSource>("OnPosChanged", changeSource);
 
 	UpdateParentAutoSizeToContents();
 	OnPosChanged(oldPos, changeSource);
@@ -982,7 +982,7 @@ void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource
 	if(changeSource != ChangeSource::Layout)
 		UpdateAnchorOffsets(Anchor::EdgeFlags::Left | Anchor::EdgeFlags::Right | Anchor::EdgeFlags::Top | Anchor::EdgeFlags::Bottom);
 	UpdateAnchorTransform(true);
-	CallCallbacks<void>("OnSizeChanged");
+	CallCallbacks<void, ChangeSource>("OnSizeChanged", changeSource);
 	auto hasAutoAlignChild = false;
 	for(auto &hChild : m_children) {
 		if(is_valid(hChild) == false)
