@@ -89,12 +89,10 @@ void pragma::gui::WITextTagColor::Apply()
 			auto offsetRelativeToBuffer = (localStartOffset > bufStartOffset) ? (localStartOffset - bufStartOffset) : 0;
 			auto endOffsetRelativeToBuffer = std::min<uint32_t>(localEndOffset - bufStartOffset, glyphBufferInfo.numChars - 1);
 			std::fill(colors.begin() + offsetRelativeToBuffer, colors.begin() + endOffsetRelativeToBuffer + 1, *color);
-			if(fullUpdate == true) {
-				context.ScheduleRecordUpdateBuffer(glyphBufferInfo.colorBuffer, 0u, colors.size() * sizeof(colors.front()), colors.data());
-			}
-			else {
-				context.ScheduleRecordUpdateBuffer(glyphBufferInfo.colorBuffer, offsetRelativeToBuffer * sizeof(colors.front()), (endOffsetRelativeToBuffer - offsetRelativeToBuffer + 1) * sizeof(colors.front()), colors.data() + offsetRelativeToBuffer);
-			}
+			if(fullUpdate == true)
+				context.ScheduleRecordUpdateBuffer(*glyphBufferInfo.colorBuffer, 0u, colors.size() * sizeof(colors.front()), colors.data());
+			else
+				context.ScheduleRecordUpdateBuffer(*glyphBufferInfo.colorBuffer, offsetRelativeToBuffer * sizeof(colors.front()), (endOffsetRelativeToBuffer - offsetRelativeToBuffer + 1) * sizeof(colors.front()), colors.data() + offsetRelativeToBuffer);
 			context.GetWindow().GetDrawCommandBuffer()->RecordBufferBarrier(*glyphBufferInfo.colorBuffer, prosper::PipelineStageFlags::TransferBit, prosper::PipelineStageFlags::VertexInputBit, prosper::AccessFlags::TransferWriteBit, prosper::AccessFlags::VertexAttributeReadBit);
 		}
 	}
