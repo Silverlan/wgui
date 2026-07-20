@@ -238,7 +238,7 @@ uint32_t pragma::gui::types::WIText::GetTotalLineCount() const
 	auto &lastLine = m_lineInfos.back();
 	return lastLine.subLineIndexOffset + (lastLine.subLines.empty() ? 1 : lastLine.subLines.size());
 }
-int pragma::gui::types::WIText::GetLineHeight() const { return m_font->GetSize() + m_breakHeight; }
+int pragma::gui::types::WIText::GetLineHeight() const { return m_font->GetBoundingBoxHeight() + m_breakHeight; }
 int pragma::gui::types::WIText::GetBreakHeight() { return m_breakHeight; }
 void pragma::gui::types::WIText::SetBreakHeight(int breakHeight) { m_breakHeight = breakHeight; }
 const pragma::string::FormattedText &pragma::gui::types::WIText::GetFormattedTextObject() const { return const_cast<WIText *>(this)->GetFormattedTextObject(); }
@@ -316,12 +316,11 @@ void pragma::gui::types::WIText::GetTextSize(int *w, int *h, const string::Utf8S
 		auto lineCount = GetTotalLineCount();
 		int hText = GetLineHeight(); //m_font->GetMaxGlyphSize();//m_font->GetSize();
 		*w = wText;
-		// We add 3 pixels to prevent characters from being cut off in some cases
-		*h = hText * lineCount + 3;
+		*h = hText * lineCount;
 		return;
 	}
 	FontManager::GetTextSize(*inText, 0u, font, w);
-	*h = (m_font ? m_font->GetMaxGlyphSize() : 0) + 1;
+	*h = m_font ? m_font->GetMaxGlyphSize() : 0;
 }
 
 void pragma::gui::types::WIText::SetFlag(Flags flag, bool enabled)

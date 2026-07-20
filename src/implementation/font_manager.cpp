@@ -46,6 +46,7 @@ namespace pragma::gui {
 		prosper::IDescriptorSet *GetGlyphBoundsDescriptorSet() const { return m_glyphBoundsDsg ? m_glyphBoundsDsg->GetDescriptorSet() : nullptr; }
 		int32_t GetMaxGlyphTop() const { return m_glyphTopMax; }
 		uint32_t GetGlyphCountPerRow() const { return m_numGlyphsPerRow; }
+		uint32_t GetBoundingBoxHeight() const { return m_boundingBoxHeight; }
 		const FT_Face GetFace() const { return m_face.GetFtFace(); }
 		const std::vector<std::shared_ptr<GlyphInfo>> &GetGlyphs() const { return m_glyphs; }
 		const GlyphInfo *GetGlyphInfo(int32_t c) const
@@ -81,6 +82,7 @@ namespace pragma::gui {
 
 		int32_t m_glyphTopMax = 0;
 		uint32_t m_fontSize = 0;
+		uint32_t m_boundingBoxHeight = 0;
 		uint32_t m_numGlyphsPerRow = 0;
 
 		bool m_dirtyGlyphMap = true;
@@ -172,6 +174,7 @@ const pragma::gui::GlyphInfo *pragma::gui::FontInfo::InitializeGlyph(int32_t c) 
 const pragma::gui::GlyphInfo *pragma::gui::FontInfo::GetGlyphInfo(int32_t c) const { return m_dynamicFontMap->GetGlyphInfo(c); }
 const std::vector<std::shared_ptr<pragma::gui::GlyphInfo>> &pragma::gui::FontInfo::GetGlyphs() const { return m_dynamicFontMap->GetGlyphs(); }
 uint32_t pragma::gui::FontInfo::GetSize() const { return m_size; }
+uint32_t pragma::gui::FontInfo::GetBoundingBoxHeight() const { return m_boundingBoxHeight; }
 
 std::unique_ptr<pragma::gui::DynamicFontMap> pragma::gui::DynamicFontMap::Create(const std::string &cpath, const FontSettings &fontSettings)
 {
@@ -208,6 +211,11 @@ std::unique_ptr<pragma::gui::DynamicFontMap> pragma::gui::DynamicFontMap::Create
 	if(FT_Open_Face(lib, &args, 0, &ncFace) != 0 || FT_Set_Pixel_Sizes(face, 0, fontSettings.fontSize) != 0)
 		return {};
 	fontMap->m_fontSize = fontSettings.fontSize;
+
+	auto ascender = face->size->metrics.ascender >> 6;
+	auto descender = face->size->metrics.descender >> 6;
+
+	fontMap->m_boundingBoxHeight = ascender - descender;
 	return fontMap;
 }
 pragma::gui::DynamicFontMap::DynamicFontMap() { FontManager::SetFontsDirty(); }
@@ -425,6 +433,7 @@ bool pragma::gui::FontInfo::Initialize(const std::string &cpath, const std::stri
 	if(!fontMap)
 		return false;
 	m_size = fontSettings.fontSize;
+	m_boundingBoxHeight = fontMap->GetBoundingBoxHeight();
 	m_dynamicFontMap = std::move(fontMap);
 	m_bInitialized = true;
 	return true;

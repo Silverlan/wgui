@@ -63,6 +63,7 @@ export namespace pragma::gui {
 		uint32_t CharToGlyphMapIndex(int32_t c) const;
 		const std::vector<std::shared_ptr<GlyphInfo>> &GetGlyphs() const;
 		uint32_t GetSize() const;
+		uint32_t GetBoundingBoxHeight() const;
 		uint32_t GetMaxGlyphSize() const;
 		uint32_t GetMaxGlyphHeight() const;
 		uint32_t GetMaxGlyphBitmapWidth() const;
@@ -86,6 +87,7 @@ export namespace pragma::gui {
 		uint32_t m_size = 0;
 		uint32_t m_maxGlyphHeight = 0;
 		uint32_t m_maxGlyphSize = 0;
+		uint32_t m_boundingBoxHeight = 0;
 		std::unique_ptr<DynamicFontMap> m_dynamicFontMap;
 	};
 
