@@ -83,6 +83,7 @@ void pragma::gui::types::WITextEntry::Initialize()
 	m_hBg = CreateChild<WIRect>();
 	WIRect *pBg = static_cast<WIRect *>(m_hBg.get());
 	pBg->SetName("background");
+	pBg->AddStyleClass("background");
 	pBg->SetColor(1, 1, 1, 1);
 	pBg->SetSize(size.x, size.y);
 	pBg->SetAnchor(0, 0, 1, 1);
@@ -125,6 +126,12 @@ void pragma::gui::types::WITextEntry::Initialize()
 			    return;
 		    WITextEntry *te = static_cast<WITextEntry *>(hTextEntry.get());
 		    te->OnFocusGained();
+
+	    	if (te->m_hOutline.IsValid()) {
+	    		te->m_hOutline->RemoveStyleClass("outline");
+	    		te->m_hOutline->AddStyleClass("outline_focus");
+	    		te->m_hOutline->RefreshSkin();
+	    	}
 	    },
 	    this->GetHandle())));
 	pBase->AddCallback("OnFocusKilled",
@@ -133,7 +140,13 @@ void pragma::gui::types::WITextEntry::Initialize()
 		    if(!hTextEntry.IsValid())
 			    return;
 		    WITextEntry *te = static_cast<WITextEntry *>(hTextEntry.get());
-		    te->OnFocusKilled();
+	    	te->OnFocusKilled();
+
+			if (te->m_hOutline.IsValid()) {
+				te->m_hOutline->RemoveStyleClass("outline_focus");
+				te->m_hOutline->AddStyleClass("outline");
+	    		te->m_hOutline->RefreshSkin();
+			}
 	    },
 	    this->GetHandle())));
 	pBase->SetMouseInputEnabled(GetMouseInputEnabled());
@@ -142,6 +155,7 @@ void pragma::gui::types::WITextEntry::Initialize()
 	m_hOutline = CreateChild<WIOutlinedRect>();
 	WIOutlinedRect *pORect = static_cast<WIOutlinedRect *>(m_hOutline.get());
 	pORect->SetName("background_outline");
+	pORect->AddStyleClass("outline");
 	pORect->SetOutlineWidth(1);
 	pORect->WIBase::SetSize(size.x, size.y);
 	pORect->SetZPos(10);

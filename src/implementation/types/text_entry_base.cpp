@@ -116,6 +116,7 @@ void pragma::gui::types::WITextEntryBase::Initialize()
 	m_hCaret = CreateChild<WIRect>();
 	WIRect *pRect = static_cast<WIRect *>(m_hCaret.get());
 	pRect->SetColor(0, 0, 0, 1);
+	pRect->AddStyleClass("caret");
 	pRect->SetVisible(false);
 	pRect->SetZPos(2);
 
