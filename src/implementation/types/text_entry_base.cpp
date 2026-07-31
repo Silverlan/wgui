@@ -329,7 +329,7 @@ void pragma::gui::types::WITextEntryBase::SetCaretPos(int pos)
 			if(IsMultiLine())
 				y += 2; // TODO: Why is this required?
 			pCaret->SetPos(x, y);
-			/*
+
 			w = GetWidth();
 			if((x +pCaret->GetWidth()) > (w -pText->GetX()))
 			{
@@ -343,7 +343,6 @@ void pragma::gui::types::WITextEntryBase::SetCaretPos(int pos)
 			}
 			x += pText->GetX();
 			pCaret->SetPos(x,y);
-			*/
 		}
 	}
 }
