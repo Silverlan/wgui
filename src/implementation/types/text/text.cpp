@@ -280,7 +280,7 @@ int pragma::gui::types::WIText::GetTextHeight()
 {
 	if(m_font == nullptr)
 		return 0;
-	auto h = m_font->GetSize();
+	auto h = m_font->GetBoundingBoxHeight();
 	auto numLines = GetTotalLineCount();
 	return numLines * h + (((numLines > 0) ? (numLines - 1) : 0) * m_breakHeight);
 }
