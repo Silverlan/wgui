@@ -5,6 +5,7 @@ export module pragma.gui;
 export import :anchor;
 export import :attachment;
 export import :core;
+export import :debug_tracker;
 export import :display_text;
 export import :draw_info;
 export import :draw_state;
