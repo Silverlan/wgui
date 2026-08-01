@@ -51,6 +51,8 @@ export namespace pragma::gui {
 		class DLLWGUI Tracker {
 		  public:
 			Tracker();
+			Tracker(const Tracker &) = delete;
+			Tracker &operator=(const Tracker &) = delete;
 			void SetLogEntryHandler(const std::function<void(const types::WIBase &, LogEntry &)> &handler);
 			void EnableTracking(const types::WIBase &el);
 			void DisableTracking(const types::WIBase &el);
