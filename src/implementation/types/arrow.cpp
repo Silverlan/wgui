@@ -5,7 +5,6 @@ module pragma.gui;
 
 import :types.arrow;
 
-static const Vector4 COLOR_SELECTED {0.1176f, 0.564f, 1.f, 1.f};
 static std::array<std::array<Vector2, 3>, 4> s_vertices {std::array<Vector2, 3> {Vector2 {-1.f, -1.f}, Vector2 {-1.f, 1.f}, Vector2 {1.f, 0.f}}, std::array<Vector2, 3> {Vector2 {0.f, 1.f}, Vector2 {1.f, -1.f}, Vector2 {-1.f, -1.f}},
   std::array<Vector2, 3> {Vector2 {1.f, 1.f}, Vector2 {1.f, -1.f}, Vector2 {-1.f, 0.f}}, std::array<Vector2, 3> {Vector2 {0.f, -1.f}, Vector2 {-1.f, 1.f}, Vector2 {1.f, 1.f}}};
 static std::array<std::shared_ptr<prosper::IBuffer>, 4> s_vertexBuffers {nullptr, nullptr, nullptr, nullptr};
@@ -30,6 +29,7 @@ pragma::gui::types::WIArrow::WIArrow() : WIShape()
 	SetColor(0.f, 0.f, 0.f, 1.f);
 	SetDirection(Direction::Down);
 	SetMouseInputEnabled(true);
+	AddStyleClass("arrow");
 }
 pragma::gui::types::WIArrow::~WIArrow()
 {
@@ -48,10 +48,16 @@ void pragma::gui::types::WIArrow::SetDirection(Direction dir)
 void pragma::gui::types::WIArrow::OnCursorEntered()
 {
 	WIBase::OnCursorEntered();
-	SetColor(COLOR_SELECTED);
+
+	RemoveStyleClass("arrow");
+	AddStyleClass("arrow_selected");
+	RefreshSkin();
 }
 void pragma::gui::types::WIArrow::OnCursorExited()
 {
 	WIBase::OnCursorExited();
-	SetColor(0.f, 0.f, 0.f, 1.f);
+
+	RemoveStyleClass("arrow_selected");
+	AddStyleClass("arrow");
+	RefreshSkin();
 }

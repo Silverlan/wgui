@@ -127,11 +127,11 @@ void pragma::gui::types::WITextEntry::Initialize()
 		    WITextEntry *te = static_cast<WITextEntry *>(hTextEntry.get());
 		    te->OnFocusGained();
 
-	    	if (te->m_hOutline.IsValid()) {
-	    		te->m_hOutline->RemoveStyleClass("outline");
-	    		te->m_hOutline->AddStyleClass("outline_focus");
-	    		te->m_hOutline->RefreshSkin();
-	    	}
+		    if(te->m_hOutline.IsValid()) {
+			    te->m_hOutline->RemoveStyleClass("outline");
+			    te->m_hOutline->AddStyleClass("outline_focus");
+			    te->m_hOutline->RefreshSkin();
+		    }
 	    },
 	    this->GetHandle())));
 	pBase->AddCallback("OnFocusKilled",
@@ -140,13 +140,13 @@ void pragma::gui::types::WITextEntry::Initialize()
 		    if(!hTextEntry.IsValid())
 			    return;
 		    WITextEntry *te = static_cast<WITextEntry *>(hTextEntry.get());
-	    	te->OnFocusKilled();
+		    te->OnFocusKilled();
 
-			if (te->m_hOutline.IsValid()) {
-				te->m_hOutline->RemoveStyleClass("outline_focus");
-				te->m_hOutline->AddStyleClass("outline");
-	    		te->m_hOutline->RefreshSkin();
-			}
+		    if(te->m_hOutline.IsValid()) {
+			    te->m_hOutline->RemoveStyleClass("outline_focus");
+			    te->m_hOutline->AddStyleClass("outline");
+			    te->m_hOutline->RefreshSkin();
+		    }
 	    },
 	    this->GetHandle())));
 	pBase->SetMouseInputEnabled(GetMouseInputEnabled());
@@ -373,6 +373,14 @@ void pragma::gui::types::WINumericEntry::Initialize()
 	UpdateArrowPositions();
 }
 
+void pragma::gui::types::WINumericEntry::SetStepArrowsEnabled(bool enabled)
+{
+	if(m_numeric.hDownArrow.IsValid())
+		m_numeric.hDownArrow->SetVisible(enabled);
+	if(m_numeric.hUpArrow.IsValid())
+		m_numeric.hUpArrow->SetVisible(enabled);
+}
+
 bool pragma::gui::types::WINumericEntry::IsNumeric() const { return true; }
 
 const int32_t *pragma::gui::types::WINumericEntry::GetMinValue() const { return m_numeric.min.get(); }
@@ -398,4 +406,8 @@ void pragma::gui::types::WINumericEntry::UpdateArrowPositions()
 	m_numeric.hDownArrow->SetPos(w - m_numeric.hDownArrow->GetWidth() - 4, GetHeight() - m_numeric.hDownArrow->GetHeight() - 2);
 }
 
-void pragma::gui::types::WINumericEntry::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) { UpdateArrowPositions(); }
+void pragma::gui::types::WINumericEntry::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
+{
+	WITextEntry::OnSizeChanged(oldSize, changeSource);
+	UpdateArrowPositions();
+}

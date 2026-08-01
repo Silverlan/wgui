@@ -65,6 +65,7 @@ export namespace pragma::gui::types {
 		void SetMaxValue(int32_t max);
 		void SetMaxValue();
 		void SetRange(int32_t min, int32_t max);
+		void SetStepArrowsEnabled(bool enabled);
 		const int32_t *GetMinValue() const;
 		const int32_t *GetMaxValue() const;
 		virtual bool IsNumeric() const override;
