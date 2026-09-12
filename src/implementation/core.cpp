@@ -106,6 +106,9 @@ void pragma::gui::WGUI::RegisterTypes()
 	RegisterType<WINumericEntry>("WINumericEntry");
 	RegisterType<WIText>("WIText");
 	RegisterType<WITooltip>("WITooltip");
+	RegisterType<HBox>("HBox");
+	RegisterType<VBox>("VBox");
+	static_assert(NUMBER_OF_CORE_UI_ELEMENT_TYPES == 26, "Update this variable when types are added or removed.");
 }
 
 void pragma::gui::WGUI::RegisterElement(types::WIBase &el, const std::string &className, types::WIBase *parent)

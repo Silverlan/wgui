@@ -338,6 +338,8 @@ export namespace pragma::gui {
 			void SetAnchorVerticalCenter(int32_t offset = 0);
 			void SetAnchorEdgeEnabled(Anchor::Edge edge, bool enabled);
 			bool IsAnchorEdgeEnabled(Anchor::Edge edge) const;
+			bool HasHorizontalAnchor() const;
+			bool HasVerticalAnchor() const;
 			void AnchorWithMargin(uint32_t left, uint32_t top, uint32_t right, uint32_t bottom);
 			void AnchorWithMargin(uint32_t margin);
 			void SetAnchor(Anchor::Edge edge, float f);
@@ -395,6 +397,10 @@ export namespace pragma::gui {
 		  protected:
 			virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changedSource);
 			virtual void OnPosChanged(const Vector2i &oldPos, ChangeSource changedSource);
+			virtual void OnChildSizeChanged(WIBase &child, const Vector2i &oldSize, ChangeSource changedSource);
+			virtual void OnChildPosChanged(WIBase &child, const Vector2i &oldPos, ChangeSource changedSource);
+			virtual void OnChildDeleted(WIBase &child);
+			virtual void OnChildVisibilityChanged(WIBase &child, bool visible);
 			virtual void RefreshLocale() {}
 			void AddChild(WIBase *child, std::optional<uint32_t> childIndex, bool enableCheck);
 			void InitializeAnchor(Anchor::EdgeFlags edges);

@@ -429,7 +429,7 @@ void pragma::gui::types::WIBase::SizeToContents(bool x, bool y, ChangeSource cha
 	int height = 0;
 	for(unsigned int i = 0; i < m_children.size(); i++) {
 		WIHandle &child = m_children[i];
-		if(is_valid(child) == false || child->IsBackgroundElement())
+		if(is_valid(child) == false || child->IsBackgroundElement() || !child->IsSelfVisible())
 			continue;
 		WIBase *gui = child.get();
 		int xChild, yChild, wChild, hChild;
@@ -725,6 +725,8 @@ void pragma::gui::types::WIBase::SetVisible(bool b)
 		return;
 	*m_bVisible = b;
 	OnVisibilityChanged(b);
+	if(m_parent)
+		m_parent->OnChildVisibilityChanged(*this, b);
 	if(b == false) {
 		UpdateMouseInBounds();
 		WIBase *el = WGUI::GetInstance().GetFocusedElement(GetRootWindow());
@@ -941,8 +943,14 @@ void pragma::gui::types::WIBase::SetPos(int x, int y, ChangeSource changeSource)
 
 	UpdateParentAutoSizeToContents();
 	OnPosChanged(oldPos, changeSource);
+	if(m_parent)
+		m_parent->OnChildPosChanged(*this, oldPos, changeSource);
 }
 void pragma::gui::types::WIBase::OnPosChanged(const Vector2i &oldPos, ChangeSource changedSource) {}
+void pragma::gui::types::WIBase::OnChildSizeChanged(WIBase &child, const Vector2i &oldSize, ChangeSource changedSource) {}
+void pragma::gui::types::WIBase::OnChildPosChanged(WIBase &child, const Vector2i &oldPos, ChangeSource changedSource) {}
+void pragma::gui::types::WIBase::OnChildDeleted(WIBase &child) {}
+void pragma::gui::types::WIBase::OnChildVisibilityChanged(WIBase &child, bool visible) {}
 void pragma::gui::types::WIBase::ApplyPos(const Vector2i &pos) { ApplyPos(pos.x, pos.y); }
 void pragma::gui::types::WIBase::ApplyPos(int x, int y) { SetPos(x, y, ChangeSource::Layout); }
 pragma::math::intersection::Intersect pragma::gui::types::WIBase::IsInBounds(int x, int y, int w, int h) const
@@ -1002,6 +1010,8 @@ void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource
 	}
 	UpdateParentAutoSizeToContents();
 	OnSizeChanged(oldSize, changeSource);
+	if(m_parent)
+		m_parent->OnChildSizeChanged(*this, oldSize, changeSource);
 }
 void pragma::gui::types::WIBase::OnSizeChanged(const Vector2i &oldSize, ChangeSource changedSource) {}
 void pragma::gui::types::WIBase::ApplySize(const Vector2i &size) { ApplySize(size.x, size.y); }
@@ -1499,6 +1509,8 @@ bool pragma::gui::types::WIBase::IsAnchorEdgeEnabled(Anchor::Edge edge) const
 		return false;
 	return m_anchor->IsEdgeEnabled(edge);
 }
+bool pragma::gui::types::WIBase::HasHorizontalAnchor() const { return IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::Left) || IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::Right) || IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::HorizontalCenter); }
+bool pragma::gui::types::WIBase::HasVerticalAnchor() const { return IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::Top) || IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::Bottom) || IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::VerticalCenter); }
 void pragma::gui::types::WIBase::InitializeAnchor(Anchor::EdgeFlags edges)
 {
 	if(!m_anchor.has_value())
@@ -1728,6 +1740,8 @@ void pragma::gui::types::WIBase::Remove()
 	OnRemove();
 	if(!hThis.IsValid())
 		return;
+	if(m_parent)
+		m_parent->OnChildDeleted(*this);
 	CallCallbacks<void>("OnRemove");
 	if(!hThis.IsValid())
 		return;

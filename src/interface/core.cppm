@@ -127,6 +127,7 @@ export namespace pragma::gui {
 	}
 
 	using Element = types::WIBase;
+	constexpr size_t NUMBER_OF_CORE_UI_ELEMENT_TYPES = 26;
 	class DLLWGUI WGUI : public prosper::ContextObject {
 	  public:
 		friend Element;
