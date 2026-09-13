@@ -45,13 +45,14 @@ void pragma::gui::types::WIContextMenu::Initialize()
 
 	auto &wgui = WGUI::GetInstance();
 	auto *pBg = wgui.Create<WIRect>(this);
-	pBg->SetAutoAlignToParent(true);
+
+	pBg->SetAlignment(Alignment::Fill);
 	pBg->SetColor(colors::Beige);
 	SetKeyboardInputEnabled(true);
 	m_hBg = pBg->GetHandle();
 
 	auto *pBgOutline = wgui.Create<WIOutlinedRect>(this);
-	pBgOutline->SetAutoAlignToParent(true);
+	pBgOutline->SetAlignment(Alignment::Fill);
 	pBgOutline->SetColor(colors::Gray);
 	m_hBgOutline = pBgOutline->GetHandle();
 }

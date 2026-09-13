@@ -44,7 +44,7 @@ void pragma::gui::WITextTagSelection::InitializeOverlay(types::WIBase &overlay)
 {
 	overlay.SetZPos(5);
 	auto *pRect = WGUI::GetInstance().Create<types::WIRect>(&overlay);
-	pRect->SetAutoAlignToParent(true);
+	pRect->SetAlignment(Alignment::Fill);
 	pRect->SetColor(0.75f, 0.75f, 0.75f);
 }
 bool pragma::gui::WITextTagSelection::IsValid() const { return m_startAnchorPoint.IsValid() && m_endAnchorPoint.IsValid(); }

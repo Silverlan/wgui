@@ -667,7 +667,7 @@ void pragma::gui::types::WITextBase::InitializeTexture(prosper::Texture &tex, in
 	pEl->SetZPos(1);
 	pEl->SetAlpha(0.f);
 	pEl->GetColorProperty()->Link(*GetColorProperty());
-	pEl->SetAutoAlignToParent(true);
+	pEl->SetAlignment(Alignment::Fill);
 	pEl->SetSize(w, h);
 	m_hTexture = pEl->GetHandle();
 }

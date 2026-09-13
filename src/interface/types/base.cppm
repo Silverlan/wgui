@@ -39,6 +39,16 @@ export namespace pragma::gui {
 		Count,
 	};
 
+	enum class Alignment : uint8_t {
+		None = 0,
+		Start,
+		Center,
+		End,
+		Fill,
+
+		Count,
+	};
+
 	DLLWGUI bool is_valid(const WIHandle &hEl);
 
 	class WISkin;
@@ -55,9 +65,7 @@ export namespace pragma::gui {
 				AcceptKeyboardInputBit = AcceptMouseInputBit << 1u,
 				AcceptScrollInputBit = AcceptKeyboardInputBit << 1u,
 				MouseCheckEnabledBit = AcceptScrollInputBit << 1u,
-				AutoAlignToParentXBit = MouseCheckEnabledBit << 1u,
-				AutoAlignToParentYBit = AutoAlignToParentXBit << 1u,
-				TrapFocusBit = AutoAlignToParentYBit << 1u,
+				TrapFocusBit = MouseCheckEnabledBit << 1u,
 				ShouldScissorBit = TrapFocusBit << 1u,
 				UpdateScheduledBit = ShouldScissorBit << 1u,
 				RemoveScheduledBit = UpdateScheduledBit << 1u,
@@ -111,16 +119,13 @@ export namespace pragma::gui {
 			void SetUserData4(const std::shared_ptr<void> &userData);
 			void SetShouldScissor(bool b);
 			bool GetShouldScissor() const;
-			void SetAutoAlignToParent(bool bX, bool bY);
-			void SetAutoAlignToParent(bool b);
-			void SetAutoCenterToParentX(bool b);
-			void SetAutoCenterToParentY(bool b);
-			void SetAutoCenterToParent(bool b);
+			void SetAlignment(Alignment alignment);
+			void SetHorizontalAlignment(Alignment alignment);
+			void SetVerticalAlignment(Alignment alignment);
+			Alignment GetHorizontalAlignment() const;
+			Alignment GetVerticalAlignment() const;
 			void CenterToParentX();
 			void CenterToParentY();
-			bool GetAutoAlignToParentX() const;
-			bool GetAutoAlignToParentY() const;
-			bool GetAutoAlignToParent() const;
 			virtual void Initialize();
 			void TrapFocus(bool b);
 			bool IsFocusTrapped();
@@ -405,7 +410,7 @@ export namespace pragma::gui {
 			virtual void RefreshLocale() {}
 			void AddChild(WIBase *child, std::optional<uint32_t> childIndex, bool enableCheck);
 			void InitializeAnchor(Anchor::EdgeFlags edges);
-			void UpdateAlignToParent();
+			void UpdateParentAlignment();
 			virtual bool DoPosInBounds(const Vector2i &pos) const;
 			Mat4 GetAbsolutePose(float x, float y) const;
 			Mat4 GetRelativePose(float x, float y) const;
@@ -430,6 +435,8 @@ export namespace pragma::gui {
 			size_t m_lastThinkUpdateIndex = std::numeric_limits<size_t>::max();
 			uint32_t m_depth = 0;
 			StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
+			Alignment m_horizontalAlignment = Alignment::None;
+			Alignment m_verticalAlignment = Alignment::None;
 			std::array<std::shared_ptr<void>, 4> m_userData;
 			std::unique_ptr<math::ScaledTransform> m_localRenderTransform = nullptr;
 			util::TSharedHandle<WIBase> m_handle {};
@@ -462,7 +469,6 @@ export namespace pragma::gui {
 			void UpdateChildrenMouseInBounds(bool ignoreVisibility = false, bool forceFalse = false);
 			virtual void OnVisibilityChanged(bool bVisible);
 			WISkin *GetSkin();
-			void SetAutoAlignToParent(bool bX, bool bY, bool bReload);
 			virtual void OnChildAdded(WIBase *child);
 			virtual void OnChildRemoved(WIBase *child);
 			virtual void OnRemove();

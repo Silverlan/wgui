@@ -60,22 +60,38 @@ pragma::gui::types::WIBase::~WIBase()
 	}
 	m_fade = nullptr;
 }
-void pragma::gui::types::WIBase::UpdateAlignToParent()
+void pragma::gui::types::WIBase::UpdateParentAlignment()
 {
-	if(!math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit))
+	if(m_horizontalAlignment == Alignment::None && m_verticalAlignment == Alignment::None)
 		return;
 	auto *parent = GetParent();
 	if(parent == nullptr)
 		return;
-	auto &pos = GetPos();
+	auto pos = GetPos();
 	auto size = GetSize();
-	if((math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) == true && pos.x != 0) || (math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit) == true && pos.y != 0))
-		SetPos(0, 0);
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) == true)
-		size.x = parent->GetWidth();
-	if(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit) == true)
-		size.y = parent->GetHeight();
-	SetSize(size);
+	const auto &parentSize = parent->GetSize();
+	for(auto [i, alignment] : std::views::enumerate(std::array<Alignment, 2>{m_horizontalAlignment, m_verticalAlignment})) {
+		switch(alignment) {
+		case Alignment::Start:
+			pos[i] = 0;
+			break;
+		case Alignment::End:
+			pos[i] = parentSize[i] - size[i];
+			break;
+		case Alignment::Center:
+			pos[i] = math::round(parentSize[i] / 2.f - size[i] / 2.f);
+			break;
+		case Alignment::Fill:
+			pos[i] = 0;
+			size[i] = parentSize[i];
+			break;
+		}
+	}
+
+	if(pos != GetPos())
+		SetPos(pos);
+	if(size != GetSize())
+		SetSize(size);
 }
 
 void pragma::gui::types::WIBase::SetLocalRenderTransform(const math::ScaledTransform &transform) { m_localRenderTransform = std::make_unique<math::ScaledTransform>(transform); }
@@ -186,40 +202,15 @@ void pragma::gui::types::WIBase::ScheduleUpdate()
 }
 bool pragma::gui::types::WIBase::IsUpdateScheduled() const { return math::is_flag_set(m_stateFlags, StateFlags::UpdateScheduledBit); }
 bool pragma::gui::types::WIBase::IsRemovalScheduled() const { return math::is_flag_set(m_stateFlags, StateFlags::RemoveScheduledBit); }
-void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY, bool bReload)
+void pragma::gui::types::WIBase::SetAlignment(Alignment alignment)
 {
-	if(bReload == false && bX == math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit) && bY == math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit))
-		return;
-	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentXBit, bX);
-	math::set_flag(m_stateFlags, StateFlags::AutoAlignToParentYBit, bY);
-	UpdateAlignToParent();
+	SetHorizontalAlignment(alignment);
+	SetVerticalAlignment(alignment);
 }
-void pragma::gui::types::WIBase::SetAutoCenterToParentX(bool b)
-{
-	if(b)
-		SetAnchorHorizontalCenter();
-	else
-		SetAnchorEdgeEnabled(Anchor::Edge::HorizontalCenter, false);
-	UpdateAnchorTransform();
-}
-void pragma::gui::types::WIBase::SetAutoCenterToParentY(bool b)
-{
-	if(b)
-		SetAnchorVerticalCenter();
-	else
-		SetAnchorEdgeEnabled(Anchor::Edge::VerticalCenter, false);
-	UpdateAnchorTransform();
-}
-void pragma::gui::types::WIBase::SetAutoAlignToParent(bool bX, bool bY) { SetAutoAlignToParent(bX, bY, false); }
-void pragma::gui::types::WIBase::SetAutoAlignToParent(bool b) { SetAutoAlignToParent(b, b, false); }
-void pragma::gui::types::WIBase::SetAutoCenterToParent(bool b)
-{
-	SetAutoCenterToParentX(b);
-	SetAutoCenterToParentY(b);
-}
-bool pragma::gui::types::WIBase::GetAutoAlignToParentX() const { return math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit); }
-bool pragma::gui::types::WIBase::GetAutoAlignToParentY() const { return math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit); }
-bool pragma::gui::types::WIBase::GetAutoAlignToParent() const { return (GetAutoAlignToParentX() == true || GetAutoAlignToParentY() == true) ? true : false; }
+void pragma::gui::types::WIBase::SetHorizontalAlignment(Alignment alignment) { m_horizontalAlignment = alignment; UpdateParentAlignment(); }
+void pragma::gui::types::WIBase::SetVerticalAlignment(Alignment alignment) { m_verticalAlignment = alignment; UpdateParentAlignment(); }
+pragma::gui::Alignment pragma::gui::types::WIBase::GetHorizontalAlignment() const { return m_horizontalAlignment; }
+pragma::gui::Alignment pragma::gui::types::WIBase::GetVerticalAlignment() const { return m_verticalAlignment; }
 bool pragma::gui::types::WIBase::GetMouseMovementCheckEnabled() { return math::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit); }
 void pragma::gui::types::WIBase::SetMouseMovementCheckEnabled(bool b)
 {
@@ -541,7 +532,7 @@ void pragma::gui::types::WIBase::SetBackgroundElement(bool backgroundElement, bo
 		//SetSize(GetParent()->GetSize());
 		//SetAnchor(0.f,0.f,1.f,1.f);
 		if(HasAnchor() == false)
-			SetAutoAlignToParent(true);
+			SetAlignment(Alignment::Fill);
 		SetZPos(-100);
 	}
 }
@@ -1006,7 +997,7 @@ void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource
 			continue;
 		hChild->UpdateAnchorTransform();
 
-		if(math::is_flag_set(hChild->m_stateFlags, StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit))
+		if(hChild->m_horizontalAlignment != Alignment::None || hChild->m_verticalAlignment != Alignment::None)
 			hasAutoAlignChild = true;
 	}
 
@@ -1014,7 +1005,7 @@ void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource
 		for(auto &hChild : m_children) {
 			if(is_valid(hChild) == false)
 				continue;
-			hChild->UpdateAlignToParent();
+			hChild->UpdateParentAlignment();
 		}
 	}
 	UpdateParentAutoSizeToContents();
@@ -1820,8 +1811,7 @@ void pragma::gui::types::WIBase::SetParent(WIBase *base, std::optional<uint32_t>
 	ClearParent();
 	if(base == nullptr) {
 		m_parent = WIHandle();
-		if(GetAutoAlignToParent() == true)
-			SetAutoAlignToParent(true, true);
+		UpdateParentAlignment();
 		UpdateVisibility();
 		UpdateParentThink();
 		return;
@@ -1830,9 +1820,7 @@ void pragma::gui::types::WIBase::SetParent(WIBase *base, std::optional<uint32_t>
 	m_parent = base->GetHandle();
 	base->AddChild(this, childIndex, false);
 
-	if((m_stateFlags & (StateFlags::AutoAlignToParentXBit | StateFlags::AutoAlignToParentYBit)) != StateFlags::None)
-		SetAutoAlignToParent(math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentXBit), math::is_flag_set(m_stateFlags, StateFlags::AutoAlignToParentYBit), true);
-
+	UpdateParentAlignment();
 	UpdateVisibility();
 	UpdateParentThink();
 	base->UpdateAutoSizeToContents();

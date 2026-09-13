@@ -16,12 +16,12 @@ void pragma::gui::types::WIMenuItem::Initialize()
 
 	auto &wgui = WGUI::GetInstance();
 	auto *pBg = wgui.Create<WIRect>(this);
-	pBg->SetAutoAlignToParent(true);
+	pBg->SetAlignment(Alignment::Fill);
 	pBg->SetColor(colors::SkyBlue);
 	m_hBg = pBg->GetHandle();
 
 	auto *pBgOutline = wgui.Create<WIOutlinedRect>(this);
-	pBgOutline->SetAutoAlignToParent(true);
+	pBgOutline->SetAlignment(Alignment::Fill);
 	pBgOutline->SetColor(colors::RoyalBlue);
 	m_hBgOutline = pBgOutline->GetHandle();
 

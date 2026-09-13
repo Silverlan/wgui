@@ -182,7 +182,7 @@ void pragma::gui::types::WIText::Initialize()
 	if(el != nullptr) {
 		el->SetZPos(10);
 		el->SetTextElement(*this);
-		el->SetAutoAlignToParent(true);
+		el->SetAlignment(Alignment::Fill);
 		el->GetColorProperty()->Link(*GetColorProperty());
 	}
 

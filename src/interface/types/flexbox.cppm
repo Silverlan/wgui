@@ -13,6 +13,11 @@ export namespace pragma::gui::types {
 		int32_t bottom = 0;
 	};
 
+	struct DLLWGUI ChildLayout {
+		BoxOffsets margin;
+		float flex = 0.0f;
+	};
+
 	class DLLWGUI BaseBox : public WIBase {
 	  public:
 		enum class BoxStateFlags : uint8_t {
@@ -22,8 +27,6 @@ export namespace pragma::gui::types {
 			FixedWidth = SizeUpdateRequired << 1,
 			FixedHeight = FixedWidth << 1,
 			AutoSizeActivated = FixedHeight << 1,
-			AutoFillWidth = AutoSizeActivated << 1,
-			AutoFillHeight = AutoFillWidth << 1,
 		};
 
 		BaseBox();
@@ -41,19 +44,17 @@ export namespace pragma::gui::types {
 		void SetChildMargin(const WIBase &el, int32_t left, int32_t top, int32_t right, int32_t bottom);
 		BoxOffsets GetChildMargin(const WIBase &el) const;
 
+		void SetChildFlex(const WIBase &el, float flex);
+		float GetChildFlex(const WIBase &el) const;
+
 		void SetFixedWidth(bool fixed);
 		void SetFixedHeight(bool fixed);
 		void SetFixedSize(bool fixed);
 		void SetAutoSizeActivated(bool activated, bool updateImmediately = true);
 
-		void SetAutoFillContentsToWidth(bool autoFill);
-		void SetAutoFillContentsToHeight(bool autoFill);
-		void SetAutoFillContents(bool autoFill);
-		void SetAutoFillTarget(WIBase *el);
-
-		virtual bool IsHorizontalBox() const=0;
-		virtual bool IsVerticalBox() const=0;
-		virtual bool HasBoxAlignedAnchor(WIBase *el) const=0;
+		virtual bool IsHorizontalBox() const = 0;
+		virtual bool IsVerticalBox() const = 0;
+		virtual bool HasBoxAlignedAnchor(WIBase *el) const = 0;
 	  protected:
 		void OnChildAdded(WIBase *child) override;
 		void OnChildRemoved(WIBase *child) override;
@@ -84,26 +85,19 @@ export namespace pragma::gui::types {
 
 		void SetAutoSizeActivatedValue(bool set);
 		bool GetAutoSizeActivated() const;
-
-		void SetAutoFillWidth(bool set);
-		bool GetAutoFillWidth() const;
-
-		void SetAutoFillHeight(bool set);
-		bool GetAutoFillHeight() const;
 	  protected:
 		BoxStateFlags m_boxStateFlags = BoxStateFlags::None;
 
 		std::optional<std::pair<bool, bool>> m_autoSizeRestore;
 
-		WIHandle m_autoFillTarget;
-
 		int32_t m_spacing = 0;
 		BoxOffsets m_padding;
 
-		std::unordered_map<const WIBase *, BoxOffsets> m_childMargins;
+		std::unordered_map<const WIBase *, ChildLayout> m_childLayout;
 	};
 
 	enum class FlexDirection : uint8_t { Horizontal, Vertical };
+	enum class FlexAlign : uint8_t { Start, Center, End, Stretch };
 
 	class DLLWGUI FlexBox : public BaseBox {
 	  public:
@@ -111,8 +105,12 @@ export namespace pragma::gui::types {
 		bool IsHorizontalBox() const override;
 		bool IsVerticalBox() const override;
 		bool HasBoxAlignedAnchor(WIBase *el) const override;
+
+		void SetAlignItems(FlexAlign align);
+		[[nodiscard]] FlexAlign GetAlignItems() const { return m_alignItems; }
 	  protected:
 		void DoUpdate() override;
 		FlexDirection m_direction;
+		FlexAlign m_alignItems = FlexAlign::Stretch;
 	};
 }
