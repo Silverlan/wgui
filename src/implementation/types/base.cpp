@@ -861,6 +861,15 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::GetFirstChild(const std:
 	}
 	return nullptr;
 }
+pragma::gui::types::WIBase *pragma::gui::types::WIBase::GetFirstChildByName(const std::string &name)
+{
+	for(unsigned int i = 0; i < m_children.size(); i++) {
+		WIHandle &hChild = m_children[i];
+		if(hChild.IsValid() && string::compare(hChild->GetName(), name, false))
+			return hChild.get();
+	}
+	return nullptr;
+}
 pragma::gui::types::WIBase *pragma::gui::types::WIBase::GetChild(unsigned int idx)
 {
 	unsigned int j = 0;

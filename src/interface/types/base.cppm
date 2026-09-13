@@ -193,6 +193,7 @@ export namespace pragma::gui {
 			std::vector<WIHandle> *GetChildren();
 			void GetChildren(const std::string &className, std::vector<WIHandle> &children);
 			WIBase *GetFirstChild(const std::string &className);
+			WIBase *GetFirstChildByName(const std::string &name);
 			WIBase *GetChild(unsigned int idx);
 			WIBase *GetChild(const std::string &className, unsigned int idx);
 			WIBase *FindChildByName(const std::string &name);
