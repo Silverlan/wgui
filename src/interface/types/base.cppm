@@ -316,9 +316,10 @@ export namespace pragma::gui {
 			bool IsAncestor(WIBase *el);
 			bool IsAncestorOf(WIBase *el);
 
-			std::vector<std::string> &GetStyleClasses();
-			void AddStyleClass(const std::string &className);
-			void RemoveStyleClass(const std::string &className);
+			std::vector<util::GString> &GetStyleClasses();
+			void AddStyleClass(std::string_view className);
+			void RemoveStyleClass(std::string_view className);
+			bool HasStyleClass(std::string_view className) const;
 			void ClearStyleClasses();
 
 			void SetTooltip(const string::Utf8StringArg &msg);
@@ -487,9 +488,11 @@ export namespace pragma::gui {
 			util::PBoolProperty m_bHasFocus = nullptr;
 			util::PVector2Property m_scale = nullptr;
 		  private:
-			std::vector<std::string> m_styleClasses;
+			std::vector<util::GString> m_styleClasses;
 			WISkin *m_skin = nullptr;
 			ChronoTimePoint m_clickStart;
+			std::vector<util::GString>::iterator FindStyleClass(std::string_view className);
+			std::vector<util::GString>::const_iterator FindStyleClass(std::string_view className) const;
 			static bool __wiJoystickCallback(prosper::Window &window, const platform::Joystick &joystick, uint32_t key, platform::KeyState state);
 			static bool __wiKeyCallback(prosper::Window &window, platform::Key key, int scanCode, platform::KeyState state, platform::Modifier mods);
 			static bool __wiCharCallback(prosper::Window &window, unsigned int c);

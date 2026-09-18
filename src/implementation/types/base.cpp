@@ -2143,25 +2143,28 @@ pragma::util::EventReply pragma::gui::types::WIBase::InjectScrollInput(Vector2 o
 	return util::EventReply::Unhandled;
 }
 
-std::vector<std::string> &pragma::gui::types::WIBase::GetStyleClasses() { return m_styleClasses; }
-void pragma::gui::types::WIBase::AddStyleClass(const std::string &className)
+std::vector<pragma::util::GString> &pragma::gui::types::WIBase::GetStyleClasses() { return m_styleClasses; }
+void pragma::gui::types::WIBase::AddStyleClass(std::string_view className)
 {
-	auto lname = className;
-	string::to_lower(lname);
-	auto it = std::find(m_styleClasses.begin(), m_styleClasses.end(), lname);
-	if(it != m_styleClasses.end())
+	if(HasStyleClass(className))
 		return;
-	m_styleClasses.push_back(lname);
+	std::string lclassName {className};
+	string::to_lower(lclassName);
+	m_styleClasses.push_back(util::register_global_string(lclassName));
 }
-void pragma::gui::types::WIBase::RemoveStyleClass(const std::string &className)
+void pragma::gui::types::WIBase::RemoveStyleClass(std::string_view className)
 {
-	auto lname = className;
-	string::to_lower(lname);
-	auto it = std::find(m_styleClasses.begin(), m_styleClasses.end(), lname);
+	auto it = FindStyleClass(className);
 	if(it == m_styleClasses.end())
 		return;
 	m_styleClasses.erase(it);
 }
+std::vector<pragma::util::GString>::iterator pragma::gui::types::WIBase::FindStyleClass(std::string_view className)
+{
+	return std::find_if(m_styleClasses.begin(), m_styleClasses.end(), [&className](const util::GString &styleClass) { return string::compare(className, static_cast<std::string_view>(styleClass), false); });
+}
+std::vector<pragma::util::GString>::const_iterator pragma::gui::types::WIBase::FindStyleClass(std::string_view className) const { return const_cast<WIBase *>(this)->FindStyleClass(className); }
+bool pragma::gui::types::WIBase::HasStyleClass(std::string_view className) const { return FindStyleClass(className) != m_styleClasses.end(); }
 void pragma::gui::types::WIBase::ClearStyleClasses() { m_styleClasses.clear(); }
 
 /////////////////
