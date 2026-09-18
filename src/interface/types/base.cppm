@@ -49,6 +49,25 @@ export namespace pragma::gui {
 		Count,
 	};
 
+	enum class InputState : uint8_t {
+		None = 0,
+		Hover,
+		Pressed,
+		Focused,
+
+		Count,
+	};
+
+	enum class LogicalState : uint8_t {
+		None = 0,
+		Selected,
+		Checked,
+		Disabled,
+		Error,
+
+		Count,
+	};
+
 	DLLWGUI bool is_valid(const WIHandle &hEl);
 
 	class WISkin;
@@ -124,6 +143,10 @@ export namespace pragma::gui {
 			void SetVerticalAlignment(Alignment alignment);
 			Alignment GetHorizontalAlignment() const;
 			Alignment GetVerticalAlignment() const;
+			void SetInputState(InputState state);
+			InputState GetInputState() const;
+			void SetLogicalState(LogicalState state);
+			LogicalState GetLogicalState() const;
 			void CenterToParentX();
 			void CenterToParentY();
 			virtual void Initialize();
@@ -438,6 +461,8 @@ export namespace pragma::gui {
 			StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 			Alignment m_horizontalAlignment = Alignment::None;
 			Alignment m_verticalAlignment = Alignment::None;
+			InputState m_inputState = InputState::None;
+			LogicalState m_logicalState = LogicalState::None;
 			std::array<std::shared_ptr<void>, 4> m_userData;
 			std::unique_ptr<math::ScaledTransform> m_localRenderTransform = nullptr;
 			util::TSharedHandle<WIBase> m_handle {};

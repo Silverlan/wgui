@@ -70,7 +70,7 @@ void pragma::gui::types::WIBase::UpdateParentAlignment()
 	auto pos = GetPos();
 	auto size = GetSize();
 	const auto &parentSize = parent->GetSize();
-	for(auto [i, alignment] : std::views::enumerate(std::array<Alignment, 2>{m_horizontalAlignment, m_verticalAlignment})) {
+	for(auto [i, alignment] : std::views::enumerate(std::array<Alignment, 2> {m_horizontalAlignment, m_verticalAlignment})) {
 		switch(alignment) {
 		case Alignment::Start:
 			pos[i] = 0;
@@ -207,10 +207,30 @@ void pragma::gui::types::WIBase::SetAlignment(Alignment alignment)
 	SetHorizontalAlignment(alignment);
 	SetVerticalAlignment(alignment);
 }
-void pragma::gui::types::WIBase::SetHorizontalAlignment(Alignment alignment) { m_horizontalAlignment = alignment; UpdateParentAlignment(); }
-void pragma::gui::types::WIBase::SetVerticalAlignment(Alignment alignment) { m_verticalAlignment = alignment; UpdateParentAlignment(); }
+void pragma::gui::types::WIBase::SetHorizontalAlignment(Alignment alignment)
+{
+	m_horizontalAlignment = alignment;
+	UpdateParentAlignment();
+}
+void pragma::gui::types::WIBase::SetVerticalAlignment(Alignment alignment)
+{
+	m_verticalAlignment = alignment;
+	UpdateParentAlignment();
+}
 pragma::gui::Alignment pragma::gui::types::WIBase::GetHorizontalAlignment() const { return m_horizontalAlignment; }
 pragma::gui::Alignment pragma::gui::types::WIBase::GetVerticalAlignment() const { return m_verticalAlignment; }
+void pragma::gui::types::WIBase::SetInputState(InputState state)
+{
+	m_inputState = state;
+	RefreshSkin();
+}
+pragma::gui::InputState pragma::gui::types::WIBase::GetInputState() const { return m_inputState; }
+void pragma::gui::types::WIBase::SetLogicalState(LogicalState state)
+{
+	m_logicalState = state;
+	RefreshSkin();
+}
+pragma::gui::LogicalState pragma::gui::types::WIBase::GetLogicalState() const { return m_logicalState; }
 bool pragma::gui::types::WIBase::GetMouseMovementCheckEnabled() { return math::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit); }
 void pragma::gui::types::WIBase::SetMouseMovementCheckEnabled(bool b)
 {
