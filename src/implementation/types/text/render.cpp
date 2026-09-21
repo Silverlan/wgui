@@ -720,7 +720,7 @@ bool pragma::gui::types::WITextBase::RenderLines(std::shared_ptr<prosper::IComma
 			// Temporarily change size to that of the text (instead of the element) to make sure GetTransformedMatrix returns the right matrix.
 			// This will be reset further below.
 			auto poseText = GetTransformPose(drawInfo.offset, drawInfo.size.x, drawInfo.size.y, drawInfo.transform, scale);
-			inOutPushConstants.elementData.modelMatrix = poseText;
+			inOutPushConstants.elementData.SetModelMatrix(poseText);
 			inOutPushConstants.elementData.viewportSize = ElementData::ToViewportSize(Vector2i {drawInfo.size.x, drawInfo.size.y});
 
 			auto &font = *bufInfo.font;
@@ -800,7 +800,7 @@ void pragma::gui::types::WITextBase::Render(const DrawInfo &drawInfo, DrawState 
 
 		//auto matText = GetTransformedMatrix(origin,width,height,matParent);
 
-		shaders::ShaderTextRect::PushConstants pushConstants {ElementData {Mat4 {}, col}, 0.f, 0.f, 0, 0, 0, 0, 0, 0};
+		shaders::ShaderTextRect::PushConstants pushConstants {ElementData {Mat4 {}, col, 0}, 0.f, 0.f, 0, 0, 0, 0, 0, 0};
 		Vector2i absPos, absSize;
 		CalcBounds(matDraw, drawInfo.size.x, drawInfo.size.y, absPos, absSize);
 		auto &commandBuffer = drawInfo.commandBuffer;

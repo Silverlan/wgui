@@ -8,9 +8,14 @@ export import pragma.math;
 export namespace pragma::gui {
 #pragma pack(push, 1)
 	struct ElementData {
-		static constexpr auto ALIGNMENT_PADDING_TO_VEC4 = sizeof(float) * 3;
 		static inline uint32_t ToViewportSize(const Vector2i &res) { return (res.x << 16) | res.y; }
-		Mat4 modelMatrix;
+		static inline Mat3x4 ToShaderModelMatrix(const Mat4 &m) { return {m[0], m[1], m[3]}; }
+
+		ElementData() = default;
+		ElementData(const Mat4 &m, const Vector4 &color, uint32_t viewportSize) : modelMatrix {ToShaderModelMatrix(m)}, color {color}, viewportSize {viewportSize} {}
+		void SetModelMatrix(const Mat4 &m) { modelMatrix = ToShaderModelMatrix(m); }
+		Mat3x4 modelMatrix;
+		Vector4 _padding;
 		Vector4 color;
 		uint32_t viewportSize;
 	};

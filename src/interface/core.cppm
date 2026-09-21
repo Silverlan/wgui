@@ -50,6 +50,7 @@ export namespace pragma::gui {
 		class ShaderTexturedRect;
 		class ShaderTexturedRectExpensive;
 		class ShaderStencil;
+		class StyledRect;
 
 		enum class ShaderType : uint8_t {
 			Colored = 0,
@@ -63,6 +64,7 @@ export namespace pragma::gui {
 			TexturedNineSlice,
 			TexturedCheap,
 			TexturedExpensive,
+			StyledRect,
 			Stencil,
 
 			Count,
@@ -112,6 +114,10 @@ export namespace pragma::gui {
 		template<>
 		struct ShaderTraits<ShaderType::TexturedExpensive> {
 			using type = ShaderTexturedRectExpensive;
+		};
+		template<>
+		struct ShaderTraits<ShaderType::StyledRect> {
+			using type = StyledRect;
 		};
 		template<>
 		struct ShaderTraits<ShaderType::Stencil> {

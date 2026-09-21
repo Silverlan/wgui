@@ -23,6 +23,7 @@ export import :types.rounded_base;
 export import :types.scroll_bar;
 export import :types.segmented_rect;
 export import :types.shape;
+export import :types.styled_rect;
 export import :types.text;
 export import :types.text_entry;
 export import :types.text_entry_base;

@@ -61,6 +61,8 @@ void pragma::gui::WGUI::Close()
 		windows.pop();
 	}
 
+	types::StyledRect::clear_style_cache_buffer(s_wgui->GetContext());
+
 	s_wgui = nullptr;
 	FontManager::Close();
 	types::WIText::ClearTextBuffer();
@@ -94,6 +96,7 @@ void pragma::gui::WGUI::RegisterTypes()
 	RegisterType<WISegmentedRect>("WISegmentedRect");
 	RegisterType<WI9SliceRect>("WI9SliceRect");
 	RegisterType<WIRect>("WIRect");
+	RegisterType<StyledRect>("styled_rect");
 	RegisterType<WIOutlinedRect>("WIOutlinedRect");
 	RegisterType<WITexturedRect>("WITexturedRect");
 	RegisterType<WIRoundedRect>("WIRoundedRect");
@@ -202,6 +205,7 @@ pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector
 	shaderManager.RegisterShader("wguistencil", [](prosper::IPrContext &context, const std::string &identifier) { return new shaders::ShaderStencil(context, identifier); });
 	shaderManager.RegisterShader("wguisubtexturedrect", [](prosper::IPrContext &context, const std::string &identifier) { return new shaders::ShaderTexturedSubRect(context, identifier); });
 	shaderManager.RegisterShader("wgui_nine_slice_textured_rect", [](prosper::IPrContext &context, const std::string &identifier) { return new shaders::ShaderTexturedNineSlice(context, identifier); });
+	shaderManager.RegisterShader("wgui_styled_rect", [](prosper::IPrContext &context, const std::string &identifier) { return new shaders::StyledRect(context, identifier); });
 
 	m_shaders[math::to_integral(shaders::ShaderType::Colored)] = shaderManager.GetShader("wguicolored");
 	m_shaders[math::to_integral(shaders::ShaderType::ColoredRect)] = shaderManager.GetShader("wguicolored_cheap");
@@ -214,8 +218,9 @@ pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector
 	m_shaders[math::to_integral(shaders::ShaderType::TexturedNineSlice)] = shaderManager.GetShader("wgui_nine_slice_textured_rect");
 	m_shaders[math::to_integral(shaders::ShaderType::TexturedCheap)] = shaderManager.GetShader("wguitextured_cheap");
 	m_shaders[math::to_integral(shaders::ShaderType::TexturedExpensive)] = shaderManager.GetShader("wguitextured_expensive");
+	m_shaders[math::to_integral(shaders::ShaderType::StyledRect)] = shaderManager.GetShader("wgui_styled_rect");
 	m_shaders[math::to_integral(shaders::ShaderType::Stencil)] = shaderManager.GetShader("wguistencil");
-	static_assert(math::to_integral(shaders::ShaderType::Count) == 12, "Update this list when new shaders are added!");
+	static_assert(math::to_integral(shaders::ShaderType::Count) == 13, "Update this list when new shaders are added!");
 
 	GetContext().GetPipelineLoader().Flush();
 

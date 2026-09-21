@@ -546,7 +546,7 @@ void pragma::gui::types::WITexturedShape::Render(const DrawInfo &drawInfo, DrawS
 			prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
 			if(pShaderExpensive->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, math::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 				pShaderExpensive->RecordDraw(bindState,
-				  {matDraw, col, ElementData::ToViewportSize(drawInfo.size), math::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Red)),
+				  {ElementData {matDraw, col, ElementData::ToViewportSize(drawInfo.size)}, math::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Red)),
 				    m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Green)), m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Blue)), m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Alpha)), GetAlphaMode(), GetAlphaCutoff()},
 				  *m_descSetTextureGroup->GetDescriptorSet(0u), testStencilLevel);
 				pShaderExpensive->RecordEndDraw(bindState);
@@ -560,7 +560,7 @@ void pragma::gui::types::WITexturedShape::Render(const DrawInfo &drawInfo, DrawS
 		prosper::ShaderBindState bindState {*drawInfo.commandBuffer};
 		if(pShaderCheap->RecordBeginDraw(bindState, drawState, drawInfo.size.x, drawInfo.size.y, stencilPipeline, math::is_flag_set(drawInfo.flags, DrawInfo::Flags::Msaa)) == true) {
 			pShaderCheap->RecordDraw(bindState,
-			  {matDraw, col, ElementData::ToViewportSize(drawInfo.size), math::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Red)),
+			  {ElementData{matDraw, col, ElementData::ToViewportSize(drawInfo.size)}, math::is_flag_set(m_stateFlags, StateFlags::AlphaOnly) ? 1 : 0, m_lod, m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Red)),
 			    m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Green)), m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Blue)), m_channels.at(math::to_integral(shaders::ShaderTextured::Channel::Alpha))},
 			  *m_descSetTextureGroup->GetDescriptorSet(0u), testStencilLevel);
 			pShaderCheap->RecordEndDraw(bindState);
@@ -582,7 +582,7 @@ void pragma::gui::types::WITexturedShape::Render(const DrawInfo &drawInfo, DrawS
 		BindShader(shader, bindState, drawState);
 
 		shaders::ShaderTextured::PushConstants pushConstants {};
-		pushConstants.elementData.modelMatrix = matDraw;
+		pushConstants.elementData.SetModelMatrix(matDraw);
 		pushConstants.elementData.color = col;
 		pushConstants.elementData.viewportSize = ElementData::ToViewportSize(drawInfo.size);
 		pushConstants.lod = m_lod;

@@ -59,6 +59,48 @@ void pragma::gui::shaders::ShaderColoredRect::InitializeGfxPipeline(prosper::Gra
 
 ///////////////////////
 
+decltype(pragma::gui::shaders::StyledRect::VERTEX_BINDING_VERTEX) pragma::gui::shaders::StyledRect::VERTEX_BINDING_VERTEX = {prosper::VertexInputRate::Vertex};
+decltype(pragma::gui::shaders::StyledRect::VERTEX_ATTRIBUTE_POSITION) pragma::gui::shaders::StyledRect::VERTEX_ATTRIBUTE_POSITION = {VERTEX_BINDING_VERTEX, prosper::CommonBufferCache::GetSquareVertexFormat()};
+
+decltype(pragma::gui::shaders::StyledRect::VERTEX_BINDING_UV) pragma::gui::shaders::StyledRect::VERTEX_BINDING_UV = {prosper::VertexInputRate::Vertex};
+decltype(pragma::gui::shaders::StyledRect::VERTEX_ATTRIBUTE_UV) pragma::gui::shaders::StyledRect::VERTEX_ATTRIBUTE_UV = {VERTEX_BINDING_UV, prosper::CommonBufferCache::GetSquareUvFormat()};
+
+decltype(pragma::gui::shaders::StyledRect::DESCRIPTOR_SET_STYLE) pragma::gui::shaders::StyledRect::DESCRIPTOR_SET_STYLE = {
+	"GUI",
+	{
+		prosper::DescriptorSetInfo::Binding {"RECT_STYLE", prosper::DescriptorType::UniformBuffer, prosper::ShaderStageFlags::FragmentBit},
+	  },
+	};
+
+pragma::gui::shaders::StyledRect::StyledRect(prosper::IPrContext &context, const std::string &identifier) : Shader{context, identifier, "programs/gui/styled_rect", "programs/gui/styled_rect"} {}
+
+pragma::gui::shaders::StyledRect::StyledRect(prosper::IPrContext &context, const std::string &identifier, const std::string &vsShader, const std::string &fsShader, const std::string &gsShader) : Shader(context, identifier, vsShader, fsShader, gsShader) {}
+
+bool pragma::gui::shaders::StyledRect::RecordDraw(prosper::ShaderBindState &bindState, const ElementData &pushConstants, prosper::IDescriptorSet &style, uint32_t testStencilLevel) const
+{
+	if(RecordBindRenderBuffer(bindState, *WGUI::GetInstance().GetContext().GetCommonBufferCache().GetSquareVertexUvRenderBuffer()) == false || RecordPushConstants(bindState, pushConstants) == false || RecordBindDescriptorSet(bindState, style, DESCRIPTOR_SET_STYLE.setIndex) == false || RecordSetStencilReference(bindState, testStencilLevel) == false
+	  || ShaderGraphics::RecordDraw(bindState, prosper::CommonBufferCache::GetSquareVertexCount()) == false)
+		return false;
+	return true;
+}
+
+void pragma::gui::shaders::StyledRect::InitializeShaderResources()
+{
+	Shader::InitializeShaderResources();
+
+	AddVertexAttribute(VERTEX_ATTRIBUTE_POSITION);
+	AddVertexAttribute(VERTEX_ATTRIBUTE_UV);
+	AttachPushConstantRange(0u, sizeof(ElementData), prosper::ShaderStageFlags::FragmentBit | prosper::ShaderStageFlags::VertexBit);
+	AddDescriptorSetGroup(DESCRIPTOR_SET_STYLE);
+}
+void pragma::gui::shaders::StyledRect::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
+{
+	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
+	Shader::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
+}
+
+///////////////////////
+
 pragma::gui::shaders::ShaderStencil::ShaderStencil(prosper::IPrContext &context, const std::string &identifier) : Shader(context, identifier, "programs/gui/colored_cheap", "programs/gui/stencil") {}
 
 bool pragma::gui::shaders::ShaderStencil::RecordDraw(prosper::ShaderBindState &bindState, const ElementData &pushConstants, uint32_t testStencilLevel) const
