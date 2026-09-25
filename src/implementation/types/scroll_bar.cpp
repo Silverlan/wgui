@@ -244,12 +244,13 @@ void pragma::gui::types::WIScrollBar::Initialize()
 
 ///////////////////////////////////////////
 
-pragma::gui::types::WIScrollBarSlider::WIScrollBarSlider() : WIRect(), m_moveOffset(0), m_moveOrigin(0), m_bMoving(false), m_min(0), m_max(0), m_bHorizontal(false) { RegisterCallback<void>("OnDrag"); }
+pragma::gui::types::WIScrollBarSlider::WIScrollBarSlider() : WIBase(), m_moveOffset(0), m_moveOrigin(0), m_bMoving(false), m_min(0), m_max(0), m_bHorizontal(false) { RegisterCallback<void>("OnDrag"); }
 
 void pragma::gui::types::WIScrollBarSlider::Initialize()
 {
-	WIRect::Initialize();
+	WIBase::Initialize();
 	SetMouseInputEnabled(true);
+	AddStyleClass("scrollbar_slider");
 }
 
 void pragma::gui::types::WIScrollBarSlider::SetLimits(int min, int max)
@@ -270,7 +271,7 @@ void pragma::gui::types::WIScrollBarSlider::SetSliderPos(int x, int y) { (m_bHor
 void pragma::gui::types::WIScrollBarSlider::SetSliderSize(int w, int h) { (m_bHorizontal == true) ? SetSize(h, w) : SetSize(w, h); }
 pragma::util::EventReply pragma::gui::types::WIScrollBarSlider::MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods)
 {
-	if(WIRect::MouseCallback(button, state, mods) == util::EventReply::Handled)
+	if(WIBase::MouseCallback(button, state, mods) == util::EventReply::Handled)
 		return util::EventReply::Handled;
 	if(button == platform::MouseButton::Left) {
 		if(state == platform::KeyState::Press) {
@@ -333,7 +334,7 @@ void pragma::gui::types::WIScrollBarSlider::UpdatePosition()
 
 void pragma::gui::types::WIScrollBarSlider::Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd)
 {
-	WIRect::Think(drawCmd);
+	WIBase::Think(drawCmd);
 	UpdatePosition();
 }
 
@@ -347,7 +348,7 @@ bool pragma::gui::types::WIScrollBarSlider::IsVertical() { return !m_bHorizontal
 
 pragma::util::EventReply pragma::gui::types::WIScrollBarSlider::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {
-	if(WIRect::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled)
+	if(WIBase::ScrollCallback(offset, offsetAsPixels) == util::EventReply::Handled)
 		return util::EventReply::Handled;
 	WIBase *parent = GetParent();
 	if(parent == nullptr)

@@ -40,7 +40,7 @@ export namespace pragma::gui::types {
 		virtual util::EventReply OnDoubleClick() override;
 		int GetCaretPos() const;
 		void SetCaretPos(int pos);
-		WIRect *GetCaretElement();
+		WIBase *GetCaretElement();
 
 		virtual void SetColor(float r, float g, float b, float a = 1.f) override;
 		using WIBase::SetColor;

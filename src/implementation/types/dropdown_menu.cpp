@@ -8,11 +8,6 @@ import :types.text;
 
 import pragma.string.unicode;
 
-static const Vector4 COLOR_SELECTED {0.1176f, 0.564f, 1.f, 1.f};
-static float MARGIN = 5.f;
-static int MARGIN_LEFT = 4;
-static int OPTION_HEIGHT = 18;
-
 pragma::gui::types::WIDropDownMenu::WIDropDownMenu() : WITextEntry(), m_numListItems(15), m_listOffset(0), m_selected(-1)
 {
 	RegisterCallback<void, unsigned int>("OnOptionSelected");
@@ -63,33 +58,13 @@ void pragma::gui::types::WIDropDownMenu::Initialize()
 	}
 	AddCallback("OnTextEntered", FunctionCallback<void>::Create([this]() { CallCallbacks<void, unsigned int>("OnOptionSelected", std::numeric_limits<uint32_t>::max()); }));
 
-	m_hOutline = CreateChild<WIOutlinedRect>();
-	WIOutlinedRect *pOutline = static_cast<WIOutlinedRect *>(m_hOutline.get());
-	pOutline->SetOutlineWidth(1);
-	pOutline->SetColor(0.f, 0.f, 0.f, 1.f);
-
-	auto *pArrowContainer = CreateChild<WIBase>().get();
-	pArrowContainer->SetSize(20, GetHeight());
-	pArrowContainer->SetX(GetWidth() - pArrowContainer->GetWidth());
-	pArrowContainer->SetAnchor(1.f, 0.f, 1.f, 1.f);
-	pArrowContainer->SetMouseInputEnabled(true);
-	pArrowContainer->AddCallback("OnMousePressed", FunctionCallback<util::EventReply>::CreateWithOptionalReturn([this](util::EventReply *reply) -> CallbackReturnType {
-		ToggleMenu();
-		*reply = util::EventReply::Handled;
-		return CallbackReturnType::HasReturnValue;
-	}));
-
-	m_hArrow = WGUI::GetInstance().Create<WIArrow>(pArrowContainer)->GetHandle();
-	auto *pArrow = static_cast<WIArrow *>(m_hArrow.get());
-	pArrow->CenterToParent();
-	pArrow->SetAnchor(0.5f, 0.5f, 0.5f, 0.5f);
-
 	//m_hText = CreateChild<WIText>();
 	//WIText *pText = m_hText.get<WIText>();
 	//pText->SetX(static_cast<int>(MARGIN));
 
-	WIRect *pList = WGUI::GetInstance().Create<WIRect>();
+	auto *pList = WGUI::GetInstance().Create<VBox>();
 	m_hList = pList->GetHandle();
+	pList->AddStyleClass("dropdown_menu_list");
 	pList->SetVisible(false);
 	pList->SetZPos(10'000);
 	pList->AddCallback("OnFocusKilled",
@@ -104,6 +79,7 @@ void pragma::gui::types::WIDropDownMenu::Initialize()
 
 	WIScrollBar *pScrollBar = WGUI::GetInstance().Create<WIScrollBar>(pList);
 	m_hScrollBar = pScrollBar->GetHandle();
+	pList->SetBackgroundElement(true);
 	pScrollBar->SetWidth(8);
 	pScrollBar->AddCallback("OnScrollOffsetChanged",
 	  FunctionCallback<void, unsigned int>::Create(std::bind(
@@ -253,7 +229,6 @@ pragma::gui::types::WIDropDownMenuOption *pragma::gui::types::WIDropDownMenu::Ad
 	WIHandle hOption = pOption->GetHandle();
 	pOption->SetDropDownMenu(this);
 	std::visit([pOption](auto &&text) { pOption->SetText(text); }, text);
-	pOption->SetHeight(OPTION_HEIGHT);
 	pOption->SetIndex(static_cast<int>(m_options.size()));
 	pOption->SetValue(value);
 	pOption->SetVisible(false);
@@ -374,9 +349,6 @@ void pragma::gui::types::WIDropDownMenu::UpdateOptionItems(std::optional<uint32_
 		if(hOption.IsValid()) {
 			WIDropDownMenuOption *pOption = static_cast<WIDropDownMenuOption *>(hOption.get());
 			pOption->SetVisible(true);
-			pOption->SetY(y);
-
-			y += OPTION_HEIGHT;
 		}
 	}
 }
@@ -409,7 +381,7 @@ void pragma::gui::types::WIDropDownMenu::UpdateListWindow()
 {
 	if(!m_hList.IsValid())
 		return;
-	auto *pList = static_cast<WIRect *>(m_hList.get());
+	auto *pList = m_hList.get();
 	auto *wMenu = GetRootWindow();
 	auto *wList = pList->GetRootWindow();
 	if(wList == wMenu && m_cbListWindowUpdate.IsValid())
@@ -433,7 +405,7 @@ void pragma::gui::types::WIDropDownMenu::OpenMenu()
 		return;
 	if(!m_hList.IsValid())
 		return;
-	WIRect *pList = static_cast<WIRect *>(m_hList.get());
+	auto *pList = m_hList.get();
 	auto *elRoot = GetRootElement();
 	if(elRoot)
 		pList->SetParent(elRoot);
@@ -448,12 +420,6 @@ void pragma::gui::types::WIDropDownMenu::OpenMenu()
 	pList->SetPos(pos.x, pos.y + y);
 	pList->SetWidth(GetWidth());
 	pList->RequestFocus();
-
-	unsigned int numOptions = static_cast<unsigned int>(m_options.size());
-	unsigned int numList = numOptions;
-	if(m_numListItems < numList)
-		numList = m_numListItems;
-	pList->SetHeight(OPTION_HEIGHT * numList);
 
 	auto *elBase = WGUI::GetInstance().GetBaseElement();
 	// If menu bounds exceed screen bounds, put it on top of the drop down
@@ -471,6 +437,7 @@ void pragma::gui::types::WIDropDownMenu::OpenMenu()
 	}
 	auto text = GetText();
 	int w = GetWidth() - marginRight;
+	unsigned int numOptions = static_cast<unsigned int>(m_options.size());
 	for(unsigned int i = 0; i < numOptions; i++) {
 		WIHandle &hOption = m_options[i];
 		if(hOption.IsValid()) {
@@ -487,7 +454,7 @@ void pragma::gui::types::WIDropDownMenu::CloseMenu()
 		return;
 	SetScrollInputEnabled(false);
 	if(m_hList.IsValid()) {
-		WIRect *pList = static_cast<WIRect *>(m_hList.get());
+		auto *pList = m_hList.get();
 		if(pList->IsVisible())
 			pList->SetVisible(false);
 	}
@@ -527,10 +494,6 @@ pragma::util::EventReply pragma::gui::types::WIDropDownMenu::ScrollCallback(Vect
 }
 void pragma::gui::types::WIDropDownMenu::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
 {
-	if(m_hOutline.IsValid()) {
-		WIOutlinedRect *pOutline = static_cast<WIOutlinedRect *>(m_hOutline.get());
-		pOutline->SetSize(GetWidth(), GetHeight());
-	}
 	/*if(m_hArrow.IsValid())
 	{
 		auto *pArrow = m_hArrow.get();
@@ -541,7 +504,11 @@ void pragma::gui::types::WIDropDownMenu::OnSizeChanged(const Vector2i &oldSize, 
 
 //////////////////////////////
 
-pragma::gui::types::WIDropDownMenuOption::WIDropDownMenuOption() : WIBase(), m_index(-1) { RegisterCallback<void, bool>("OnSelectionChanged"); }
+pragma::gui::types::WIDropDownMenuOption::WIDropDownMenuOption() : WIBase(), m_index(-1)
+{
+	AddStyleClass("dropdown_menu_option");
+	RegisterCallback<void, bool>("OnSelectionChanged");
+}
 
 void pragma::gui::types::WIDropDownMenuOption::SetValue(const std::string &val) { m_value = val; }
 const std::string &pragma::gui::types::WIDropDownMenuOption::GetValue() { return m_value; }
@@ -563,10 +530,6 @@ pragma::gui::types::WIDropDownMenu *pragma::gui::types::WIDropDownMenuOption::Ge
 void pragma::gui::types::WIDropDownMenuOption::Initialize()
 {
 	WIBase::Initialize();
-	m_hBackground = CreateChild<WIRect>();
-	WIRect *pBackground = static_cast<WIRect *>(m_hBackground.get());
-	pBackground->SetColor(COLOR_SELECTED);
-	pBackground->SetVisible(false);
 
 	m_hText = CreateChild<WIText>();
 
@@ -580,8 +543,6 @@ void pragma::gui::types::WIDropDownMenuOption::SetText(const string::Utf8StringA
 		return;
 	WIText *pText = static_cast<WIText *>(m_hText.get());
 	pText->SetText(text);
-	pText->SetX(MARGIN_LEFT);
-	pText->SizeToContents();
 	UpdateTextPos();
 }
 
@@ -591,8 +552,6 @@ void pragma::gui::types::WIDropDownMenuOption::SetText(const LocalizedString &st
 		return;
 	WIText *pText = static_cast<WIText *>(m_hText.get());
 	pText->SetText(str);
-	pText->SetX(MARGIN_LEFT);
-	pText->SizeToContents();
 	UpdateTextPos();
 }
 const pragma::gui::LocalizedString *pragma::gui::types::WIDropDownMenuOption::GetLocaleText() const
@@ -617,27 +576,16 @@ void pragma::gui::types::WIDropDownMenuOption::UpdateTextPos()
 		return;
 	m_hText.get()->SetY(static_cast<int>(static_cast<float>(GetHeight()) * 0.5f - static_cast<float>(m_hText.get()->GetHeight()) * 0.5f));
 }
-void pragma::gui::types::WIDropDownMenuOption::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
-{
-	if(m_hBackground.IsValid()) {
-		WIRect *pBackground = static_cast<WIRect *>(m_hBackground.get());
-		pBackground->SetSize(GetWidth(), GetHeight());
-	}
-	UpdateTextPos();
-}
+void pragma::gui::types::WIDropDownMenuOption::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) { UpdateTextPos(); }
 void pragma::gui::types::WIDropDownMenuOption::OnCursorEntered()
 {
 	WIBase::OnCursorEntered();
-	if(m_hBackground.IsValid())
-		m_hBackground->SetVisible(true);
 	m_selected = true;
 	CallCallbacks<void, bool>("OnSelectionChanged", true);
 }
 void pragma::gui::types::WIDropDownMenuOption::OnCursorExited()
 {
 	WIBase::OnCursorExited();
-	if(m_hBackground.IsValid())
-		m_hBackground->SetVisible(false);
 	m_selected = false;
 	CallCallbacks<void, bool>("OnSelectionChanged", false);
 }

@@ -7,7 +7,7 @@ import :types.rect;
 
 export namespace pragma::gui::types {
 	class WIScrollBar;
-	class DLLWGUI WIScrollBarSlider : public WIRect {
+	class DLLWGUI WIScrollBarSlider : public WIBase {
 	  public:
 		friend WIScrollBar;
 	  protected:

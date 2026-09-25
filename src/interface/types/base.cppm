@@ -119,6 +119,14 @@ export namespace pragma::gui {
 			WIBase(const WIBase &) = delete;
 			WIBase &operator=(const WIBase &) = delete;
 			virtual std::ostream &Print(std::ostream &stream) const;
+
+			template<class TElement>
+			WIHandle CreateChild()
+			{
+				TElement *pGUI = WGUI::GetInstance().Create<TElement>(this);
+				return pGUI->GetHandle();
+			}
+
 			platform::Cursor::Shape GetCursor() const;
 			void SetCursor(platform::Cursor::Shape cursor);
 			void Resize();
@@ -152,7 +160,7 @@ export namespace pragma::gui {
 			virtual void Initialize();
 			void TrapFocus(bool b);
 			bool IsFocusTrapped();
-			virtual std::string GetClass() const;
+			virtual util::GString GetClass() const;
 			TypeId GetTypeId() const;
 			void CallOnRemove(CallbackHandle callback);
 			// Anything with a higher z-position will be drawn in front of everything with a lower one.
@@ -344,6 +352,9 @@ export namespace pragma::gui {
 			void RemoveStyleClass(std::string_view className);
 			bool HasStyleClass(std::string_view className) const;
 			void ClearStyleClasses();
+			void SetStyledStatesMask(uint32_t mask);
+			uint32_t GetStyledStatesMask() const;
+			bool HasStyleForState(InputState state) const;
 
 			void SetTooltip(const string::Utf8StringArg &msg);
 			void SetTooltip(const LocalizedString &str);
@@ -378,6 +389,8 @@ export namespace pragma::gui {
 			bool HasAnchor() const;
 			std::pair<Vector2, Vector2> GetAnchorBounds() const;
 			std::pair<Vector2, Vector2> GetAnchorBounds(uint32_t refWidth, uint32_t refHeight) const;
+			void SetAnchorOffset(Anchor::Edge edge, float offset);
+			void UpdateAnchorTransform(bool positionOnly = false);
 
 			uint32_t GetDepth() const { return m_depth; }
 
@@ -432,6 +445,7 @@ export namespace pragma::gui {
 			virtual void OnChildDeleted(WIBase &child);
 			virtual void OnChildVisibilityChanged(WIBase &child, bool visible);
 			virtual void RefreshLocale() {}
+			void UpdateInputState();
 			void AddChild(WIBase *child, std::optional<uint32_t> childIndex, bool enableCheck);
 			void InitializeAnchor(Anchor::EdgeFlags edges);
 			void UpdateParentAlignment();
@@ -453,7 +467,6 @@ export namespace pragma::gui {
 			bool IsFullyTransparent() const;
 			void UpdateVisibility();
 			void UpdateParentThink();
-			void UpdateAnchorTransform(bool positionOnly = false);
 			void UpdateAnchorOffsets(Anchor::EdgeFlags edges);
 			uint64_t m_index = std::numeric_limits<uint64_t>::max();
 			size_t m_lastThinkUpdateIndex = std::numeric_limits<size_t>::max();
@@ -466,7 +479,7 @@ export namespace pragma::gui {
 			std::array<std::shared_ptr<void>, 4> m_userData;
 			std::unique_ptr<math::ScaledTransform> m_localRenderTransform = nullptr;
 			util::TSharedHandle<WIBase> m_handle {};
-			std::string m_class = "WIBase";
+			util::GString m_class;
 			std::string m_name;
 			std::unique_ptr<Mat4> m_rotationMatrix = nullptr;
 			std::optional<Anchor> m_anchor = {};
@@ -483,12 +496,6 @@ export namespace pragma::gui {
 			mutable WIHandle m_parent = {};
 			virtual void Render(const DrawInfo &drawInfo, DrawState &drawState, const Mat4 &matDraw, const Vector2 &scale = {1.f, 1.f}, uint32_t testStencilLevel = 0u, StencilPipeline stencilPipeline = StencilPipeline::Test);
 			void UpdateChildOrder(WIBase *child = nullptr);
-			template<class TElement>
-			WIHandle CreateChild()
-			{
-				TElement *pGUI = WGUI::GetInstance().Create<TElement>(this);
-				return pGUI->GetHandle();
-			}
 			void InitializeHandle();
 			void UpdateMouseInBounds(bool forceFalse = false);
 			void DoUpdateChildrenMouseInBounds(const Mat4 &parentPose, const Vector2 &cursorPos, bool ignoreVisibility, bool forceFalse);
@@ -514,6 +521,7 @@ export namespace pragma::gui {
 			util::PVector2Property m_scale = nullptr;
 		  private:
 			std::vector<util::GString> m_styleClasses;
+			uint32_t m_styledStatesMask = 0;
 			WISkin *m_skin = nullptr;
 			ChronoTimePoint m_clickStart;
 			std::vector<util::GString>::iterator FindStyleClass(std::string_view className);

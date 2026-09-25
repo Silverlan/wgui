@@ -36,7 +36,6 @@ export namespace pragma::gui::types {
 		int m_index;
 
 		bool m_selected = false;
-		WIHandle m_hBackground;
 		WIHandle m_hText;
 		WIHandle m_dropDownMenu;
 		std::string m_value;
@@ -94,8 +93,6 @@ export namespace pragma::gui::types {
 		unsigned int m_listOffset;
 		int m_selected;
 
-		WIHandle m_hOutline;
-		WIHandle m_hArrow;
 		WIHandle m_hList;
 		CallbackHandle m_cbListWindowUpdate;
 		WIHandle m_hScrollBar;

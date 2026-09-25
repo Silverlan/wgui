@@ -29,7 +29,7 @@ export namespace pragma::gui::types {
 		void InsertText(string::Utf8StringView text);
 		int GetCaretPos() const;
 		void SetCaretPos(int pos);
-		WIRect *GetCaretElement();
+		WIBase *GetCaretElement();
 		virtual bool IsNumeric() const;
 		bool IsMultiLine() const;
 		void SetMultiLine(bool bMultiLine);
@@ -47,9 +47,8 @@ export namespace pragma::gui::types {
 		void SetMaxLength(int length);
 		int GetMaxLength() const;
 	  protected:
+		WIHandle m_baseContainer;
 		WIHandle m_hBase;
-		WIHandle m_hOutline;
-		WIHandle m_hBg;
 
 		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 		virtual void OnTextEntered();

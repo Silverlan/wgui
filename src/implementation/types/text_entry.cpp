@@ -79,19 +79,18 @@ void pragma::gui::types::WITextEntry::Initialize()
 	SetMouseInputEnabled(true);
 	SetKeyboardInputEnabled(true);
 	SetSize(128, 25);
-	Vector2i size = GetSize();
-	m_hBg = CreateChild<WIRect>();
-	WIRect *pBg = static_cast<WIRect *>(m_hBg.get());
-	pBg->SetName("background");
-	pBg->AddStyleClass("background");
-	pBg->SetColor(1, 1, 1, 1);
-	pBg->SetSize(size.x, size.y);
-	pBg->SetAnchor(0, 0, 1, 1);
 
-	m_hBase = CreateChild<WITextEntryBase>();
-	WITextEntryBase *pBase = static_cast<WITextEntryBase *>(m_hBase.get());
+	AddStyleClass("text_entry");
+
+	Vector2i size = GetSize();
+
+	auto *pBase = WGUI::GetInstance().Create<WITextEntryBase>(this);
+	m_hBase = pBase->GetHandle();
+	pBase->AddStyleClass("text_entry_field");
+	pBase->AddStyleClass("text_entry_field_container_single");
 	pBase->SetEntryFieldElement(this);
 	pBase->SetSize(size.x, size.y);
+	pBase->SetAnchor(0.f, 0.f, 1.f, 1.f);
 	pBase->AddCallback("OnTextEntered",
 	  FunctionCallback<>::Create(std::bind(
 	    [](WIHandle hTextEntry) {
@@ -126,12 +125,6 @@ void pragma::gui::types::WITextEntry::Initialize()
 			    return;
 		    WITextEntry *te = static_cast<WITextEntry *>(hTextEntry.get());
 		    te->OnFocusGained();
-
-		    if(te->m_hOutline.IsValid()) {
-			    te->m_hOutline->RemoveStyleClass("outline");
-			    te->m_hOutline->AddStyleClass("outline_focus");
-			    te->m_hOutline->RefreshSkin();
-		    }
 	    },
 	    this->GetHandle())));
 	pBase->AddCallback("OnFocusKilled",
@@ -141,25 +134,10 @@ void pragma::gui::types::WITextEntry::Initialize()
 			    return;
 		    WITextEntry *te = static_cast<WITextEntry *>(hTextEntry.get());
 		    te->OnFocusKilled();
-
-		    if(te->m_hOutline.IsValid()) {
-			    te->m_hOutline->RemoveStyleClass("outline_focus");
-			    te->m_hOutline->AddStyleClass("outline");
-			    te->m_hOutline->RefreshSkin();
-		    }
 	    },
 	    this->GetHandle())));
 	pBase->SetMouseInputEnabled(GetMouseInputEnabled());
 	pBase->SetKeyboardInputEnabled(GetKeyboardInputEnabled());
-
-	m_hOutline = CreateChild<WIOutlinedRect>();
-	WIOutlinedRect *pORect = static_cast<WIOutlinedRect *>(m_hOutline.get());
-	pORect->SetName("background_outline");
-	pORect->AddStyleClass("outline");
-	pORect->SetOutlineWidth(1);
-	pORect->WIBase::SetSize(size.x, size.y);
-	pORect->SetZPos(10);
-	pORect->SetColor(0, 0, 0, 1);
 }
 
 void pragma::gui::types::WITextEntry::OnTextEntered() { CallCallbacks<void>("OnTextEntered"); }
@@ -188,27 +166,14 @@ void pragma::gui::types::WITextEntry::OnSizeChanged(const Vector2i &oldSize, Cha
 		auto *pBase = static_cast<WITextEntryBase *>(m_hBase.get());
 		auto *pText = pBase->GetTextElement();
 		if(IsMultiLine() == false) {
-			auto yBase = h - 10;
+			auto yBase = h;
 			if(pText != nullptr) {
 				auto *font = pText->GetFont();
 				if(font != nullptr)
-					yBase = math::max(static_cast<uint32_t>(yBase), font->GetSize());
+					yBase = font->GetBoundingBoxHeight();
 			}
-			pBase->SetSize(w - 10, yBase);
-			pBase->SetPos(5, (h - yBase) / 2);
+			pBase->SetHeight(yBase);
 		}
-		else {
-			pBase->SetSize(w, h);
-			pBase->SetPos(0, 0);
-		}
-	}
-	if(m_hOutline.IsValid()) {
-		WIOutlinedRect *pRect = static_cast<WIOutlinedRect *>(m_hOutline.get());
-		pRect->SetSize(w, h);
-	}
-	if(m_hBg.IsValid()) {
-		WIRect *pBg = static_cast<WIRect *>(m_hBg.get());
-		pBg->SetSize(w, h);
 	}
 }
 
@@ -261,7 +226,7 @@ void pragma::gui::types::WITextEntry::SetCaretPos(int pos)
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetCaretPos(pos);
 }
-pragma::gui::types::WIRect *pragma::gui::types::WITextEntry::GetCaretElement() { return m_hBase.IsValid() ? static_cast<WITextEntryBase *>(m_hBase.get())->GetCaretElement() : nullptr; }
+pragma::gui::types::WIBase *pragma::gui::types::WITextEntry::GetCaretElement() { return m_hBase.IsValid() ? static_cast<WITextEntryBase *>(m_hBase.get())->GetCaretElement() : nullptr; }
 bool pragma::gui::types::WITextEntry::IsNumeric() const { return false; }
 bool pragma::gui::types::WITextEntry::IsMultiLine() const
 {
@@ -274,6 +239,19 @@ void pragma::gui::types::WITextEntry::SetMultiLine(bool bMultiLine)
 	if(!m_hBase.IsValid())
 		return;
 	static_cast<WITextEntryBase *>(m_hBase.get())->SetMultiLine(bMultiLine);
+
+	auto *container = m_baseContainer.get();
+	if(container) {
+		if(bMultiLine) {
+			static_cast<WITextEntryBase *>(m_hBase.get())->RemoveStyleClass("text_entry_field_container_single");
+			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text_entry_field_container_multiline");
+		}
+		else {
+			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text_entry_field_container_single");
+			static_cast<WITextEntryBase *>(m_hBase.get())->RemoveStyleClass("text_entry_field_container_multiline");
+		}
+		static_cast<WITextEntryBase *>(m_hBase.get())->RefreshSkin();
+	}
 }
 bool pragma::gui::types::WITextEntry::IsEditable() const
 {

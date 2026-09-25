@@ -84,8 +84,8 @@ bool pragma::gui::types::BaseBox::GetSkipSizeUpdateSchedule() const { return mat
 void pragma::gui::types::BaseBox::SetSizeUpdateRequired(bool set) { math::set_flag(m_boxStateFlags, BoxStateFlags::SizeUpdateRequired, set); }
 bool pragma::gui::types::BaseBox::GetSizeUpdateRequired() const { return math::is_flag_set(m_boxStateFlags, BoxStateFlags::SizeUpdateRequired); }
 
-bool pragma::gui::types::BaseBox::GetFixedWidth() const { return math::is_flag_set(m_boxStateFlags, BoxStateFlags::FixedWidth); }
-bool pragma::gui::types::BaseBox::GetFixedHeight() const { return math::is_flag_set(m_boxStateFlags, BoxStateFlags::FixedHeight); }
+bool pragma::gui::types::BaseBox::GetFixedWidth() const { return math::is_flag_set(m_boxStateFlags, BoxStateFlags::FixedWidth) || GetHorizontalAlignment() == Alignment::Fill; }
+bool pragma::gui::types::BaseBox::GetFixedHeight() const { return math::is_flag_set(m_boxStateFlags, BoxStateFlags::FixedHeight) || GetVerticalAlignment() == Alignment::Fill; }
 
 void pragma::gui::types::BaseBox::SetAutoSizeActivatedValue(bool set) { math::set_flag(m_boxStateFlags, BoxStateFlags::AutoSizeActivated, set); }
 bool pragma::gui::types::BaseBox::GetAutoSizeActivated() const { return math::is_flag_set(m_boxStateFlags, BoxStateFlags::AutoSizeActivated); }
@@ -233,6 +233,13 @@ void pragma::gui::types::FlexBox::SetAlignItems(FlexAlign align)
 	ScheduleUpdate();
 }
 
+void pragma::gui::types::FlexBox::SetJustifyContent(FlexJustify justify)
+{
+	m_justifyContent = justify;
+	SetSizeUpdateRequired(true);
+	ScheduleUpdate();
+}
+
 void pragma::gui::types::FlexBox::DoUpdate()
 {
 	auto size = GetSize();
@@ -277,16 +284,14 @@ void pragma::gui::types::FlexBox::DoUpdate()
 			totalFlex += flex;
 			totalRigidMainSize += mainMarginStart + mainMarginEnd;
 		}
-		else {
+		else
 			totalRigidMainSize += mainMarginStart + childMainSize + mainMarginEnd;
-		}
 
 		crossMax = std::max(crossMax, childCrossSize + crossMarginStart + crossMarginEnd);
 	}
 
-	if(layoutChildren.size() > 1) {
+	if(layoutChildren.size() > 1)
 		totalRigidMainSize += static_cast<int32_t>(layoutChildren.size() - 1) * spacing;
-	}
 
 	auto isFixedMain = isHoriz ? GetFixedWidth() : GetFixedHeight();
 	auto isFixedCross = isHoriz ? GetFixedHeight() : GetFixedWidth();
@@ -297,6 +302,34 @@ void pragma::gui::types::FlexBox::DoUpdate()
 	int32_t remainingMainSpace = std::max(0, targetMainSize - totalRigidMainSize);
 	int32_t currentMainPos = mainPaddingStart;
 	int32_t crossSpace = targetCrossSize - crossPaddingStart - crossPaddingEnd;
+
+	// Justify-content
+	auto dynamicSpacing = spacing;
+
+	if(remainingMainSpace > 0 && totalFlex == 0.0f) {
+		switch(m_justifyContent) {
+		case FlexJustify::Start:
+			break; // Default behavior
+		case FlexJustify::End:
+			currentMainPos += remainingMainSpace;
+			break;
+		case FlexJustify::Center:
+			currentMainPos += remainingMainSpace / 2;
+			break;
+		case FlexJustify::SpaceBetween:
+			if(layoutChildren.size() > 1)
+				dynamicSpacing = spacing + (remainingMainSpace / (layoutChildren.size() - 1));
+			break;
+		case FlexJustify::SpaceEvenly:
+			if(!layoutChildren.empty()) {
+				int32_t space = remainingMainSpace / (layoutChildren.size() + 1);
+				currentMainPos += space;
+				dynamicSpacing = spacing + space;
+			}
+			break;
+		}
+	}
+	//
 
 	for(auto *child : layoutChildren) {
 		auto margin = GetChildMargin(*child);
@@ -331,12 +364,10 @@ void pragma::gui::types::FlexBox::DoUpdate()
 					child->ApplyWidth(childCrossSize);
 				child->Update();
 			}
-			else if(m_alignItems == FlexAlign::Center) {
+			else if(m_alignItems == FlexAlign::Center)
 				crossPos = crossPaddingStart + (crossSpace / 2) - (childCrossSize / 2);
-			}
-			else if(m_alignItems == FlexAlign::End) {
+			else if(m_alignItems == FlexAlign::End)
 				crossPos = crossPaddingStart + crossSpace - crossMarginEnd - childCrossSize;
-			}
 		}
 
 		if(isHoriz) {
@@ -348,7 +379,7 @@ void pragma::gui::types::FlexBox::DoUpdate()
 			child->ApplyX(crossPos);
 		}
 
-		currentMainPos += childMainSize + mainMarginEnd + spacing;
+		currentMainPos += childMainSize + mainMarginEnd + dynamicSpacing;
 	}
 
 	if(GetSizeUpdateRequired()) {

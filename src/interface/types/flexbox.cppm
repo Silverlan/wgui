@@ -98,6 +98,7 @@ export namespace pragma::gui::types {
 
 	enum class FlexDirection : uint8_t { Horizontal, Vertical };
 	enum class FlexAlign : uint8_t { Start, Center, End, Stretch };
+	enum class FlexJustify : uint8_t { Start, Center, End, SpaceBetween, SpaceEvenly };
 
 	class DLLWGUI FlexBox : public BaseBox {
 	  public:
@@ -108,9 +109,13 @@ export namespace pragma::gui::types {
 
 		void SetAlignItems(FlexAlign align);
 		[[nodiscard]] FlexAlign GetAlignItems() const { return m_alignItems; }
+
+		void SetJustifyContent(FlexJustify justify);
+		[[nodiscard]] FlexJustify GetJustifyContent() const { return m_justifyContent; }
 	  protected:
 		void DoUpdate() override;
 		FlexDirection m_direction;
 		FlexAlign m_alignItems = FlexAlign::Stretch;
+		FlexJustify m_justifyContent = FlexJustify::Start;
 	};
 }

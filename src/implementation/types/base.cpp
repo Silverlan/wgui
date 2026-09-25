@@ -16,7 +16,7 @@ bool pragma::gui::is_valid(const pragma::gui::WIHandle &hEl) { return hEl.IsVali
 
 pragma::gui::types::WIBase::WIBase()
     : CallbackHandler(), m_cursor(platform::Cursor::Shape::Default), m_color(util::ColorProperty::Create(colors::White)), m_bVisible(util::BoolProperty::Create(true)), m_bHasFocus(util::BoolProperty::Create(false)), m_bMouseInBounds(util::BoolProperty::Create(false)),
-      m_scale {util::Vector2Property::Create(Vector2 {1.f, 1.f})}
+      m_scale {util::Vector2Property::Create(Vector2 {1.f, 1.f})}, m_class {util::register_global_string("wibase")}
 {
 	RegisterCallback<void>("OnFocusGained");
 	RegisterCallback<void>("OnFocusKilled");
@@ -210,19 +210,27 @@ void pragma::gui::types::WIBase::SetAlignment(Alignment alignment)
 void pragma::gui::types::WIBase::SetHorizontalAlignment(Alignment alignment)
 {
 	m_horizontalAlignment = alignment;
+	if(alignment == Alignment::Fill) // Fill is incompatible with auto-size
+		SetAutoSizeToContents(false, ShouldAutoSizeToContentsY(), false);
 	UpdateParentAlignment();
 }
 void pragma::gui::types::WIBase::SetVerticalAlignment(Alignment alignment)
 {
 	m_verticalAlignment = alignment;
+	if(alignment == Alignment::Fill) // Fill is incompatible with auto-size
+		SetAutoSizeToContents(ShouldAutoSizeToContentsX(), false, false);
 	UpdateParentAlignment();
 }
 pragma::gui::Alignment pragma::gui::types::WIBase::GetHorizontalAlignment() const { return m_horizontalAlignment; }
 pragma::gui::Alignment pragma::gui::types::WIBase::GetVerticalAlignment() const { return m_verticalAlignment; }
 void pragma::gui::types::WIBase::SetInputState(InputState state)
 {
+	if(m_inputState == state)
+		return;
+	auto oldState = m_inputState;
 	m_inputState = state;
-	RefreshSkin();
+	if(HasStyleForState(oldState) || HasStyleForState(m_inputState))
+		RefreshSkin();
 }
 pragma::gui::InputState pragma::gui::types::WIBase::GetInputState() const { return m_inputState; }
 void pragma::gui::types::WIBase::SetLogicalState(LogicalState state)
@@ -281,7 +289,7 @@ void pragma::gui::types::WIBase::TrapFocus(bool b)
 	}
 }
 bool pragma::gui::types::WIBase::IsFocusTrapped() { return math::is_flag_set(m_stateFlags, StateFlags::TrapFocusBit); }
-std::string pragma::gui::types::WIBase::GetClass() const { return m_class; }
+pragma::util::GString pragma::gui::types::WIBase::GetClass() const { return m_class; }
 pragma::gui::TypeId pragma::gui::types::WIBase::GetTypeId() const
 {
 	auto typeId = WGUI::GetInstance().GetTypeFactory().FindTypeId(GetClass());
@@ -570,6 +578,7 @@ void pragma::gui::types::WIBase::RequestFocus()
 	if(elRoot && !WGUI::GetInstance().SetFocusedElement(this, elRoot))
 		return;
 	*m_bHasFocus = true;
+	UpdateInputState();
 	OnFocusGained();
 }
 const pragma::util::PBoolProperty &pragma::gui::types::WIBase::GetFocusProperty() const { return m_bHasFocus; }
@@ -578,6 +587,7 @@ void pragma::gui::types::WIBase::KillFocus(bool bForceKill)
 	if(!HasFocus() || (bForceKill == false && IsFocusTrapped() && IsVisible()))
 		return;
 	*m_bHasFocus = false;
+	UpdateInputState();
 	auto *elRoot = GetBaseRootElement();
 	if(elRoot)
 		WGUI::GetInstance().SetFocusedElement(nullptr, elRoot);
@@ -859,7 +869,7 @@ void pragma::gui::types::WIBase::GetChildren(const std::string &className, std::
 {
 	for(unsigned int i = 0; i < m_children.size(); i++) {
 		WIHandle &hChild = m_children[i];
-		if(hChild.IsValid() && string::compare(hChild->GetClass(), className, false))
+		if(hChild.IsValid() && string::compare<std::string_view>(hChild->GetClass(), className, false))
 			children.push_back(hChild);
 	}
 }
@@ -867,7 +877,7 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::GetFirstChild(const std:
 {
 	for(unsigned int i = 0; i < m_children.size(); i++) {
 		WIHandle &hChild = m_children[i];
-		if(hChild.IsValid() && string::compare(hChild->GetClass(), className, false))
+		if(hChild.IsValid() && string::compare<std::string_view>(hChild->GetClass(), className, false))
 			return hChild.get();
 	}
 	return nullptr;
@@ -896,7 +906,7 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::GetChild(const std::stri
 	unsigned int j = 0;
 	for(unsigned int i = 0; i < m_children.size(); i++) {
 		WIHandle &hChild = m_children[i];
-		if(hChild.IsValid() && string::compare(hChild->GetClass(), className, false) && j++ == idx)
+		if(hChild.IsValid() && string::compare<std::string_view>(hChild->GetClass(), className, false) && j++ == idx)
 			return hChild.get();
 	}
 	return nullptr;
@@ -906,7 +916,7 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::FindChildByName(const st
 	std::vector<WIHandle>::iterator it;
 	for(it = m_children.begin(); it != m_children.end(); it++) {
 		WIHandle &hChild = *it;
-		if(hChild.IsValid() && string::compare(hChild->GetName(), name, false))
+		if(hChild.IsValid() && string::compare<std::string_view>(hChild->GetName(), name, false))
 			return hChild.get();
 	}
 	return nullptr;
@@ -1492,6 +1502,31 @@ pragma::gui::types::WIBase *pragma::gui::types::WIBase::Wrap(const std::string &
 	return wrapper;
 }
 bool pragma::gui::types::WIBase::HasAnchor() const { return m_anchor.has_value(); }
+void pragma::gui::types::WIBase::SetAnchorOffset(Anchor::Edge edge, float offset)
+{
+	if(!m_anchor)
+		return;
+	switch(edge) {
+	case Anchor::Edge::Left:
+		m_anchor->pxOffsetLeft = offset;
+		break;
+	case Anchor::Edge::Right:
+		m_anchor->pxOffsetRight = offset;
+		break;
+	case Anchor::Edge::Top:
+		m_anchor->pxOffsetTop = offset;
+		break;
+	case Anchor::Edge::Bottom:
+		m_anchor->pxOffsetBottom = offset;
+		break;
+	case Anchor::Edge::HorizontalCenter:
+		m_anchor->pxOffsetHorizontalCenter = offset;
+		break;
+	case Anchor::Edge::VerticalCenter:
+		m_anchor->pxOffsetVerticalCenter = offset;
+		break;
+	}
+}
 std::pair<Vector2, Vector2> pragma::gui::types::WIBase::GetAnchorBounds(uint32_t refWidth, uint32_t refHeight) const
 {
 	auto anchorMin = Vector2 {m_anchor->left * refWidth, m_anchor->top * refHeight};
@@ -1595,8 +1630,8 @@ void pragma::gui::types::WIBase::SetAnchorHorizontalCenter(int32_t offset)
 	m_anchor->SetEdgeEnabled(Anchor::Edge::Left, false);
 	m_anchor->SetEdgeEnabled(Anchor::Edge::Right, false);
 	m_anchor->SetEdgeEnabled(Anchor::Edge::HorizontalCenter);
-	m_anchor->left = 0.f;
-	m_anchor->right = 1.f;
+	m_anchor->left = 0.5f;
+	m_anchor->right = 0.5f;
 	m_anchor->pxOffsetHorizontalCenter = offset;
 
 	InitializeAnchor(Anchor::EdgeFlags::HorizontalCenter);
@@ -1609,8 +1644,8 @@ void pragma::gui::types::WIBase::SetAnchorVerticalCenter(int32_t offset)
 	m_anchor->SetEdgeEnabled(Anchor::Edge::Top, false);
 	m_anchor->SetEdgeEnabled(Anchor::Edge::Bottom, false);
 	m_anchor->SetEdgeEnabled(Anchor::Edge::VerticalCenter);
-	m_anchor->top = 0.f;
-	m_anchor->bottom = 1.f;
+	m_anchor->top = 0.5f;
+	m_anchor->bottom = 0.5f;
 	m_anchor->pxOffsetVerticalCenter = offset;
 
 	InitializeAnchor(Anchor::EdgeFlags::VerticalCenter);
@@ -1641,7 +1676,6 @@ void pragma::gui::types::WIBase::SetAnchor(Anchor::Edge edge, float f)
 {
 	if(m_anchor.has_value() == false)
 		m_anchor = Anchor {};
-	m_anchor->SetEdgeEnabled(edge, true);
 	switch(edge) {
 	case Anchor::Edge::Left:
 		m_anchor->left = f;
@@ -1656,7 +1690,6 @@ void pragma::gui::types::WIBase::SetAnchor(Anchor::Edge edge, float f)
 		m_anchor->bottom = f;
 		break;
 	}
-	InitializeAnchor(Anchor::edge_to_flag(edge));
 }
 bool pragma::gui::types::WIBase::GetAnchor(float &outLeft, float &outTop, float &outRight, float &outBottom) const
 {
@@ -1771,11 +1804,15 @@ void pragma::gui::types::WIBase::OnRemove() {}
 void pragma::gui::types::WIBase::UpdateThink()
 {
 	auto &wgui = WGUI::GetInstance();
-	auto it = math::is_flag_set(m_stateFlags, StateFlags::IsInThinkingList) ? std::find_if(wgui.m_thinkingElements.begin(), wgui.m_thinkingElements.end(), [this](const WIHandle &hEl) { return hEl.get() == this; }) : wgui.m_thinkingElements.end();
+	auto it = wgui.m_thinkingElements.end();
+	if(math::is_flag_set(m_stateFlags, StateFlags::IsInThinkingList))
+		it = std::find_if(wgui.m_thinkingElements.begin(), wgui.m_thinkingElements.end(), [this](WIHandle &hEl) { return hEl.get() == this; });
+
 	if(ShouldThink()) {
 		if(it != wgui.m_thinkingElements.end())
 			return;
 		wgui.m_thinkingElements.push_back(GetHandle());
+		wgui.m_thinkingElementsDirty = true;
 		m_stateFlags |= StateFlags::IsInThinkingList;
 		return;
 	}
@@ -1939,6 +1976,15 @@ void pragma::gui::types::WIBase::AbsolutePosToRelative(Vector2 &pos) const
 	pos = glm::inverse(GetAbsolutePose()) * Vector4 {pos * 2.f, 0.f, 1.f};
 	pos /= 2.f;
 }
+void pragma::gui::types::WIBase::UpdateInputState()
+{
+	auto state = InputState::None;
+	if(HasFocus())
+		state = InputState::Focused;
+	else if(*m_bMouseInBounds)
+		state = InputState::Hover;
+	SetInputState(state);
+}
 void pragma::gui::types::WIBase::UpdateMouseInBounds(const Vector2 &relPos, bool forceFalse)
 {
 	bool old = *m_bMouseInBounds;
@@ -1946,7 +1992,10 @@ void pragma::gui::types::WIBase::UpdateMouseInBounds(const Vector2 &relPos, bool
 		*m_bMouseInBounds = false;
 	else
 		*m_bMouseInBounds = DoPosInBounds(relPos);
-	if(old == *m_bMouseInBounds || !math::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit))
+	if(old == *m_bMouseInBounds)
+		return;
+	UpdateInputState();
+	if(!math::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit))
 		return;
 	if(*m_bMouseInBounds == true)
 		OnCursorEntered();
@@ -2186,6 +2235,11 @@ std::vector<pragma::util::GString>::iterator pragma::gui::types::WIBase::FindSty
 std::vector<pragma::util::GString>::const_iterator pragma::gui::types::WIBase::FindStyleClass(std::string_view className) const { return const_cast<WIBase *>(this)->FindStyleClass(className); }
 bool pragma::gui::types::WIBase::HasStyleClass(std::string_view className) const { return FindStyleClass(className) != m_styleClasses.end(); }
 void pragma::gui::types::WIBase::ClearStyleClasses() { m_styleClasses.clear(); }
+
+void pragma::gui::types::WIBase::SetStyledStatesMask(uint32_t mask) { m_styledStatesMask = mask; }
+uint32_t pragma::gui::types::WIBase::GetStyledStatesMask() const { return m_styledStatesMask; }
+
+bool pragma::gui::types::WIBase::HasStyleForState(InputState state) const { return (m_styledStatesMask & (1 << math::to_integral(state))) != 0; }
 
 /////////////////
 

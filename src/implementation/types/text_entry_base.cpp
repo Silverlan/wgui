@@ -113,9 +113,8 @@ void pragma::gui::types::WITextEntryBase::Initialize()
 			text.get() = text.get()->substr(0, m_maxLength);
 	}));
 
-	m_hCaret = CreateChild<WIRect>();
-	WIRect *pRect = static_cast<WIRect *>(m_hCaret.get());
-	pRect->SetColor(0, 0, 0, 1);
+	m_hCaret = CreateChild<WIBase>();
+	auto *pRect = m_hCaret.get();
 	pRect->AddStyleClass("caret");
 	pRect->SetVisible(false);
 	pRect->SetZPos(2);
@@ -180,7 +179,7 @@ void pragma::gui::types::WITextEntryBase::OnSizeChanged(const Vector2i &oldSize,
 		if(m_hCaret.IsValid()) {
 			auto *font = pText->GetFont();
 			if(font != NULL)
-				static_cast<WIRect *>(m_hCaret.get())->SetSize(2, font->GetSize());
+				m_hCaret.get()->SetSize(2, font->GetSize());
 		}
 		UpdateTextPosition();
 		SetCaretPos(m_posCaret);
@@ -198,7 +197,7 @@ void pragma::gui::types::WITextEntryBase::OnFocusGained()
 {
 	WIBase::OnFocusGained();
 	if(m_hCaret.IsValid()) {
-		WIRect *pRect = static_cast<WIRect *>(m_hCaret.get());
+		auto *pRect = m_hCaret.get();
 		pRect->SetVisible(true);
 		m_tBlink = platform::get_time();
 	}
@@ -211,7 +210,7 @@ void pragma::gui::types::WITextEntryBase::OnFocusKilled()
 {
 	WIBase::OnFocusKilled();
 	if(m_hCaret.IsValid()) {
-		WIRect *pRect = static_cast<WIRect *>(m_hCaret.get());
+		auto *pRect = m_hCaret.get();
 		pRect->SetVisible(false);
 	}
 	DisableThinking();
@@ -249,7 +248,7 @@ void pragma::gui::types::WITextEntryBase::Think(const std::shared_ptr<prosper::I
 	WIBase::Think(drawCmd);
 	if(HasFocus()) {
 		if(m_hCaret.IsValid()) {
-			WIRect *pCaret = static_cast<WIRect *>(m_hCaret.get());
+			auto *pCaret = m_hCaret.get();
 			auto t = platform::get_time();
 			auto tDelta = static_cast<uint32_t>((t - m_tBlink) * 1.8);
 			if(int(tDelta) % 2 == 0)
@@ -277,7 +276,7 @@ void pragma::gui::types::WITextEntryBase::SetColor(float r, float g, float b, fl
 	m_hText->SetColor(r, g, b, a);
 }
 
-pragma::gui::types::WIRect *pragma::gui::types::WITextEntryBase::GetCaretElement() { return static_cast<WIRect *>(m_hCaret.get()); }
+pragma::gui::types::WIBase *pragma::gui::types::WITextEntryBase::GetCaretElement() { return m_hCaret.get(); }
 
 void pragma::gui::types::WITextEntryBase::SetCaretPos(int pos)
 {
@@ -289,7 +288,7 @@ void pragma::gui::types::WITextEntryBase::SetCaretPos(int pos)
 	pos = math::clamp(pos, 0, static_cast<int32_t>(text.length()));
 	m_posCaret = pos;
 	if(m_hCaret.IsValid()) {
-		WIRect *pCaret = static_cast<WIRect *>(m_hCaret.get());
+		auto *pCaret = m_hCaret.get();
 		if(m_hText.IsValid()) {
 			WIText *pText = static_cast<WIText *>(m_hText.get());
 			auto &lines = pText->GetLines();

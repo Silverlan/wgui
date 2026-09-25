@@ -323,6 +323,7 @@ export namespace pragma::gui {
 		// In general very few elements actually need to apply any continuous logic,
 		// so we keep a separate reference to those elements for better efficiency.
 		std::vector<WIHandle> m_thinkingElements;
+		bool m_thinkingElementsDirty = false;
 
 		std::priority_queue<UpdateInfo, std::vector<UpdateInfo>, UpdatePriority> m_updateQueue;
 		std::optional<uint32_t> m_currentUpdateDepth = {};

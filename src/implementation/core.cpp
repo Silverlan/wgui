@@ -125,8 +125,7 @@ void pragma::gui::WGUI::RegisterElement(types::WIBase &el, const std::string &cl
 		if(elBase)
 			el.SetParent(elBase);
 	}
-	el.m_class = className;
-	el.AddStyleClass(el.GetClass());
+	el.m_class = util::register_global_string(string::get_lower(className));
 	el.Initialize();
 	if(m_createCallback != nullptr)
 		m_createCallback(el);
@@ -400,7 +399,17 @@ void pragma::gui::WGUI::Think(const std::shared_ptr<prosper::IPrimaryCommandBuff
 	m_tDelta = static_cast<double>(t - m_tLastThink);
 	m_tLastThink = static_cast<double>(t);
 
-	for(auto i = decltype(m_thinkingElements.size()) {0u}; i < m_thinkingElements.size();) {
+	if(m_thinkingElementsDirty) {
+		std::stable_sort(m_thinkingElements.begin(), m_thinkingElements.end(), [](const WIHandle &a, const WIHandle &b) {
+			auto aDepth = a.IsValid() ? a->GetDepth() : std::numeric_limits<uint32_t>::max();
+			auto bDepth = b.IsValid() ? b->GetDepth() : std::numeric_limits<uint32_t>::max();
+			return aDepth < bDepth;
+		});
+		m_thinkingElementsDirty = false;
+	}
+
+	auto n = m_thinkingElements.size();
+	for(size_t i = 0; i < math::min(n, m_thinkingElements.size());) {
 		auto &hEl = m_thinkingElements.at(i);
 		if(hEl.IsValid() == false) {
 			m_thinkingElements.erase(m_thinkingElements.begin() + i);
@@ -461,7 +470,7 @@ pragma::gui::types::WIBase *pragma::gui::WGUI::Create(std::string classname, typ
 	types::WIBase *(*factory)(void) = map.FindFactory(classname);
 	if(factory != nullptr) {
 		auto *p = factory();
-		p->m_class = classname;
+		p->m_class = util::register_global_string(string::get_lower(classname));
 		if(parent != nullptr)
 			p->SetParent(parent);
 		return p;
@@ -469,7 +478,7 @@ pragma::gui::types::WIBase *pragma::gui::WGUI::Create(std::string classname, typ
 	return nullptr;
 }
 
-void pragma::gui::WGUI::SetupElement(types::WIBase &el, const std::string className) { el.m_class = className; }
+void pragma::gui::WGUI::SetupElement(types::WIBase &el, const std::string className) { el.m_class = util::register_global_string(string::get_lower(className)); }
 
 pragma::gui::types::WIRoot *pragma::gui::WGUI::GetBaseElement(const prosper::Window *window)
 {
