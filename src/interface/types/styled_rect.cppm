@@ -10,7 +10,7 @@ export import :types.shape;
 
 export namespace pragma::gui::types {
 	class DLLWGUI StyledRect : public WIBase {
-	public:
+	  public:
 		static void clear_style_cache_buffer(prosper::IPrContext &context);
 		using GradientType = shaders::StyledRect::Style::GradientType;
 
@@ -34,7 +34,7 @@ export namespace pragma::gui::types {
 
 		void ClearGradient();
 		void SetLinearGradient(const Color &startColor, const Color &endColor, const Vector2 &startPos, const Vector2 &endPos);
-		void SetGradient(std::span<const ColorStop> stops, const Vector2 &startPos, const Vector2 &endPos, GradientType type=GradientType::Linear);
+		void SetGradient(std::span<const ColorStop> stops, const Vector2 &startPos, const Vector2 &endPos, GradientType type = GradientType::Linear);
 		void SetGradientStops(std::span<const ColorStop> stops);
 		void SetGradientType(GradientType type);
 
@@ -45,25 +45,25 @@ export namespace pragma::gui::types {
 		void SetBorderThickness(float thickness);
 
 		GradientType GetGradientType() const;
-		const std::array<ColorStop,4> &GetGradientStops() const;
+		const std::array<ColorStop, 4> &GetGradientStops() const;
 		const Color &GetBorderColor() const;
 		const Vector4 &GetCornerRadii() const;
 		const Vector2 &GetGradientStart() const;
 		const Vector2 &GetGradientEnd() const;
 		float GetBorderThickness() const;
-	private:
+	  private:
 		static shaders::StyledRect *GetShader();
 		void UpdateDescriptorSet();
 		void SetStyleDataDirty();
 		[[nodiscard]] shaders::StyledRect::Style ToStyleData() const;
 
-		GradientType m_gradientType;
-		std::array<ColorStop, 4> m_gradientStops;
+		GradientType m_gradientType = GradientType::Linear;
+		std::array<ColorStop, 4> m_gradientStops = {ColorStop {}, ColorStop {}, ColorStop {}, ColorStop {}};
 		uint32_t m_numGradientStops = 0;
 		Color m_borderColor = colors::White;
-		Vector4 m_cornerRadii = {0.f,0.f,0.f,0.f};
-		Vector2 m_gradientStart = {0.f,0.f};
-		Vector2 m_gradientEnd = {0.f,0.f};
+		Vector4 m_cornerRadii = {0.f, 0.f, 0.f, 0.f};
+		Vector2 m_gradientStart = {0.f, 0.f};
+		Vector2 m_gradientEnd = {0.f, 0.f};
 		float m_borderThickness = 0.f;
 
 		bool m_styleDirty = true;
