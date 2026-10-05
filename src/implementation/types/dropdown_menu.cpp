@@ -64,7 +64,7 @@ void pragma::gui::types::WIDropDownMenu::Initialize()
 
 	auto *pList = WGUI::GetInstance().Create<VBox>();
 	m_hList = pList->GetHandle();
-	pList->AddStyleClass("dropdown_menu_list");
+	pList->AddStyleClass("dropdown-menu__list");
 	pList->SetVisible(false);
 	pList->SetZPos(10'000);
 	pList->AddCallback("OnFocusKilled",
@@ -506,7 +506,7 @@ void pragma::gui::types::WIDropDownMenu::OnSizeChanged(const Vector2i &oldSize, 
 
 pragma::gui::types::WIDropDownMenuOption::WIDropDownMenuOption() : WIBase(), m_index(-1)
 {
-	AddStyleClass("dropdown_menu_option");
+	AddStyleClass("dropdown-menu__option");
 	RegisterCallback<void, bool>("OnSelectionChanged");
 }
 

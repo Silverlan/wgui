@@ -43,7 +43,7 @@ void pragma::gui::WITextTagSelection::SetEndOffset(string::TextOffset offset)
 void pragma::gui::WITextTagSelection::InitializeOverlay(types::WIBase &overlay)
 {
 	overlay.SetZPos(5);
-	overlay.AddStyleClass("text_selection");
+	overlay.AddStyleClass("text-selection");
 }
 bool pragma::gui::WITextTagSelection::IsValid() const { return m_startAnchorPoint.IsValid() && m_endAnchorPoint.IsValid(); }
 void pragma::gui::WITextTagSelection::Apply()

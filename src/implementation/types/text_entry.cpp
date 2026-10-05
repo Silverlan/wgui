@@ -80,14 +80,14 @@ void pragma::gui::types::WITextEntry::Initialize()
 	SetKeyboardInputEnabled(true);
 	SetSize(128, 25);
 
-	AddStyleClass("text_entry");
+	AddStyleClass("text-entry");
 
 	Vector2i size = GetSize();
 
 	auto *pBase = WGUI::GetInstance().Create<WITextEntryBase>(this);
 	m_hBase = pBase->GetHandle();
-	pBase->AddStyleClass("text_entry_field");
-	pBase->AddStyleClass("text_entry_field_container_single");
+	pBase->AddStyleClass("text-entry__field");
+	pBase->AddStyleClass("text-entry__field--single-line");
 	pBase->SetEntryFieldElement(this);
 	pBase->SetSize(size.x, size.y);
 	pBase->SetAnchor(0.f, 0.f, 1.f, 1.f);
@@ -243,12 +243,12 @@ void pragma::gui::types::WITextEntry::SetMultiLine(bool bMultiLine)
 	auto *container = m_baseContainer.get();
 	if(container) {
 		if(bMultiLine) {
-			static_cast<WITextEntryBase *>(m_hBase.get())->RemoveStyleClass("text_entry_field_container_single");
-			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text_entry_field_container_multiline");
+			static_cast<WITextEntryBase *>(m_hBase.get())->RemoveStyleClass("text-entry__field--single-line");
+			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text-entry__field--multi-line");
 		}
 		else {
-			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text_entry_field_container_single");
-			static_cast<WITextEntryBase *>(m_hBase.get())->RemoveStyleClass("text_entry_field_container_multiline");
+			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text_entry__field--single-line");
+			static_cast<WITextEntryBase *>(m_hBase.get())->RemoveStyleClass("textentry__field--multi-line");
 		}
 		static_cast<WITextEntryBase *>(m_hBase.get())->RefreshSkin();
 	}

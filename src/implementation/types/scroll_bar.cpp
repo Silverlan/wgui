@@ -250,7 +250,7 @@ void pragma::gui::types::WIScrollBarSlider::Initialize()
 {
 	WIBase::Initialize();
 	SetMouseInputEnabled(true);
-	AddStyleClass("scrollbar_slider");
+	AddStyleClass("scrollbar__slider");
 }
 
 void pragma::gui::types::WIScrollBarSlider::SetLimits(int min, int max)

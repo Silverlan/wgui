@@ -132,6 +132,7 @@ export namespace pragma::gui {
 			void Resize();
 			void SetSkin(std::string skin);
 			void ResetSkin();
+			WISkin *GetSkin();
 			std::optional<std::string> GetSkinName() const;
 			void SetSkinCallbacksEnabled(bool enabled);
 			const std::string &GetName() const;
@@ -501,7 +502,6 @@ export namespace pragma::gui {
 			void DoUpdateChildrenMouseInBounds(const Mat4 &parentPose, const Vector2 &cursorPos, bool ignoreVisibility, bool forceFalse);
 			void UpdateChildrenMouseInBounds(bool ignoreVisibility = false, bool forceFalse = false);
 			virtual void OnVisibilityChanged(bool bVisible);
-			WISkin *GetSkin();
 			virtual void OnChildAdded(WIBase *child);
 			virtual void OnChildRemoved(WIBase *child);
 			virtual void OnRemove();
