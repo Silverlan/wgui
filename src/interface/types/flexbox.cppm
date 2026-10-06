@@ -18,6 +18,7 @@ export namespace pragma::gui::types {
 		float flex = 0.0f;
 	};
 
+	enum class FlexDirection : uint8_t { Horizontal, Vertical };
 	class DLLWGUI BaseBox : public WIBase {
 	  public:
 		enum class BoxStateFlags : uint8_t {
@@ -54,7 +55,8 @@ export namespace pragma::gui::types {
 
 		virtual bool IsHorizontalBox() const = 0;
 		virtual bool IsVerticalBox() const = 0;
-		virtual bool HasBoxAlignedAnchor(WIBase *el) const = 0;
+		virtual bool HasAlignedAnchor(WIBase *el, FlexDirection flexDirection) const = 0;
+		virtual bool HasAlignedAnchor(WIBase *el) const = 0;
 	  protected:
 		void OnChildAdded(WIBase *child) override;
 		void OnChildRemoved(WIBase *child) override;
@@ -96,7 +98,6 @@ export namespace pragma::gui::types {
 		std::unordered_map<const WIBase *, ChildLayout> m_childLayout;
 	};
 
-	enum class FlexDirection : uint8_t { Horizontal, Vertical };
 	enum class FlexAlign : uint8_t { Start, Center, End, Stretch };
 	enum class FlexJustify : uint8_t { Start, Center, End, SpaceBetween, SpaceEvenly };
 
@@ -105,7 +106,10 @@ export namespace pragma::gui::types {
 		explicit FlexBox(FlexDirection direction);
 		bool IsHorizontalBox() const override;
 		bool IsVerticalBox() const override;
-		bool HasBoxAlignedAnchor(WIBase *el) const override;
+		bool HasAlignedAnchor(WIBase *el, FlexDirection flexDirection) const override;
+		bool HasAlignedAnchor(WIBase *el) const override;
+		FlexDirection GetFlexDirection() const;
+		FlexDirection GetFlexCrossDirection() const;
 
 		void SetAlignItems(FlexAlign align);
 		[[nodiscard]] FlexAlign GetAlignItems() const { return m_alignItems; }

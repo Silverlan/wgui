@@ -33,7 +33,7 @@ void pragma::gui::types::BaseBox::OnChildSizeChanged(WIBase &child, const Vector
 	if(IsBackgroundElement(child))
 		return;
 	// Note: We mustn't update if the child is anchored, otherwise we end up in an infinite recursion!
-	if(HasBoxAlignedAnchor(&child))
+	if(HasAlignedAnchor(&child))
 		return;
 	SetSizeUpdateRequired(true);
 	ScheduleUpdate();
@@ -120,7 +120,6 @@ void pragma::gui::types::BaseBox::OnSizeChanged(const Vector2i &oldSize, ChangeS
 }
 
 void pragma::gui::types::BaseBox::SetFixedWidthValue(bool set) { math::set_flag(m_boxStateFlags, BoxStateFlags::FixedWidth, set); }
-
 void pragma::gui::types::BaseBox::SetFixedHeightValue(bool set) { math::set_flag(m_boxStateFlags, BoxStateFlags::FixedHeight, set); }
 
 void pragma::gui::types::BaseBox::SetFixedWidth(bool fixed)
@@ -219,11 +218,26 @@ pragma::gui::types::FlexBox::FlexBox(FlexDirection direction) : m_direction(dire
 bool pragma::gui::types::FlexBox::IsHorizontalBox() const { return m_direction == FlexDirection::Horizontal; }
 bool pragma::gui::types::FlexBox::IsVerticalBox() const { return m_direction == FlexDirection::Vertical; }
 
-bool pragma::gui::types::FlexBox::HasBoxAlignedAnchor(WIBase *el) const
+bool pragma::gui::types::FlexBox::HasAlignedAnchor(WIBase *el, FlexDirection flexDirection) const
 {
 	if(!el)
 		return false;
-	return IsHorizontalBox() ? el->HasHorizontalAnchor() : el->HasVerticalAnchor();
+	return (flexDirection == FlexDirection::Horizontal) ? el->HasHorizontalAnchor() : el->HasVerticalAnchor();
+}
+bool pragma::gui::types::FlexBox::HasAlignedAnchor(WIBase *el) const { return HasAlignedAnchor(el, m_direction); }
+
+pragma::gui::types::FlexDirection pragma::gui::types::FlexBox::GetFlexDirection() const { return m_direction; }
+pragma::gui::types::FlexDirection pragma::gui::types::FlexBox::GetFlexCrossDirection() const
+{
+	switch (m_direction)
+	{
+	case FlexDirection::Horizontal:
+		return FlexDirection::Vertical;
+	case FlexDirection::Vertical:
+		return FlexDirection::Horizontal;
+	}
+	std::unreachable();
+	return {};
 }
 
 void pragma::gui::types::FlexBox::SetAlignItems(FlexAlign align)
@@ -355,7 +369,7 @@ void pragma::gui::types::FlexBox::DoUpdate()
 		int32_t childCrossSize = isHoriz ? child->GetHeight() : child->GetWidth();
 		int32_t crossPos = crossPaddingStart + crossMarginStart;
 
-		if(!HasBoxAlignedAnchor(child)) {
+		if(!HasAlignedAnchor(child, GetFlexCrossDirection())) {
 			if(m_alignItems == FlexAlign::Stretch) {
 				childCrossSize = std::max(0, crossSpace - crossMarginStart - crossMarginEnd);
 				if(isHoriz)
