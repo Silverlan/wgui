@@ -247,8 +247,8 @@ void pragma::gui::types::WITextEntry::SetMultiLine(bool bMultiLine)
 			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text-entry__field--multi-line");
 		}
 		else {
-			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text_entry__field--single-line");
-			static_cast<WITextEntryBase *>(m_hBase.get())->RemoveStyleClass("textentry__field--multi-line");
+			static_cast<WITextEntryBase *>(m_hBase.get())->AddStyleClass("text-entry__field--single-line");
+			static_cast<WITextEntryBase *>(m_hBase.get())->RemoveStyleClass("text-entry__field--multi-line");
 		}
 		static_cast<WITextEntryBase *>(m_hBase.get())->RefreshSkin();
 	}
