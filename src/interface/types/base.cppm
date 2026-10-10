@@ -260,6 +260,21 @@ export namespace pragma::gui {
 			void SetSize(int x, int y, ChangeSource changeSource = ChangeSource::User);
 			void ApplySize(const Vector2i &size);
 			void ApplySize(int x, int y);
+
+			int32_t GetMinWidth() const;
+			int32_t GetMinHeight() const;
+			void SetMinWidth(int32_t w);
+			void SetMinHeight(int32_t h);
+			void SetMinSize(Vector2i size);
+			std::optional<int32_t> GetMaxWidth() const;
+			std::optional<int32_t> GetMaxHeight() const;
+			void SetMaxWidth(std::optional<int32_t> w);
+			void SetMaxHeight(std::optional<int32_t> h);
+			void SetMaxSize(Vector2i size);
+			int32_t ClampWidth(int32_t w) const;
+			int32_t ClampHeight(int32_t h) const;
+			std::pair<int32_t, int32_t> ClampSize(int32_t w, int32_t h) const;
+
 			virtual void Draw(int w, int h, std::shared_ptr<prosper::ICommandBuffer> &cmdBuf);
 			void Draw(const DrawInfo &drawInfo, DrawState &drawState, const Vector2i &offsetParent, const Vector2i &scissorOffset, const Vector2i &scissorSize, const Vector2 &scale, uint32_t testStencilLevel = 0u);
 			void Draw(const DrawInfo &drawInfo, DrawState &drawState);
@@ -446,6 +461,7 @@ export namespace pragma::gui {
 			virtual void OnChildDeleted(WIBase &child);
 			virtual void OnChildVisibilityChanged(WIBase &child, bool visible);
 			virtual void RefreshLocale() {}
+			void ClampSize();
 			void UpdateInputState();
 			void AddChild(WIBase *child, std::optional<uint32_t> childIndex, bool enableCheck);
 			void InitializeAnchor(Anchor::EdgeFlags edges);
@@ -510,6 +526,9 @@ export namespace pragma::gui {
 		  protected:
 			Vector2i m_pos {0, 0};
 			Vector2i m_size {0, 0};
+			Vector2i m_minSize {0, 0};
+			std::optional<int32_t> m_maxWidth {};
+			std::optional<int32_t> m_maxHeight {};
 		  private:
 			void UpdateThink();
 			void UpdateMouseInBounds(const Vector2 &relPos, bool forceFalse);

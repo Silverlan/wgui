@@ -1006,8 +1006,7 @@ void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource
 	if(x < 0 || y < 0)
 		throw std::logic_error("Negative size not allowed!");
 #endif
-	x = math::max(x, 0);
-	y = math::max(y, 0);
+	std::tie(x, y) = ClampSize(x, y);
 
 	if(x == m_size.x && y == m_size.y && changeSource != ChangeSource::User)
 		return;
@@ -1046,6 +1045,73 @@ void pragma::gui::types::WIBase::SetSize(int x, int y, ChangeSource changeSource
 void pragma::gui::types::WIBase::OnSizeChanged(const Vector2i &oldSize, ChangeSource changedSource) {}
 void pragma::gui::types::WIBase::ApplySize(const Vector2i &size) { ApplySize(size.x, size.y); }
 void pragma::gui::types::WIBase::ApplySize(int x, int y) { SetSize(x, y, ChangeSource::Layout); }
+
+int32_t pragma::gui::types::WIBase::GetMinWidth() const { return m_minSize.x; }
+int32_t pragma::gui::types::WIBase::GetMinHeight() const { return m_minSize.y; }
+void pragma::gui::types::WIBase::ClampSize()
+{
+	auto curSize = GetSize();
+	auto newSize = curSize;
+	newSize.x = ClampWidth(newSize.x);
+	newSize.y = ClampHeight(newSize.y);
+	if (newSize == curSize)
+		return;
+	SetSize(newSize.x, newSize.y, ChangeSource::Layout);
+}
+void pragma::gui::types::WIBase::SetMinWidth(int32_t w)
+{
+	m_minSize.x = w;
+	ClampSize();
+}
+void pragma::gui::types::WIBase::SetMinHeight(int32_t h)
+{
+	m_minSize.y = h;
+	ClampSize();
+}
+void pragma::gui::types::WIBase::SetMinSize(Vector2i size)
+{
+	m_minSize = size;
+	ClampSize();
+}
+std::optional<int32_t> pragma::gui::types::WIBase::GetMaxWidth() const { return m_maxWidth; }
+std::optional<int32_t> pragma::gui::types::WIBase::GetMaxHeight() const { return m_maxHeight; }
+void pragma::gui::types::WIBase::SetMaxWidth(std::optional<int32_t> w)
+{
+	m_maxWidth = w;
+	ClampSize();
+}
+void pragma::gui::types::WIBase::SetMaxHeight(std::optional<int32_t> h)
+{
+	m_maxHeight = h;
+	ClampSize();
+}
+void pragma::gui::types::WIBase::SetMaxSize(Vector2i size)
+{
+	m_maxWidth = size.x;
+	m_maxHeight = size.y;
+	ClampSize();
+}
+int32_t pragma::gui::types::WIBase::ClampWidth(int32_t w) const
+{
+	w = math::max(w, m_minSize.x);
+	if (m_maxWidth)
+		w = math::min(w, *m_maxWidth);
+	return w;
+}
+int32_t pragma::gui::types::WIBase::ClampHeight(int32_t h) const
+{
+	h = math::max(h, m_minSize.y);
+	if (m_maxHeight)
+		h = math::min(h, *m_maxHeight);
+	return h;
+}
+std::pair<int32_t, int32_t> pragma::gui::types::WIBase::ClampSize(int32_t w, int32_t h) const
+{
+	w = ClampWidth(w);
+	h = ClampHeight(h);
+	return {w, h};
+}
+
 Mat4 pragma::gui::types::WIBase::GetTransformPose(const Vector2i &origin, int w, int h, const Mat4 &poseParent, const Vector2 &scale) const
 {
 	Vector3 normOrigin {(origin.x) * 2, (origin.y) * 2, 0.f};
