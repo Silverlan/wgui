@@ -13,4 +13,6 @@ export namespace pragma::gui {
 
 		Count
 	};
+
+	enum class Axis : uint8_t { X = 0u, Y, Count };
 };

@@ -376,8 +376,28 @@ void pragma::gui::types::WIBase::SetY(int y, ChangeSource changeSource)
 		return;
 	SetPos(m_pos.x, y, changeSource);
 }
+void pragma::gui::types::WIBase::SetDimensionPos(Axis axis, int value, ChangeSource changeSource)
+{
+	switch (axis)
+	{
+	case Axis::X:
+		return SetX(value, changeSource);
+	case Axis::Y:
+		return SetY(value, changeSource);
+	}
+}
 void pragma::gui::types::WIBase::ApplyX(int x) { SetX(x, ChangeSource::Layout); }
 void pragma::gui::types::WIBase::ApplyY(int y) { SetY(y, ChangeSource::Layout); }
+void pragma::gui::types::WIBase::ApplyDimensionPos(Axis axis, int value)
+{
+	switch (axis)
+	{
+	case Axis::X:
+		return ApplyX(value);
+	case Axis::Y:
+		return ApplyY(value);
+	}
+}
 float pragma::gui::types::WIBase::GetAspectRatio() const
 {
 	auto h = GetHeight();
@@ -401,6 +421,16 @@ void pragma::gui::types::WIBase::SetHeight(int h, bool keepRatio, ChangeSource c
 		w = h * GetAspectRatio();
 	SetSize(w, h, changeSource);
 }
+void pragma::gui::types::WIBase::SetDimensionSize(Axis axis, int value, bool keepRatio, ChangeSource changeSource)
+{
+	switch (axis)
+	{
+	case Axis::X:
+		return SetWidth(value, keepRatio, changeSource);
+	case Axis::Y:
+		return SetHeight(value, keepRatio, changeSource);
+	}
+}
 void pragma::gui::types::WIBase::ApplyWidth(int w)
 {
 	if(w == GetWidth())
@@ -412,6 +442,16 @@ void pragma::gui::types::WIBase::ApplyHeight(int h)
 	if(h == GetHeight())
 		return;
 	SetHeight(h, false, ChangeSource::Layout);
+}
+void pragma::gui::types::WIBase::ApplyDimensionSize(Axis axis, int value)
+{
+	switch (axis)
+	{
+	case Axis::X:
+		return ApplyWidth(value);
+	case Axis::Y:
+		return ApplyHeight(value);
+	}
 }
 int pragma::gui::types::WIBase::GetZPos() const { return m_zpos; }
 float pragma::gui::types::WIBase::GetAlpha() const { return m_color->GetValue().a / 255.f; }

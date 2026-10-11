@@ -215,13 +215,17 @@ export namespace pragma::gui {
 			Vector2i GetEndPos() const;
 			void SetX(int x, ChangeSource changeSource = ChangeSource::User);
 			void SetY(int y, ChangeSource changeSource = ChangeSource::User);
+			void SetDimensionPos(Axis axis, int value, ChangeSource changeSource = ChangeSource::User);
 			void ApplyX(int x);
 			void ApplyY(int y);
+			void ApplyDimensionPos(Axis axis, int value);
 			float GetAspectRatio() const;
 			void SetWidth(int w, bool keepRatio = false, ChangeSource changeSource = ChangeSource::User);
 			void SetHeight(int h, bool keepRatio = false, ChangeSource changeSource = ChangeSource::User);
+			void SetDimensionSize(Axis axis, int value, bool keepRatio = false, ChangeSource changeSource = ChangeSource::User);
 			void ApplyWidth(int w);
 			void ApplyHeight(int h);
+			void ApplyDimensionSize(Axis axis, int value);
 			Mat4 GetAbsolutePose() const;
 			Vector2 GetAbsolutePos(const Vector2 &localPos, bool includeRotation = true) const;
 			Vector2 GetAbsolutePos(bool includeRotation = true) const;
