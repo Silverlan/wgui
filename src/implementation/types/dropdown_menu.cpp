@@ -79,7 +79,7 @@ void pragma::gui::types::WIDropDownMenu::Initialize()
 
 	WIScrollBar *pScrollBar = WGUI::GetInstance().Create<WIScrollBar>(pList);
 	m_hScrollBar = pScrollBar->GetHandle();
-	pList->SetBackgroundElement(true);
+	pScrollBar->SetBackgroundElement(true);
 	pScrollBar->SetWidth(8);
 	pScrollBar->AddCallback("OnScrollOffsetChanged",
 	  FunctionCallback<void, unsigned int>::Create(std::bind(
@@ -340,7 +340,6 @@ void pragma::gui::types::WIDropDownMenu::UpdateOptionItems(std::optional<uint32_
 		}
 	}
 
-	int y = 0;
 	auto numList = m_listOffset + m_numListItems;
 	if(numOptions < numList)
 		numList = numOptions;
