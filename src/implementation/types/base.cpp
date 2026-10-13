@@ -386,6 +386,18 @@ void pragma::gui::types::WIBase::SetDimensionPos(Axis axis, int value, ChangeSou
 		return SetY(value, changeSource);
 	}
 }
+int32_t pragma::gui::types::WIBase::GetDimensionPos(Axis axis) const
+{
+	switch (axis)
+	{
+	case Axis::X:
+		return GetX();
+	case Axis::Y:
+		return GetY();
+	}
+	std::unreachable();
+	return 0;
+}
 void pragma::gui::types::WIBase::ApplyX(int x) { SetX(x, ChangeSource::Layout); }
 void pragma::gui::types::WIBase::ApplyY(int y) { SetY(y, ChangeSource::Layout); }
 void pragma::gui::types::WIBase::ApplyDimensionPos(Axis axis, int value)
@@ -430,6 +442,18 @@ void pragma::gui::types::WIBase::SetDimensionSize(Axis axis, int value, bool kee
 	case Axis::Y:
 		return SetHeight(value, keepRatio, changeSource);
 	}
+}
+int32_t pragma::gui::types::WIBase::GetDimensionSize(Axis axis) const
+{
+	switch (axis)
+	{
+	case Axis::X:
+		return GetWidth();
+	case Axis::Y:
+		return GetHeight();
+	}
+	std::unreachable();
+	return 0;
 }
 void pragma::gui::types::WIBase::ApplyWidth(int w)
 {

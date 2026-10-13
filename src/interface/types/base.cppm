@@ -216,6 +216,7 @@ export namespace pragma::gui {
 			void SetX(int x, ChangeSource changeSource = ChangeSource::User);
 			void SetY(int y, ChangeSource changeSource = ChangeSource::User);
 			void SetDimensionPos(Axis axis, int value, ChangeSource changeSource = ChangeSource::User);
+			int32_t GetDimensionPos(Axis axis) const;
 			void ApplyX(int x);
 			void ApplyY(int y);
 			void ApplyDimensionPos(Axis axis, int value);
@@ -223,6 +224,7 @@ export namespace pragma::gui {
 			void SetWidth(int w, bool keepRatio = false, ChangeSource changeSource = ChangeSource::User);
 			void SetHeight(int h, bool keepRatio = false, ChangeSource changeSource = ChangeSource::User);
 			void SetDimensionSize(Axis axis, int value, bool keepRatio = false, ChangeSource changeSource = ChangeSource::User);
+			int32_t GetDimensionSize(Axis axis) const;
 			void ApplyWidth(int w);
 			void ApplyHeight(int h);
 			void ApplyDimensionSize(Axis axis, int value);
