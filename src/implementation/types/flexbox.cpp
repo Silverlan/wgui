@@ -254,6 +254,71 @@ void pragma::gui::types::FlexBox::SetJustifyContent(FlexJustify justify)
 	ScheduleUpdate();
 }
 
+static std::optional<pragma::gui::types::FlexAlign> to_flex_align_enum(std::string_view alignStr)
+{
+	using namespace pragma::string::string_switch;
+	switch(hash(alignStr)) {
+	case "start"_:
+		return pragma::gui::types::FlexAlign::Start;
+	case "center"_:
+		return pragma::gui::types::FlexAlign::Center;
+	case "end"_:
+		return pragma::gui::types::FlexAlign::End;
+	case "stretch"_:
+		return pragma::gui::types::FlexAlign::Stretch;
+	}
+	return {};
+}
+
+static std::optional<pragma::gui::types::FlexJustify> to_flex_justify_enum(std::string_view alignStr)
+{
+	using namespace pragma::string::string_switch;
+	switch(hash(alignStr)) {
+	case "start"_:
+		return pragma::gui::types::FlexJustify::Start;
+	case "center"_:
+		return pragma::gui::types::FlexJustify::Center;
+	case "end"_:
+		return pragma::gui::types::FlexJustify::End;
+	case "spaceBetween"_:
+		return pragma::gui::types::FlexJustify::SpaceBetween;
+	case "spaceEvenly"_:
+		return pragma::gui::types::FlexJustify::SpaceEvenly;
+	}
+	return {};
+}
+
+void pragma::gui::types::FlexBox::ApplyStyle(Style &style)
+{
+	if (style.FindProperty("width"))
+		SetFixedWidth(true);
+	if (style.FindProperty("height"))
+		SetFixedHeight(true);
+	if (auto alignItems = style.GetPropertyValue<udm::String>("alignItems"); alignItems)
+	{
+		if (auto flexAlignEnum = to_flex_align_enum(*alignItems); flexAlignEnum)
+			SetAlignItems(*flexAlignEnum);
+		else
+			style.LogInvalidProperty("alignItems");
+	}
+	if (auto justifyContent = style.GetPropertyValue<udm::String>("justifyContent"); justifyContent)
+	{
+		if (auto justifyContentEnum = to_flex_justify_enum(*justifyContent); justifyContentEnum)
+			SetJustifyContent(*justifyContentEnum);
+		else
+			style.LogInvalidProperty("justifyContent");
+	}
+
+	if (auto paddingProp = style.FindProperty("padding"); paddingProp)
+	{
+		auto padding = paddingProp->UnpackSpacing();
+		SetPadding(padding[0], padding[1], padding[2], padding[3]);
+	}
+
+	if (auto spacing = style.GetPropertyValue<udm::Int32>("spacing"); spacing)
+		SetSpacing(*spacing);
+}
+
 void pragma::gui::types::FlexBox::DoUpdate()
 {
 	auto size = GetSize();

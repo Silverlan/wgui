@@ -57,3 +57,9 @@ pragma::util::EventReply pragma::gui::types::WIButton::MouseCallback(platform::M
 }
 
 void pragma::gui::types::WIButton::SizeToContents(bool x, bool y, ChangeSource changeSource) {WIBase::SizeToContents(x, y, changeSource);}
+
+void pragma::gui::types::WIButton::ApplyStyle(Style &style)
+{
+	if (auto text = style.GetPropertyValue<udm::String>("text"); text)
+		SetText(*text);
+}

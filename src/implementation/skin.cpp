@@ -10,16 +10,16 @@ pragma::gui::WISkin::WISkin() {}
 
 pragma::gui::WISkin::~WISkin() {}
 
-void pragma::gui::WISkin::Initialize(types::WIBase *) {}
-void pragma::gui::WISkin::Release(types::WIBase *) {}
-void pragma::gui::WISkin::ReleaseElement(types::WIBase *el)
+void pragma::gui::WISkin::Initialize(types::WIBase &) {}
+void pragma::gui::WISkin::Release(types::WIBase &) {}
+void pragma::gui::WISkin::ReleaseElement(types::WIBase &el)
 {
-	std::vector<WIHandle> *children = el->GetChildren();
+	std::vector<WIHandle> *children = el.GetChildren();
 	for(unsigned int i = 0; i < children->size(); i++) {
 		WIHandle &hChild = (*children)[i];
 		if(hChild.IsValid())
-			ReleaseElement(hChild.get());
+			ReleaseElement(*hChild.get());
 	}
 	Release(el);
 }
-void pragma::gui::WISkin::InitializeClass(types::WIBase *, std::string &) {}
+void pragma::gui::WISkin::InitializeClass(types::WIBase &, std::string &) {}

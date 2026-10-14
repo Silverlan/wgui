@@ -85,6 +85,8 @@ export namespace pragma::gui::types {
 		void SetChannelSwizzle(shaders::ShaderTextured::Channel dst, shaders::ShaderTextured::Channel src);
 		shaders::ShaderTextured::Channel GetChannelSwizzle(shaders::ShaderTextured::Channel channel) const;
 
+		void ApplyStyle(Style &style) override;
+
 		virtual void ClearBuffer() override;
 	  protected:
 		virtual void UpdateTransparencyState() override;

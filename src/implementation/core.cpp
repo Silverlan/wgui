@@ -352,6 +352,13 @@ prosper::Window *pragma::gui::WGUI::FindWindowUnderCursor()
 	return const_cast<prosper::Window *>(elRoot->GetWindow());
 }
 pragma::gui::types::WIRoot *pragma::gui::WGUI::FindRootElementUnderCursor() { return FindWindowRootElementUnderCursor(); }
+void pragma::gui::WGUI::SetLogHandler(const std::function<void(std::string_view, pragma::util::LogSeverity)> &logger) { m_logHandler = logger; }
+void pragma::gui::WGUI::Log(std::string_view msg, util::LogSeverity severity) const
+{
+	if (!m_logHandler)
+		return;
+	m_logHandler(msg, severity);
+}
 size_t pragma::gui::WGUI::GetLastThinkIndex() const { return m_thinkIndex; }
 void pragma::gui::WGUI::BeginDraw()
 {

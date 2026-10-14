@@ -276,6 +276,70 @@ void pragma::gui::types::WIText::SetCacheEnabled(bool bEnabled)
 }
 bool pragma::gui::types::WIText::IsCacheEnabled() const { return math::is_flag_set(m_flags, Flags::Cache); }
 
+void pragma::gui::types::WIText::ApplyStyle(Style &style)
+{
+	if (auto font = style.GetPropertyValue<udm::String>("font"); font)
+		SetFont(*font);
+	if (auto text = style.GetPropertyValue<udm::String>("text"); text)
+		SetText(*text);
+	if (auto textTransform = style.GetPropertyValue<udm::String>("textTransform"); textTransform)
+	{
+		if (*textTransform == "uppercase")
+		{
+			auto text = GetText();
+			text.toUpper();
+			SetText(text);
+		}
+		else if (*textTransform == "lowercase")
+		{
+			auto text = GetText();
+			text.toLower();
+			SetText(text);
+		}
+		else if (*textTransform == "capitalize")
+		{
+			// TODO
+			// LOGGER.warn("'capitalize' text transform currently not implemented!");
+			/*auto text = el.GetText();
+			auto capitalizeNext = true;
+			for (size_t i=0;i<text.size();++i) {
+				auto &c = text[i];
+				if (pragma::string::WHITESPACE.find(c) != std::string::npos)
+					capitalizeNext = true;
+				else if (capitalizeNext)
+				{
+					capitalizeNext = false;
+					// TODO: This is not a pretty way of handling it
+					pragma::string::Utf8String cstr {c};
+					cstr.toUpper();
+					if (!cstr.empty())
+						c = cstr.front();
+				}
+			}*/
+		}
+		else
+			style.LogInvalidProperty("textTransform");
+	}
+
+	if (auto shadowOffset = style.GetArrayPropertyValues<udm::Int32>("shadowOffset"); shadowOffset)
+	{
+		if (shadowOffset->size() == 2)
+		{
+			if (auto shadowColor = style.FindProperty("shadowColor"); shadowColor)
+			{
+				auto color = shadowColor->GetColor();
+				if (color)
+					SetShadowColor(*color);
+			}
+
+			SetShadowOffset({(*shadowOffset)[0], (*shadowOffset)[1]});
+			EnableShadow(true);
+		}
+		else
+			style.LogInvalidProperty("shadowOffset");
+	}
+}
+
 int pragma::gui::types::WIText::GetTextHeight()
 {
 	if(m_font == nullptr)

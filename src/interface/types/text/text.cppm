@@ -201,6 +201,8 @@ export namespace pragma::gui::types {
 		}
 		void RemoveDecorator(const WITextDecorator &decorator);
 
+		void ApplyStyle(Style &style) override;
+
 		static void InitializeTextBuffer(prosper::IPrContext &context);
 		static void ClearTextBuffer();
 	  private:

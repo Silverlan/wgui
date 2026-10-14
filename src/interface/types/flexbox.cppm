@@ -110,6 +110,7 @@ export namespace pragma::gui::types {
 		bool HasAlignedAnchor(WIBase *el) const override;
 		FlexDirection GetFlexDirection() const;
 		FlexDirection GetFlexCrossDirection() const;
+		void ApplyStyle(Style &style) override;
 
 		void SetAlignItems(FlexAlign align);
 		[[nodiscard]] FlexAlign GetAlignItems() const { return m_alignItems; }

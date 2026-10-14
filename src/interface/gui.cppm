@@ -13,6 +13,7 @@ export import :element_buffer_data;
 export import :enums;
 export import :font_manager;
 export import :handle;
+export import :json_skin;
 export import :shaders;
 export import :tooltip_manager;
 export import :type_factory;

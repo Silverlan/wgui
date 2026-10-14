@@ -277,6 +277,9 @@ export namespace pragma::gui {
 		void BeginDraw();
 		void EndDraw();
 
+		void SetLogHandler(const std::function<void(std::string_view, util::LogSeverity)> &logger);
+		void Log(std::string_view msg, util::LogSeverity severity) const;
+
 		size_t GetLastThinkIndex() const;
 		TooltipManager &GetTooltipManager() { return m_tooltipManager; }
 
@@ -319,6 +322,7 @@ export namespace pragma::gui {
 		uint64_t m_nextGuiElementIndex = 0u;
 		LocaleResolver m_localeResolver;
 		TooltipManager m_tooltipManager;
+		std::function<void(std::string_view, util::LogSeverity)> m_logHandler;
 
 		// In general very few elements actually need to apply any continuous logic,
 		// so we keep a separate reference to those elements for better efficiency.

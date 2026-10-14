@@ -72,6 +72,7 @@ export namespace pragma::gui {
 
 	class WISkin;
 	class WGUI;
+	struct Style;
 	namespace types {
 		class WIRoot;
 		class DLLWGUI WIBase : public util::CallbackHandler {
@@ -133,6 +134,7 @@ export namespace pragma::gui {
 			void SetSkin(std::string skin);
 			void ResetSkin();
 			WISkin *GetSkin();
+			virtual void ApplyStyle(Style &style);
 			std::optional<std::string> GetSkinName() const;
 			void SetSkinCallbacksEnabled(bool enabled);
 			const std::string &GetName() const;

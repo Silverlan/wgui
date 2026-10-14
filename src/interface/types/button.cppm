@@ -18,6 +18,7 @@ export namespace pragma::gui::types {
 		const string::Utf8String &GetText() const;
 		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 		virtual void SizeToContents(bool x = true, bool y = true, ChangeSource changeSource = ChangeSource::User) override;
+		void ApplyStyle(Style &style) override;
 	  protected:
 		WIHandle m_text;
 		bool m_bPressed;

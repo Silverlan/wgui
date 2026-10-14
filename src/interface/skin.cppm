@@ -15,15 +15,15 @@ export namespace pragma::gui {
 		WISkin(std::string id);
 		WISkin();
 		std::string m_identifier;
-		void ReleaseElement(types::WIBase *el);
+		void ReleaseElement(types::WIBase &el);
 	  public:
 		friend WGUI;
 	  public:
 		virtual ~WISkin();
 		void SetIdentifier(const std::string &identifier) { m_identifier = identifier; }
 		const std::string &GetIdentifier() const { return m_identifier; }
-		virtual void Initialize(types::WIBase *el);
-		virtual void Release(types::WIBase *el);
-		virtual void InitializeClass(types::WIBase *el, std::string &className);
+		virtual void Initialize(types::WIBase &el);
+		virtual void Release(types::WIBase &el);
+		virtual void InitializeClass(types::WIBase &el, std::string &className);
 	};
 }

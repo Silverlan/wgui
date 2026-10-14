@@ -1250,11 +1250,11 @@ void pragma::gui::types::WIBase::ResetSkin()
 {
 	if(math::is_flag_set(m_stateFlags, StateFlags::SkinAppliedBit) == true) {
 		if(m_skin != nullptr)
-			m_skin->Release(this);
+			m_skin->Release(*this);
 		else {
 			WISkin *skinCurrent = WGUI::GetInstance().GetSkin();
 			if(skinCurrent != nullptr)
-				skinCurrent->Release(this);
+				skinCurrent->Release(*this);
 		}
 		math::set_flag(m_stateFlags, StateFlags::SkinAppliedBit, false);
 		UpdateThink();
@@ -1292,7 +1292,7 @@ void pragma::gui::types::WIBase::ApplySkin(WISkin *skin)
 	if(m_skin == nullptr)
 		m_skin = WGUI::GetInstance().GetSkin();
 	if(m_skin != nullptr)
-		m_skin->Initialize(this);
+		m_skin->Initialize(*this);
 	std::vector<WIHandle> *children = GetChildren();
 	for(unsigned int i = 0; i < children->size(); i++) {
 		WIHandle &hChild = (*children)[i];
@@ -1311,6 +1311,7 @@ pragma::gui::WISkin *pragma::gui::types::WIBase::GetSkin()
 	auto *parent = GetParent();
 	return parent ? parent->GetSkin() : WGUI::GetInstance().GetSkin();
 }
+void pragma::gui::types::WIBase::ApplyStyle(Style &style) {}
 void pragma::gui::types::WIBase::SetThinkIfInvisible(bool bThinkIfInvisible)
 {
 	math::set_flag(m_stateFlags, StateFlags::UpdateIfInvisibleBit, bThinkIfInvisible);

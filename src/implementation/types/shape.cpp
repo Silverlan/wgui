@@ -469,6 +469,14 @@ void pragma::gui::types::WITexturedShape::SetAlphaMode(AlphaMode alphaMode)
 void pragma::gui::types::WITexturedShape::SetAlphaCutoff(float alphaCutoff) { m_alphaCutoff = alphaCutoff; }
 AlphaMode pragma::gui::types::WITexturedShape::GetAlphaMode() const { return m_alphaMode; }
 float pragma::gui::types::WITexturedShape::GetAlphaCutoff() const { return m_alphaCutoff; }
+void pragma::gui::types::WITexturedShape::ApplyStyle(Style &style)
+{
+	if (auto material = style.GetPropertyValue<udm::String>("material"); material)
+	{
+		SetMaterial(*material);
+		SizeToTexture();
+	}
+}
 void pragma::gui::types::WITexturedShape::UpdateTransparencyState()
 {
 	WIBase::UpdateTransparencyState();
