@@ -21,14 +21,14 @@ pragma::gui::Style::~Style() {}
 pragma::gui::Style &pragma::gui::Style::operator=(const Style &other)
 {
 	*propertyMap = *other.propertyMap;
-	children = other.children;
+	descendants = other.descendants;
 	decorators = other.decorators;
 	return *this;
 }
 pragma::gui::Style &pragma::gui::Style::operator=(Style &&other)
 {
 	propertyMap = std::move(other.propertyMap);
-	children = std::move(other.children);
+	descendants = std::move(other.descendants);
 	decorators = std::move(other.decorators);
 	return *this;
 }
@@ -65,7 +65,7 @@ namespace pragma::gui
 		JsonSkinClass &operator=(const JsonSkinClass &) = delete;
 
 		string::StringMap<glz::generic_u64> properties;
-		string::StringMap<std::unique_ptr<JsonSkinClass>> children;
+		string::StringMap<std::unique_ptr<JsonSkinClass>> descendants;
 		string::StringMap<std::unique_ptr<JsonSkinClass>> states;
 		string::StringMap<std::unique_ptr<JsonSkinClass>> decorators;
 		std::vector<std::string> inherits;
@@ -184,8 +184,8 @@ pragma::gui::JsonSkinClass *pragma::gui::JsonSkinClass::Copy() const
 	other->properties = properties;
 	other->inherits = inherits;
 
-	for(const auto &[key, child] : children)
-		other->children.insert({key, std::unique_ptr<JsonSkinClass>(child->Copy())});
+	for(const auto &[key, child] : descendants)
+		other->descendants.insert({key, std::unique_ptr<JsonSkinClass>(child->Copy())});
 	for(const auto &[key, state] : states)
 		other->states.insert({key, std::unique_ptr<JsonSkinClass>(state->Copy())});
 	for(const auto &[key, decorator] : decorators)
@@ -200,10 +200,10 @@ void pragma::gui::JsonSkinClass::MergeFrom(const JsonSkinClass &baseClass)
 			properties[key] = val;
 	}
 
-	for(const auto &[key, baseChild] : baseClass.children) {
-		auto it = children.find(key);
-		if(it == children.end())
-			children[key] = std::unique_ptr<JsonSkinClass>(baseChild->Copy());
+	for(const auto &[key, baseChild] : baseClass.descendants) {
+		auto it = descendants.find(key);
+		if(it == descendants.end())
+			descendants[key] = std::unique_ptr<JsonSkinClass>(baseChild->Copy());
 		else
 			it->second->MergeFrom(*baseChild);
 	}
@@ -276,9 +276,9 @@ void pragma::gui::Style::ToUdmData(udm::LinkedPropertyWrapper &udmData) const
 {
 	for (auto &[name, prop] : propertyMap->properties)
 		to_udm_data(name, prop, udmData["properties"]);
-	for (auto &[name, child] : children)
+	for (auto &[name, child] : descendants)
 	{
-		auto udmChild = udmData["children"][name];
+		auto udmChild = udmData["descendants"][name];
 		child.ToUdmData(udmChild);
 	}
 	for (auto &[name, decorator] : decorators)
@@ -417,8 +417,49 @@ void pragma::gui::JsonSkinBase::ParseClass(const glz::generic_u64 &j, JsonSkinCl
 			if(key == "theme")
 				continue; // Already handled
 			if(value.is_object()) {
-				outClass.children[key] = std::make_unique<JsonSkinClass>();
-				ParseClass(value, *outClass.children[key]);
+				std::vector<std::string> classes;
+				string::explode(key, " ", classes);
+				auto *targetClass = &outClass;
+				for (auto &classNameWithAttrs : classes)
+				{
+					auto colon = classNameWithAttrs.find(':');
+					std::string_view className = classNameWithAttrs;
+					if (colon != std::string::npos)
+						className = className.substr(0, colon);
+
+					auto addClass = [](string::StringMap<std::unique_ptr<JsonSkinClass>> &map, std::string_view className) -> JsonSkinClass*
+					{
+						auto it = map.find(className);
+						if (it == map.end())
+							it = map.insert(std::make_pair(className, std::make_unique<JsonSkinClass>())).first;
+						return it->second.get();
+					};
+					targetClass = addClass(targetClass->descendants, className);
+
+					if (colon != std::string::npos)
+					{
+						std::vector<std::string> args;
+						string::explode(classNameWithAttrs, ":", args);
+						args.erase(args.begin());
+						auto isDecorator = false;
+						while (!args.empty())
+						{
+							auto &arg = args.front();
+							if (arg.empty())
+								isDecorator = true;
+							else if (isDecorator)
+							{
+								isDecorator = false;
+								targetClass = addClass(targetClass->decorators, arg);
+							}
+							else
+								targetClass = addClass(targetClass->states, arg);
+							args.erase(args.begin());
+						}
+					}
+				}
+
+				ParseClass(value, *targetClass);
 			}
 		}
 		return;
@@ -451,11 +492,11 @@ void pragma::gui::JsonSkinBase::ParseClass(const glz::generic_u64 &j, JsonSkinCl
 				}
 			}
 		}
-		else if(key == "children") {
+		else if(key == "descendants") {
 			if(value.is_object()) {
 				for(const auto &[key, child] : value.get_object()) {
-					outClass.children[key] = std::make_unique<JsonSkinClass>();
-					ParseClass(child, *outClass.children[key]);
+					outClass.descendants[key] = std::make_unique<JsonSkinClass>();
+					ParseClass(child, *outClass.descendants[key]);
 				}
 			}
 		}
@@ -474,7 +515,7 @@ void pragma::gui::JsonSkinBase::ResolveVariables(JsonSkinClass &cl)
 {
 	ResolveVariables(cl.properties);
 
-	for(auto &[key, child] : cl.children)
+	for(auto &[key, child] : cl.descendants)
 		ResolveVariables(*child);
 	for(auto &[key, state] : cl.states)
 		ResolveVariables(*state);
@@ -485,12 +526,12 @@ void pragma::gui::JsonSkinBase::ResolveVariables(JsonSkinClass &cl)
 void pragma::gui::JsonSkinBase::ResolveMixins(JsonSkinClass &target, const JsonSkinClass &root)
 {
 	for(const std::string &baseName : target.inherits) {
-		auto it = root.children.find(baseName);
-		if(it != root.children.end())
+		auto it = root.descendants.find(baseName);
+		if(it != root.descendants.end())
 			target.MergeFrom(*it->second);
 	}
 
-	for(auto &[key, child] : target.children)
+	for(auto &[key, child] : target.descendants)
 		ResolveMixins(*child, root);
 	for(auto &[key, state] : target.states)
 		ResolveMixins(*state, root);
@@ -570,12 +611,12 @@ std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types:
 	for(auto &el_iter : els | std::views::reverse) {
 		auto numClasses = classes.size();
 		for(size_t i = 0; i < numClasses; ++i) // Note: Loop modifies 'classes'
-			find_skin_classes(el_iter, classes[i].skinClass->children, classes, classes[i].specificity);
+			find_skin_classes(el_iter, classes[i].skinClass->descendants, classes, classes[i].specificity);
 	}
 
 	std::vector<SkinContext> elClassesContexts;
 	for(auto &c : classes)
-		find_skin_classes(&el, c.skinClass->children, elClassesContexts, c.specificity);
+		find_skin_classes(&el, c.skinClass->descendants, elClassesContexts, c.specificity);
 
 	// Sort rules by specificity
 	std::stable_sort(elClassesContexts.begin(), elClassesContexts.end());
@@ -638,7 +679,7 @@ std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types:
 			}
 		};
 
-		mergeSubItems(cl->children, activeState ? &activeState->children : nullptr, style.children);
+		mergeSubItems(cl->descendants, activeState ? &activeState->descendants : nullptr, style.descendants);
 		mergeSubItems(cl->decorators, activeState ? &activeState->decorators : nullptr, style.decorators);
 	}
 	return style;
@@ -805,10 +846,10 @@ static bool is_match(pragma::gui::types::WIBase &child, std::string_view matchNa
 	return pragma::string::compare<std::string_view>(childClass.str, matchName, false);
 }
 
-static void collect_children(pragma::gui::types::WIBase &currentParent, std::string_view matchName, bool isDirectOnly, std::vector<pragma::gui::types::WIBase*> &results)
+static void collect_descendants(pragma::gui::types::WIBase &currentParent, std::string_view matchName, bool isDirectOnly, std::vector<pragma::gui::types::WIBase*> &results)
 {
-	auto &children = *currentParent.GetChildren();
-	for (auto &hChild : children)
+	auto &descendants = *currentParent.GetChildren();
+	for (auto &hChild : descendants)
 	{
 		if (!hChild.IsValid())
 			continue;
@@ -820,11 +861,11 @@ static void collect_children(pragma::gui::types::WIBase &currentParent, std::str
 			results.push_back(&child);
 		}
 		if (!isDirectOnly)
-			collect_children(child, matchName, isDirectOnly, results);
+			collect_descendants(child, matchName, isDirectOnly, results);
 	}
 }
 
-static std::vector<pragma::gui::types::WIBase*> find_matching_children(pragma::gui::types::WIBase &parent, std::string_view selector)
+static std::vector<pragma::gui::types::WIBase*> find_matching_descendants(pragma::gui::types::WIBase &parent, std::string_view selector)
 {
 	auto isDirectOnly = false;
 	std::string matchName {selector};
@@ -839,7 +880,7 @@ static std::vector<pragma::gui::types::WIBase*> find_matching_children(pragma::g
 	}
 
 	std::vector<pragma::gui::types::WIBase*> results;
-	collect_children(parent, matchName, isDirectOnly, results);
+	collect_descendants(parent, matchName, isDirectOnly, results);
 	return results;
 }
 
@@ -1317,10 +1358,10 @@ void pragma::gui::JsonSkin::ApplyStyle(types::WIBase &el, Style &style) const
 	apply_background(el, style);
 	apply_outline(el, style);
 
-	for (auto &[selector, childStyle] : style.children)
+	for (auto &[selector, childStyle] : style.descendants)
 	{
-		auto matchingChildren = find_matching_children(el, selector);
-		for (auto &child : matchingChildren)
+		auto matchingDescendants = find_matching_descendants(el, selector);
+		for (auto &child : matchingDescendants)
 		{
 			// TODO: Do we need this here?
 			/*if childStyle.margin then

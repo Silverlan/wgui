@@ -108,7 +108,7 @@ namespace pragma::gui {
 		Style(const Style &other);
 		~Style();
 		std::unique_ptr<PropertyMap> propertyMap;
-		string::OrderedStringMap<Style> children;
+		string::OrderedStringMap<Style> descendants;
 		string::OrderedStringMap<Style> decorators;
 
 		Style &operator=(const Style &other);
