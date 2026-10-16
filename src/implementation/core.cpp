@@ -4,6 +4,7 @@
 module pragma.gui;
 
 import :core;
+import :json_skin;
 import pragma.string.unicode;
 
 #undef DrawState
@@ -799,24 +800,62 @@ pragma::gui::WISkin *pragma::gui::WGUI::RegisterSkin(std::string id, std::unique
 	return pSkin;
 }
 
+pragma::gui::JsonSkin *pragma::gui::WGUI::LoadSkin(std::string_view skinName)
+{
+	auto filePath = util::DirPath("scripts/ui/skins/") / (std::string{skinName} +".jsonc");
+	auto &fileName = filePath.GetString();
+	auto f = fs::open_file(fileName, fs::FileMode::Read);
+	if (!f)
+	{
+		Log(std::format("Failed to load json skin '{}': File not found!", fileName), util::LogSeverity::Error);
+		return nullptr;
+	}
+	if (!m_defaultSkinFactory)
+	{
+		Log(std::format("Failed to load json skin '{}': No default skin factory defined!", fileName), util::LogSeverity::Error);
+		return nullptr;
+	}
+	auto *skin = m_defaultSkinFactory();
+	if (!skin)
+	{
+		Log(std::format("Failed to load json skin '{}': Skin factory failed to create skin!", fileName), util::LogSeverity::Error);
+		return nullptr;
+	}
+	auto pskin = std::unique_ptr<WISkin>{skin};
+	fs::File fptr {f};
+	if (auto result = skin->Load(fptr); !result)
+	{
+		Log(std::format("Failed to load json skin '{}': {}", fileName, result.error()), util::LogSeverity::Error);
+		return nullptr;
+	}
+	RegisterSkin(std::string{skinName}, std::move(pskin));
+	return skin;
+}
+
+void pragma::gui::WGUI::SetDefaultSkinFactory(const std::function<JsonSkin*()> &factory) { m_defaultSkinFactory = factory; }
+
 void pragma::gui::WGUI::SetSkin(std::string skin)
 {
+    string::to_lower(skin);
+    auto it = m_skins.find(skin);
+    if(m_skin != nullptr && it != m_skins.end() && it->second.get() == m_skin)
+        return;
 	for(auto &hEl : m_rootElements) {
 		if(hEl.IsValid() == false)
 			continue;
-		string::to_lower(skin);
-		auto it = m_skins.find(skin);
-		if(m_skin != nullptr && it != m_skins.end() && it->second.get() == m_skin)
-			return;
 		hEl->ResetSkin();
-		if(it == m_skins.end()) {
-			m_skin = nullptr;
-			return;
-		}
-		m_skin = it->second.get();
-		if(m_skin == nullptr)
-			return;
-		hEl->ApplySkin(m_skin);
+	}
+    if(it == m_skins.end()) {
+        m_skin = nullptr;
+        return;
+    }
+    m_skin = it->second.get();
+    if(m_skin == nullptr)
+        return;
+	for(auto &hEl : m_rootElements) {
+		if(hEl.IsValid() == false)
+			continue;
+        hEl->ApplySkin(m_skin);
 	}
 }
 pragma::gui::WISkin *pragma::gui::WGUI::GetSkin() { return m_skin; }

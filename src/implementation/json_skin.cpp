@@ -341,7 +341,10 @@ void pragma::gui::JsonSkinBase::Load(const Settings &settings)
 			if (inherits.is_string())
 			{
 				auto baseTheme = inherits.get_string();
-				baseSkin = dynamic_cast<JsonSkin*>(WGUI::GetInstance().GetSkin(baseTheme));
+				auto *skin = WGUI::GetInstance().GetSkin(baseTheme);
+				if (!skin)
+					skin = WGUI::GetInstance().LoadSkin(baseTheme);
+				baseSkin = dynamic_cast<JsonSkin*>(skin);
 			}
 		}
 
