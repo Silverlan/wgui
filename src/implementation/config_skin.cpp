@@ -7,7 +7,7 @@ module;
 
 module pragma.gui;
 
-import :json_skin;
+import :config_skin;
 
 struct pragma::gui::Style::PropertyMap {
 	string::OrderedStringMap<glz::generic_u64> properties;
@@ -288,9 +288,9 @@ void pragma::gui::Style::ToUdmData(udm::PropertyWrapper &udmData) const
 	}
 }
 
-pragma::gui::JsonSkin::JsonSkin() : WISkin {}, m_baseJsonSkin{std::make_unique<JsonSkinBase>()}
+pragma::gui::ConfigSkin::ConfigSkin() : WISkin {}, m_baseJsonSkin{std::make_unique<JsonSkinBase>()}
 {}
-void pragma::gui::JsonSkin::Initialize(types::WIBase &el)
+void pragma::gui::ConfigSkin::Initialize(types::WIBase &el)
 {
 	WISkin::Initialize(el);
 
@@ -299,16 +299,16 @@ void pragma::gui::JsonSkin::Initialize(types::WIBase &el)
 		return;
 	Initialize(el, *style);
 }
-void pragma::gui::JsonSkin::Release(types::WIBase &el)
+void pragma::gui::ConfigSkin::Release(types::WIBase &el)
 {
 	WISkin::Release(el);
 	m_baseJsonSkin->ClearCache(el);
 }
-void pragma::gui::JsonSkin::Initialize(types::WIBase &el, Style &style) { ApplyStyle(el, style); }
-std::optional<pragma::gui::Style> pragma::gui::JsonSkin::ComputeStyle(types::WIBase &el) const { return m_baseJsonSkin->ComputeStyle(el); }
-udm::Element *pragma::gui::JsonSkin::GetCacheData(types::WIBase &el, bool init) const { return m_baseJsonSkin->GetCacheData(el, init); }
-void pragma::gui::JsonSkin::Initialize(StyleProperty &rootStyle, const udm::PropertyWrapper &data) {}
-std::expected<void, std::string> pragma::gui::JsonSkin::LoadJson(ufile::IFile &f)
+void pragma::gui::ConfigSkin::Initialize(types::WIBase &el, Style &style) { ApplyStyle(el, style); }
+std::optional<pragma::gui::Style> pragma::gui::ConfigSkin::ComputeStyle(types::WIBase &el) const { return m_baseJsonSkin->ComputeStyle(el); }
+udm::Element *pragma::gui::ConfigSkin::GetCacheData(types::WIBase &el, bool init) const { return m_baseJsonSkin->GetCacheData(el, init); }
+void pragma::gui::ConfigSkin::Initialize(StyleProperty &rootStyle, const udm::PropertyWrapper &data) {}
+std::expected<void, std::string> pragma::gui::ConfigSkin::LoadJson(ufile::IFile &f)
 {
 	glz::generic_u64 json {};
 	auto buffer = f.ReadString();
@@ -385,7 +385,7 @@ void to_json_object(const udm::PropertyWrapper &e, glz::generic_u64 &j)
 	for (auto &[key, child] : lp.ElIt())
 		to_json_data(key, e, j);
 }
-std::expected<void, std::string> pragma::gui::JsonSkin::LoadUdm(std::unique_ptr<ufile::IFile> &&f)
+std::expected<void, std::string> pragma::gui::ConfigSkin::LoadUdm(std::unique_ptr<ufile::IFile> &&f)
 {
 	std::shared_ptr<udm::Data> data;
 	try {
@@ -407,7 +407,7 @@ std::expected<void, std::string> pragma::gui::JsonSkin::LoadUdm(std::unique_ptr<
 	Initialize(styleProp, udm::PropertyWrapper{*m_udmData}["assetData"]["root"]);
 	return {};
 }
-void pragma::gui::JsonSkin::Load(StyleProperty &styleProp)
+void pragma::gui::ConfigSkin::Load(StyleProperty &styleProp)
 {
 	m_baseJsonSkin->Load(JsonSkinBase::Settings{*static_cast<const glz::generic_u64*>(styleProp.property)});
 }
@@ -417,7 +417,7 @@ pragma::gui::JsonSkinBase::JsonSkinBase() {}
 void pragma::gui::JsonSkinBase::Load(const Settings &settings)
 {
 	const auto &j = settings.jsonData;
-	JsonSkin *baseSkin = nullptr;
+	ConfigSkin *baseSkin = nullptr;
 
 	// Note: Make sure to skip these in "ParseClass" when adding new root blocks
 	if(j.contains("theme")) {
@@ -432,7 +432,7 @@ void pragma::gui::JsonSkinBase::Load(const Settings &settings)
 				auto *skin = WGUI::GetInstance().GetSkin(baseTheme);
 				if (!skin)
 					skin = WGUI::GetInstance().LoadSkin(baseTheme);
-				baseSkin = dynamic_cast<JsonSkin*>(skin);
+				baseSkin = dynamic_cast<ConfigSkin*>(skin);
 			}
 		}
 
@@ -1305,7 +1305,7 @@ static void apply_outline(pragma::gui::types::WIBase &el, const pragma::gui::Sty
 		ol->SetVisible(false);
 }
 
-void pragma::gui::JsonSkin::ResolveConstant(std::string &value)
+void pragma::gui::ConfigSkin::ResolveConstant(std::string &value)
 {
 	if (value.empty() || value.front() != '$')
 		return;
@@ -1315,7 +1315,7 @@ void pragma::gui::JsonSkin::ResolveConstant(std::string &value)
 		value = it->second.get<std::string>();
 }
 
-void pragma::gui::JsonSkin::ApplyStyle(types::WIBase &el, Style &style) const
+void pragma::gui::ConfigSkin::ApplyStyle(types::WIBase &el, Style &style) const
 {
 	if (auto styleProp = style.FindProperty("style"); styleProp)
 	{

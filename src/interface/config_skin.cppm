@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2026 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-export module pragma.gui:json_skin;
+export module pragma.gui:config_skin;
 
 export import :skin;
 export import pragma.udm;
@@ -157,10 +157,10 @@ namespace pragma::gui {
 	};
 
 	class JsonSkinBase;
-	export class DLLWGUI JsonSkin : public WISkin
+	export class DLLWGUI ConfigSkin : public WISkin
 	{
 	public:
-		JsonSkin();
+		ConfigSkin();
 		void Initialize(types::WIBase &el) final;
 		void Release(types::WIBase &el) override;
 		std::optional<Style> ComputeStyle(types::WIBase &el) const;

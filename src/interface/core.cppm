@@ -132,7 +132,7 @@ export namespace pragma::gui {
 #endif
 	}
 
-	class JsonSkin;
+	class ConfigSkin;
 	using Element = types::WIBase;
 	constexpr size_t NUMBER_OF_CORE_UI_ELEMENT_TYPES = 26;
 	class DLLWGUI WGUI : public prosper::ContextObject {
@@ -253,8 +253,8 @@ export namespace pragma::gui {
 			return static_cast<TSkin *>(RegisterSkin(id, std::move(skin)));
 		}
 		WISkin *RegisterSkin(std::string id, std::unique_ptr<WISkin> &&skin);
-		JsonSkin *LoadSkin(std::string_view skinName);
-		void SetDefaultSkinFactory(const std::function<JsonSkin*()> &factory);
+		ConfigSkin *LoadSkin(std::string_view skinName);
+		void SetDefaultSkinFactory(const std::function<ConfigSkin*()> &factory);
 		void SetSkin(std::string skin);
 		std::string GetSkinName();
 		WISkin *GetSkin();
@@ -309,7 +309,7 @@ export namespace pragma::gui {
 		std::unique_ptr<TypeFactory> m_typeFactory;
 		std::atomic<bool> m_lockedForDrawing = false;
 		WISkin *m_skin = nullptr;
-		std::function<JsonSkin*()> m_defaultSkinFactory = nullptr;
+		std::function<ConfigSkin*()> m_defaultSkinFactory = nullptr;
 		bool m_bGUIUpdateRequired = false;
 		std::unordered_map<std::string, std::unique_ptr<WISkin>> m_skins = {};
 		std::weak_ptr<material::MaterialManager> m_matManager = {};

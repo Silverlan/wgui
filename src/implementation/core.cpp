@@ -4,7 +4,7 @@
 module pragma.gui;
 
 import :core;
-import :json_skin;
+import :config_skin;
 import pragma.string.unicode;
 
 #undef DrawState
@@ -800,7 +800,7 @@ pragma::gui::WISkin *pragma::gui::WGUI::RegisterSkin(std::string id, std::unique
 	return pSkin;
 }
 
-pragma::gui::JsonSkin *pragma::gui::WGUI::LoadSkin(std::string_view skinName)
+pragma::gui::ConfigSkin *pragma::gui::WGUI::LoadSkin(std::string_view skinName)
 {
 	auto filePath = util::DirPath("scripts/ui/skins/") / std::string{skinName};
 	auto candidate = filePath.GetString() +".udm_b";
@@ -836,7 +836,7 @@ pragma::gui::JsonSkin *pragma::gui::WGUI::LoadSkin(std::string_view skinName)
 	return skin;
 }
 
-void pragma::gui::WGUI::SetDefaultSkinFactory(const std::function<JsonSkin*()> &factory) { m_defaultSkinFactory = factory; }
+void pragma::gui::WGUI::SetDefaultSkinFactory(const std::function<ConfigSkin*()> &factory) { m_defaultSkinFactory = factory; }
 
 void pragma::gui::WGUI::SetSkin(std::string skin)
 {
