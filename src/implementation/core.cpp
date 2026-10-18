@@ -802,9 +802,13 @@ pragma::gui::WISkin *pragma::gui::WGUI::RegisterSkin(std::string id, std::unique
 
 pragma::gui::JsonSkin *pragma::gui::WGUI::LoadSkin(std::string_view skinName)
 {
-	auto filePath = util::DirPath("scripts/ui/skins/") / (std::string{skinName} +".jsonc");
+	auto filePath = util::DirPath("scripts/ui/skins/") / std::string{skinName};
+	auto candidate = filePath.GetString() +".udm_b";
+	if (!fs::exists(candidate))
+		candidate = filePath.GetString() +".udm";
+	filePath = candidate;
 	auto &fileName = filePath.GetString();
-	auto f = fs::open_file(fileName, fs::FileMode::Read);
+	auto f = fs::open_file(fileName, fs::FileMode::Read | fs::FileMode::Binary);
 	if (!f)
 	{
 		Log(std::format("Failed to load json skin '{}': File not found!", fileName), util::LogSeverity::Error);
@@ -822,8 +826,8 @@ pragma::gui::JsonSkin *pragma::gui::WGUI::LoadSkin(std::string_view skinName)
 		return nullptr;
 	}
 	auto pskin = std::unique_ptr<WISkin>{skin};
-	fs::File fptr {f};
-	if (auto result = skin->Load(fptr); !result)
+	auto fptr = std::make_unique<fs::File>(f);
+	if (auto result = skin->LoadUdm(std::move(fptr)); !result)
 	{
 		Log(std::format("Failed to load json skin '{}': {}", fileName, result.error()), util::LogSeverity::Error);
 		return nullptr;

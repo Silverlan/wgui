@@ -65,7 +65,7 @@ namespace pragma::gui {
 		JsonData property = nullptr;
 		void LogInvalid() const;
 		std::optional<StyleProperty> FindProperty(std::string_view name) const;
-		void ToUdmData(udm::LinkedPropertyWrapper &udmData) const;
+		void ToUdmData(const udm::PropertyWrapper &udmData) const;
 		std::string DumpToString() const;
 
 		template<typename T> requires(is_valid_json_udm_type<T>)
@@ -114,7 +114,7 @@ namespace pragma::gui {
 		Style &operator=(const Style &other);
 		Style &operator=(Style &&other);
 
-		void ToUdmData(udm::LinkedPropertyWrapper &udmData) const;
+		void ToUdmData(udm::PropertyWrapper &udmData) const;
 		std::optional<StyleProperty> FindProperty(std::string_view name) const;
 		string::OrderedStringMap<StyleProperty> GetProperties() const;
 		template<typename T> requires(is_valid_json_udm_type<T>)
@@ -165,15 +165,20 @@ namespace pragma::gui {
 		void Release(types::WIBase &el) override;
 		std::optional<Style> ComputeStyle(types::WIBase &el) const;
 		udm::Element *GetCacheData(types::WIBase &el, bool init = true) const;
-		std::expected<void, std::string> Load(ufile::IFile &f);
+		std::expected<void, std::string> LoadJson(ufile::IFile &f);
+		std::expected<void, std::string> LoadUdm(std::unique_ptr<ufile::IFile> &&f);
 
+		const udm::Property *GetUdmData() const { return m_udmData.get(); }
+		std::shared_ptr<udm::Property> ClaimUdmData() const { return m_udmData; }
 		JsonSkinBase *GetBaseJsonSkin() { return m_baseJsonSkin.get(); }
 	protected:
 		void ResolveConstant(std::string &value);
 		virtual void ApplyStyle(types::WIBase &el, Style &style) const;
-		virtual void Load(StyleProperty &styleProp);
+		void Load(StyleProperty &styleProp);
+		virtual void Initialize(StyleProperty &rootStyle, const udm::PropertyWrapper &data);
 		virtual void Initialize(types::WIBase &el, Style &style);
 	private:
 		std::shared_ptr<JsonSkinBase> m_baseJsonSkin;
+		udm::PProperty m_udmData;
 	};
 }

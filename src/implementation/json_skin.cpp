@@ -225,8 +225,8 @@ void pragma::gui::JsonSkinClass::MergeFrom(const JsonSkinClass &baseClass)
 	}
 }
 
-static void to_udm_object(const glz::generic_u64 &j, udm::LinkedPropertyWrapper e);
-static void to_udm_data(std::string_view key, const glz::generic_u64 &j, udm::LinkedPropertyWrapper e)
+static void to_udm_object(const glz::generic_u64 &j, udm::PropertyWrapper e);
+static void to_udm_data(std::string_view key, const glz::generic_u64 &j, udm::PropertyWrapper e)
 {
 	if (j.is_array())
 	{
@@ -265,14 +265,14 @@ static void to_udm_data(std::string_view key, const glz::generic_u64 &j, udm::Li
 	});
 }
 
-void to_udm_object(const glz::generic_u64 &j, udm::LinkedPropertyWrapper e)
+void to_udm_object(const glz::generic_u64 &j, udm::PropertyWrapper e)
 {
 	auto &o = j.get_object();
 	for (auto &[key, val] : o)
 		to_udm_data(key, val, e);
 }
 
-void pragma::gui::Style::ToUdmData(udm::LinkedPropertyWrapper &udmData) const
+void pragma::gui::Style::ToUdmData(udm::PropertyWrapper &udmData) const
 {
 	for (auto &[name, prop] : propertyMap->properties)
 		to_udm_data(name, prop, udmData["properties"]);
@@ -307,7 +307,8 @@ void pragma::gui::JsonSkin::Release(types::WIBase &el)
 void pragma::gui::JsonSkin::Initialize(types::WIBase &el, Style &style) { ApplyStyle(el, style); }
 std::optional<pragma::gui::Style> pragma::gui::JsonSkin::ComputeStyle(types::WIBase &el) const { return m_baseJsonSkin->ComputeStyle(el); }
 udm::Element *pragma::gui::JsonSkin::GetCacheData(types::WIBase &el, bool init) const { return m_baseJsonSkin->GetCacheData(el, init); }
-std::expected<void, std::string> pragma::gui::JsonSkin::Load(ufile::IFile &f)
+void pragma::gui::JsonSkin::Initialize(StyleProperty &rootStyle, const udm::PropertyWrapper &data) {}
+std::expected<void, std::string> pragma::gui::JsonSkin::LoadJson(ufile::IFile &f)
 {
 	glz::generic_u64 json {};
 	auto buffer = f.ReadString();
@@ -317,6 +318,93 @@ std::expected<void, std::string> pragma::gui::JsonSkin::Load(ufile::IFile &f)
 		return std::unexpected {glz::format_error(ec, buffer)};
 	StyleProperty styleProp {{}, &json};
 	Load(styleProp);
+	auto prop = udm::Property::Create<udm::Element>();
+	styleProp.ToUdmData(udm::PropertyWrapper{*prop});
+	m_udmData = prop;
+	Initialize(styleProp, udm::PropertyWrapper{*m_udmData});
+	return {};
+}
+static void to_json_object(const udm::PropertyWrapper &prop, glz::generic_u64 &j);
+
+template<typename T>
+concept is_json_compatible_udm_type = (udm::is_numeric_type(udm::type_to_enum<T>()) || std::is_same_v<T, udm::String> || std::is_same_v<T, udm::Nil>) && !std::is_same_v<T, udm::Half>;
+static void to_json_data(std::string_view key, const udm::PropertyWrapper &e, glz::generic_u64 &j)
+{
+	auto sub = e[key];
+	auto type = sub.GetType();
+	if (udm::is_array_type(type))
+	{
+		auto &a = sub.GetValue<udm::Array>();
+		auto n = a.GetSize();
+		if (n == 0)
+			return;
+		auto &arr_j = j.get_object()[key];
+		arr_j = glz::generic_u64::array_t{};
+		auto& arr = arr_j.get<glz::generic_u64::array_t>();
+		arr.reserve(n);
+		udm::visit(a.GetValueType(), [n, &a, &arr](auto tag)
+		{
+			using T = decltype(tag)::type;
+			if constexpr(is_json_compatible_udm_type<T>)
+			{
+				if constexpr(std::is_same_v<T, udm::Nil>) {
+					for (size_t i = 0; i < n; ++i)
+						arr.emplace_back(nullptr);
+				}
+				else {
+					for (size_t i = 0; i < n; ++i)
+						arr.emplace_back(a.GetValue<T>(i));
+				}
+			}
+		});
+		return;
+	}
+	else if (type == udm::Type::Element)
+	{
+		auto &sub_j = (j.get_object()[key] = glz::ordered_small_map<glz::generic_u64>{});
+		to_json_object(sub, sub_j);
+		return;
+	}
+	else if (type == udm::Type::Nil)
+	{
+		j.get_object()[key] = nullptr;
+		return;
+	}
+
+	udm::visit(type, [&j, &key, &sub](auto tag)
+	{
+		using T = decltype(tag)::type;
+		if constexpr(is_json_compatible_udm_type<T>)
+			j.get_object()[key] = sub.GetValue<T>();
+	});
+}
+
+void to_json_object(const udm::PropertyWrapper &e, glz::generic_u64 &j)
+{
+	udm::LinkedPropertyWrapper lp {e};
+	for (auto &[key, child] : lp.ElIt())
+		to_json_data(key, e, j);
+}
+std::expected<void, std::string> pragma::gui::JsonSkin::LoadUdm(std::unique_ptr<ufile::IFile> &&f)
+{
+	std::shared_ptr<udm::Data> data;
+	try {
+		data = udm::Data::Load(std::move(f));
+	}
+	catch(const udm::Exception &e) {
+		return std::unexpected {e.what()};
+	}
+
+	auto root = data->GetAssetData().GetData();
+	udm::PropertyWrapper prop {root};
+	glz::generic_u64 j = glz::ordered_small_map<glz::generic_u64>{};
+	to_json_data("root", prop, j);
+
+	StyleProperty styleProp {{}, &j["root"]};
+	Load(styleProp);
+	m_udmData = data->GetRootProperty();
+
+	Initialize(styleProp, udm::PropertyWrapper{*m_udmData}["assetData"]["root"]);
 	return {};
 }
 void pragma::gui::JsonSkin::Load(StyleProperty &styleProp)
@@ -766,7 +854,7 @@ std::optional<pragma::gui::StyleProperty> pragma::gui::StyleProperty::FindProper
 	return StyleProperty {name, &it->second};
 }
 
-void pragma::gui::StyleProperty::ToUdmData(udm::LinkedPropertyWrapper &udmData) const { to_udm_object(*static_cast<const glz::generic_u64*>(property), udmData); }
+void pragma::gui::StyleProperty::ToUdmData(const udm::PropertyWrapper &udmData) const { to_udm_object(*static_cast<const glz::generic_u64*>(property), udmData); }
 
 std::string pragma::gui::StyleProperty::DumpToString() const
 {
