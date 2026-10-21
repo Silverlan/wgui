@@ -103,11 +103,12 @@ export namespace pragma::gui::types {
 
 	class DLLWGUI FlexBox : public BaseBox {
 	  public:
-		explicit FlexBox(FlexDirection direction);
+		FlexBox();
 		bool IsHorizontalBox() const override;
 		bool IsVerticalBox() const override;
 		bool HasAlignedAnchor(WIBase *el, FlexDirection flexDirection) const override;
 		bool HasAlignedAnchor(WIBase *el) const override;
+		void SetFlexDirection(FlexDirection direction);
 		FlexDirection GetFlexDirection() const;
 		FlexDirection GetFlexCrossDirection() const;
 		void ApplyStyle(Style &style) override;
@@ -119,7 +120,7 @@ export namespace pragma::gui::types {
 		[[nodiscard]] FlexJustify GetJustifyContent() const { return m_justifyContent; }
 	  protected:
 		void DoUpdate() override;
-		FlexDirection m_direction;
+		FlexDirection m_direction = FlexDirection::Horizontal;
 		FlexAlign m_alignItems = FlexAlign::Stretch;
 		FlexJustify m_justifyContent = FlexJustify::Start;
 	};

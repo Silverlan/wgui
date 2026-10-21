@@ -119,6 +119,7 @@ export namespace pragma::gui {
 			virtual ~WIBase();
 			WIBase(const WIBase &) = delete;
 			WIBase &operator=(const WIBase &) = delete;
+			WGUI &GetSystem() const;
 			virtual std::ostream &Print(std::ostream &stream) const;
 
 			template<class TElement>

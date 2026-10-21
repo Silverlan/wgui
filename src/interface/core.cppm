@@ -35,6 +35,7 @@ namespace pragma::gui {
 export namespace pragma::gui {
 	namespace types {
 		class WIRoot;
+		class FlexBox;
 	}
 	namespace shaders {
 		class Shader;
@@ -134,7 +135,7 @@ export namespace pragma::gui {
 
 	class ConfigSkin;
 	using Element = types::WIBase;
-	constexpr size_t NUMBER_OF_CORE_UI_ELEMENT_TYPES = 26;
+	constexpr size_t NUMBER_OF_CORE_UI_ELEMENT_TYPES = 25;
 	class DLLWGUI WGUI : public prosper::ContextObject {
 	  public:
 		friend Element;
@@ -179,6 +180,8 @@ export namespace pragma::gui {
 			Setup<TElement>(*el, parent);
 			return el;
 		}
+		types::FlexBox *CreateVBox(Element *parent = nullptr);
+		types::FlexBox *CreateHBox(Element *parent = nullptr);
 		template<class TElement>
 		void Setup(Element &el, Element *parent = nullptr)
 		{

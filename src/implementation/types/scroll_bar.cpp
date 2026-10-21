@@ -191,7 +191,7 @@ void pragma::gui::types::WIScrollBar::Initialize()
 	SetVisible(false);
 	AddStyleClass("scrollbar");
 
-	auto container = CreateChild<VBox>(); // TODO: HBox if horizontal slider
+	auto container = WGUI::GetInstance().CreateVBox(this); // TODO: HBox if horizontal slider
 	container->AddStyleClass("scrollbar_test_container");
 
 	m_buttonUp = container->CreateChild<WIButton>();

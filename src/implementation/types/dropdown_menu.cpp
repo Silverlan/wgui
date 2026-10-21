@@ -62,7 +62,7 @@ void pragma::gui::types::WIDropDownMenu::Initialize()
 	//WIText *pText = m_hText.get<WIText>();
 	//pText->SetX(static_cast<int>(MARGIN));
 
-	auto *pList = WGUI::GetInstance().Create<VBox>();
+	auto *pList = WGUI::GetInstance().CreateVBox();
 	m_hList = pList->GetHandle();
 	pList->AddStyleClass("dropdown-menu__list");
 	pList->SetVisible(false);

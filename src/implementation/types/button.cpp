@@ -17,7 +17,7 @@ void pragma::gui::types::WIButton::Initialize()
 {
 	WIBase::Initialize();
 	SetAutoSizeToContents(true);
-	auto contents = CreateChild<HBox>();
+	auto contents = WGUI::GetInstance().CreateHBox(this);
 	contents->AddStyleClass("button");
 	m_text = contents->CreateChild<WIText>();
 }

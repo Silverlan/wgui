@@ -111,9 +111,8 @@ void pragma::gui::WGUI::RegisterTypes()
 	RegisterType<WINumericEntry>("WINumericEntry");
 	RegisterType<WIText>("WIText");
 	RegisterType<WITooltip>("WITooltip");
-	RegisterType<HBox>("HBox");
-	RegisterType<VBox>("VBox");
-	static_assert(NUMBER_OF_CORE_UI_ELEMENT_TYPES == 26, "Update this variable when types are added or removed.");
+	RegisterType<FlexBox>("FlexBox");
+	static_assert(NUMBER_OF_CORE_UI_ELEMENT_TYPES == 25, "Update this variable when types are added or removed.");
 }
 
 void pragma::gui::WGUI::RegisterElement(types::WIBase &el, const std::string &className, types::WIBase *parent)
@@ -248,6 +247,23 @@ pragma::gui::WGUI::ResultCode pragma::gui::WGUI::Initialize(std::optional<Vector
 	if(resolution.has_value())
 		base->SetSize(*resolution);
 	return ResultCode::Ok;
+}
+
+pragma::gui::types::FlexBox *pragma::gui::WGUI::CreateVBox(Element *parent)
+{
+	auto *flexBox = Create<types::FlexBox>(parent);
+	if(!flexBox)
+		return nullptr;
+	flexBox->SetFlexDirection(types::FlexDirection::Vertical);
+	return flexBox;
+}
+pragma::gui::types::FlexBox *pragma::gui::WGUI::CreateHBox(Element *parent)
+{
+	auto *flexBox = Create<types::FlexBox>(parent);
+	if(!flexBox)
+		return nullptr;
+	flexBox->SetFlexDirection(types::FlexDirection::Horizontal);
+	return flexBox;
 }
 
 prosper::IRenderPass &pragma::gui::WGUI::GetMsaaRenderPass() const { return *m_msaaRenderPass; }

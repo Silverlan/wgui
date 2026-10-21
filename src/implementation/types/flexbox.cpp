@@ -221,7 +221,15 @@ float pragma::gui::types::BaseBox::GetChildFlex(const WIBase &el) const
 	return 0.0f;
 }
 
-pragma::gui::types::FlexBox::FlexBox(FlexDirection direction) : m_direction(direction) { RegisterCallback<void>("OnContentsUpdated"); }
+pragma::gui::types::FlexBox::FlexBox() { RegisterCallback<void>("OnContentsUpdated"); }
+
+void pragma::gui::types::FlexBox::SetFlexDirection(FlexDirection direction)
+{
+	m_direction = direction;
+	ScheduleUpdate();
+	SetSizeUpdateRequired(true);
+	ScheduleUpdate();
+}
 
 bool pragma::gui::types::FlexBox::IsHorizontalBox() const { return m_direction == FlexDirection::Horizontal; }
 bool pragma::gui::types::FlexBox::IsVerticalBox() const { return m_direction == FlexDirection::Vertical; }

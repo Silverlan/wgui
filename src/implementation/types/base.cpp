@@ -60,6 +60,7 @@ pragma::gui::types::WIBase::~WIBase()
 	}
 	m_fade = nullptr;
 }
+pragma::gui::WGUI &pragma::gui::types::WIBase::GetSystem() const { return WGUI::GetInstance(); }
 void pragma::gui::types::WIBase::UpdateParentAlignment()
 {
 	if(m_horizontalAlignment == Alignment::None && m_verticalAlignment == Alignment::None)
