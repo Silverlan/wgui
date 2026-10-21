@@ -1369,7 +1369,7 @@ void pragma::gui::ConfigSkin::ApplyStyle(types::WIBase &el, Style &style) const
 	if (auto minHeight = style.GetPropertyValue<udm::Int32>("minHeight"); minHeight)
 		el.SetMinHeight(*minHeight);
 	if (auto maxHeight = style.GetPropertyValue<udm::Int32>("maxHeight"); maxHeight)
-		el.SetMinHeight(*maxHeight);
+		el.SetMaxHeight(*maxHeight);
 
 	apply_dimensions(el, style);
 
