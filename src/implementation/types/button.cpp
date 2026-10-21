@@ -62,4 +62,8 @@ void pragma::gui::types::WIButton::ApplyStyle(Style &style)
 {
 	if (auto text = style.GetPropertyValue<udm::String>("text"); text)
 		SetText(*text);
+	if (auto width = style.GetPropertyValue<udm::String>("width"); width)
+		SetAutoSizeToContents(false, ShouldAutoSizeToContentsY());
+	if (auto height = style.GetPropertyValue<udm::String>("height"); height)
+		SetAutoSizeToContents(ShouldAutoSizeToContentsX(), false);
 }
