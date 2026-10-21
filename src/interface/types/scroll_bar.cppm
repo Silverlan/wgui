@@ -70,6 +70,7 @@ export namespace pragma::gui::types {
 		WIHandle m_buttonUp;
 		WIHandle m_buttonDown;
 		WIHandle m_slider;
+		WIHandle m_sliderContainer;
 		int GetSliderWidth();
 		int GetSliderHeight();
 		int GetSliderX();
