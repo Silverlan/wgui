@@ -198,8 +198,16 @@ pragma::gui::types::BoxOffsets pragma::gui::types::BaseBox::GetChildMargin(const
 	return BoxOffsets {0, 0, 0, 0};
 }
 
-void pragma::gui::types::BaseBox::SetChildFlex(const WIBase &el, float flex)
+void pragma::gui::types::BaseBox::SetChildFlex(WIBase &el, float flex)
 {
+	auto *childFlexBox = dynamic_cast<BaseBox*>(&el);
+	if (childFlexBox) {
+		// If the child is also a flex-box, we need to flag them as fixed
+		if(IsHorizontalBox())
+			childFlexBox->SetFixedWidth(true);
+		if(IsVerticalBox())
+			childFlexBox->SetFixedHeight(true);
+	}
 	m_childLayout[&el].flex = flex;
 	SetSizeUpdateRequired(true);
 	ScheduleUpdate();
@@ -375,8 +383,20 @@ void pragma::gui::types::FlexBox::DoUpdate()
 	auto isFixedMain = isHoriz ? GetFixedWidth() : GetFixedHeight();
 	auto isFixedCross = isHoriz ? GetFixedHeight() : GetFixedWidth();
 
+	auto minSize = isHoriz ? GetMinWidth() : GetMinHeight();
+	auto minCrossSize = isHoriz ? GetMinHeight() : GetMinWidth();
+	auto maxSize = isHoriz ? GetMaxWidth() : GetMaxHeight();
+	auto maxCrossSize = isHoriz ? GetMaxHeight() : GetMaxWidth();
+	if(!maxSize)
+		maxSize = std::numeric_limits<int32_t>::max();
+	if(!maxCrossSize)
+		maxCrossSize = std::numeric_limits<int32_t>::max();
+
+	totalRigidMainSize = math::clamp(totalRigidMainSize, minSize, *maxSize);
 	int32_t targetMainSize = isFixedMain ? (isHoriz ? size.x : size.y) : totalRigidMainSize;
 	int32_t targetCrossSize = isFixedCross ? (isHoriz ? size.y : size.x) : (crossMax + crossPaddingStart + crossPaddingEnd);
+	targetMainSize = math::clamp(targetMainSize, minSize, *maxSize);
+	targetCrossSize = math::clamp(targetCrossSize, minCrossSize, *maxCrossSize);
 
 	int32_t remainingMainSpace = std::max(0, targetMainSize - totalRigidMainSize);
 	int32_t currentMainPos = mainPaddingStart;

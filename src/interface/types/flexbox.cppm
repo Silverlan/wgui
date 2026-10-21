@@ -45,7 +45,7 @@ export namespace pragma::gui::types {
 		void SetChildMargin(const WIBase &el, int32_t left, int32_t top, int32_t right, int32_t bottom);
 		BoxOffsets GetChildMargin(const WIBase &el) const;
 
-		void SetChildFlex(const WIBase &el, float flex);
+		void SetChildFlex(WIBase &el, float flex);
 		float GetChildFlex(const WIBase &el) const;
 
 		void SetFixedWidth(bool fixed);
