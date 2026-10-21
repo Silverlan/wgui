@@ -1140,6 +1140,8 @@ static void apply_anchor_align(pragma::gui::types::WIBase &el, const pragma::gui
 
 static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::Style &style)
 {
+	if(!style.FindProperty("background") && !style.FindProperty("backgroundColor"))
+		return; // Early exit
 	struct BackgroundInfo
 	{
 		std::optional<Color> color {};
@@ -1147,10 +1149,11 @@ static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::
 		std::optional<Color> borderColor {};
 		std::optional<std::array<udm::Int32, 4>> cornerRadii {};
 		std::optional<pragma::gui::StyleProperty> gradient {};
+		std::optional<std::string> nineSliceMaterial {};
 
 		operator bool() const
 		{
-			return color || borderThickness || borderColor || cornerRadii || gradient;
+			return color || borderThickness || borderColor || cornerRadii || gradient || nineSliceMaterial;
 		}
 	};
 	BackgroundInfo bgInfo {};
@@ -1178,13 +1181,18 @@ static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::
 		if (auto colorProp = background->FindProperty("color"); colorProp)
 			bgInfo.color = colorProp->GetColor();
 		bgInfo.gradient = background->FindProperty("gradient");
+		bgInfo.nineSliceMaterial = background->GetValue<udm::String>("nineSliceMaterial");
 	}
 
 	auto *bg = el.GetFirstChildByName("skin_background");
 	if (bgInfo)
 	{
-		auto simpleBackground = !bgInfo.borderThickness && !bgInfo.cornerRadii && !bgInfo.gradient;
-		std::string_view bgClass = simpleBackground ? "wirect" : "styled_rect";
+		std::string_view bgClass;
+		auto simpleBackground = bgInfo.nineSliceMaterial || (!bgInfo.borderThickness && !bgInfo.cornerRadii && !bgInfo.gradient);
+		if(bgInfo.nineSliceMaterial)
+			bgClass = "wi9slicerect";
+		else
+			bgClass = simpleBackground ? "wirect" : "styled_rect";
 		if (bg && pragma::string::compare(std::string_view{bg->GetClass()}, bgClass, false))
 		{
 			bg->Remove();
@@ -1208,6 +1216,9 @@ static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::
 			bg->SetVisible(true);
 			if (bgInfo.color)
 				bg->SetColor(*bgInfo.color);
+
+			if (auto *bgNineSlice = dynamic_cast<pragma::gui::types::WI9SliceRect*>(bg); bgInfo.nineSliceMaterial && bgNineSlice)
+				bgNineSlice->SetMaterial(*bgInfo.nineSliceMaterial);
 
 			if (auto *bgStyled = dynamic_cast<pragma::gui::types::StyledRect*>(bg); !simpleBackground && bgStyled)
 			{

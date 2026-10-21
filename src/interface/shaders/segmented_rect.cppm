@@ -87,7 +87,7 @@ export namespace pragma::gui::types {
 	{
 		TBase::Initialize();
 
-		TBase::SetSize(512, 512);
+		TBase::SetSize(5, 5);
 	}
 
 	template<typename TBase>
