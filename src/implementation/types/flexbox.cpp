@@ -221,11 +221,27 @@ float pragma::gui::types::BaseBox::GetChildFlex(const WIBase &el) const
 	return 0.0f;
 }
 
-pragma::gui::types::FlexBox::FlexBox() { RegisterCallback<void>("OnContentsUpdated"); }
+pragma::gui::types::FlexBox::FlexBox()
+{
+	RegisterCallback<void>("OnContentsUpdated");
+	AddStyleClass("hbox");
+}
 
 void pragma::gui::types::FlexBox::SetFlexDirection(FlexDirection direction)
 {
+	if(direction == m_direction)
+		return;
 	m_direction = direction;
+	switch (direction) {
+	case FlexDirection::Horizontal:
+		RemoveStyleClass("vbox");
+		AddStyleClass("hbox");
+		break;
+	case FlexDirection::Vertical:
+		RemoveStyleClass("hbox");
+		AddStyleClass("vbox");
+		break;
+	}
 	ScheduleUpdate();
 	SetSizeUpdateRequired(true);
 	ScheduleUpdate();
