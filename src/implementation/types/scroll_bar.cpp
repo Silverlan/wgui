@@ -15,14 +15,9 @@ pragma::gui::types::WIScrollBar::WIScrollBar() : WIBase(), m_bHorizontal(false),
 }
 
 pragma::gui::types::WIScrollBar::~WIScrollBar() {}
-unsigned int pragma::gui::types::WIScrollBar::GetScrollAmount() { return m_scrollAmount; }
-void pragma::gui::types::WIScrollBar::SetScrollAmount(unsigned int am)
-{
-	if(am > m_numListed)
-		am = m_numListed;
-	m_scrollAmount = am;
-}
-unsigned int pragma::gui::types::WIScrollBar::GetScrollOffset() { return m_offset; }
+unsigned int pragma::gui::types::WIScrollBar::GetScrollAmount() const { return math::min(m_scrollAmount, m_numListed); }
+void pragma::gui::types::WIScrollBar::SetScrollAmount(unsigned int am) { m_scrollAmount = am; }
+unsigned int pragma::gui::types::WIScrollBar::GetScrollOffset() const { return m_offset; }
 void pragma::gui::types::WIScrollBar::SetScrollOffset(unsigned int offset)
 {
 	int diff = int(m_numElements) - int(m_numListed);
@@ -90,7 +85,7 @@ void pragma::gui::types::WIScrollBar::AddScrollOffset(int scroll)
 
 uint32_t pragma::gui::types::WIScrollBar::GetElementCount() const { return m_numElements; }
 uint32_t pragma::gui::types::WIScrollBar::GetScrollElementCount() const { return m_numListed; }
-uint32_t pragma::gui::types::WIScrollBar::GetBottomScrollOffset() { return math::min(GetScrollOffset() + GetScrollElementCount(), GetElementCount()); }
+uint32_t pragma::gui::types::WIScrollBar::GetBottomScrollOffset() const { return math::min(GetScrollOffset() + GetScrollElementCount(), GetElementCount()); }
 
 void pragma::gui::types::WIScrollBar::SetUp(unsigned int numElementsListed, unsigned int numElementsTotal)
 {
@@ -106,42 +101,6 @@ void pragma::gui::types::WIScrollBar::SetUp(unsigned int numElementsListed, unsi
 		SetVisible(true);
 }
 
-void pragma::gui::types::WIScrollBar::OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource)
-{
-	auto w = GetWidth();
-	auto h = GetHeight();
-	/*if(m_buttonUp.IsValid()) {
-		WIButton *button = static_cast<WIButton *>(m_buttonUp.get());
-		if(m_bHorizontal)
-			button->SetSize(h, h);
-		else
-			button->SetSize(w, w);
-	}
-	if(m_buttonDown.IsValid()) {
-		WIButton *button = static_cast<WIButton *>(m_buttonDown.get());
-		if(m_bHorizontal)
-			button->SetSize(h, h);
-		else
-			button->SetSize(w, w);
-		if(m_bHorizontal)
-			button->SetPos(w - h, 0);
-		else
-			button->SetPos(0, h - w);
-	}
-	if(m_slider.IsValid()) {
-		WIScrollBarSlider *slider = static_cast<WIScrollBarSlider *>(m_slider.get());
-		if(m_bHorizontal) {
-			slider->SetHeight(h);
-			slider->SetLimits(h, w - h);
-		}
-		else {
-			slider->SetWidth(w);
-			slider->SetLimits(w, h - w);
-		}
-	}*/
-	//UpdateSliderSize();
-	//UpdateSliderOffset();
-}
 void pragma::gui::types::WIScrollBar::UpdateSliderOffset()
 {
 	if(m_slider.IsValid()) {
@@ -158,32 +117,80 @@ void pragma::gui::types::WIScrollBar::UpdateSliderSize()
 		int h = (m_numElements > 0u) ? static_cast<int>(static_cast<float>(GetSliderHeight()) * (static_cast<float>(m_numListed) / static_cast<float>(m_numElements))) : 0;
 		if(h == 0)
 			h = 1;
-		auto minH = math::min(slider->GetParent()->GetHeight(), 20);
-		h = math::max(h, minH);
 		slider->SetSliderSize(GetSliderWidth(), h);
 		slider->SetSliderPos(0, GetSliderWidth());
 	}
 }
-int pragma::gui::types::WIScrollBar::GetSliderWidth() { return (m_bHorizontal == true) ? m_sliderContainer->GetHeight() : m_sliderContainer->GetWidth(); }
-int pragma::gui::types::WIScrollBar::GetSliderHeight() { return (m_bHorizontal == true) ? m_sliderContainer->GetWidth() : m_sliderContainer->GetHeight(); }
-int pragma::gui::types::WIScrollBar::GetSliderX() { return (m_bHorizontal == true) ? m_sliderContainer->GetY() : m_sliderContainer->GetX(); }
-int pragma::gui::types::WIScrollBar::GetSliderY() { return (m_bHorizontal == true) ? m_sliderContainer->GetX() : m_sliderContainer->GetY(); }
-void pragma::gui::types::WIScrollBar::SetSliderWidth(int w) { return (m_bHorizontal == true) ? m_sliderContainer->SetHeight(w) : m_sliderContainer->SetWidth(w); }
-void pragma::gui::types::WIScrollBar::SetSliderHeight(int h) { return (m_bHorizontal == true) ? m_sliderContainer->SetWidth(h) : m_sliderContainer->SetHeight(h); }
-void pragma::gui::types::WIScrollBar::SetSliderX(int x) { return (m_bHorizontal == true) ? m_sliderContainer->SetY(x) : m_sliderContainer->SetX(x); }
-void pragma::gui::types::WIScrollBar::SetSliderY(int y) { return (m_bHorizontal == true) ? m_sliderContainer->SetX(y) : m_sliderContainer->SetY(y); }
-void pragma::gui::types::WIScrollBar::SetSliderPos(int x, int y) { (m_bHorizontal == true) ? m_sliderContainer->SetPos(y, x) : m_sliderContainer->SetPos(x, y); }
-void pragma::gui::types::WIScrollBar::SetSliderSize(int w, int h) { (m_bHorizontal == true) ? m_sliderContainer->SetSize(h, w) : m_sliderContainer->SetSize(w, h); }
+int pragma::gui::types::WIScrollBar::GetSliderWidth() const
+{
+	if(!m_sliderContainer.IsValid())
+		return 0;
+	return (m_bHorizontal == true) ? m_sliderContainer->GetHeight() : m_sliderContainer->GetWidth();
+}
+int pragma::gui::types::WIScrollBar::GetSliderHeight() const
+{
+	if(!m_sliderContainer.IsValid())
+		return 0;
+	return (m_bHorizontal == true) ? m_sliderContainer->GetWidth() : m_sliderContainer->GetHeight();
+}
+int pragma::gui::types::WIScrollBar::GetSliderX() const
+{
+	if(!m_sliderContainer.IsValid())
+		return 0;
+	return (m_bHorizontal == true) ? m_sliderContainer->GetY() : m_sliderContainer->GetX();
+}
+int pragma::gui::types::WIScrollBar::GetSliderY() const
+{
+	if(!m_sliderContainer.IsValid())
+		return 0;
+	return (m_bHorizontal == true) ? m_sliderContainer->GetX() : m_sliderContainer->GetY();
+}
+void pragma::gui::types::WIScrollBar::SetSliderWidth(int w)
+{
+	if(!m_sliderContainer.IsValid())
+		return;
+	return (m_bHorizontal == true) ? m_sliderContainer->SetHeight(w) : m_sliderContainer->SetWidth(w);
+}
+void pragma::gui::types::WIScrollBar::SetSliderHeight(int h)
+{
+	if(!m_sliderContainer.IsValid())
+		return;
+	return (m_bHorizontal == true) ? m_sliderContainer->SetWidth(h) : m_sliderContainer->SetHeight(h);
+}
+void pragma::gui::types::WIScrollBar::SetSliderX(int x)
+{
+	if(!m_sliderContainer.IsValid())
+		return;
+	return (m_bHorizontal == true) ? m_sliderContainer->SetY(x) : m_sliderContainer->SetX(x);
+}
+void pragma::gui::types::WIScrollBar::SetSliderY(int y)
+{
+	if(!m_sliderContainer.IsValid())
+		return;
+	return (m_bHorizontal == true) ? m_sliderContainer->SetX(y) : m_sliderContainer->SetY(y);
+}
+void pragma::gui::types::WIScrollBar::SetSliderPos(int x, int y)
+{
+	if(!m_sliderContainer.IsValid())
+		return;
+	(m_bHorizontal == true) ? m_sliderContainer->SetPos(y, x) : m_sliderContainer->SetPos(x, y);
+}
+void pragma::gui::types::WIScrollBar::SetSliderSize(int w, int h)
+{
+	if(!m_sliderContainer.IsValid())
+		return;
+	(m_bHorizontal == true) ? m_sliderContainer->SetSize(h, w) : m_sliderContainer->SetSize(w, h);
+}
 void pragma::gui::types::WIScrollBar::SetHorizontal(bool b)
 {
 	m_bHorizontal = b;
-	if(m_slider.IsValid()) {
-		WIScrollBarSlider *slider = static_cast<WIScrollBarSlider *>(m_slider.get());
+	if(auto *flexBox = static_cast<FlexBox*>(m_flexBox.get()); flexBox)
+		flexBox->SetFlexDirection(b ? FlexDirection::Horizontal : FlexDirection::Vertical);
+	if(auto *slider = static_cast<WIScrollBarSlider *>(m_slider.get()); slider)
 		slider->SetHorizontal(b);
-	}
 }
-bool pragma::gui::types::WIScrollBar::IsHorizontal() { return m_bHorizontal; }
-bool pragma::gui::types::WIScrollBar::IsVertical() { return !m_bHorizontal; }
+bool pragma::gui::types::WIScrollBar::IsHorizontal() const { return m_bHorizontal; }
+bool pragma::gui::types::WIScrollBar::IsVertical() const { return !m_bHorizontal; }
 
 void pragma::gui::types::WIScrollBar::Initialize()
 {
@@ -191,12 +198,14 @@ void pragma::gui::types::WIScrollBar::Initialize()
 	SetVisible(false);
 	AddStyleClass("scrollbar");
 
-	auto container = WGUI::GetInstance().CreateVBox(this); // TODO: HBox if horizontal slider
-	container->AddStyleClass("scrollbar_test_container");
+	auto container = WGUI::GetInstance().CreateVBox(this);
+	container->AddStyleClass("scrollbar__content-area");
+	m_flexBox = container->GetHandle();
 
-	m_buttonUp = container->CreateChild<WIButton>();
-	WIButton *buttonUp = static_cast<WIButton *>(m_buttonUp.get());
-	buttonUp->AddStyleClass("scrollbar--button-start");
+	auto hButtonUp = container->CreateChild<WIButton>();
+	WIButton *buttonUp = static_cast<WIButton *>(hButtonUp.get());
+	buttonUp->AddStyleClass("scrollbar__button");
+	buttonUp->AddStyleClass("scrollbar__button--start");
 	buttonUp->AddCallback("OnPressed",
 	  FunctionCallback<>::Create(std::bind(
 	    [](WIHandle hScrollBar) {
@@ -208,19 +217,19 @@ void pragma::gui::types::WIScrollBar::Initialize()
 	    this->GetHandle())));
 
 	m_sliderContainer = container->CreateChild<WIBase>();
-	m_sliderContainer->AddStyleClass("inner-bar-container-test");
+	m_sliderContainer->AddStyleClass("scrollbar__slider");
+	auto hThis = GetHandle();
+	m_sliderContainer->AddCallback("OnSizeChanged", FunctionCallback<void>::Create([this, hThis]() mutable {
+		if(!hThis.IsValid())
+			return;
+		UpdateSliderSize();
+		SetScrollOffset(m_offset);
+		UpdateSliderOffset();
+	}));
 
 	m_slider = m_sliderContainer->CreateChild<WIScrollBarSlider>();
 	WIScrollBarSlider *slider = static_cast<WIScrollBarSlider *>(m_slider.get());
-	slider->AddStyleClass("scrollbar--slider");
-	slider->SetColor(0.75f, 0.75f, 0.75f, 1.f);
-	slider->AddCallback("OnPressed",
-	  FunctionCallback<>::Create(std::bind(
-		[](WIHandle hScrollBar) {
-			if(!hScrollBar.IsValid())
-				return;
-		},
-		this->GetHandle())));
+	slider->AddStyleClass("scrollbar__slider-bar");
 	slider->AddCallback("OnDrag",
 	  FunctionCallback<>::Create(std::bind(
 		[](WIHandle hScrollBar) {
@@ -231,22 +240,23 @@ void pragma::gui::types::WIScrollBar::Initialize()
 				return;
 			WIScrollBarSlider *slider = static_cast<WIScrollBarSlider *>(sb->m_slider.get());
 			int y = slider->GetSliderY();
-			int hSlide = sb->GetSliderHeight() - sb->GetSliderWidth() * 2 - slider->GetSliderHeight();
-			float scale = (y - sb->GetSliderWidth()) / float(hSlide);
+			int hSlide = sb->GetSliderHeight() - slider->GetSliderHeight();
+			float scale = (hSlide != 0) ? (y / float(hSlide)) : 0.f;
 			sb->SetScrollOffset(static_cast<unsigned int>(std::roundf(scale * static_cast<float>(sb->m_numElements - sb->m_numListed))));
 			slider->SetSliderY(y);
 		},
 		this->GetHandle())));
 
-	m_buttonDown = container->CreateChild<WIButton>();
-	WIButton *buttonDown = static_cast<WIButton *>(m_buttonDown.get());
-	buttonDown->AddStyleClass("scrollbar--button-end");
+	auto hButtonDown = container->CreateChild<WIButton>();
+	WIButton *buttonDown = static_cast<WIButton *>(hButtonDown.get());
+	buttonDown->AddStyleClass("scrollbar__button");
+	buttonDown->AddStyleClass("scrollbar__button--end");
 	buttonDown->AddCallback("OnPressed",
 	  FunctionCallback<>::Create(std::bind(
 	    [](WIHandle hScrollBar) {
 		    if(!hScrollBar.IsValid())
 			    return;
-		    WIScrollBar *sb = static_cast<WIScrollBar *>(hScrollBar.get());
+		    auto *sb = static_cast<WIScrollBar *>(hScrollBar.get());
 		    sb->AddScrollOffset(1);
 	    },
 	    this->GetHandle())));
@@ -254,25 +264,18 @@ void pragma::gui::types::WIScrollBar::Initialize()
 
 ///////////////////////////////////////////
 
-pragma::gui::types::WIScrollBarSlider::WIScrollBarSlider() : WIBase(), m_moveOffset(0), m_moveOrigin(0), m_bMoving(false), m_min(0), m_max(0), m_bHorizontal(false) { RegisterCallback<void>("OnDrag"); }
+pragma::gui::types::WIScrollBarSlider::WIScrollBarSlider() : WIBase(), m_moveOffset(0), m_moveOrigin(0), m_bMoving(false), m_bHorizontal(false) { RegisterCallback<void>("OnDrag"); }
 
 void pragma::gui::types::WIScrollBarSlider::Initialize()
 {
 	WIBase::Initialize();
 	SetMouseInputEnabled(true);
-	AddStyleClass("scrollbar__slider");
 }
 
-void pragma::gui::types::WIScrollBarSlider::SetLimits(int min, int max)
-{
-	m_min = min;
-	m_max = max;
-}
-
-int pragma::gui::types::WIScrollBarSlider::GetSliderWidth() { return (m_bHorizontal == true) ? GetHeight() : GetWidth(); }
-int pragma::gui::types::WIScrollBarSlider::GetSliderHeight() { return (m_bHorizontal == true) ? GetWidth() : GetHeight(); }
-int pragma::gui::types::WIScrollBarSlider::GetSliderX() { return (m_bHorizontal == true) ? GetY() : GetX(); }
-int pragma::gui::types::WIScrollBarSlider::GetSliderY() { return (m_bHorizontal == true) ? GetX() : GetY(); }
+int pragma::gui::types::WIScrollBarSlider::GetSliderWidth() const { return (m_bHorizontal == true) ? GetHeight() : GetWidth(); }
+int pragma::gui::types::WIScrollBarSlider::GetSliderHeight() const { return (m_bHorizontal == true) ? GetWidth() : GetHeight(); }
+int pragma::gui::types::WIScrollBarSlider::GetSliderX() const { return (m_bHorizontal == true) ? GetY() : GetX(); }
+int pragma::gui::types::WIScrollBarSlider::GetSliderY() const { return (m_bHorizontal == true) ? GetX() : GetY(); }
 void pragma::gui::types::WIScrollBarSlider::SetSliderWidth(int w) { return (m_bHorizontal == true) ? SetHeight(w) : SetWidth(w); }
 void pragma::gui::types::WIScrollBarSlider::SetSliderHeight(int h) { return (m_bHorizontal == true) ? SetWidth(h) : SetHeight(h); }
 void pragma::gui::types::WIScrollBarSlider::SetSliderX(int x) { return (m_bHorizontal == true) ? SetY(x) : SetX(x); }
@@ -319,24 +322,23 @@ void pragma::gui::types::WIScrollBarSlider::UpdatePosition()
 		return;
 	int x, y;
 	WGUI::GetInstance().GetMousePos(x, y);
+	auto *parent = GetParent();
 	if(IsVertical()) {
 		int offset = y - m_moveOffset;
 		int yNew = m_moveOrigin + offset;
 		int h = GetHeight();
-		if(yNew < m_min)
-			yNew = m_min;
-		else if((yNew + h) > m_max)
-			yNew = m_max - h;
+		int32_t min = 0;
+		auto max = (parent ? GetParent()->GetHeight() : 0) -h;
+		yNew = math::clamp(yNew, min, max);
 		SetY(yNew);
 	}
 	else {
 		int offset = x - m_moveOffset;
 		int xNew = m_moveOrigin + offset;
 		int w = GetWidth();
-		if(xNew < m_min)
-			xNew = m_min;
-		else if((xNew + w) > m_max)
-			xNew = m_max - w;
+		int32_t min = 0;
+		auto max = (parent ? GetParent()->GetWidth() : 0) -w;
+		xNew = math::clamp(xNew, min, max);
 		SetX(xNew);
 	}
 	CallCallbacks<void>("OnDrag");
@@ -353,8 +355,8 @@ void pragma::gui::types::WIScrollBarSlider::SetHorizontal(bool b)
 	StopDragging();
 	m_bHorizontal = b;
 }
-bool pragma::gui::types::WIScrollBarSlider::IsHorizontal() { return m_bHorizontal; }
-bool pragma::gui::types::WIScrollBarSlider::IsVertical() { return !m_bHorizontal; }
+bool pragma::gui::types::WIScrollBarSlider::IsHorizontal() const { return m_bHorizontal; }
+bool pragma::gui::types::WIScrollBarSlider::IsVertical() const { return !m_bHorizontal; }
 
 pragma::util::EventReply pragma::gui::types::WIScrollBarSlider::ScrollCallback(Vector2 offset, bool offsetAsPixels)
 {

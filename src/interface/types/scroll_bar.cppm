@@ -10,71 +10,67 @@ export namespace pragma::gui::types {
 	class DLLWGUI WIScrollBarSlider : public WIBase {
 	  public:
 		friend WIScrollBar;
-	  protected:
+	  public:
+		WIScrollBarSlider();
+		~WIScrollBarSlider() override = default;
+		void Initialize() override;
+		util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
+		util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
+		void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
+		void SetHorizontal(bool b);
+		bool IsHorizontal() const;
+		bool IsVertical() const;
+	protected:
 		bool m_bHorizontal;
 		int m_moveOrigin;
 		int m_moveOffset;
-		int m_min;
-		int m_max;
 		bool m_bMoving;
 		void UpdatePosition();
 		void StopDragging();
-		int GetSliderWidth();
-		int GetSliderHeight();
-		int GetSliderX();
-		int GetSliderY();
+		int GetSliderWidth() const;
+		int GetSliderHeight() const;
+		int GetSliderX() const;
+		int GetSliderY() const;
 		void SetSliderWidth(int w);
 		void SetSliderHeight(int h);
 		void SetSliderX(int x);
 		void SetSliderY(int y);
 		void SetSliderPos(int x, int y);
 		void SetSliderSize(int w, int h);
-	  public:
-		WIScrollBarSlider();
-		virtual ~WIScrollBarSlider() override = default;
-		virtual void Initialize() override;
-		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
-		virtual void Think(const std::shared_ptr<prosper::IPrimaryCommandBuffer> &drawCmd) override;
-		void SetHorizontal(bool b);
-		bool IsHorizontal();
-		bool IsVertical();
-		void SetLimits(int min, int max);
 	};
 
 	class DLLWGUI WIScrollBar : public WIBase {
 	  public:
 		WIScrollBar();
-		virtual ~WIScrollBar() override;
+		~WIScrollBar() override;
 		void SetUp(unsigned int numElementsListed, unsigned int numElementsTotal);
-		unsigned int GetScrollAmount();
+		unsigned int GetScrollAmount() const;
 		void SetScrollAmount(unsigned int am);
-		unsigned int GetScrollOffset();
+		unsigned int GetScrollOffset() const;
 		void SetScrollOffset(unsigned int offset);
 		void AddScrollOffset(int scroll);
 		uint32_t GetElementCount() const;
 		uint32_t GetScrollElementCount() const;
-		uint32_t GetBottomScrollOffset();
-		virtual void Initialize() override;
+		uint32_t GetBottomScrollOffset() const;
+		void Initialize() override;
 		void SetHorizontal(bool b);
-		bool IsHorizontal();
-		bool IsVertical();
-		virtual util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
-		virtual util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
+		bool IsHorizontal() const;
+		bool IsVertical() const;
+		util::EventReply ScrollCallback(Vector2 offset, bool offsetAsPixels = false) override;
+		util::EventReply MouseCallback(platform::MouseButton button, platform::KeyState state, platform::Modifier mods) override;
 	  protected:
 		bool m_bHorizontal;
 		unsigned int m_offset;
 		unsigned int m_numElements;
 		unsigned int m_numListed;
 		unsigned int m_scrollAmount;
-		WIHandle m_buttonUp;
-		WIHandle m_buttonDown;
 		WIHandle m_slider;
 		WIHandle m_sliderContainer;
-		int GetSliderWidth();
-		int GetSliderHeight();
-		int GetSliderX();
-		int GetSliderY();
+		WIHandle m_flexBox;
+		int GetSliderWidth() const;
+		int GetSliderHeight() const;
+		int GetSliderX() const;
+		int GetSliderY() const;
 		void SetSliderWidth(int w);
 		void SetSliderHeight(int h);
 		void SetSliderX(int x);
@@ -83,6 +79,5 @@ export namespace pragma::gui::types {
 		void SetSliderSize(int w, int h);
 		void UpdateSliderSize();
 		void UpdateSliderOffset();
-		virtual void OnSizeChanged(const Vector2i &oldSize, ChangeSource changeSource) override;
 	};
 };
