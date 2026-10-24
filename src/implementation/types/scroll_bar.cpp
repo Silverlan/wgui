@@ -186,8 +186,15 @@ void pragma::gui::types::WIScrollBar::SetHorizontal(bool b)
 	m_bHorizontal = b;
 	if(auto *flexBox = static_cast<FlexBox*>(m_flexBox.get()); flexBox)
 		flexBox->SetFlexDirection(b ? FlexDirection::Horizontal : FlexDirection::Vertical);
-	if(auto *slider = static_cast<WIScrollBarSlider *>(m_slider.get()); slider)
+	if(auto *slider = static_cast<WIScrollBarSlider *>(m_slider.get()); slider) {
+		constexpr std::string_view styleHorizontal = "scrollbar__slider-bar--horizontal";
+		constexpr std::string_view styleVertical = "scrollbar__slider-bar--vertical";
+		slider->RemoveStyleClass(styleHorizontal);
+		slider->RemoveStyleClass(styleVertical);
+		slider->AddStyleClass(b ? styleHorizontal : styleVertical);
+
 		slider->SetHorizontal(b);
+	}
 }
 bool pragma::gui::types::WIScrollBar::IsHorizontal() const { return m_bHorizontal; }
 bool pragma::gui::types::WIScrollBar::IsVertical() const { return !m_bHorizontal; }
