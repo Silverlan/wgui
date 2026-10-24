@@ -1145,6 +1145,7 @@ static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::
 	struct BackgroundInfo
 	{
 		std::optional<Color> color {};
+		std::optional<uint8_t> alpha {};
 		std::optional<udm::Int32> borderThickness {};
 		std::optional<Color> borderColor {};
 		std::optional<std::array<udm::Int32, 4>> cornerRadii {};
@@ -1153,7 +1154,7 @@ static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::
 
 		operator bool() const
 		{
-			return color || borderThickness || borderColor || cornerRadii || gradient || nineSliceMaterial;
+			return color || alpha || borderThickness || borderColor || cornerRadii || gradient || nineSliceMaterial;
 		}
 	};
 	BackgroundInfo bgInfo {};
@@ -1180,6 +1181,8 @@ static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::
 			bgInfo.cornerRadii = cornerRadiiProp->UnpackSpacing();
 		if (auto colorProp = background->FindProperty("color"); colorProp)
 			bgInfo.color = colorProp->GetColor();
+		if (auto alphaProp = background->FindProperty("alpha"); alphaProp)
+			bgInfo.alpha = alphaProp->GetValue<udm::UInt8>();
 		bgInfo.gradient = background->FindProperty("gradient");
 		bgInfo.nineSliceMaterial = background->GetValue<udm::String>("nineSliceMaterial");
 	}
@@ -1216,6 +1219,8 @@ static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::
 			bg->SetVisible(true);
 			if (bgInfo.color)
 				bg->SetColor(*bgInfo.color);
+			if (bgInfo.alpha)
+				bg->SetAlpha(*bgInfo.alpha /static_cast<float>(std::numeric_limits<udm::UInt8>::max()));
 
 			if (auto *bgNineSlice = dynamic_cast<pragma::gui::types::WI9SliceRect*>(bg); bgInfo.nineSliceMaterial && bgNineSlice)
 				bgNineSlice->SetMaterial(*bgInfo.nineSliceMaterial);
