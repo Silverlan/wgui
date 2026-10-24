@@ -670,19 +670,63 @@ namespace pragma::gui {
 	}
 }
 
-static std::string_view get_state_name(pragma::gui::InputState state)
+static std::string_view get_state_name(pragma::gui::ElementStateFlags state)
 {
 	switch(state) {
-	case pragma::gui::InputState::Hover:
+	case pragma::gui::ElementStateFlags::Hover:
 		return "hover";
-	case pragma::gui::InputState::Pressed:
+	case pragma::gui::ElementStateFlags::Pressed:
 		return "pressed";
-	case pragma::gui::InputState::Focused:
+	case pragma::gui::ElementStateFlags::Focused:
 		return "focused";
+
+	case pragma::gui::ElementStateFlags::Disabled:
+		return "disabled";
+	case pragma::gui::ElementStateFlags::Selected:
+		return "selected";
+	case pragma::gui::ElementStateFlags::Checked:
+		return "checked";
+	case pragma::gui::ElementStateFlags::Error:
+		return "error";
 	}
-	// TODO: InputState::Active?
-	static_assert(pragma::math::to_integral(pragma::gui::InputState::Count) == 4, "Update this switch-case when new states are added.");
+
+	static_assert(pragma::math::to_integral(pragma::gui::ElementStateFlags::Last) == 64, "Update this switch-case when new states are added.");
 	return "";
+}
+
+static void collect_active_states(const pragma::gui::JsonSkinClass &cl, const std::vector<std::string_view> &currentStates,
+	std::vector<std::string_view> &consumed, std::vector<std::pair<pragma::gui::JsonSkinClass *, size_t>> &outStates)
+{
+	for(auto stateName : currentStates) {
+		if(std::find(consumed.begin(), consumed.end(), stateName) != consumed.end())
+			continue;
+		auto it = cl.states.find(stateName);
+		if(it == cl.states.end())
+			continue;
+		auto *state = it->second.get();
+		outStates.emplace_back(state, consumed.size() + 1); // depth = number of combined states
+		consumed.push_back(stateName);
+		collect_active_states(*state, currentStates, consumed, outStates);
+		consumed.pop_back();
+	}
+}
+
+static void update_styled_states_mask(const pragma::gui::JsonSkinClass &cl, pragma::gui::ElementStateFlags &mask)
+{
+	if(cl.states.empty())
+		return;
+	auto flag = pragma::gui::ElementStateFlags::First;
+	while(pragma::math::to_integral(flag) <= pragma::math::to_integral(pragma::gui::ElementStateFlags::Last)) {
+		auto sName = get_state_name(flag);
+		if(!sName.empty()) {
+			auto it = cl.states.find(sName);
+			if(it != cl.states.end()) {
+				mask |= flag;
+				update_styled_states_mask(*it->second, mask); // nested combinations
+			}
+		}
+		flag = static_cast<pragma::gui::ElementStateFlags>(pragma::math::to_integral(flag) << 1);
+	}
 }
 
 std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types::WIBase &el) const
@@ -715,22 +759,27 @@ std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types:
 	for(auto &c : elClassesContexts)
 		elClasses.push_back(c.skinClass);
 
-	if(elClasses.empty())
+	auto styledStatesMask = ElementStateFlags::None;
+	if(elClasses.empty()) {
+		el.SetStyledStatesMask(styledStatesMask);
 		return {};
-
-	uint32_t styledStatesMask = 0;
-	for(auto *cl : elClasses) {
-		if(cl->states.empty())
-			continue;
-		for(size_t i = 0; i < math::to_integral(InputState::Count); ++i) {
-			auto sName = get_state_name(static_cast<InputState>(i));
-			if(!sName.empty() && cl->states.find(sName) != cl->states.end())
-				styledStatesMask |= (1 << i);
-		}
 	}
+
+	for(auto *cl : elClasses)
+		update_styled_states_mask(*cl, styledStatesMask);
 	el.SetStyledStatesMask(styledStatesMask);
 
-	auto currentStateStr = get_state_name(el.GetInputState());
+	std::vector<std::string_view> currentStates;
+	auto elementStateFlags = el.GetElementStateFlags();
+	if(elementStateFlags != ElementStateFlags::None) {
+		auto flag = ElementStateFlags::First;
+		while(math::to_integral(flag) <= math::to_integral(ElementStateFlags::Last)) {
+			if(el.IsElementStateEnabled(flag))
+				currentStates.push_back(get_state_name(flag));
+
+			flag = static_cast<ElementStateFlags>(math::to_integral(flag) << 1);
+		}
+	}
 
 	Style style;
 	for(auto *cl : elClasses) {
@@ -739,17 +788,23 @@ std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types:
 			style.propertyMap->properties[name] = prop;
 
 		// Property overrides from active state (e.g. hover)
-		JsonSkinClass *activeState = nullptr;
-		if(!currentStateStr.empty()) {
-			auto stateIt = cl->states.find(currentStateStr);
-			if(stateIt != cl->states.end()) {
-				activeState = stateIt->second.get();
-				for(const auto &[name, prop] : activeState->properties)
+		std::vector<JsonSkinClass *> activeStates;
+		if(!currentStates.empty()) {
+			std::vector<std::pair<JsonSkinClass *, size_t>> matches;
+			std::vector<std::string_view> consumed;
+			collect_active_states(*cl, currentStates, consumed, matches);
+
+			// More combined states = more specific
+			std::stable_sort(matches.begin(), matches.end(), [](const auto &a, const auto &b) { return a.second < b.second; });
+
+			for(auto &[state, depth] : matches) {
+				activeStates.push_back(state);
+				for(const auto &[name, prop] : state->properties)
 					style.propertyMap->properties[name] = prop;
 			}
 		}
 
-		auto mergeSubItems = [](const auto &baseMap, const auto *stateMap, string::OrderedStringMap<Style> &targetMap) {
+		auto mergeSubItems = [](const auto &baseMap, const std::vector<JsonSkinClass*> &activeStates, bool descendants, string::OrderedStringMap<Style> &targetMap) {
 			// Base properties
 			for(const auto &[name, baseItem] : baseMap) {
 				auto &targetItem = targetMap[name];
@@ -758,8 +813,9 @@ std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types:
 			}
 
 			// Apply states
-			if(stateMap) {
-				for(const auto &[name, stateItem] : *stateMap) {
+			for(auto &activeState : activeStates) {
+				auto &stateMap = descendants ? activeState->descendants : activeState->decorators;
+				for(const auto &[name, stateItem] : stateMap) {
 					auto &targetItem = targetMap[name];
 					for(const auto &[pName, pVal] : stateItem->properties)
 						targetItem.propertyMap->properties[pName] = pVal;
@@ -767,8 +823,8 @@ std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types:
 			}
 		};
 
-		mergeSubItems(cl->descendants, activeState ? &activeState->descendants : nullptr, style.descendants);
-		mergeSubItems(cl->decorators, activeState ? &activeState->decorators : nullptr, style.decorators);
+		mergeSubItems(cl->descendants, activeStates, true, style.descendants);
+		mergeSubItems(cl->decorators, activeStates, false, style.decorators);
 	}
 	return style;
 }

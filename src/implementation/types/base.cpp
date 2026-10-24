@@ -224,22 +224,20 @@ void pragma::gui::types::WIBase::SetVerticalAlignment(Alignment alignment)
 }
 pragma::gui::Alignment pragma::gui::types::WIBase::GetHorizontalAlignment() const { return m_horizontalAlignment; }
 pragma::gui::Alignment pragma::gui::types::WIBase::GetVerticalAlignment() const { return m_verticalAlignment; }
-void pragma::gui::types::WIBase::SetInputState(InputState state)
+void pragma::gui::types::WIBase::SetElementStateFlags(ElementStateFlags state) { m_elementStateFlags = state; }
+pragma::gui::ElementStateFlags pragma::gui::types::WIBase::GetElementStateFlags() const { return m_elementStateFlags; }
+void pragma::gui::types::WIBase::SetElementState(ElementStateFlags state, bool enabled)
 {
-	if(m_inputState == state)
+	if (!std::has_single_bit(math::to_integral(state)))
+		throw std::invalid_argument {"Only single-bit flag is allowed."};
+	if(enabled == math::is_flag_set(m_elementStateFlags, state))
 		return;
-	auto oldState = m_inputState;
-	m_inputState = state;
-	if(HasStyleForState(oldState) || HasStyleForState(m_inputState))
+	math::set_flag(m_elementStateFlags, state, enabled);
+	if(HasStyleForState(state))
 		RefreshSkin();
 }
-pragma::gui::InputState pragma::gui::types::WIBase::GetInputState() const { return m_inputState; }
-void pragma::gui::types::WIBase::SetLogicalState(LogicalState state)
-{
-	m_logicalState = state;
-	RefreshSkin();
-}
-pragma::gui::LogicalState pragma::gui::types::WIBase::GetLogicalState() const { return m_logicalState; }
+bool pragma::gui::types::WIBase::IsElementStateEnabled(ElementStateFlags state) const { return math::is_flag_set(m_elementStateFlags, state); }
+
 bool pragma::gui::types::WIBase::GetMouseMovementCheckEnabled() { return math::is_flag_set(m_stateFlags, StateFlags::MouseCheckEnabledBit); }
 void pragma::gui::types::WIBase::SetMouseMovementCheckEnabled(bool b)
 {
@@ -643,7 +641,7 @@ void pragma::gui::types::WIBase::RequestFocus()
 	if(elRoot && !WGUI::GetInstance().SetFocusedElement(this, elRoot))
 		return;
 	*m_bHasFocus = true;
-	UpdateInputState();
+	SetElementState(ElementStateFlags::Focused, true);
 	OnFocusGained();
 }
 const pragma::util::PBoolProperty &pragma::gui::types::WIBase::GetFocusProperty() const { return m_bHasFocus; }
@@ -652,7 +650,7 @@ void pragma::gui::types::WIBase::KillFocus(bool bForceKill)
 	if(!HasFocus() || (bForceKill == false && IsFocusTrapped() && IsVisible()))
 		return;
 	*m_bHasFocus = false;
-	UpdateInputState();
+	SetElementState(ElementStateFlags::Focused, false);
 	auto *elRoot = GetBaseRootElement();
 	if(elRoot)
 		WGUI::GetInstance().SetFocusedElement(nullptr, elRoot);
@@ -2108,15 +2106,6 @@ void pragma::gui::types::WIBase::AbsolutePosToRelative(Vector2 &pos) const
 	pos = glm::inverse(GetAbsolutePose()) * Vector4 {pos * 2.f, 0.f, 1.f};
 	pos /= 2.f;
 }
-void pragma::gui::types::WIBase::UpdateInputState()
-{
-	auto state = InputState::None;
-	if(HasFocus())
-		state = InputState::Focused;
-	else if(*m_bMouseInBounds)
-		state = InputState::Hover;
-	SetInputState(state);
-}
 void pragma::gui::types::WIBase::UpdateMouseInBounds(const Vector2 &relPos, bool forceFalse)
 {
 	bool old = *m_bMouseInBounds;
@@ -2126,7 +2115,7 @@ void pragma::gui::types::WIBase::UpdateMouseInBounds(const Vector2 &relPos, bool
 		*m_bMouseInBounds = DoPosInBounds(relPos);
 	if(old == *m_bMouseInBounds)
 		return;
-	UpdateInputState();
+	SetElementState(ElementStateFlags::Hover, *m_bMouseInBounds);
 	if(!math::is_flag_set(m_stateFlags, StateFlags::AcceptMouseInputBit))
 		return;
 	if(*m_bMouseInBounds == true)
@@ -2368,10 +2357,9 @@ std::vector<pragma::util::GString>::const_iterator pragma::gui::types::WIBase::F
 bool pragma::gui::types::WIBase::HasStyleClass(std::string_view className) const { return FindStyleClass(className) != m_styleClasses.end(); }
 void pragma::gui::types::WIBase::ClearStyleClasses() { m_styleClasses.clear(); }
 
-void pragma::gui::types::WIBase::SetStyledStatesMask(uint32_t mask) { m_styledStatesMask = mask; }
-uint32_t pragma::gui::types::WIBase::GetStyledStatesMask() const { return m_styledStatesMask; }
-
-bool pragma::gui::types::WIBase::HasStyleForState(InputState state) const { return (m_styledStatesMask & (1 << math::to_integral(state))) != 0; }
+void pragma::gui::types::WIBase::SetStyledStatesMask(ElementStateFlags mask) { m_styledStatesMask = mask; }
+pragma::gui::ElementStateFlags pragma::gui::types::WIBase::GetStyledStatesMask() const { return m_styledStatesMask; }
+bool pragma::gui::types::WIBase::HasStyleForState(ElementStateFlags state) const { return math::is_flag_set(m_styledStatesMask, state); }
 
 /////////////////
 

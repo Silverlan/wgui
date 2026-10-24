@@ -49,23 +49,20 @@ export namespace pragma::gui {
 		Count,
 	};
 
-	enum class InputState : uint8_t {
+	enum class ElementStateFlags : uint8_t {
 		None = 0,
-		Hover,
-		Pressed,
-		Focused,
+		Hover = 1,
+		Pressed = Hover << 1,
+		Focused = Pressed << 1,
 
-		Count,
-	};
+		// Logical States
+		Disabled = Focused << 1,
+		Selected = Disabled << 1,
+		Checked = Selected << 1,
+		Error = Checked << 1,
 
-	enum class LogicalState : uint8_t {
-		None = 0,
-		Selected,
-		Checked,
-		Disabled,
-		Error,
-
-		Count,
+		First = Hover,
+		Last = Error,
 	};
 
 	DLLWGUI bool is_valid(const WIHandle &hEl);
@@ -155,10 +152,11 @@ export namespace pragma::gui {
 			void SetVerticalAlignment(Alignment alignment);
 			Alignment GetHorizontalAlignment() const;
 			Alignment GetVerticalAlignment() const;
-			void SetInputState(InputState state);
-			InputState GetInputState() const;
-			void SetLogicalState(LogicalState state);
-			LogicalState GetLogicalState() const;
+			void SetElementStateFlags(ElementStateFlags state);
+			ElementStateFlags GetElementStateFlags() const;
+
+			void SetElementState(ElementStateFlags state, bool enabled);
+			bool IsElementStateEnabled(ElementStateFlags state) const;
 			void CenterToParentX();
 			void CenterToParentY();
 			virtual void Initialize();
@@ -377,9 +375,9 @@ export namespace pragma::gui {
 			void RemoveStyleClass(std::string_view className);
 			bool HasStyleClass(std::string_view className) const;
 			void ClearStyleClasses();
-			void SetStyledStatesMask(uint32_t mask);
-			uint32_t GetStyledStatesMask() const;
-			bool HasStyleForState(InputState state) const;
+			void SetStyledStatesMask(ElementStateFlags mask);
+			ElementStateFlags GetStyledStatesMask() const;
+			bool HasStyleForState(ElementStateFlags state) const;
 
 			void SetTooltip(const string::Utf8StringArg &msg);
 			void SetTooltip(const LocalizedString &str);
@@ -471,7 +469,6 @@ export namespace pragma::gui {
 			virtual void OnChildVisibilityChanged(WIBase &child, bool visible);
 			virtual void RefreshLocale() {}
 			void ClampSize();
-			void UpdateInputState();
 			void AddChild(WIBase *child, std::optional<uint32_t> childIndex, bool enableCheck);
 			void InitializeAnchor(Anchor::EdgeFlags edges);
 			void UpdateParentAlignment();
@@ -500,8 +497,7 @@ export namespace pragma::gui {
 			StateFlags m_stateFlags = StateFlags::ShouldScissorBit;
 			Alignment m_horizontalAlignment = Alignment::None;
 			Alignment m_verticalAlignment = Alignment::None;
-			InputState m_inputState = InputState::None;
-			LogicalState m_logicalState = LogicalState::None;
+			ElementStateFlags m_elementStateFlags = ElementStateFlags::None;
 			std::array<std::shared_ptr<void>, 4> m_userData;
 			std::unique_ptr<math::ScaledTransform> m_localRenderTransform = nullptr;
 			util::TSharedHandle<WIBase> m_handle {};
@@ -549,7 +545,7 @@ export namespace pragma::gui {
 			util::PVector2Property m_scale = nullptr;
 		  private:
 			std::vector<util::GString> m_styleClasses;
-			uint32_t m_styledStatesMask = 0;
+			ElementStateFlags m_styledStatesMask = ElementStateFlags::None;
 			WISkin *m_skin = nullptr;
 			ChronoTimePoint m_clickStart;
 			std::vector<util::GString>::iterator FindStyleClass(std::string_view className);
@@ -572,4 +568,5 @@ export namespace pragma::gui {
 export {
 	REGISTER_ENUM_FLAGS(pragma::gui::types::WIBase::StateFlags)
 	REGISTER_ENUM_FLAGS(pragma::gui::DrawInfo::Flags)
+	REGISTER_ENUM_FLAGS(pragma::gui::ElementStateFlags)
 }
