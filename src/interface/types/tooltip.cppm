@@ -5,6 +5,7 @@ export module pragma.gui:types.tooltip;
 
 import :handle;
 import :types.base;
+import :types.flexbox;
 import :types.text;
 import pragma.string.unicode;
 
@@ -25,7 +26,11 @@ export namespace pragma::gui::types {
 	{
 		WIBase::Initialize();
 
-		auto *pText = WGUI::GetInstance().Create<WIText>(this);
+		SetAutoSizeToContents(true);
+		auto *contents = GetSystem().CreateHBox(this);
+		contents->AddStyleClass("tooltip");
+
+		auto *pText = GetSystem().Create<WIText>(contents);
 		//pText->SetAutoBreakMode(WIText::AutoBreak::WHITESPACE);
 		m_hText = pText->GetHandle();
 	}
