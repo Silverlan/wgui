@@ -12,8 +12,8 @@ namespace pragma::gui {
 
 	template<typename T>
 	concept is_json_type = std::is_same_v<T, udm::Boolean> || std::is_same_v<T, udm::Double> || std::is_same_v<T, udm::Int64> || std::is_same_v<T, udm::Nil> || std::is_same_v<T, udm::String> || std::is_same_v<T, udm::UInt64>;
-	template<typename T>
-	concept is_valid_json_udm_type = udm::is_ng_type(udm::type_to_enum<T>()) || std::is_same_v<T, udm::String>;
+	export template<typename T>
+	concept is_valid_style_property_type = udm::is_ng_type(udm::type_to_enum<T>()) || std::is_same_v<T, udm::String>;
 
 	udm::Type get_json_udm_type(JsonData j);
 	bool is_json_array(JsonData j);
@@ -22,7 +22,7 @@ namespace pragma::gui {
 	template<typename T> requires(is_json_type<T>)
 	T get_json_value(JsonData j);
 
-	template<typename T> requires(pragma::gui::is_valid_json_udm_type<T>)
+	template<typename T> requires(gui::is_valid_style_property_type<T>)
 	std::optional<T> get_property_value(JsonData j)
 	{
 		auto jtype = get_json_udm_type(j);
@@ -30,7 +30,7 @@ namespace pragma::gui {
 			return {};
 		return udm::visit(jtype, [&j](auto tag) -> std::optional<T> {
 			using TJson = typename decltype(tag)::type;
-			if constexpr(pragma::gui::is_json_type<TJson> && pragma::gui::is_valid_json_udm_type<T> && !std::is_same_v<T, udm::Nil> && !std::is_same_v<TJson, udm::Nil> && udm::is_convertible<TJson, T>())
+			if constexpr(pragma::gui::is_json_type<TJson> && pragma::gui::is_valid_style_property_type<T> && !std::is_same_v<T, udm::Nil> && !std::is_same_v<TJson, udm::Nil> && udm::is_convertible<TJson, T>())
 			{
 				auto val = get_json_value<TJson>(j);
 				return udm::convert<TJson, T>(val);
@@ -40,7 +40,7 @@ namespace pragma::gui {
 		});
 	}
 
-	export template<typename T> requires(pragma::gui::is_valid_json_udm_type<T>)
+	export template<typename T> requires(pragma::gui::is_valid_style_property_type<T>)
 	std::optional<std::vector<T>> get_array_values(JsonData j)
 	{
 		if (!is_json_array(j))
@@ -68,12 +68,12 @@ namespace pragma::gui {
 		void ToUdmData(const udm::PropertyWrapper &udmData) const;
 		std::string DumpToString() const;
 
-		template<typename T> requires(is_valid_json_udm_type<T>)
+		template<typename T> requires(is_valid_style_property_type<T>)
 		std::optional<T> GetValue() const
 		{
 			return get_property_value<T>(property);
 		}
-		template<typename T> requires(is_valid_json_udm_type<T>)
+		template<typename T> requires(is_valid_style_property_type<T>)
 		std::optional<T> GetValue(std::string_view name) const
 		{
 			auto childProp = FindProperty(name);
@@ -82,12 +82,12 @@ namespace pragma::gui {
 			return childProp->GetValue<T>();
 		}
 
-		template<typename T> requires(pragma::gui::is_valid_json_udm_type<T>)
+		template<typename T> requires(pragma::gui::is_valid_style_property_type<T>)
 		std::optional<std::vector<T>> GetArrayValues() const
 		{
 			return get_array_values<T>(property);
 		}
-		template<typename T> requires(pragma::gui::is_valid_json_udm_type<T>)
+		template<typename T> requires(pragma::gui::is_valid_style_property_type<T>)
 		std::optional<std::vector<T>> GetArrayValues(std::string_view name) const
 		{
 			auto childProp = FindProperty(name);
@@ -117,7 +117,7 @@ namespace pragma::gui {
 		void ToUdmData(udm::PropertyWrapper &udmData) const;
 		std::optional<StyleProperty> FindProperty(std::string_view name) const;
 		string::OrderedStringMap<StyleProperty> GetProperties() const;
-		template<typename T> requires(is_valid_json_udm_type<T>)
+		template<typename T> requires(is_valid_style_property_type<T>)
 		std::optional<T> GetPropertyValue(std::string_view name, bool logInvalid = true) const
 		{
 			auto prop = FindProperty(name);
@@ -132,7 +132,7 @@ namespace pragma::gui {
 			}
 			return val;
 		}
-		template<typename T> requires(is_valid_json_udm_type<T>)
+		template<typename T> requires(is_valid_style_property_type<T>)
 		std::optional<std::vector<T>> GetArrayPropertyValues(std::string_view name, bool logInvalid = true) const
 		{
 			auto prop = FindProperty(name);

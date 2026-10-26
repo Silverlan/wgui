@@ -829,15 +829,6 @@ std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types:
 	return style;
 }
 
-/*template<typename T> requires(is_valid_json_udm_type<T>)
-static std::optional<T> get_property_value(const pragma::string::OrderedStringMap<glz::generic_u64> &props, std::string_view propName)
-{
-	auto it = props.find(propName);
-	if (it == props.end())
-		return {};
-	return get_property_value<T>(it->second);
-}*/
-
 static void log_invalid_property(const glz::generic_u64 &prop, std::string_view propertyName)
 {
 	auto expected = prop.dump();
@@ -1260,11 +1251,12 @@ static void apply_background(pragma::gui::types::WIBase &el, const pragma::gui::
 
 		if (!bg)
 		{
-			bg = pragma::gui::WGUI::GetInstance().Create(std::string{bgClass}, &el);
+			bg = pragma::gui::WGUI::GetInstance().Create(std::string{bgClass});
 			if (bg)
 			{
 				bg->SetName("skin_background");
 				bg->SetBackgroundElement(true);
+				bg->SetParent(&el);
 				bg->SetZPos(-100);
 				bg->SetAlignment(pragma::gui::Alignment::Fill);
 			}
