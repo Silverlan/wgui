@@ -404,6 +404,8 @@ export namespace pragma::gui {
 			bool IsAnchorEdgeEnabled(Anchor::Edge edge) const;
 			bool HasHorizontalAnchor() const;
 			bool HasVerticalAnchor() const;
+			bool IsStretchedByAnchorX() const;
+			bool IsStretchedByAnchorY() const;
 			void AnchorWithMargin(uint32_t left, uint32_t top, uint32_t right, uint32_t bottom);
 			void AnchorWithMargin(uint32_t margin);
 			void SetAnchor(Anchor::Edge edge, float f);

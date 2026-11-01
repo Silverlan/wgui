@@ -1694,8 +1694,32 @@ bool pragma::gui::types::WIBase::IsAnchorEdgeEnabled(Anchor::Edge edge) const
 		return false;
 	return m_anchor->IsEdgeEnabled(edge);
 }
-bool pragma::gui::types::WIBase::HasHorizontalAnchor() const { return IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::Left) || IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::Right) || IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::HorizontalCenter); }
-bool pragma::gui::types::WIBase::HasVerticalAnchor() const { return IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::Top) || IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::Bottom) || IsAnchorEdgeEnabled(pragma::gui::Anchor::Edge::VerticalCenter); }
+bool pragma::gui::types::WIBase::HasHorizontalAnchor() const { return IsAnchorEdgeEnabled(Anchor::Edge::Left) || IsAnchorEdgeEnabled(Anchor::Edge::Right) || IsAnchorEdgeEnabled(Anchor::Edge::HorizontalCenter); }
+bool pragma::gui::types::WIBase::HasVerticalAnchor() const { return IsAnchorEdgeEnabled(Anchor::Edge::Top) || IsAnchorEdgeEnabled(Anchor::Edge::Bottom) || IsAnchorEdgeEnabled(Anchor::Edge::VerticalCenter); }
+bool pragma::gui::types::WIBase::IsStretchedByAnchorX() const
+{
+	// If left and right anchor are defined, then the element's width is defined by the parent.
+	// The only exception is if the left and right anchor values are the same, in which case
+	// the anchor only defines the element's x position and has no effect on its width.
+	if(IsAnchorEdgeEnabled(Anchor::Edge::Left) && IsAnchorEdgeEnabled(Anchor::Edge::Right)) {
+		if(math::abs(m_anchor->right -m_anchor->left) < 0.001f)
+			return false;
+		return true;
+	}
+	return false;
+}
+bool pragma::gui::types::WIBase::IsStretchedByAnchorY() const
+{
+	// If top and bottom anchor are defined, then the element's height is defined by the parent.
+	// The only exception is if the top and bottom anchor values are the same, in which case
+	// the anchor only defines the element's y position and has no effect on its height.
+	if(IsAnchorEdgeEnabled(Anchor::Edge::Top) && IsAnchorEdgeEnabled(Anchor::Edge::Bottom)) {
+		if(math::abs(m_anchor->bottom -m_anchor->top) < 0.001f)
+			return false;
+		return true;
+	}
+	return false;
+}
 void pragma::gui::types::WIBase::InitializeAnchor(Anchor::EdgeFlags edges)
 {
 	if(!m_anchor.has_value())
