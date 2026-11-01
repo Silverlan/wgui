@@ -15,4 +15,12 @@ export namespace pragma::gui {
 	};
 
 	enum class Axis : uint8_t { X = 0u, Y, Count };
+
+	enum class Edge : uint8_t {
+		Left = 0,
+		Right,
+		Top,
+		Bottom,
+		Count,
+	};
 };

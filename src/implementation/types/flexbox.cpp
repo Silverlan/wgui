@@ -67,8 +67,8 @@ void pragma::gui::types::BaseBox::UpdateNonAnchoredSize(const Vector2i &curSize,
 	if(size == curSize)
 		return;
 
-	auto xAnchor = HasHorizontalAnchor();
-	auto yAnchor = HasVerticalAnchor();
+	auto xAnchor = IsStretchedByAnchorX();
+	auto yAnchor = IsStretchedByAnchorY();
 
 	if(!xAnchor && !yAnchor)
 		UpdateSize(size);
@@ -182,6 +182,60 @@ void pragma::gui::types::BaseBox::SetPadding(int32_t left, int32_t top, int32_t 
 	SetSizeUpdateRequired(true);
 	ScheduleUpdate();
 }
+static constexpr uint8_t edge_to_index(pragma::gui::Edge edge)
+{
+	switch(edge) {
+	case pragma::gui::Edge::Left:
+		return 0;
+	case pragma::gui::Edge::Top:
+		return 1;
+	case pragma::gui::Edge::Right:
+		return 2;
+	case pragma::gui::Edge::Bottom:
+		return 3;
+	}
+	std::unreachable();
+	return 0;
+}
+void pragma::gui::types::BoxOffsets::Set(Edge edge, int32_t offset)
+{
+	switch(edge) {
+	case Edge::Left:
+		left = offset;
+		break;
+	case Edge::Top:
+		top = offset;
+		break;
+	case Edge::Right:
+		right = offset;
+		break;
+	case Edge::Bottom:
+		bottom = offset;
+		break;
+	}
+}
+int32_t pragma::gui::types::BoxOffsets::Get(Edge edge) const
+{
+	switch(edge) {
+	case Edge::Left:
+		return left;
+	case Edge::Top:
+		return top;
+	case Edge::Right:
+		return right;
+	case Edge::Bottom:
+		return bottom;
+	}
+	std::unreachable();
+	return 0;
+}
+void pragma::gui::types::BaseBox::SetPadding(Edge edge, int32_t padding)
+{
+	m_padding.Set(edge, padding);
+	SetSizeUpdateRequired(true);
+	ScheduleUpdate();
+}
+int32_t pragma::gui::types::BaseBox::GetPadding(Edge edge) const { return m_padding.Get(edge); }
 
 void pragma::gui::types::BaseBox::SetChildMargin(const WIBase &el, int32_t left, int32_t top, int32_t right, int32_t bottom)
 {
@@ -254,7 +308,7 @@ bool pragma::gui::types::FlexBox::HasAlignedAnchor(WIBase *el, FlexDirection fle
 {
 	if(!el)
 		return false;
-	return (flexDirection == FlexDirection::Horizontal) ? el->HasHorizontalAnchor() : el->HasVerticalAnchor();
+	return (flexDirection == FlexDirection::Horizontal) ? el->IsStretchedByAnchorX() : el->IsStretchedByAnchorY();
 }
 bool pragma::gui::types::FlexBox::HasAlignedAnchor(WIBase *el) const { return HasAlignedAnchor(el, m_direction); }
 
@@ -347,6 +401,23 @@ void pragma::gui::types::FlexBox::ApplyStyle(Style &style)
 		SetPadding(padding[0], padding[1], padding[2], padding[3]);
 	}
 
+	if(auto paddingX = style.GetPropertyValue<udm::Int32>("paddingX"); paddingX) {
+		SetPadding(Edge::Left, *paddingX);
+		SetPadding(Edge::Right, *paddingX);
+	}
+	if(auto paddingY = style.GetPropertyValue<udm::Int32>("paddingY"); paddingY) {
+		SetPadding(Edge::Top, *paddingY);
+		SetPadding(Edge::Bottom, *paddingY);
+	}
+	if(auto paddingLeft = style.GetPropertyValue<udm::Int32>("paddingLeft"); paddingLeft)
+		SetPadding(Edge::Left, *paddingLeft);
+	if(auto paddingRight = style.GetPropertyValue<udm::Int32>("paddingRight"); paddingRight)
+		SetPadding(Edge::Right, *paddingRight);
+	if(auto paddingTop = style.GetPropertyValue<udm::Int32>("paddingTop"); paddingTop)
+		SetPadding(Edge::Top, *paddingTop);
+	if(auto paddingBottom = style.GetPropertyValue<udm::Int32>("paddingBottom"); paddingBottom)
+		SetPadding(Edge::Bottom, *paddingBottom);
+
 	if (auto spacing = style.GetPropertyValue<udm::Int32>("spacing"); spacing)
 		SetSpacing(*spacing);
 }
@@ -356,7 +427,6 @@ void pragma::gui::types::FlexBox::DoUpdate()
 	auto size = GetSize();
 	const auto &padding = GetPadding();
 	auto spacing = GetSpacing();
-
 	auto isHoriz = IsHorizontalBox();
 
 	auto mainPaddingStart = isHoriz ? padding.left : padding.top;

@@ -11,6 +11,8 @@ export namespace pragma::gui::types {
 		int32_t top = 0;
 		int32_t right = 0;
 		int32_t bottom = 0;
+		void Set(Edge edge, int32_t offset);
+		int32_t Get(Edge edge) const;
 	};
 
 	struct DLLWGUI ChildLayout {
@@ -40,7 +42,9 @@ export namespace pragma::gui::types {
 		int32_t GetSpacing() const { return m_spacing; }
 
 		void SetPadding(int32_t left, int32_t top, int32_t right, int32_t bottom);
+		void SetPadding(Edge edge, int32_t padding);
 		const BoxOffsets &GetPadding() const { return m_padding; }
+		int32_t GetPadding(Edge edge) const;
 
 		void SetChildMargin(const WIBase &el, int32_t left, int32_t top, int32_t right, int32_t bottom);
 		BoxOffsets GetChildMargin(const WIBase &el) const;
