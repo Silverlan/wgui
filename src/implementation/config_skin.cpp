@@ -151,7 +151,7 @@ namespace pragma::gui
 
 		JsonSkinBase();
 
-		void Load(const Settings &settings);
+		void Load(Settings &settings);
 
 		std::optional<Style> ComputeStyle(types::WIBase &el) const;
 		void ClearCache(types::WIBase &el);
@@ -161,6 +161,7 @@ namespace pragma::gui
 		JsonSkinClass m_rootClass;
 		std::unordered_map<std::string, glz::generic_u64> m_constants;
 		mutable std::unordered_map<types::WIBase*, udm::PProperty> m_cacheData;
+		std::unordered_map<std::string_view, std::shared_ptr<material::Material>> m_materials;
 
 		void ParseConstants(const glz::generic_u64 &j);
 		void ParseFonts(const glz::generic_u64 &j);
@@ -169,6 +170,7 @@ namespace pragma::gui
 		void ResolveVariables(JsonSkinClass &cl);
 		void ResolveVariables(string::StringMap<glz::generic_u64> &properties);
 		void ResolveMixins(JsonSkinClass &target, const JsonSkinClass &root);
+		void GenerateMaterials(const glz::generic_u64 &j);
 		void MergeBaseSkin(const JsonSkinClass &baseRoot, JsonSkinClass &cl);
 	};
 
@@ -225,8 +227,8 @@ void pragma::gui::JsonSkinClass::MergeFrom(const JsonSkinClass &baseClass)
 	}
 }
 
-static void to_udm_object(const glz::generic_u64 &j, udm::PropertyWrapper e);
-static void to_udm_data(std::string_view key, const glz::generic_u64 &j, udm::PropertyWrapper e)
+static void to_udm_object(const glz::generic_u64 &j, udm::LinkedPropertyWrapper e);
+static void to_udm_data(std::string_view key, const glz::generic_u64 &j, udm::LinkedPropertyWrapper e)
 {
 	if (j.is_array())
 	{
@@ -265,7 +267,7 @@ static void to_udm_data(std::string_view key, const glz::generic_u64 &j, udm::Pr
 	});
 }
 
-void to_udm_object(const glz::generic_u64 &j, udm::PropertyWrapper e)
+void to_udm_object(const glz::generic_u64 &j, udm::LinkedPropertyWrapper e)
 {
 	auto &o = j.get_object();
 	for (auto &[key, val] : o)
@@ -409,14 +411,53 @@ std::expected<void, std::string> pragma::gui::ConfigSkin::LoadUdm(std::unique_pt
 }
 void pragma::gui::ConfigSkin::Load(StyleProperty &styleProp)
 {
-	m_baseJsonSkin->Load(JsonSkinBase::Settings{*static_cast<const glz::generic_u64*>(styleProp.property)});
+	JsonSkinBase::Settings settings {*static_cast<const glz::generic_u64*>(styleProp.property)};
+	m_baseJsonSkin->Load(settings);
 }
 
 pragma::gui::JsonSkinBase::JsonSkinBase() {}
 
-void pragma::gui::JsonSkinBase::Load(const Settings &settings)
+static void merge_json_object(const glz::generic_u64 &j0, glz::generic_u64 &j1) {
+	if(!j0.is_object() || !j1.is_object())
+		return;
+	auto &o0 = j0.get_object();
+	auto &o1 = j1.get_object();
+	for(auto &[key, val0] : o0) {
+		if(val0.is_object() && o1.contains(key) && o1[key].is_object()) {
+			merge_json_object(val0, o1[key]);
+			continue;
+		}
+		o1[key] = val0;
+	}
+}
+
+static void resolve_property(const std::unordered_map<std::string, glz::generic_u64> &constants, glz::generic_u64 &val) {
+	if(val.is_string()) {
+		auto strVal = val.get<std::string>();
+		if(!strVal.empty() && strVal[0] == '$') {
+			auto varName = strVal.substr(1);
+			auto it = constants.find(varName);
+			if(it != constants.end())
+				val = it->second;
+		}
+	}
+	else if(val.is_object()) {
+		for(auto &[key, child] : val.get_object())
+			resolve_property(constants, child);
+	}
+	else if(val.is_array()) {
+		for(auto &child : val.get_array())
+			resolve_property(constants, child);
+	}
+}
+
+static std::string get_material_identifier(std::string_view id)
 {
-	const auto &j = settings.jsonData;
+	return "__gui_" +pragma::string::get_lower(std::string{id});
+}
+void pragma::gui::JsonSkinBase::Load(Settings &settings)
+{
+	auto &j = settings.jsonData;
 	ConfigSkin *baseSkin = nullptr;
 
 	// Note: Make sure to skip these in "ParseClass" when adding new root blocks
@@ -448,28 +489,46 @@ void pragma::gui::JsonSkinBase::Load(const Settings &settings)
 		MergeBaseSkin(baseJsonSkin->m_rootClass, m_rootClass);
 	}
 
-	ResolveVariables(m_rootClass);
-	ResolveMixins(m_rootClass, m_rootClass);
-}
-
-static void resolve_property(const std::unordered_map<std::string, glz::generic_u64> &constants, glz::generic_u64 &val) {
-	if(val.is_string()) {
-		auto strVal = val.get<std::string>();
-		if(!strVal.empty() && strVal[0] == '$') {
-			auto varName = strVal.substr(1);
-			auto it = constants.find(varName);
-			if(it != constants.end())
-				val = it->second;
+	if(j.contains("theme")) {
+		auto &theme = j["theme"];
+		if(theme.contains("materials") && theme["materials"].is_object()) {
+			for(const auto &[key, val] : theme["materials"].get_object()) {
+				auto materialName = get_material_identifier(key);
+				m_constants[key] = materialName;
+			}
 		}
 	}
-	else if(val.is_object()) {
-		for(auto &[key, child] : val.get_object())
-			resolve_property(constants, child);
+
+	ResolveVariables(m_rootClass);
+	if(j.contains("theme")) {
+		auto &theme = j["theme"];
+		if(theme.contains("materials")) {
+			auto &materials = theme["materials"];
+			if(materials.is_object()) {
+				auto &o = materials.get_object();
+				for(auto &[key, mat] : o) {
+					if(!mat.is_object())
+						continue;
+					if(mat.contains("inherits")) {
+						auto inherits = mat["inherits"];
+						if(inherits.is_string()) {
+							auto strInherits = inherits.get_string();
+							if(materials.contains(strInherits)) {
+								// Merge
+								auto cpy = materials[strInherits];
+								merge_json_object(mat, cpy);
+								mat = cpy;
+							}
+						}
+					}
+					resolve_property(m_constants, mat);
+				}
+			}
+		}
 	}
-	else if(val.is_array()) {
-		for(auto &child : val.get_array())
-			resolve_property(constants, child);
-	}
+	ResolveMixins(m_rootClass, m_rootClass);
+	if(j.contains("theme"))
+		GenerateMaterials(j["theme"]);
 }
 
 udm::Element *pragma::gui::JsonSkinBase::GetCacheData(types::WIBase &el, bool init) const
@@ -492,6 +551,27 @@ void pragma::gui::JsonSkinBase::ParseConstants(const glz::generic_u64 &j)
 
 		for(auto &[key, val] : m_constants)
 			resolve_property(m_constants, val);
+	}
+}
+
+void pragma::gui::JsonSkinBase::GenerateMaterials(const glz::generic_u64 &j)
+{
+	if(!j.contains("materials") || !j["materials"].is_object())
+		return;
+	for(const auto &[key, val] : j["materials"].get_object()) {
+		auto materialName = get_material_identifier(key);
+		auto udmData = udm::Data::Create();
+		auto assetData = udmData->GetAssetData();
+		udm::LinkedPropertyWrapper prop {*assetData};
+		prop = prop["wguitextured"];
+		to_udm_object(val, prop);
+
+		std::string err;
+		auto mat = WGUI::GetInstance().GetMaterialManager().CreateMaterial(assetData, err, materialName);
+		if (!mat)
+			WGUI::GetInstance().Log(std::format("Failed to create material '{}': {}", key, err), util::LogSeverity::Error);
+		else
+			m_materials[key] = mat;
 	}
 }
 
