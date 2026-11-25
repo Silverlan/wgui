@@ -1492,6 +1492,13 @@ void pragma::gui::ConfigSkin::ApplyStyle(types::WIBase &el, Style &style) const
 			el.SetColor(*color);
 	}
 
+	if (auto alphaProp = style.FindProperty("alpha"); alphaProp)
+	{
+		auto alpha = alphaProp->GetValue<udm::UInt8>();
+		if (alpha)
+			el.SetAlpha(*alpha /static_cast<float>(std::numeric_limits<uint8_t>::max()));
+	}
+
 	if (auto visible = style.GetPropertyValue<udm::Boolean>("visible"); visible)
 		el.SetVisible(*visible);
 	if (auto zIndex = style.GetPropertyValue<udm::Int32>("zIndex"); zIndex)
