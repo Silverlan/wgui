@@ -157,13 +157,14 @@ namespace pragma::gui
 		void ClearCache(types::WIBase &el);
 		udm::Element *GetCacheData(types::WIBase &el, bool init = true) const;
 		const std::unordered_map<std::string, glz::generic_u64> &GetConstants() const { return m_constants; }
-		const std::unordered_set<std::string> &GetUnknownStyleClasses() const { return m_unknownStyleClasses; }
+
+		const std::unordered_map<util::GString, ConfigSkin::StyleClassState> &GetStyleClassStates() const { return m_styleClassStates; }
 	  protected:
 		JsonSkinClass m_rootClass;
 		std::unordered_map<std::string, glz::generic_u64> m_constants;
 		mutable std::unordered_map<types::WIBase*, udm::PProperty> m_cacheData;
 		std::unordered_map<std::string_view, std::shared_ptr<material::Material>> m_materials;
-		mutable std::unordered_set<std::string> m_unknownStyleClasses;
+		mutable std::unordered_map<util::GString, ConfigSkin::StyleClassState> m_styleClassStates;
 
 		void ParseConstants(const glz::generic_u64 &j);
 		void ParseFonts(const glz::generic_u64 &j);
@@ -411,7 +412,7 @@ std::expected<void, std::string> pragma::gui::ConfigSkin::LoadUdm(std::unique_pt
 	Initialize(styleProp, udm::PropertyWrapper{*m_udmData}["assetData"]["root"]);
 	return {};
 }
-const std::unordered_set<std::string> &pragma::gui::ConfigSkin::GetUnknownStyleClasses() const { return m_baseJsonSkin->GetUnknownStyleClasses(); }
+const std::unordered_map<pragma::util::GString, pragma::gui::ConfigSkin::StyleClassState> &pragma::gui::ConfigSkin::GetStyleClassStates() const { return m_baseJsonSkin->GetStyleClassStates(); }
 void pragma::gui::ConfigSkin::Load(StyleProperty &styleProp)
 {
 	JsonSkinBase::Settings settings {*static_cast<const glz::generic_u64*>(styleProp.property)};
@@ -725,7 +726,7 @@ namespace pragma::gui {
 		auto it = classes.find(className);
 		return (it != classes.end()) ? it->second.get() : nullptr;
 	}
-	void find_skin_classes(types::WIBase *el, const string::StringMap<std::unique_ptr<JsonSkinClass>> &classes, std::vector<SkinContext> &outClasses, std::unordered_set<std::string> &unknownStyleClasses, int baseSpecificity = 0)
+	void find_skin_classes(types::WIBase *el, const string::StringMap<std::unique_ptr<JsonSkinClass>> &classes, std::vector<SkinContext> &outClasses, std::unordered_map<pragma::util::GString, pragma::gui::ConfigSkin::StyleClassState> &styleClassStates, int baseSpecificity = 0)
 	{
 		// By Class (specificity = 1)
 		auto className = el->GetClass();
@@ -740,9 +741,12 @@ namespace pragma::gui {
 		for(auto &styleClass : styleClasses) {
 			auto *cl = find_skin_class("." + std::string {styleClass}, classes);
 			if(cl != nullptr)
+			{
 				outClasses.push_back({cl, baseSpecificity + 10});
-			else
-				unknownStyleClasses.insert(styleClass);
+				styleClassStates[styleClass] = ConfigSkin::StyleClassState::Found;
+			}
+			else if (auto it = styleClassStates.find(styleClass); it == styleClassStates.end())
+				styleClassStates[styleClass] = ConfigSkin::StyleClassState::NotFound;
 		}
 
 		// By element name (specificity = 100)
@@ -828,12 +832,12 @@ std::optional<pragma::gui::Style> pragma::gui::JsonSkinBase::ComputeStyle(types:
 	for(auto &el_iter : els | std::views::reverse) {
 		auto numClasses = classes.size();
 		for(size_t i = 0; i < numClasses; ++i) // Note: Loop modifies 'classes'
-			find_skin_classes(el_iter, classes[i].skinClass->descendants, classes, m_unknownStyleClasses, classes[i].specificity);
+			find_skin_classes(el_iter, classes[i].skinClass->descendants, classes, m_styleClassStates, classes[i].specificity);
 	}
 
 	std::vector<SkinContext> elClassesContexts;
 	for(auto &c : classes)
-		find_skin_classes(&el, c.skinClass->descendants, elClassesContexts, m_unknownStyleClasses, c.specificity);
+		find_skin_classes(&el, c.skinClass->descendants, elClassesContexts, m_styleClassStates, c.specificity);
 
 	// Sort rules by specificity
 	std::stable_sort(elClassesContexts.begin(), elClassesContexts.end());

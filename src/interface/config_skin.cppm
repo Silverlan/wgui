@@ -171,7 +171,13 @@ namespace pragma::gui {
 		const udm::Property *GetUdmData() const { return m_udmData.get(); }
 		std::shared_ptr<udm::Property> ClaimUdmData() const { return m_udmData; }
 		JsonSkinBase *GetBaseJsonSkin() { return m_baseJsonSkin.get(); }
-		const std::unordered_set<std::string> &GetUnknownStyleClasses() const;
+
+		enum class StyleClassState : uint8_t
+		{
+			Found = 0,
+			NotFound,
+		};
+		const std::unordered_map<util::GString, StyleClassState> &GetStyleClassStates() const;
 	protected:
 		void ResolveConstant(std::string &value);
 		virtual void ApplyStyle(types::WIBase &el, Style &style) const;
